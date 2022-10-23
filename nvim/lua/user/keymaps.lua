@@ -64,3 +64,11 @@ keymap("t", "<C-h>", "<C-\\><C-N><C-w>h", term_opts)
 keymap("t", "<C-j>", "<C-\\><C-N><C-w>j", term_opts)
 keymap("t", "<C-k>", "<C-\\><C-N><C-w>k", term_opts)
 keymap("t", "<C-l>", "<C-\\><C-N><C-w>l", term_opts)
+
+
+---------- TELESCOPE ----------
+-- fuzzy finder
+keymap("n", "<leader>f", "<cmd>Telescope find_files<cr>", opts)   -- search all files and show preview
+-- search all files and hide preview
+-- keymap("n", "<leader>f", "<cmd>lua require'telescope.builtin'.find_files(require('telescope.themes').get_dropdown({ previewer = false }))<cr>", opts)
+keymap("n", "<C-S-f>", "<cmd>Telescope live_grep<cr>", opts)      -- search keywords
