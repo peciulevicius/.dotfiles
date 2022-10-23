@@ -40,6 +40,7 @@ keymap("n", "<S-h>", ":bprevious<CR>", opts)
 ---------- INSERT ----------
 -- Press jk fast to exit insert mode 
 keymap("i", "jk", "<ESC>", opts)
+keymap("i", "kj", "<ESC>", opts)
 
 ---------- VISUAL ----------
 -- Stay in indent mode
