@@ -116,3 +116,8 @@ chpwd() ls -a
 export PATH=$PATH:/Users/dziugaspeciulevicius/.git-semantic-commits:$PATH
 
 eval $(thefuck --alias)
+
+# pnpm
+export PNPM_HOME="/Users/dziugaspeciulevicius/Library/pnpm"
+export PATH="$PNPM_HOME:$PATH"
+# pnpm end
