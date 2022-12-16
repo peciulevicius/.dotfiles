@@ -71,6 +71,9 @@ return packer.startup(function(use)
   -- Telescope
   use "nvim-telescope/telescope.nvim"
 
+  use "nvim-lua/plenary.nvim"               --don't forget to add this one if you don't have it yet!
+  use "ThePrimeagen/harpoon"
+
   -- Treesitter
   use {
     "nvim-treesitter/nvim-treesitter",
