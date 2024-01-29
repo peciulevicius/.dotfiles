@@ -1,6 +1,10 @@
-[user]
-    name = Džiugas Pečiulevičius
-    email = 43075730+peciulevicius@users.noreply.github.com
+# [user]
+# 	name = Džiugas Pečiulevičius
+# 	email = dziugas.peciulevicius@visma.com
+[includeIf "gitdir:C:/dev/personal/"]
+	path = ./.gitconfig-personal
+[includeIf "gitdir:C:/dev/work/"]
+	path = ./.gitconfig-work
 [init]
     defaultBranch = main
 [alias]
