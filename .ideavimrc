@@ -31,6 +31,7 @@ map K {
 
 " better escape
 imap jk <Esc>
+imap kj <Esc>
 
 " location
 nmap <C-i> <Action>(Back)
