@@ -1,6 +1,3 @@
-# [user]
-# 	name = Džiugas Pečiulevičius
-# 	email = dziugas.peciulevicius@visma.com
 [includeIf "gitdir:C:/dev/personal/"]
 	path = ./.gitconfig-personal
 [includeIf "gitdir:C:/dev/work/"]

@@ -1,5 +1,5 @@
 [user]
 	name = Džiugas Pečiulevičius
-	email = dziugas.peciulevicius@visma.com
+	email = 83578936+pdziugas@users.noreply.github.com
 [core]
     sshCommand = "ssh -i ~/.ssh/id_ed25519"
