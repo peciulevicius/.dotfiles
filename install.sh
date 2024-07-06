@@ -2,9 +2,12 @@
 
 # Determine the dotfiles directory based on the script's location
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-export DOTFILES_DIR
+
+# Convert from WSL path to Windows path (e.g., /mnt/c to C:\)
+DOTFILES_WIN_PATH=$(wslpath -w "$DOTFILES_DIR")
 
 echo "Dotfiles directory: $DOTFILES_DIR"
+echo "Dotfiles Windows directory: $DOTFILES_WIN_PATH"
 
 # Function to link the common .ideavimrc file
 link_ideavimrc() {
@@ -19,27 +22,32 @@ link_ideavimrc() {
     ln -s "$source_path" "$target_path" && echo ".ideavimrc linked successfully."
 }
 
-# Detect the operating system
-OS="$(uname -s)"
-case "$OS" in
-    Linux*)
-        # Check if running under WSL (Windows Subsystem for Linux)
-        if grep -qi microsoft /proc/version; then
-            echo "Detected WSL environment. Running Windows-specific setup."
-            # Assuming powershell.exe is in your path; adjust if needed
-            powershell.exe -File "$DOTFILES_DIR/windows/install.ps1"
-        else
-            echo "Detected Linux. Running Linux-specific setup."
+# Main execution function
+main() {
+    OS="$(uname -s)"
+    case "$OS" in
+        Linux*)
+            # Detecting WSL environment
+            if grep -qi microsoft /proc/version; then
+                echo "Detected WSL environment. Running Windows-specific setup."
+                # Use the converted Windows path format
+                powershell.exe -File "${DOTFILES_WIN_PATH}\\windows\\install.ps1"
+            else
+                echo "Detected Linux. Running Linux-specific setup."
+                link_ideavimrc
+                bash "$DOTFILES_DIR/linux/install.sh"
+            fi
+            ;;
+        Darwin*)
+            echo "Detected macOS. Running macOS-specific setup."
             link_ideavimrc
-            bash "$DOTFILES_DIR/linux/install.sh"
-        fi
-        ;;
-    Darwin*)
-        echo "Detected macOS. Running macOS-specific setup."
-        link_ideavimrc
-        bash "$DOTFILES_DIR/macos/install.sh"
-        ;;
-    *)
-        echo "Unsupported OS detected."
-        ;;
-esac
+            bash "$DOTFILES_DIR/macos/install.sh"
+            ;;
+        *)
+            echo "Unsupported OS detected."
+            ;;
+    esac
+}
+
+# Start the script
+main
