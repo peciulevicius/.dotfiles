@@ -1,32 +1,57 @@
 # Define the base dotfiles path
-$dotfilesPath = "C:/dev/personal/.dotfiles"
+$dotfilesPath = "C:/dev/personal/.dotfiles/windows"
 
-# Link the base .gitconfig
-$sourceGitConfigPath = Join-Path $dotfilesPath "windows-work/.gitconfig"
-$destGitConfigPath = "$env:USERPROFILE\.gitconfig"
-If (!(Test-Path $destGitConfigPath)) {
-    New-Item -ItemType SymbolicLink -Path $destGitConfigPath -Target $sourceGitConfigPath -Force
-} Else {
-    Write-Host ".gitconfig already exists at $destGitConfigPath, manual intervention required."
+# Prompt user for setup type
+$setupType = Read-Host "Set up for Work (W) or Personal (P) environment?"
+
+# Apply base Git configuration and link .ideavimrc
+Function Setup-CommonConfigurations {
+    $sourceGitConfigPath = Join-Path $dotfilesPath ".gitconfig"
+    $destGitConfigPath = "$env:USERPROFILE\.gitconfig"
+    If (!(Test-Path $destGitConfigPath)) {
+        New-Item -ItemType SymbolicLink -Path $destGitConfigPath -Target $sourceGitConfigPath -Force
+        Write-Host "Base .gitconfig linked successfully."
+    } Else {
+        Write-Host "$destGitConfigPath already exists. Consider manual intervention."
+    }
+
+    $sourcePath = "$dotfilesPath/../.ideavimrc"
+    $targetPath = "$env:USERPROFILE\.ideavimrc"
+    If (!(Test-Path $targetPath)) {
+        New-Item -ItemType SymbolicLink -Path $targetPath -Target $sourcePath -Force
+        Write-Host ".ideavimrc linked successfully."
+    } Else {
+        Write-Host ".ideavimc already exists at $targetPath. Consider manual intervention."
+    }
 }
 
-# Set Git to include work-specific configurations for projects within C:/dev/work/
-$workConfigPath = Join-Path $dotfilesPath "windows-work/.gitconfig-work"
-$workProjectsRoot = "C:/dev/work/"
-git config --global includeIf.gitdir:"$workProjectsRoot".path $workConfigPath
+# Configure Git with either work or personal settings
+Function Configure-Git {
+    param (
+        [Parameter(Mandatory)]
+        [string]$ConfigPath
+    )
 
-# Set Git to include personal-specific configurations for projects within C:/dev/personal/
-$personalConfigPath = Join-Path $dotfilesPath "windows-work/.gitconfig-personal"
-$personalProjectsRoot = "C:/dev/personal/"
-git config --global includeIf.gitdir:"$personalProjectsGoot".path $personalConfigPath
-
-# Linking .ideavimrc for Windows
-$sourcePath = "C:/dev/personal/.dotfiles/.ideavimrc"
-$targetPath = "$env:USERPROFILE\.ideavimrc"
-
-if (Test-Path $targetPath) {
-    Write-Output "$targetPath already exists. Creating a backup."
-    Rename-Item $targetPath "$targetPath.backup" -Force
+    # Apply Git configuration for the specified environment
+    git config --global include.path $ConfigPath
+    Write-Host "Git configured with $ConfigPath settings."
 }
 
-New-Item -ItemType SymbolicLink -Path $targetPath -Target $source_shPath -Force
+# Main script logic
+Setup-CommonConfigurations
+
+switch ($setupType.ToUpper()) {
+    "W" {
+        $configPath = Join-Path $dotfilesPath ".gitconfig-work"
+        Configure-Git -ConfigPath $configPath
+        Write-Host "Work environment setup completed."
+    }
+    "P" {
+        $configPath = Join-Path $dotfilesPath ".gitconfig-personal"
+        Configure-Git -ConfigPath $configPath
+        Write-Host "Personal environment setup completed."
+    }
+    Default {
+        Write-Host "Invalid option selected. No changes applied."
+    }
+}
