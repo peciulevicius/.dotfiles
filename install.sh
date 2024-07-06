@@ -27,7 +27,7 @@ case "$OS" in
         if grep -qi microsoft /proc/version; then
             echo "Detected WSL environment. Running Windows-specific setup."
             # Assuming powershell.exe is in your path; adjust if needed
-            powershell.exe -File "$DOTFILES_DIR/windows/install.psia"
+            powershell.exe -File "$DOTFILES_DIR/windows/install.ps1"
         else
             echo "Detected Linux. Running Linux-specific setup."
             link_ideavimrc
