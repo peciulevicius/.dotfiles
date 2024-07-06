@@ -1,57 +1,45 @@
-# Define the base dotfiles path
-$dotfilesPath = "C:/dev/personal/.dotfiles/windows"
+#!/bin/bash
 
-# Prompt user for setup type
-$setupType = Read-Host "Set up for Work (W) or Personal (P) environment?"
+# Determine the dotfiles directory based on the script's location
+DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+export DOTFILES_DIR
 
-# Apply base Git configuration and link .ideavimrc
-Function Setup-CommonConfigurations {
-    $sourceGitConfigPath = Join-Path $dotfilesPath ".gitconfig"
-    $destGitConfigPath = "$env:USERPROFILE\.gitconfig"
-    If (!(Test-Path $destGitConfigPath)) {
-        New-Item -ItemType SymbolicLink -Path $destGitConfigPath -Target $sourceGitConfigPath -Force
-        Write-Host "Base .gitconfig linked successfully."
-    } Else {
-        Write-Host "$destGitConfigPath already exists. Consider manual intervention."
-    }
+echo "Dotfiles directory: $DOTFILES_DIR"
 
-    $sourcePath = "$dotfilesPath/../.ideavimrc"
-    $targetPath = "$env:USERPROFILE\.ideavimrc"
-    If (!(Test-Path $targetPath)) {
-        New-Item -ItemType SymbolicLink -Path $targetPath -Target $sourcePath -Force
-        Write-Host ".ideavimrc linked successfully."
-    } Else {
-        Write-Host ".ideavimc already exists at $targetPath. Consider manual intervention."
-    }
+# Function to link the common .ideavimrc file
+link_ideavimrc() {
+    echo "Attempting to link .ideavimrc..."
+    local source_path="${DOTFILES_DIR}/.ideavimrc"
+    local target_path="${HOME}/.ideavimrc"
+
+    if [ -f "$target_path" ]; then
+        echo "$target_path already exists. Creating a backup."
+        mv "$target_path" "${target_path}.backup"
+    fi
+    ln -s "$source_path" "$target_path" && echo ".ideavimrc linked successfully."
 }
 
-# Configure Git with either work or personal settings
-Function Configure-Git {
-    param (
-        [Parameter(Mandatory)]
-        [string]$ConfigPath
-    )
-
-    # Apply Git configuration for the specified environment
-    git config --global include.path $ConfigPath
-    Write-Host "Git configured with $ConfigPath settings."
-}
-
-# Main script logic
-Setup-CommonConfigurations
-
-switch ($setupType.ToUpper()) {
-    "W" {
-        $configPath = Join-Path $dotfilesPath ".gitconfig-work"
-        Configure-Git -ConfigPath $configPath
-        Write-Host "Work environment setup completed."
-    }
-    "P" {
-        $configPath = Join-Path $dotfilesPath ".gitconfig-personal"
-        Configure-Git -ConfigPath $configPath
-        Write-Host "Personal environment setup completed."
-    }
-    Default {
-        Write-Host "Invalid option selected. No changes applied."
-    }
-}
+# Detect the operating system
+OS="$(uname -s)"
+case "$OS" in
+    Linux*)
+        # Check if running under WSL (Windows Subsystem for Linux)
+        if grep -qi microsoft /proc/version; then
+            echo "Detected WSL environment. Running Windows-specific setup."
+            # Assuming powershell.exe is in your path; adjust if needed
+            powershell.exe -File "$DOTFILES_DIR/windows/install.ps1"
+        else
+            echo "Detected Linux. Running Linux-specific setup."
+            link_ideavimrc
+            bash "$DOTFILES_DIR/linux/install.sh"
+        fi
+        ;;
+    Darwin*)
+        echo "Detected macOS. Running macOS-specific setup."
+        link_ideavimrc
+        bash "$DOTFILES_DIR/macos/install.sh"
+        ;;
+    *)
+        echo "Unsupported OS detected."
+        ;;
+esac
