@@ -119,7 +119,7 @@ setup_symlinks() {
 #}
 
 # Clone dotfiles repository and set up symlinks
-clone_dotfile_repo() {
+clone_dotfiles_repo() {
     echo "Cloning dotfiles repository..."
     DOTFILES_REPO="$HOME/.dotfiles"
     WORK_TREE="$HOME"
