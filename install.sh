@@ -41,7 +41,7 @@ main() {
         Darwin*)
             echo "Detected macOS. Running macOS-specific setup."
             link_ideavimrc
-            bash "$DOTFILES_DIR/macos/install.sh"
+            bash "$DOTFILES_DIR/mac/install.sh"
             ;;
         *)
             echo "Unsupported OS detected."

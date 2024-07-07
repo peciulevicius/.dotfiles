@@ -27,7 +27,7 @@ install_oh_my_zsh() {
 install_p10k() {
   if [ ! -d "$HOME/.oh-my-zsh/custom/themes/powerlevel10k" ]; then
     echo "Installing Powerlevel10k..."
-    git clone --depth=1 https://github.com/romkatv/powerlevel10k.git $ZSH_CUSTOM/themes/powerlevel10k
+    git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k"
   else
     echo "Powerlevel10k is already installed"
   fi
@@ -42,22 +42,50 @@ install_packages() {
   brew install git vim neovim zsh tmux docker nvm node gh thefuck pnpm yarn tree-sitter
 }
 
+# Helper function to check if an application is already installed in /Applications
+app_is_installed() {
+  if [ -d "/Applications/$1.app" ]; then
+    return 0  # 0 means true/success in bash
+  else
+    return 1  # 1 means false/error
+  fi
+}
+
+# Function to check if an application is installed via Homebrew Cask
+is_cask_installed() {
+  brew list --cask "$1" &>/dev/null
+}
+
 # Install applications with Homebrew Cask
 install_applications() {
   echo "Installing applications with Homebrew Cask..."
-  brew install --cask iterm2
-  brew install --cask raycast
-  brew install --cask unnaturalscrollwheels
-  brew install --cask monitorcontrol
-  brew install --cask nordpass
-  brew install --cask nordvpn
-  brew install --cask spotify
-  brew install --cask notion
-  brew install --cask webstorm
-  brew install --cask visual-studio-code
-  brew install --cask postman
-  brew install --cask the-unarchiver
-  brew install --cask tg-pro
+
+  CASKS=(
+    iterm2
+    raycast
+    unnaturalscrollwheels
+    monitorcontrol
+    nordpass
+    nordvpn
+    spotify
+    notion
+    webstorm
+    visual-studio-code
+    postman
+    the-unarchiver
+    tg-pro
+  )
+
+  for CASK in "${CASKS[@]}"; do
+    if app_is_installed "$CASK"; then
+      echo "$CASK app already installed in '/Applications', skipping."
+    elif is_cask_installed "$CASK"; then
+      echo "$CASK is already installed by Homebrew, skipping."
+    else
+      echo "Installing $CASK..."
+      brew install --cask "$CASK"
+    fi
+  done
 }
 
 # Function to set up symlinks for dotfiles
@@ -65,27 +93,66 @@ setup_symlinks() {
   echo "Setting up symlinks for dotfiles..."
 
   DOTFILES_DIR=$HOME/dotfiles
+  FILES=(
+    .zshrc
+    .p10k.zsh
+    .vimrc
+    .gitconfig
+    .ideavimrc
+  )
 
-  ln -sf $DOTFILES_DIR/.zshrc $HOME/.zshrc
-  ln -sf $DOTFILES_DIR/.p10k.zsh $HOME/.p10k.zsh
-  ln -sf $DOTFILES_DIR/.vimrc $HOME/.vimrc
-  ln -sf $DOTFILES_DIR/.gitconfig $HOME/.gitconfig
-  ln -sf $DOTFILES_DIR/.ideavimrc $HOME/.ideavimrc
+  for FILE in "${FILES[@]}"; do
+    if [ -e "$HOME/$FILE" ]; then
+      echo "$FILE already exists. Creating a backup."
+      mv "$HOME/$FILE" "$HOME/${FILE}.backup"
+    fi
+    ln -sf "$DOTFILES_DIR/$FILE" "$HOME/$FILE"
+  done
 }
 
-# Clone dotfiles repository and set up symlinks
-clone_dotfiles_repo() {
-  echo "Cloning dotfiles repository..."
-  git clone --bare https://github.com/peciulevicius/.dotfiles.git $HOME/.dotfiles
-  git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME checkout
+#clone_dotfiles_repo() {
+#  echo "Cloning dotfiles repository..."
+#  git clone --bare https://github.com/peciulevicius/.dotfiles.git $HOME/.dotfiles
+#  git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME checkout
+#
+#  setup_symlinks
+#}
 
-  setup_symlinks
+# Clone dotfiles repository and set up symlinks
+clone_dotfile_repo() {
+    echo "Cloning dotfiles repository..."
+    DOTFILES_REPO="$HOME/.dotfiles"
+    WORK_TREE="$HOME"
+    GIT_DIR="--git-dir=$DOTFILES_REPO/ --work-tree=$WORK_TREE"
+
+    if [ ! -d $DOTFILES_REPO ]; then
+        git clone --bare https://github.com/peciulevicius/.dotfiles.git $DOTFILES_REPO
+    fi
+
+    # Backup and remove existing dotfiles before checkout
+   FILES_TO_CHECK=(.gitconfig .idea .ideavimrc .zshrc)
+    for FILE in "${FILES_TO_CHECK[@]}"; do
+        if [ -f "$WORK_TREE/$FILE" ] || [ -d "$WORK_TREE/$FILE" ]; then
+            echo "$FILE exists, backing up..."
+            mv "$WORK_TREE/$FILE" "$WORK_TREE/${FILE}.backup"
+        fi
+    done
+
+    # Checkout dotfiles
+    git $GIT_DIR checkout
+    if [ $? != 0 ]; then
+        echo "Error checking out dotfiles, possible conflicts."
+    else
+        echo "Dotfiles checked out successfully."
+    fi
+
+    setup_symlinks
 }
 
 # Main function
 main() {
   install_homebrew
-  install_applications
+#  install_applications
   install_packages
   install_oh_my_zsh
   install_p10k
