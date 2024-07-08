@@ -44,7 +44,7 @@ nmap <leader>xo <Action>(CloseAllEditorsButActive)
 nmap <leader>xp <Action>(CloseAllUnpinnedEditors)
 
 " window
-nmap <C-Tab> <Action>(PreviousTab)
+nmap <S-Tab> <Action>(PreviousTab)
 nmap <Tab> <Action>(NextTab)
 nmap <leader>p <Action>(PinActiveEditorTab)
 
@@ -125,6 +125,7 @@ nmap <leader>im <Action>(ImplementMethods)
 nmap <leader>fc <Action>(ReformatCode)
 nmap <leader>ic <Action>(InspectCode)
 nmap <leader>so <Action>(SelectAllOccurrences)
+map <A-j> :action SelectNextOccurrence<CR>
 nmap <leader>gc <Action>(Generate)
 nmap <leader>gt <Action>(GoToTest)
 
