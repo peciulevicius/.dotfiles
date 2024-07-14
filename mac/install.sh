@@ -38,8 +38,31 @@ install_packages() {
   echo "Updating Homebrew..."
   brew update
 
+  PACKAGES=(
+    git
+    vim
+    neovim
+    zsh
+    tmux
+    docker
+    nvm
+    node
+    gh
+    thefuck
+    pnpm
+    yarn
+    tree-sitter
+  )
+
   echo "Installing necessary packages..."
-  brew install git vim neovim zsh tmux docker nvm node gh thefuck pnpm yarn tree-sitter
+  for PACKAGE in "${PACKAGES[@]}"; do
+    if brew list $PACKAGE >/dev/null 2>&1; then
+      echo "$PACKAGE is already installed"
+    else
+      echo "Installing $PACKAGE..."
+      brew install $PACKAGE
+    fi
+  done
 
   if ! brew list powerlevel10k >/dev/null 2>&1; then
     echo "Installing Powerlevel10k..."
