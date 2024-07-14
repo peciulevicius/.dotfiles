@@ -138,6 +138,48 @@ clone_dotfiles_repo() {
      .zshrc
      .p10k.zsh
    )
+#
+#    FILES_TO_BACKUP=(
+#      .gitignore
+#      .idea/.dotfiles.iml
+#      .idea/.gitignore
+#      .idea/modules.xml
+#      .idea/vcs.xml
+#      README.md
+#      install.sh
+#      linux/install.sh
+#      mac/install.sh
+#      nvim/after/plugin/colors.lua
+#      nvim/after/plugin/fugitive.lua
+#      nvim/after/plugin/harpoon.lua
+#      nvim/after/plugin/lsp.lua
+#      nvim/after/plugin/telescope.lua
+#      nvim/after/plugin/treesitter.lua
+#      nvim/after/plugin/undotree.lua
+#      nvim/init.lua
+#      nvim/lua/peciulevicius/init.lua
+#      nvim/lua/peciulevicius/packer.lua
+#      nvim/lua/peciulevicius/remap.lua
+#      nvim/lua/peciulevicius/set.lua
+#      windows/.gitconfig
+#      windows/.gitconfig-personal
+#      windows/.gitconfig-work
+#      windows/install.ps1
+#    )
+#
+#    # Create a backup directory if it doesn't exist
+#    mkdir -p ~/dotfiles_backup
+#
+#    # List of files to check and backup
+#
+#    # Loop through the files
+#    for FILE in "${FILES_TO_BACKUP[@]}"; do
+#      # If the file exists, move it to the backup directory
+#      if [ -e "$HOME/$FILE" ]; then
+#        echo "Moving $FILE to backup directory..."
+#        mv "$HOME/$FILE" "~/dotfiles_backup/$FILE"
+#      fi
+#    done
     for FILE in "${FILES_TO_CHECK[@]}"; do
         if [ -f "$WORK_TREE/$FILE" ] || [ -d "$WORK_TREE/$FILE" ] || [ -L "$WORK_TREE/$FILE" ]; then
             echo "$FILE exists, backing up..."
@@ -162,21 +204,20 @@ setup_symlinks() {
 
   DOTFILES_DIR=$HOME/.dotfiles
   FILES=(
-     .gitconfig
-     .ideavimrc
-#     .vimrc
-     .zshrc
-     .p10k.zsh
+     mac/.gitconfig
+     mac/.ideavimrc
+     mac/.p10k.zsh
+     mac/.zshrc
   )
 
   for FILE in "${FILES[@]}"; do
-    if [ -e "$HOME/$FILE" ]; then
-      echo "$FILE already exists. Creating a backup."
-      mv "$HOME/$FILE" "$HOME/${FILE}.backup"
+    if [ -e "$HOME/$(basename $FILE)" ]; then
+      echo "$(basename $FILE) already exists. Creating a backup."
+      mv "$HOME/$(basename $FILE)" "$HOME/$(basename $FILE).backup"
     fi
 
     echo "Creating symlink for $FILE..."
-    ln -sf "$DOTFILES_DIR/$FILE" "$HOME/$FILE"
+    ln -sf "$DOTFILES_DIR/$FILE" "$HOME/$(basename $FILE)"
   done
 }
 
