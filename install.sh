@@ -35,13 +35,13 @@ main() {
             else
                 echo "Detected Linux. Running Linux-specific setup."
 #                link_ideavimrc
-                bash "$DOTFILES_DIR/linux/install.sh"
+                bash "$DOTFILES_DIR/os/linux/install.sh"
             fi
             ;;
         Darwin*)
             echo "Detected macOS. Running macOS-specific setup."
 #            link_ideavimrc
-            bash "$DOTFILES_DIR/mac/install.sh"
+            bash "$DOTFILES_DIR/os/mac/install.sh"
             ;;
         *)
             echo "Unsupported OS detected."
