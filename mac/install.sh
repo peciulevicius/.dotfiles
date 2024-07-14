@@ -3,6 +3,7 @@
 # Exit immediately if a command exits with a non-zero status
 set -e
 
+GREEN='\033[0;32m'
 DOTFILES_REPO="$HOME/.dotfiles"
 PACKAGES=(
   git
@@ -43,7 +44,7 @@ FILES=(
 
 install_homebrew() {
   if ! command -v brew &> /dev/null; then
-    echo "Installing Homebrew..."
+    echo -e "${GREEN}Installing Homebrew..."
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
   else
     echo "Homebrew is already installed"
@@ -52,7 +53,7 @@ install_homebrew() {
 
 install_oh_my_zsh() {
   if [ ! -d "$HOME/.oh-my-zsh" ]; then
-    echo "Installing Oh My Zsh..."
+    echo -e "${GREEN}Installing Oh My Zsh..."
     sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
   else
     echo "Oh My Zsh is already installed"
@@ -60,10 +61,10 @@ install_oh_my_zsh() {
 }
 
 install_packages() {
-  echo "Updating Homebrew..."
+  echo -e "${GREEN}Updating Homebrew..."
   brew update
 
-  echo "Installing necessary packages..."
+  echo -e "${GREEN}Installing necessary packages..."
   for PACKAGE in "${PACKAGES[@]}"; do
     if brew list $PACKAGE >/dev/null 2>&1; then
       echo "$PACKAGE is already installed"
@@ -74,7 +75,7 @@ install_packages() {
   done
 
   if ! brew list powerlevel10k >/dev/null 2>&1; then
-    echo "Installing Powerlevel10k..."
+    echo -e "${GREEN}Installing Powerlevel10k..."
     brew install powerlevel10k
     echo "source $(brew --prefix)/share/powerlevel10k/powerlevel10k.zsh-theme" >>~/.zshrc
   else
@@ -95,7 +96,7 @@ is_cask_installed() {
 }
 
 install_applications() {
-  echo "Installing applications with Homebrew Cask..."
+  echo -e "${GREEN}Installing applications with Homebrew Cask..."
 
   for CASK in "${CASKS[@]}"; do
     if is_app_installed "$CASK"; then
@@ -110,7 +111,7 @@ install_applications() {
 }
 
 clone_dotfiles_repo() {
-    echo "Cloning dotfiles repository..."
+    echo -e "${GREEN}Cloning dotfiles repository..."
 
     if [ ! -d $DOTFILES_REPO ]; then
         git clone https://github.com/peciulevicius/.dotfiles.git $DOTFILES_REPO
@@ -136,7 +137,7 @@ clone_dotfiles_repo() {
 }
 
 setup_symlinks() {
-  echo "Setting up symlinks for dotfiles..."
+  echo -e "${GREEN}Setting up symlinks for dotfiles..."
 
   for FILE in "${FILES[@]}"; do
     echo "Creating symlink for $FILE..."
@@ -151,7 +152,7 @@ main() {
   #  install_applications
   clone_dotfiles_repo
 
-  echo "All done! Your development environment is set up."
+  echo -e "${GREEN}All done! Your development environment is set up."
 }
 
 main
