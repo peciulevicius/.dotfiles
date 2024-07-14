@@ -9,18 +9,18 @@ DOTFILES_WIN_PATH=$(wslpath -w "$DOTFILES_DIR")
 echo "Dotfiles directory: $DOTFILES_DIR"
 echo "Dotfiles Windows directory: $DOTFILES_WIN_PATH"
 
-# Function to link the common .ideavimrc file
-link_ideavimrc() {
-    echo "Attempting to link .ideavimrc..."
-    local source_path="${DOTFILES_DIR}/.ideavimrc"
-    local target_path="${HOME}/.ideavimrc"
-
-    if [ -f "$target_path" ]; then
-        echo "$target_path already exists. Creating a backup."
-        mv "$target_path" "${target_path}.backup"
-    fi
-    ln -s "$source_path" "$target_path" && echo ".ideavimrc linked successfully."
-}
+## Function to link the common .ideavimrc file
+#link_ideavimrc() {
+#    echo "Attempting to link .ideavimrc..."
+#    local source_path="${DOTFILES_DIR}/.ideavimrc"
+#    local target_path="${HOME}/.ideavimrc"
+#
+#    if [ -f "$target_path" ]; then
+#        echo "$target_path already exists. Creating a backup."
+#        mv "$target_path" "${target_path}.backup"
+#    fi
+#    ln -s "$source_path" "$target_path" && echo ".ideavimrc linked successfully."
+#}
 
 # Main execution function
 main() {
@@ -34,13 +34,13 @@ main() {
                 powershell.exe -File "${DOTFILES_WIN_PATH}\\windows\\install.ps1"
             else
                 echo "Detected Linux. Running Linux-specific setup."
-                link_ideavimrc
+#                link_ideavimrc
                 bash "$DOTFILES_DIR/linux/install.sh"
             fi
             ;;
         Darwin*)
             echo "Detected macOS. Running macOS-specific setup."
-            link_ideavimrc
+#            link_ideavimrc
             bash "$DOTFILES_DIR/mac/install.sh"
             ;;
         *)
