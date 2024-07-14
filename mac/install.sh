@@ -111,7 +111,7 @@ clone_dotfiles_repo() {
    FILES_TO_CHECK=(
      .gitconfig
      .ideavimrc
-     .vimrc
+#     .vimrc
      .zshrc
      .p10k.zsh
    )
@@ -141,7 +141,7 @@ setup_symlinks() {
   FILES=(
      .gitconfig
      .ideavimrc
-     .vimrc
+#     .vimrc
      .zshrc
      .p10k.zsh
   )
