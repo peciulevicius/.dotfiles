@@ -38,7 +38,7 @@ print_section() {
 }
 
 print_title() {
-    print_in_color "\n • $1\n" 5
+    print_in_purple "\n • $1\n"
 }
 
 print_success() {
@@ -78,20 +78,12 @@ print_error_stream() {
     done
 }
 
-print_in_white() {
-    print_in_color "$1" 7
+print_in_red() {
+    print_in_color "$1" 1
 }
 
 print_in_green() {
     print_in_color "$1" 2
-}
-
-print_in_purple() {
-    print_in_color "$1" 5
-}
-
-print_in_red() {
-    print_in_color "$1" 1
 }
 
 print_in_yellow() {
@@ -102,7 +94,19 @@ print_in_blue() {
     print_in_color "$1" 4
 }
 
-print_linke_break() {
+print_in_purple() {
+    print_in_color "$1" 5
+}
+
+print_in_cyan() {
+    print_in_color "$1" 6
+}
+
+print_in_white() {
+    print_in_color "$1" 7
+}
+
+print_line_break() {
     printf "\n"
 }
 
