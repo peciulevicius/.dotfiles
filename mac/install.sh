@@ -23,16 +23,6 @@ install_oh_my_zsh() {
   fi
 }
 
-## Function to install Powerlevel10k theme if not already installed
-#install_p10k() {
-##  if [ ! -d "$HOME/.oh-my-zsh/custom/themes/powerlevel10k" ]; then
-#    echo "Installing Powerlevel10k..."
-##    git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k"
-##  else
-##    echo "Powerlevel10k is already installed"
-##  fi
-#}
-
 # Update Homebrew and install necessary packages
 install_packages() {
   echo "Updating Homebrew..."
@@ -74,7 +64,7 @@ install_packages() {
 }
 
 # Helper function to check if an application is already installed in /Applications
-app_is_installed() {
+is_app_installed() {
   if [ -d "/Applications/$1.app" ]; then
     return 0  # 0 means true/success in bash
   else
@@ -108,7 +98,7 @@ install_applications() {
   )
 
   for CASK in "${CASKS[@]}"; do
-    if app_is_installed "$CASK"; then
+    if is_app_installed "$CASK"; then
       echo "$CASK app already installed in '/Applications', skipping."
     elif is_cask_installed "$CASK"; then
       echo "$CASK is already installed by Homebrew, skipping."
@@ -134,52 +124,10 @@ clone_dotfiles_repo() {
    FILES_TO_CHECK=(
      .gitconfig
      .ideavimrc
-#     .vimrc
      .zshrc
      .p10k.zsh
    )
-#
-#    FILES_TO_BACKUP=(
-#      .gitignore
-#      .idea/.dotfiles.iml
-#      .idea/.gitignore
-#      .idea/modules.xml
-#      .idea/vcs.xml
-#      README.md
-#      install.sh
-#      linux/install.sh
-#      mac/install.sh
-#      nvim/after/plugin/colors.lua
-#      nvim/after/plugin/fugitive.lua
-#      nvim/after/plugin/harpoon.lua
-#      nvim/after/plugin/lsp.lua
-#      nvim/after/plugin/telescope.lua
-#      nvim/after/plugin/treesitter.lua
-#      nvim/after/plugin/undotree.lua
-#      nvim/init.lua
-#      nvim/lua/peciulevicius/init.lua
-#      nvim/lua/peciulevicius/packer.lua
-#      nvim/lua/peciulevicius/remap.lua
-#      nvim/lua/peciulevicius/set.lua
-#      windows/.gitconfig
-#      windows/.gitconfig-personal
-#      windows/.gitconfig-work
-#      windows/install.ps1
-#    )
-#
-#    # Create a backup directory if it doesn't exist
-#    mkdir -p ~/dotfiles_backup
-#
-#    # List of files to check and backup
-#
-#    # Loop through the files
-#    for FILE in "${FILES_TO_BACKUP[@]}"; do
-#      # If the file exists, move it to the backup directory
-#      if [ -e "$HOME/$FILE" ]; then
-#        echo "Moving $FILE to backup directory..."
-#        mv "$HOME/$FILE" "~/dotfiles_backup/$FILE"
-#      fi
-#    done
+
     for FILE in "${FILES_TO_CHECK[@]}"; do
         if [ -f "$WORK_TREE/$FILE" ] || [ -d "$WORK_TREE/$FILE" ] || [ -L "$WORK_TREE/$FILE" ]; then
             echo "$FILE exists, backing up..."
@@ -227,7 +175,6 @@ main() {
 #  install_applications
   install_packages
   install_oh_my_zsh
-#  install_p10k
   clone_dotfiles_repo
 
   echo "All done! Your development environment is set up."
