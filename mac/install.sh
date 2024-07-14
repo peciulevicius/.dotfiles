@@ -23,15 +23,15 @@ install_oh_my_zsh() {
   fi
 }
 
-# Function to install Powerlevel10k theme if not already installed
-install_p10k() {
-  if [ ! -d "$HOME/.oh-my-zsh/custom/themes/powerlevel10k" ]; then
-    echo "Installing Powerlevel10k..."
-    git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k"
-  else
-    echo "Powerlevel10k is already installed"
-  fi
-}
+## Function to install Powerlevel10k theme if not already installed
+#install_p10k() {
+##  if [ ! -d "$HOME/.oh-my-zsh/custom/themes/powerlevel10k" ]; then
+#    echo "Installing Powerlevel10k..."
+##    git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k"
+##  else
+##    echo "Powerlevel10k is already installed"
+##  fi
+#}
 
 # Update Homebrew and install necessary packages
 install_packages() {
@@ -40,6 +40,14 @@ install_packages() {
 
   echo "Installing necessary packages..."
   brew install git vim neovim zsh tmux docker nvm node gh thefuck pnpm yarn tree-sitter
+
+  if ! brew list powerlevel10k >/dev/null 2>&1; then
+    echo "Installing Powerlevel10k..."
+    brew install powerlevel10k
+    echo "source $(brew --prefix)/share/powerlevel10k/powerlevel10k.zsh-theme" >>~/.zshrc
+  else
+    echo "Powerlevel10k is already installed"
+  fi
 }
 
 # Helper function to check if an application is already installed in /Applications
@@ -88,36 +96,6 @@ install_applications() {
   done
 }
 
-# Function to set up symlinks for dotfiles
-setup_symlinks() {
-  echo "Setting up symlinks for dotfiles..."
-
-  DOTFILES_DIR=$HOME/dotfiles
-  FILES=(
-    .zshrc
-    .p10k.zsh
-    .vimrc
-    .gitconfig
-    .ideavimrc
-  )
-
-  for FILE in "${FILES[@]}"; do
-    if [ -e "$HOME/$FILE" ]; then
-      echo "$FILE already exists. Creating a backup."
-      mv "$HOME/$FILE" "$HOME/${FILE}.backup"
-    fi
-    ln -sf "$DOTFILES_DIR/$FILE" "$HOME/$FILE"
-  done
-}
-
-#clone_dotfiles_repo() {
-#  echo "Cloning dotfiles repository..."
-#  git clone --bare https://github.com/peciulevicius/.dotfiles.git $HOME/.dotfiles
-#  git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME checkout
-#
-#  setup_symlinks
-#}
-
 # Clone dotfiles repository and set up symlinks
 clone_dotfiles_repo() {
     echo "Cloning dotfiles repository..."
@@ -130,9 +108,15 @@ clone_dotfiles_repo() {
     fi
 
     # Backup and remove existing dotfiles before checkout
-   FILES_TO_CHECK=(.gitconfig .idea .ideavimrc .zshrc)
+   FILES_TO_CHECK=(
+     .gitconfig
+     .ideavimrc
+     .vimrc
+     .zshrc
+     .p10k.zsh
+   )
     for FILE in "${FILES_TO_CHECK[@]}"; do
-        if [ -f "$WORK_TREE/$FILE" ] || [ -d "$WORK_TREE/$FILE" ]; then
+        if [ -f "$WORK_TREE/$FILE" ] || [ -d "$WORK_TREE/$FILE" ] || [ -L "$WORK_TREE/$FILE" ]; then
             echo "$FILE exists, backing up..."
             mv "$WORK_TREE/$FILE" "$WORK_TREE/${FILE}.backup"
         fi
@@ -149,13 +133,37 @@ clone_dotfiles_repo() {
     setup_symlinks
 }
 
+# Function to set up symlinks for dotfiles
+setup_symlinks() {
+  echo "Setting up symlinks for dotfiles..."
+
+  DOTFILES_DIR=$HOME/.dotfiles
+  FILES=(
+     .gitconfig
+     .ideavimrc
+     .vimrc
+     .zshrc
+     .p10k.zsh
+  )
+
+  for FILE in "${FILES[@]}"; do
+    if [ -e "$HOME/$FILE" ]; then
+      echo "$FILE already exists. Creating a backup."
+      mv "$HOME/$FILE" "$HOME/${FILE}.backup"
+    fi
+
+    echo "Creating symlink for $FILE..."
+    ln -sf "$DOTFILES_DIR/$FILE" "$HOME/$FILE"
+  done
+}
+
 # Main function
 main() {
   install_homebrew
 #  install_applications
   install_packages
   install_oh_my_zsh
-  install_p10k
+#  install_p10k
   clone_dotfiles_repo
 
   echo "All done! Your development environment is set up."
