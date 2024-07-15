@@ -1,57 +1,57 @@
 # Define the base dotfiles path
-$dotfilesPath = "C:/dev/personal/.dotfiles/windows"
+$dotfilesPath = "mnt/c/dev/personal/.dotfiles/os/windows"
 
-# Prompt user for setup type
+# Import utility functions for colored output
+. "..\..\scripts\utils\utils.sh" # Adjust the path as necessary
+
+# Prompt user for setup type with enhanced feedback
 $setupType = Read-Host "Set up for Work (W) or Personal (P) environment?"
+Print-Question "Set up for Work (W) or Personal (P) environment?" # Assuming Print-Question is a utility function for colored output
 
-# Apply base Git configuration and link .ideavimrc
 Function Setup-CommonConfigurations {
     $sourceGitConfigPath = Join-Path $dotfilesPath ".gitconfig"
     $destGitConfigPath = "$env:USERPROFILE\.gitconfig"
     If (!(Test-Path $destGitConfigPath)) {
         New-Item -ItemType SymbolicLink -Path $destGitConfigPath -Target $sourceGitConfigPath -Force
-        Write-Host "Base .gitconfig linked successfully."
+        Print-Success "Base .gitconfig linked successfully." # Assuming Print-Success is a utility function for colored output
     } Else {
-        Write-Host "$destGitConfigPath already exists. Consider manual intervention."
+        Print-Warning "$destGitConfigPath already exists. Consider manual intervention." # Assuming Print-Warning is a utility function for colored output
     }
 
     $sourcePath = "$dotfilesPath/../.ideavimrc"
     $targetPath = "$env:USERPROFILE\.ideavimrc"
     If (!(Test-Path $targetPath)) {
         New-Item -ItemType SymbolicLink -Path $targetPath -Target $sourcePath -Force
-        Write-Host ".ideavimrc linked successfully."
+        Print-Success ".ideavimrc linked successfully."
     } Else {
-        Write-Host ".ideavimc already exists at $targetPath. Consider manual intervention."
+        Print-Warning ".ideavimc already exists at $targetPath. Consider manual intervention."
     }
 }
 
-# Configure Git with either work or personal settings
 Function Configure-Git {
     param (
         [Parameter(Mandatory)]
         [string]$ConfigPath
     )
 
-    # Apply Git configuration for the specified environment
     git config --global include.path $ConfigPath
-    Write-Host "Git configured with $ConfigPath settings."
+    Print-Success "Git configured with $ConfigPath settings."
 }
 
-# Main script logic
 Setup-CommonConfigurations
 
 switch ($setupType.ToUpper()) {
     "W" {
         $configPath = Join-Path $dotfilesPath ".gitconfig-work"
         Configure-Git -ConfigPath $configPath
-        Write-Host "Work environment setup completed."
+        Print-Success "Work environment setup completed."
     }
     "P" {
         $configPath = Join-Path $dotfilesPath ".gitconfig-personal"
         Configure-Git -ConfigPath $configPath
-        Write-Host "Personal environment setup completed."
+        Print-Success "Personal environment setup completed."
     }
     Default {
-        Write-Host "Invalid option selected. No changes applied."
+        Print-Error "Invalid option selected. No changes applied." # Assuming Print-Error is a utility function for colored output
     }
 }
