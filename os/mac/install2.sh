@@ -26,9 +26,10 @@ print_success "success"
 print_warning "warning"
 print_error "error"
 print_question "question"
-print_option "option"
-print_option "option2"
-print_option "option3"
+print_option "1" "option 1"
+print_option "2" "option 2"
+print_option "3" "option 3"
+
 
 print_in_red "This is red"
 print_line_break
