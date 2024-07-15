@@ -3,7 +3,9 @@
 # ==============================
 # Source utilities
 # ==============================
-. "$HOME/dev/.dotfiles/scripts/utils/utils.sh"
+# FIXME: fix path
+# . "$HOME/dev/.dotfiles/scripts/utils/utils.sh"
+. "../../scripts/utils/utils.sh"
 
 #==================================
 # Print Section Title
