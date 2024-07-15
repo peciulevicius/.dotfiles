@@ -29,11 +29,11 @@ print_section() {
         fi
     done
 
-    print_linke_break
+    print_line_break
     print_in_green "$BANNER_TOP"
     print_in_green "\n│        $TITLE        │\n"
     print_in_green "$BANNER_BOTTOM"
-    print_linke_break
+    print_line_break
 
 }
 
@@ -42,7 +42,7 @@ print_title() {
 }
 
 print_success() {
-    print_in_green "   [✔] $1\n"
+    print_in_green "   [✓] $1\n"
 }
 
 print_warning() {
@@ -50,7 +50,7 @@ print_warning() {
 }
 
 print_error() {
-    print_in_red "   [✖] $1 $2\n"
+    print_in_red "   [✗] $1 $2\n"
 }
 
 print_question() {
