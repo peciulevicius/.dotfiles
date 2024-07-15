@@ -54,7 +54,7 @@ print_error() {
 }
 
 print_question() {
-    print_in_yellow "   [?] $1"
+    print_in_yellow "   [?] $1\n"
 }
 
 print_option() {

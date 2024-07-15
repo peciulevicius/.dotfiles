@@ -45,3 +45,24 @@ print_line_break
 print_in_blue "This is blue"
 print_line_break
 
+
+
+# Ask a question
+print_question "What is your favorite programming language?"
+
+# List options
+print_option "1" "Python"
+print_option "2" "JavaScript"
+print_option "3" "Rust"
+
+# Optionally, you can prompt the user to enter a choice
+print_in_white "Enter your choice (1-3): "
+read choice
+
+# Handle the user's choice
+case $choice in
+    1) print_success "You chose Python." ;;
+    2) print_success "You chose JavaScript." ;;
+    3) print_success "You chose Rust." ;;
+    *) print_error "Invalid choice. Please enter 1, 2, or 3." ;;
+esac
