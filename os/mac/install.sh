@@ -19,6 +19,7 @@ PACKAGES=(
   pnpm
   yarn
   tree-sitter
+  stripe/stripe-cli/stripe
 )
 CASKS=(
   iterm2
