@@ -20,6 +20,7 @@ PACKAGES=(
   yarn
   tree-sitter
   stripe/stripe-cli/stripe
+  supabase/tap/supabase
 )
 CASKS=(
   iterm2
