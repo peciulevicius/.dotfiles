@@ -21,6 +21,7 @@ PACKAGES=(
   tree-sitter
   stripe/stripe-cli/stripe
   supabase/tap/supabase
+  angular-cli
 )
 CASKS=(
   iterm2
