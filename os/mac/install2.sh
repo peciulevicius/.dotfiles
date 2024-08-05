@@ -11,19 +11,42 @@
 # Print Section Title
 #==================================
 print_section "Running MacOS Dotfiles Setup"
-print_title "Test title"
+print_title "Dock Settings"
 
+#ask_for_confirmation "'Would you like to add Dock shortcuts?"
+#printf "\n"
+
+# Mock a success
 print_result 0 "This is a mock success message"
-print_result 1 "This is a mock error message"
-print_warning "warning"
 
-print_in_red "This is red\n"
-print_in_green "This is green\n"
-print_in_yellow "This is yellow\n"
-print_in_purple "This is purple\n"
-print_in_cyan "This is cyan\n"
-print_in_white "This is white\n"
-print_in_blue "This is blue\n"
+# Mock an error
+print_result 1 "This is a mock error message"
+
+print_success "success"
+print_warning "warning"
+print_error "error"
+print_question "question"
+print_option "1" "option 1"
+print_option "2" "option 2"
+print_option "3" "option 3"
+
+
+print_in_red "This is red"
+print_line_break
+print_in_green "This is green"
+print_line_break
+print_in_yellow "This is yellow"
+print_line_break
+print_in_purple "This is purple"
+print_line_break
+print_in_cyan "This is cyan"
+print_line_break
+print_in_white "This is white"
+print_line_break
+print_in_blue "This is blue"
+print_line_break
+
+
 
 # Ask a question
 print_question "What is your favorite programming language?"
