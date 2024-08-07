@@ -6,44 +6,66 @@ If (-Not [Security.Principal.WindowsPrincipal]([Security.Principal.WindowsIdenti
     Exit 1
 }
 
-# Function to print section headers
 function Print-Section($message) {
     Write-Host "###########################" -ForegroundColor Green
     Write-Host $message -ForegroundColor Green
     Write-Host "###########################" -ForegroundColor Green
 }
 
-# Function to install Chocolatey
 function Install-Chocolatey {
-    Print-Section "Installing Chocolatey"
-    Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+    if (-Not (Get-Command choco -ErrorAction SilentlyContinue)) {
+        Print-Section "Installing Chocolatey"
+        Set-ExecutionPolicy Bypass -Scope Process -Force
+        [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+        iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+    } else {
+        Write-Host "Chocolatey is already installed"
+    }
 }
 
-# Function to install packages using Chocolatey
+function Install-Scoop {
+    if (-Not (Get-Command scoop -ErrorAction SilentlyContinue)) {
+        Print-Section "Installing Scoop"
+        iex (Invoke-WebRequest -Uri 'https://get.scoop.sh' -UseBasicP)
+    } else {
+        Write-Host "Scoop is already installed"
+    }
+}
+
+function Is-PackageInstalled($packageName) {
+    choco list --local-only | Select-String "^$packageName "
+}
+
 function Install-Packages {
     $packages = @(
         "git",
         "vim",
         "neovim",
-        "zsh",
-        "tmux",
-        "docker-desktop",
         "nvm",
         "nodejs",
-        "npm",
         "gh",
-        "thefuck",
         "yarn",
-        "tree-sitter"
+        "tree-sitter",
+        "zsh",
+        "tmux",
+        "npm",
+        "thefuck"
     )
 
     Print-Section "Installing Packages"
     foreach ($package in $packages) {
-        choco install $package -y
+        if (-Not (Is-PackageInstalled $package)) {
+            Write-Host "Installing $package..."
+            choco install $package -y
+            if ($LASTEXITCODE -ne 0) {
+                Write-Host "Failed to install $package. Continuing..."
+            }
+        } else {
+            Write-Host "$package is already installed"
+        }
     }
 }
 
-# Function to install applications using winget
 function Install-Applications {
     $apps = @(
         "NordPass.NordPass",
@@ -54,22 +76,79 @@ function Install-Applications {
         "Microsoft.VisualStudioCode",
         "Postman.Postman",
         "Discord.Discord",
-        "Figma.Figma"
+        "Figma.Figma",
+        "NordSecurity.NordVPN",
+        "Notion.NotionCalendar",
+        "Doist.Todoist"
     )
 
     Print-Section "Installing Applications"
     foreach ($app in $apps) {
-        winget install --id $app -e --source winget
+        if (-Not (Is-PackageInstalled $app)) {
+            Write-Host "Installing $app..."
+            winget install --id $app -e --source winget
+        } else {
+            Write-Host "$app is already installed"
+        }
     }
 }
 
-# Function to setup SSH
+function Install-CLITools {
+    $cliTools = @(
+        @{
+            Name = "stripe-cli";
+            InstallCommands = @(
+                "scoop bucket add stripe https://github.com/stripe/scoop-stripe-cli.git",
+                "scoop install stripe"
+            );
+            VerifyCommand = "stripe --version";
+        },
+        @{
+            Name = "supabase";
+            InstallCommands = @(
+                "scoop bucket add supabase https://github.com/supabase/scoop-bucket.git",
+                "scoop install supabase"
+            );
+            VerifyCommand = "supabase --version";
+        },
+        @{
+            Name = "angular-cli";
+            InstallCommands = @(
+                "npm install -g @angular/cli"
+            );
+            VerifyCommand = "ng --version";
+        }
+    )
+
+    Print-Section "Installing CLI Tools"
+    foreach ($cli in $cliTools) {
+        Write-Host "Attempting to install $($cli.Name)..."
+        try {
+            # Execute each install command
+            foreach ($command in $cli.InstallCommands) {
+                Write-Host "Running: $command"
+                Invoke-Expression $command
+                if ($LASTEXITCODE -ne 0) {
+                    Write-Host "Failed to execute: $command"
+                    continue
+                }
+            }
+
+            # Verify installation
+            $version = Invoke-Expression $cli.VerifyCommand
+            Write-Host "$($cli.Name) installed successfully. Version: $version"
+        } catch {
+            Write-Host "Error installing $($cli.Name): $_"
+        }
+    }
+}
+
 function Setup-SSH {
     Print-Section "Setting Up SSH"
     if (-Not (Test-Path -Path "$HOME\.ssh\id_rsa")) {
         $email = Read-Host "Enter your email for SSH key"
         ssh-keygen -t rsa -b 4096 -C $email
-        Start-SshAgent -Quiet | Out-Null
+        Start-Service ssh-agent
         ssh-add "$HOME\.ssh\id_rsa"
         Write-Host "SSH setup complete. Add the following public key to your GitHub account:"
         Get-Content "$HOME\.ssh\id_rsa.pub"
@@ -78,12 +157,16 @@ function Setup-SSH {
     }
 }
 
-# Function to clone dotfiles repository and setup symlinks
 function Clone-DotfilesRepo {
     Print-Section "Cloning Dotfiles Repository"
     $dotfilesRepo = "$HOME\.dotfiles"
     if (-Not (Test-Path -Path $dotfilesRepo)) {
+        if (-Not (Get-Command git -ErrorAction SilentlyContinue)) {
+            choco install git -y
+        }
         git clone https://github.com/peciulevicius/.dotfiles.git $dotfilesRepo
+    } else {
+        Write-Host "Dotfiles repository is already cloned"
     }
 
     $files = @(
@@ -114,7 +197,6 @@ function Clone-DotfilesRepo {
     Setup-Symlinks -files $files -dotfilesRepo $dotfilesRepo
 }
 
-# Function to setup symlinks for dotfiles
 function Setup-Symlinks {
     param (
         [array]$files,
@@ -130,16 +212,16 @@ function Setup-Symlinks {
     }
 }
 
-# Main function to run the setup
 function Main {
     Install-Chocolatey
+    Install-Scoop
     Install-Packages
     Install-Applications
+    Install-CLITools
     Setup-SSH
     Clone-DotfilesRepo
 
     Write-Host "All done! Your development environment is set up." -ForegroundColor Green
 }
 
-# Run the main function
 Main
