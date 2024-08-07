@@ -3,7 +3,11 @@
 # Exit immediately if a command exits with a non-zero status
 set -e
 
-GREEN='\033[0;32m'
+# Import utility functions
+. "../../scripts/utils/utils.sh"
+
+print_section "Running Linux Dotfiles Setup"
+
 DOTFILES_REPO="$HOME/.dotfiles"
 PACKAGES=(
   git
@@ -27,6 +31,8 @@ PACKAGES=(
   ca-certificates
   gnupg
   lsb-release
+  openssh-client
+  openssh-server
 )
 APPS=(
   nordpass
@@ -49,8 +55,8 @@ FILES=(
 )
 
 install_oh_my_zsh() {
+  print_title "Installing Oh My Zsh"
   if [ ! -d "$HOME/.oh-my-zsh" ]; then
-    echo -e "${GREEN}Installing Oh My Zsh..."
     sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
   else
     echo "Oh My Zsh is already installed"
@@ -58,21 +64,18 @@ install_oh_my_zsh() {
 }
 
 install_packages() {
-  echo -e "${GREEN}Updating package list..."
+  print_title "Installing Packages"
   sudo apt update
 
-  echo -e "${GREEN}Installing necessary packages..."
   for PACKAGE in "${PACKAGES[@]}"; do
     if dpkg -l | grep -q $PACKAGE; then
       echo "$PACKAGE is already installed"
     else
-      echo "Installing $PACKAGE..."
       sudo apt install -y $PACKAGE
     fi
   done
 
   if ! dpkg -l | grep -q powerlevel10k; then
-    echo -e "${GREEN}Installing Powerlevel10k..."
     git clone --depth=1 https://github.com/romkatv/powerlevel10k.git $HOME/.powerlevel10k
     echo 'source $HOME/.powerlevel10k/powerlevel10k.zsh-theme' >>~/.zshrc
   else
@@ -81,7 +84,7 @@ install_packages() {
 }
 
 install_applications() {
-  echo -e "${GREEN}Installing applications..."
+  print_title "Installing Applications"
 
   # Add repositories and keys for third-party applications
   curl -fsSL https://download.spotify.com/debian/pubkey.gpg | sudo gpg --dearmor -o /usr/share/keyrings/spotify-archive-keyring.gpg
@@ -96,41 +99,53 @@ install_applications() {
     if dpkg -l | grep -q $APP; then
       echo "$APP is already installed"
     else
-      echo "Installing $APP..."
       sudo apt install -y $APP
     fi
   done
 }
 
+setup_ssh() {
+  print_title "Setting Up SSH"
+  if [ ! -f "$HOME/.ssh/id_rsa" ]; then
+    local email
+    email=$(prompt_for_input "Enter your email for SSH key:")
+    ssh-keygen -t rsa -b 4096 -C "$email" -N "" -f "$HOME/.ssh/id_rsa"
+    eval "$(ssh-agent -s)"
+    ssh-add "$HOME/.ssh/id_rsa"
+    echo "SSH setup complete. Add the following public key to your GitHub account:"
+    cat "$HOME/.ssh/id_rsa.pub"
+  else
+    echo "SSH is already set up"
+  fi
+}
+
 clone_dotfiles_repo() {
-    echo -e "${GREEN}Cloning dotfiles repository..."
+  print_title "Cloning Dotfiles Repository"
+  if [ ! -d $DOTFILES_REPO ]; then
+    git clone https://github.com/peciulevicius/.dotfiles.git $DOTFILES_REPO
+  fi
 
-    if [ ! -d $DOTFILES_REPO ]; then
-        git clone https://github.com/peciulevicius/.dotfiles.git $DOTFILES_REPO
+  # Backup and remove existing dotfiles before checkout
+  for FILE in "${FILES[@]}"; do
+    if [ -f "$HOME/$(basename $FILE)" ]; then
+      echo "$(basename $FILE) already exists. Creating a backup."
+      mv "$HOME/$(basename $FILE)" "$HOME/$(basename $FILE).backup"
     fi
+  done
 
-    # Backup and remove existing dotfiles before checkout
-    for FILE in "${FILES[@]}"; do
-        if [ -f "$HOME/$(basename $FILE)" ]; then
-            echo "$(basename $FILE) already exists. Creating a backup."
-            mv "$HOME/$(basename $FILE)" "$HOME/$(basename $FILE).backup"
-        fi
-    done
+  # Checkout dotfiles
+  git -C $DOTFILES_REPO checkout
+  if [ $? != 0 ]; then
+    echo "Error checking out dotfiles, possible conflicts."
+  else
+    echo "Dotfiles checked out successfully."
+  fi
 
-    # Checkout dotfiles
-    git -C $DOTFILES_REPO checkout
-    if [ $? != 0 ]; then
-        echo "Error checking out dotfiles, possible conflicts."
-    else
-        echo "Dotfiles checked out successfully."
-    fi
-
-    setup_symlinks
+  setup_symlinks
 }
 
 setup_symlinks() {
-  echo -e "${GREEN}Setting up symlinks for dotfiles..."
-
+  print_title "Setting Up Symlinks for Dotfiles"
   for FILE in "${FILES[@]}"; do
     echo "Creating symlink for $FILE..."
     ln -sf "$DOTFILES_REPO/$FILE" "$HOME/$(basename $FILE)"
@@ -141,9 +156,10 @@ main() {
   install_oh_my_zsh
   install_packages
   install_applications
+  setup_ssh
   clone_dotfiles_repo
 
-  echo -e "${GREEN}All done! Your development environment is set up."
+  print_success "All done! Your development environment is set up."
 }
 
 main
