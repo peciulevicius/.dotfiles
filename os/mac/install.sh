@@ -14,6 +14,7 @@ PACKAGES=(
   docker
   nvm
   node
+  npm
   gh
   thefuck
   pnpm
