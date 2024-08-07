@@ -34,7 +34,6 @@ print_section() {
     print_in_green "\n│        $TITLE        │\n"
     print_in_green "$BANNER_BOTTOM"
     print_line_break
-
 }
 
 print_title() {
@@ -115,4 +114,12 @@ print_in_color() {
         "$(tput setaf "$2" 2> /dev/null)" \
         "$1" \
         "$(tput sgr0 2> /dev/null)"
+}
+
+prompt_for_input() {
+    local PROMPT="$1"
+    local INPUT
+    print_question "$PROMPT"
+    read -p "   > " INPUT
+    echo "$INPUT"
 }
