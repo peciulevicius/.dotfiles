@@ -71,7 +71,7 @@ Example `settings.json`:
 ### Default themes
 
 You can find the themes in the folder indicated by the environment variable `POSH_THEMES_PATH`. For example, 
-you can use `oh-my-posh init pwsh --config "$env:POSH_THEMES_PATH\jandedobbeleer.omp.json" | Invoke-Expression` for the 
+you can use `oh-my-posh init pwsh --config "$env:POSH_THEMES_PATH\kali.omp.json" | Invoke-Expression` for the 
 prompt initialization in PowerShell. This will enable default setup, things in the terminal will look a little bit different.
 
 Now we can customize our theme running `Get-PoshThemes` to see the available themes. To change your theme, adjust the 
