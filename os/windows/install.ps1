@@ -212,6 +212,39 @@ function Setup-Symlinks {
     }
 }
 
+function Setup-WindowsTerminal {
+    # Nerd Fonts
+    Write-Host "Setting up Nerd Fonts..."
+    Invoke-Expression "Invoke-WebRequest -Uri https://github.com/ryanoasis/nerd-fonts/releases/download/v2.1.0/FiraCode.zip -OutFile $HOME\Downloads\FiraCode.zip"
+    Expand-Archive -Path "$HOME\Downloads\FiraCode.zip" -DestinationPath "$HOME\Downloads\FiraCode"
+    Get-ChildItem "$HOME\Downloads\FiraCode" -Filter *.ttf | ForEach-Object {
+        Write-Host "Installing font: $($_.FullName)"
+        Copy-Item -Path $_.FullName -Destination "$env:WINDIR\Fonts"
+        $shell = New-Object -ComObject Shell.Application
+        $folder = $shell.Namespace(0x14)
+        $folder.CopyHere($_.FullName)
+    }
+    Write-Host "Nerd Fonts installed. Please select the font in Windows Terminal settings."
+
+    # Oh My Posh
+    Write-Host "Setting up Oh My Posh..."
+    if (-Not (Get-Command winget -ErrorAction SilentlyContinue)) {
+        Write-Host "winget not found. Installing App Installer from Microsoft Store..."
+        Invoke-Expression "Start-Process ms-windows-store://pdp/?productid=9NBLGGH4NNS1"
+    }
+    winget install JanDeDobbeleer.OhMyPosh -s winget
+    oh-my-posh --version
+
+    # Default Themes
+    $poshThemesPath = [System.Environment]::GetEnvironmentVariable("POSH_THEMES_PATH", "User")
+    if ($poshThemesPath) {
+        oh-my-posh init pwsh --config "$poshThemesPath\kali.omp.json" | Invoke-Expression
+        Write-Host "Oh My Posh default theme applied. Customize your theme as needed."
+    } else {
+        Write-Host "POSH_THEMES_PATH environment variable not set. Please set it and rerun the script."
+    }
+}
+
 function Main {
     Install-Chocolatey
     Install-Scoop
@@ -219,6 +252,7 @@ function Main {
     Install-Applications
     Install-CLITools
     Setup-SSH
+    Setup-WindowsTerminal
     Clone-DotfilesRepo
 
     Write-Host "All done! Your development environment is set up." -ForegroundColor Green
