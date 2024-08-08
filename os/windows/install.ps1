@@ -245,6 +245,7 @@ function Setup-WindowsTerminal {
     }
 }
 
+# TODO: can be cleaned up as well
 function Main {
     Install-Chocolatey
     Install-Scoop

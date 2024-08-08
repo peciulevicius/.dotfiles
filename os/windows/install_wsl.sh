@@ -154,6 +154,7 @@ setup_symlinks() {
   done
 }
 
+# TODO: needs cleanup
 main() {
   install_oh_my_zsh
   install_packages
