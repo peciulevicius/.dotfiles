@@ -1,9 +1,12 @@
 # Windows terminal customization
 
 **Links**
-Based on this tutorial: https://www.youtube.com/watch?v=-G6GbXGo4wo&ab_channel=TroubleChute 
+Based on this tutorial: https://www.youtube.com/watch?v=-G6GbXGo4wo&ab_channel=TroubleChute
+
 Windows Terminal themes: https://windowsterminalthemes.dev/
+
 Nerd Fonts: https://github.com/ryanoasis/nerd-fonts/
+
 Oh My Posh: https://ohmyposh.dev/
 
 ## Settings
