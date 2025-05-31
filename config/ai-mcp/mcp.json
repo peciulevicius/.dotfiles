@@ -32,6 +32,15 @@
           "--key",
           "5f0a2f7f-17db-4e8c-93eb-d279f4a4f58f"
         ]
+      },  
+      "supabase": {
+        "command": "npx",
+        "args": [
+          "-y",
+          "@supabase/mcp-server-supabase@latest",
+          "--access-token",
+          "<personal-access-token>"
+        ]
       }
     }
   }
