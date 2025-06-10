@@ -8,7 +8,7 @@
           "run",
           "@wonderwhy-er/desktop-commander",
           "--key",
-          "5f0a2f7f-17db-4e8c-93eb-d279f4a4f58f"
+          "API_KEY_PLACEHOLDER"
         ]
       },
       "server-sequential-thinking": {
@@ -19,7 +19,7 @@
           "run",
           "@smithery-ai/server-sequential-thinking",
           "--key",
-          "5f0a2f7f-17db-4e8c-93eb-d279f4a4f58f"
+          "API_KEY_PLACEHOLDER"
         ]
       },
       "context7-mcp": {
@@ -30,7 +30,7 @@
           "run",
           "@upstash/context7-mcp",
           "--key",
-          "5f0a2f7f-17db-4e8c-93eb-d279f4a4f58f"
+          "API_KEY_PLACEHOLDER"
         ]
       }
     }
