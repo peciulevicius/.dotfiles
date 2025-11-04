@@ -170,29 +170,11 @@ function Clone-DotfilesRepo {
     }
 
     $files = @(
-        "windows\.gitconfig",
-        "windows\.ideavimrc",
-        "windows\.p10k.zsh",
-        "windows\.zshrc"
+        "config\git\.gitconfig",
+        "config\idea\.ideavimrc",
+        "config\zsh\.p10k.zsh",
+        "config\zsh\.zshrc"
     )
-
-    # Backup and remove existing dotfiles before checkout
-    foreach ($file in $files) {
-        $targetPath = "$HOME\$(Split-Path $file -Leaf)"
-        if (Test-Path -Path $targetPath) {
-            Write-Host "$(Split-Path $file -Leaf) already exists. Creating a backup."
-            Rename-Item -Path $targetPath -NewName "$($targetPath).backup"
-        }
-    }
-
-    # Checkout dotfiles
-    Set-Location -Path $dotfilesRepo
-    git checkout
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "Error checking out dotfiles, possible conflicts."
-    } else {
-        Write-Host "Dotfiles checked out successfully."
-    }
 
     Setup-Symlinks -files $files -dotfilesRepo $dotfilesRepo
 }
@@ -207,9 +189,25 @@ function Setup-Symlinks {
     foreach ($file in $files) {
         $sourcePath = "$dotfilesRepo\$file"
         $targetPath = "$HOME\$(Split-Path $file -Leaf)"
-        Write-Host "Creating symlink for $file..."
-        New-Item -ItemType SymbolicLink -Path $targetPath -Target $sourcePath -Force
+
+        # Check if source file exists
+        if (-Not (Test-Path -Path $sourcePath)) {
+            Write-Warning "Source file $sourcePath does not exist, skipping..."
+            continue
+        }
+
+        # Backup existing file if it exists and is not a symlink
+        if ((Test-Path -Path $targetPath) -and -Not ((Get-Item $targetPath).Attributes -band [System.IO.FileAttributes]::ReparsePoint)) {
+            Write-Host "$(Split-Path $file -Leaf) already exists. Creating a backup."
+            Rename-Item -Path $targetPath -NewName "$($targetPath).backup" -Force
+        }
+
+        # Create symlink
+        Write-Host "Creating symlink: $targetPath -> $sourcePath"
+        New-Item -ItemType SymbolicLink -Path $targetPath -Target $sourcePath -Force | Out-Null
     }
+
+    Write-Host "Symlinks created successfully" -ForegroundColor Green
 }
 
 function Setup-WindowsTerminal {
@@ -245,7 +243,6 @@ function Setup-WindowsTerminal {
     }
 }
 
-# TODO: can be cleaned up as well
 function Main {
     Install-Chocolatey
     Install-Scoop
