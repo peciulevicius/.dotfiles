@@ -30,15 +30,23 @@ ESSENTIALS=(
 # Development tools
 DEVELOPER_CLI=(
   docker
+  docker-compose           # Docker Compose for multi-container apps
   nodejs
   npm
   zsh
+  oh-my-zsh-git           # Framework for zsh (needed for p10k)
 )
 
 # AUR packages (require yay)
 AUR_DEVELOPER=(
   nvm               # Node version manager
   pnpm-bin          # Fast npm alternative
+)
+
+# Fonts (needed for Powerlevel10k icons)
+AUR_FONTS=(
+  ttf-meslo-nerd
+  ttf-firacode-nerd
 )
 
 # YOUR ACTUAL GUI APPLICATIONS
@@ -51,17 +59,20 @@ AUR_APPS=(
   visual-studio-code-bin
   # Note: WebStorm via JetBrains Toolbox (installed separately)
 
-  # Password & Security
-  nordpass-bin
-  nordvpn-bin
+  # AI Tools
+  claude-desktop-bin        # Claude Code (AI assistant)
+
+  # Password Managers & Security
+  bitwarden-bin            # Password manager
+  nordpass-bin             # Password manager
+  nordvpn-bin              # VPN
 
   # Design & Collaboration
   figma-linux
   notion-app
 
   # Other
-  # Claude Code - download from https://claude.ai/download
-  # Docker Desktop - or use docker CLI + docker-compose
+  # Docker Desktop - using docker CLI + docker-compose instead
 )
 
 # Optional (will ask before installing)
@@ -154,6 +165,35 @@ install_developer_tools() {
   done
 }
 
+install_fonts() {
+  print_title "Installing Nerd Fonts"
+
+  echo ""
+  echo "Installing Nerd Fonts for terminal icons (needed for Powerlevel10k):"
+  echo "  • Meslo Nerd Font"
+  echo "  • FiraCode Nerd Font"
+  echo ""
+  read -p "Install Nerd Fonts? (y/n) " -n 1 -r
+  echo
+
+  if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    print_warning "Skipping fonts - terminal icons may not display correctly"
+    return
+  fi
+
+  check_yay_installed
+
+  for FONT in "${AUR_FONTS[@]}"; do
+    if yay -Qi "$FONT" &> /dev/null || pacman -Qi "$FONT" &> /dev/null; then
+      print_info "$FONT already installed"
+    else
+      yay -S --noconfirm "$FONT"
+    fi
+  done
+
+  print_info "Nerd Fonts installed - set your terminal font to 'MesloLGS Nerd Font'"
+}
+
 install_gui_applications() {
   print_title "Installing GUI Applications"
 
@@ -161,7 +201,10 @@ install_gui_applications() {
   echo "This will install your standard app suite:"
   echo "  • Google Chrome"
   echo "  • VS Code"
-  echo "  • NordPass + NordVPN"
+  echo "  • Claude Code (AI assistant)"
+  echo "  • Bitwarden (password manager)"
+  echo "  • NordPass (password manager)"
+  echo "  • NordVPN"
   echo "  • Figma"
   echo "  • Notion"
   echo ""
@@ -214,21 +257,26 @@ install_jetbrains_toolbox() {
   fi
 }
 
-install_claude_code() {
-  print_title "Claude Code Installation"
+setup_oh_my_zsh() {
+  print_title "Installing Oh My Zsh"
+
+  if [ -d "$HOME/.oh-my-zsh" ]; then
+    print_info "Oh My Zsh already installed"
+    return
+  fi
 
   echo ""
-  echo "Claude Code needs to be downloaded manually:"
-  echo "  1. Visit: https://claude.ai/download"
-  echo "  2. Download the Linux .deb or .AppImage"
-  echo "  3. Install with: sudo pacman -U <package>.pkg.tar.zst"
-  echo "     (or run the AppImage directly)"
+  echo "Oh My Zsh provides a framework for managing zsh configuration."
+  echo "It's required for Powerlevel10k theme."
   echo ""
-  read -p "Open Claude Code download page? (y/n) " -n 1 -r
+  read -p "Install Oh My Zsh? (y/n) " -n 1 -r
   echo
 
   if [[ $REPLY =~ ^[Yy]$ ]]; then
-    xdg-open "https://claude.ai/download" 2>/dev/null || echo "Please visit https://claude.ai/download manually"
+    sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+    print_info "Oh My Zsh installed"
+  else
+    print_warning "Skipped Oh My Zsh - Powerlevel10k may not work correctly"
   fi
 }
 
@@ -253,10 +301,17 @@ install_optional_apps() {
   done
 }
 
-setup_zsh() {
-  print_title "Setting Up Zsh"
+setup_powerlevel10k() {
+  print_title "Setting Up Powerlevel10k Theme"
 
-  # Install Powerlevel10k theme
+  if [ ! -d "$HOME/.oh-my-zsh" ]; then
+    print_warning "Oh My Zsh not installed - cannot install Powerlevel10k"
+    return
+  fi
+
+  echo ""
+  echo "Powerlevel10k is a beautiful and fast zsh theme."
+  echo ""
   read -p "Install Powerlevel10k theme? (y/n) " -n 1 -r
   echo
 
@@ -265,9 +320,14 @@ setup_zsh() {
     if [ ! -d "$P10K_DIR" ]; then
       git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "$P10K_DIR"
       print_info "Powerlevel10k installed"
+      echo ""
+      echo "After logging in, run 'p10k configure' to customize your prompt"
+      echo ""
     else
       print_info "Powerlevel10k already installed"
     fi
+  else
+    print_warning "Skipped Powerlevel10k - you'll have a basic prompt"
   fi
 }
 
@@ -387,19 +447,38 @@ print_summary() {
   print_section "Installation Complete!"
   echo ""
   echo "What was installed:"
-  echo "  ✓ Essential CLI tools (git, gh, curl)"
-  echo "  ✓ Development tools (docker, node, npm, nvm, pnpm)"
-  echo "  ✓ GUI applications (Chrome, VS Code, NordPass, etc.)"
-  echo "  ✓ Dotfiles (.gitconfig, .zshrc, .ideavimrc)"
+  echo "  ✓ Essential CLI tools (git, gh, curl, openssh)"
+  echo "  ✓ Development tools (docker, docker-compose, node, npm, nvm, pnpm)"
+  echo "  ✓ Shell setup (zsh, oh-my-zsh, powerlevel10k)"
+  echo "  ✓ Nerd Fonts (for terminal icons)"
+  echo "  ✓ GUI applications:"
+  echo "    • Google Chrome"
+  echo "    • VS Code"
+  echo "    • Claude Code"
+  echo "    • Bitwarden + NordPass"
+  echo "    • NordVPN"
+  echo "    • Figma"
+  echo "    • Notion"
+  echo "  ✓ Dotfiles (.gitconfig, .zshrc, .ideavimrc, .p10k.zsh)"
   echo "  ✓ SSH keys and GitHub authentication"
   echo ""
-  echo "Still TODO:"
-  echo "  • Download Claude Code from https://claude.ai/download"
-  echo "  • Open JetBrains Toolbox and install WebStorm"
-  echo "  • Install IdeaVim plugin in WebStorm"
-  echo "  • Run 'p10k configure' if you installed Powerlevel10k"
+  echo "Next steps:"
+  echo "  1. LOG OUT and log back in (required for docker group and zsh)"
+  echo "  2. Set terminal font to 'MesloLGS Nerd Font' or 'FiraCode Nerd Font'"
+  echo "  3. Run 'p10k configure' to customize your prompt"
+  echo "  4. Open JetBrains Toolbox and install WebStorm"
+  echo "  5. In WebStorm: Install IdeaVim plugin (Settings → Plugins → IdeaVim)"
+  echo "  6. Sign into Bitwarden/NordPass"
+  echo "  7. Sign into NordVPN"
+  echo "  8. Open Claude Code and sign in"
   echo ""
-  print_warning "IMPORTANT: Log out and back in for all changes to take effect"
+  echo "Useful commands:"
+  echo "  git aliases    # See all git aliases"
+  echo "  git st         # Short status"
+  echo "  git lg         # Pretty log"
+  echo "  brewup         # Update all packages (pacup on Arch)"
+  echo ""
+  print_warning "IMPORTANT: You MUST log out and back in for changes to take effect!"
   echo ""
 }
 
@@ -411,6 +490,13 @@ main() {
   echo ""
   echo "This will set up your Arch Linux development environment to match your Mac setup."
   echo ""
+  echo "This installer will:"
+  echo "  • Install CLI tools (git, docker, node, etc.)"
+  echo "  • Install GUI apps (Chrome, VS Code, Claude Code, Bitwarden, etc.)"
+  echo "  • Set up dotfiles (.gitconfig, .zshrc, .ideavimrc)"
+  echo "  • Configure SSH and GitHub"
+  echo "  • Set up zsh with Powerlevel10k theme"
+  echo ""
   read -p "Continue? (y/n) " -n 1 -r
   echo
 
@@ -421,10 +507,11 @@ main() {
 
   install_essentials
   install_developer_tools
-  setup_zsh
+  setup_oh_my_zsh
+  install_fonts
+  setup_powerlevel10k
   install_gui_applications
   install_jetbrains_toolbox
-  install_claude_code
   install_optional_apps
   clone_dotfiles_repo
   setup_ssh
