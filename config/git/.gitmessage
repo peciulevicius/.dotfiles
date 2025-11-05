@@ -1,0 +1,82 @@
+# <type>: <subject> (max 50 characters)
+
+# <body> (wrap at 72 characters)
+# Explain *what* and *why* (not *how*)
+
+# <footer>
+# Reference issues, PRs, or breaking changes
+
+# ═══════════════════════════════════════════════════════
+# Commit Message Guidelines
+# ═══════════════════════════════════════════════════════
+#
+# Types:
+#   feat:     New feature
+#   fix:      Bug fix
+#   docs:     Documentation changes
+#   style:    Code style changes (formatting, etc.)
+#   refactor: Code refactoring (no functional changes)
+#   perf:     Performance improvements
+#   test:     Adding or updating tests
+#   build:    Build system or dependencies
+#   ci:       CI/CD changes
+#   chore:    Other changes (tooling, etc.)
+#   revert:   Revert a previous commit
+#
+# Subject Line:
+#   - Use imperative mood ("Add feature" not "Added feature")
+#   - Don't capitalize first letter
+#   - No period at the end
+#   - Max 50 characters
+#
+# Body:
+#   - Separate from subject with blank line
+#   - Wrap at 72 characters
+#   - Explain what and why, not how
+#   - Use bullet points for multiple points
+#
+# Footer:
+#   - Reference issues: "Fixes #123" or "Closes #456"
+#   - Breaking changes: "BREAKING CHANGE: description"
+#   - Co-authors: "Co-authored-by: Name <email>"
+#
+# ═══════════════════════════════════════════════════════
+# Examples:
+# ═══════════════════════════════════════════════════════
+#
+# feat: add user authentication
+#
+# Implement JWT-based authentication system with refresh tokens.
+# This allows users to stay logged in across sessions.
+#
+# - Add login and logout endpoints
+# - Implement token refresh logic
+# - Add authentication middleware
+#
+# Fixes #123
+#
+# ───────────────────────────────────────────────────────
+#
+# fix: resolve memory leak in data processor
+#
+# The data processor was not properly releasing memory after processing
+# large datasets, causing the application to crash after extended use.
+#
+# This fix ensures proper cleanup of buffers after each processing cycle.
+#
+# Closes #456
+#
+# ───────────────────────────────────────────────────────
+#
+# docs: update installation guide
+#
+# Add missing steps for Windows installation and clarify Node.js
+# version requirements.
+#
+# ───────────────────────────────────────────────────────
+#
+# refactor: simplify database query logic
+#
+# Extract common query patterns into reusable utility functions.
+# No functional changes, just improved code organization.
+#

@@ -1,0 +1,129 @@
+# SSH Config File
+# Location: ~/.ssh/config
+#
+# This file contains SSH client configuration
+# Learn more: man ssh_config
+
+# ═══════════════════════════════════════════════════════
+# Global Settings
+# ═══════════════════════════════════════════════════════
+
+# Reuse connections to speed up multiple SSH sessions
+Host *
+    # Connection sharing - speeds up multiple connections
+    ControlMaster auto
+    ControlPath ~/.ssh/sockets/%r@%h-%p
+    ControlPersist 600
+
+    # Keep connections alive
+    ServerAliveInterval 60
+    ServerAliveCountMax 3
+
+    # Security settings
+    HashKnownHosts yes
+
+    # Use modern key types (ed25519) by default
+    IdentitiesOnly yes
+
+    # Compression
+    Compression yes
+
+    # Forward agent (use with caution!)
+    ForwardAgent no
+
+# ═══════════════════════════════════════════════════════
+# GitHub
+# ═══════════════════════════════════════════════════════
+
+Host github.com
+    HostName github.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519
+    # For faster git operations
+    ControlMaster auto
+    ControlPersist 600
+
+# Multiple GitHub accounts example:
+# Host github-personal
+#     HostName github.com
+#     User git
+#     IdentityFile ~/.ssh/id_ed25519_personal
+#
+# Host github-work
+#     HostName github.com
+#     User git
+#     IdentityFile ~/.ssh/id_ed25519_work
+#
+# Usage: git clone git@github-work:company/repo.git
+
+# ═══════════════════════════════════════════════════════
+# GitLab
+# ═══════════════════════════════════════════════════════
+
+Host gitlab.com
+    HostName gitlab.com
+    User git
+    IdentityFile ~/.ssh/id_ed25519
+    PreferredAuthentications publickey
+
+# ═══════════════════════════════════════════════════════
+# Bitbucket
+# ═══════════════════════════════════════════════════════
+
+Host bitbucket.org
+    HostName bitbucket.org
+    User git
+    IdentityFile ~/.ssh/id_ed25519
+
+# ═══════════════════════════════════════════════════════
+# Custom Hosts (Examples)
+# ═══════════════════════════════════════════════════════
+
+# Example: Personal server
+# Host myserver
+#     HostName example.com
+#     User myusername
+#     Port 22
+#     IdentityFile ~/.ssh/id_ed25519
+#     ForwardAgent no
+
+# Example: Jump host / Bastion
+# Host bastion
+#     HostName bastion.example.com
+#     User admin
+#     IdentityFile ~/.ssh/id_ed25519
+#
+# Host internal-server
+#     HostName 10.0.0.100
+#     User myuser
+#     ProxyJump bastion
+#     IdentityFile ~/.ssh/id_ed25519
+
+# Example: AWS EC2
+# Host aws-prod
+#     HostName ec2-xxx-xxx-xxx-xxx.compute-1.amazonaws.com
+#     User ec2-user
+#     IdentityFile ~/.ssh/aws-prod.pem
+
+# Example: Local VM / Container
+# Host dev-vm
+#     HostName 192.168.1.100
+#     User developer
+#     IdentityFile ~/.ssh/id_ed25519
+#     StrictHostKeyChecking no
+#     UserKnownHostsFile=/dev/null
+
+# ═══════════════════════════════════════════════════════
+# Wildcard Patterns
+# ═══════════════════════════════════════════════════════
+
+# Example: All servers in a domain
+# Host *.example.com
+#     User admin
+#     IdentityFile ~/.ssh/id_ed25519_work
+#     ForwardAgent no
+
+# Example: Local network
+# Host 192.168.1.*
+#     StrictHostKeyChecking no
+#     UserKnownHostsFile=/dev/null

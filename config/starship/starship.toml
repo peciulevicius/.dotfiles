@@ -1,0 +1,107 @@
+# Starship Configuration
+# Modern, fast, cross-shell prompt
+# Docs: https://starship.rs/config/
+
+# Get editor completions based on the config schema
+"$schema" = 'https://starship.rs/config-schema.json'
+
+# Inserts a blank line between shell prompts
+add_newline = true
+
+# Replace the "❯" symbol in the prompt with "➜"
+[character]
+success_symbol = "[❯](bold green)"
+error_symbol = "[❯](bold red)"
+
+# Directory configuration
+[directory]
+truncation_length = 3
+truncate_to_repo = true
+format = "[$path]($style)[$read_only]($read_only_style) "
+style = "bold cyan"
+
+# Git branch
+[git_branch]
+symbol = " "
+format = "on [$symbol$branch]($style) "
+style = "bold purple"
+
+# Git status
+[git_status]
+format = '([\[$all_status$ahead_behind\]]($style) )'
+style = "bold red"
+
+# Git commit
+[git_commit]
+tag_symbol = " "
+
+# Node.js
+[nodejs]
+symbol = " "
+format = "via [$symbol($version )]($style)"
+detect_extensions = ["js", "mjs", "cjs", "ts"]
+detect_files = ["package.json", ".node-version"]
+detect_folders = ["node_modules"]
+
+# Docker
+[docker_context]
+symbol = " "
+format = "via [$symbol$context]($style) "
+only_with_files = false
+
+# Package version
+[package]
+symbol = " "
+format = "is [$symbol$version]($style) "
+display_private = false
+
+# Python
+[python]
+symbol = " "
+format = 'via [${symbol}${pyenv_prefix}(${version} )(\($virtualenv\) )]($style)'
+
+# Rust
+[rust]
+symbol = " "
+format = "via [$symbol($version )]($style)"
+
+# Time
+[time]
+disabled = true
+time_format = "%R"
+format = "🕙[$time]($style) "
+
+# Username
+[username]
+disabled = false
+show_always = false
+format = "[$user]($style) in "
+style_user = "bold yellow"
+
+# Hostname
+[hostname]
+disabled = false
+ssh_only = true
+format = "on [$hostname](bold red) "
+
+# Command duration
+[cmd_duration]
+min_time = 500
+format = "took [$duration](bold yellow) "
+
+# Battery (laptop)
+[battery]
+full_symbol = ""
+charging_symbol = ""
+discharging_symbol = ""
+display = [
+  { threshold = 30, style = "bold red" }
+]
+
+# AWS
+[aws]
+disabled = true
+
+# Line break
+[line_break]
+disabled = false

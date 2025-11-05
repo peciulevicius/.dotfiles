@@ -40,10 +40,10 @@ CASKS=(
   tg-pro
 )
 FILES=(
-  mac/.gitconfig
-  mac/.ideavimrc
-  mac/.p10k.zsh
-  mac/.zshrc
+  config/git/.gitconfig
+  config/idea/.ideavimrc
+  config/zsh/.p10k.zsh
+  config/zsh/.zshrc
 )
 
 install_homebrew() {
@@ -119,22 +119,8 @@ clone_dotfiles_repo() {
 
     if [ ! -d $DOTFILES_REPO ]; then
         git clone https://github.com/peciulevicius/.dotfiles.git $DOTFILES_REPO
-    fi
-
-    # Backup and remove existing dotfiles before checkout
-    for FILE in "${FILES[@]}"; do
-        if [ -f "$HOME/$(basename $FILE)" ]; then
-            echo "$(basename $FILE) already exists. Creating a backup."
-            mv "$HOME/$(basename $FILE)" "$HOME/$(basename $FILE).backup"
-        fi
-    done
-
-    # Checkout dotfiles
-    git -C $DOTFILES_REPO checkout
-    if [ $? != 0 ]; then
-        echo "Error checking out dotfiles, possible conflicts."
     else
-        echo "Dotfiles checked out successfully."
+        echo "Dotfiles repository already exists at $DOTFILES_REPO"
     fi
 
     setup_symlinks
@@ -143,10 +129,29 @@ clone_dotfiles_repo() {
 setup_symlinks() {
   echo -e "${GREEN}Setting up symlinks for dotfiles..."
 
+  # Backup and create symlinks for each config file
   for FILE in "${FILES[@]}"; do
-    echo "Creating symlink for $FILE..."
-    ln -sf "$DOTFILES_REPO/$FILE" "$HOME/$(basename $FILE)"
+    local source_file="$DOTFILES_REPO/$FILE"
+    local target_file="$HOME/$(basename $FILE)"
+
+    # Check if source file exists
+    if [ ! -f "$source_file" ]; then
+      echo "Warning: Source file $source_file does not exist, skipping..."
+      continue
+    fi
+
+    # Backup existing file if it exists and is not a symlink
+    if [ -f "$target_file" ] && [ ! -L "$target_file" ]; then
+      echo "$(basename $FILE) already exists. Creating a backup."
+      mv "$target_file" "${target_file}.backup"
+    fi
+
+    # Create symlink
+    echo "Creating symlink: $target_file -> $source_file"
+    ln -sf "$source_file" "$target_file"
   done
+
+  echo -e "${GREEN}Symlinks created successfully"
 }
 
 main() {
