@@ -36,35 +36,31 @@ PACKAGES=(
 FILES=(
   config/git/.gitconfig
   config/idea/.ideavimrc
-  config/zsh/.p10k.zsh
   config/zsh/.zshrc
+  # Note: Starship config is in ~/.dotfiles/config/starship/starship.toml
+  # No need to symlink - STARSHIP_CONFIG env var points to it (set in .zshrc)
 )
 
-install_oh_my_zsh() {
-  print_title "Installing Oh My Zsh"
+install_shell_prompt() {
+  print_title "Installing Starship Prompt"
+
+  # Install Starship if not already installed
+  if ! command -v starship &> /dev/null; then
+    echo "Installing Starship..."
+    curl -sS https://starship.rs/install.sh | sh -s -- -y
+  else
+    echo "Starship is already installed"
+  fi
+
+  # Optional: Install Oh My Zsh for plugins (not required for prompt)
   if [ ! -d "$HOME/.oh-my-zsh" ]; then
-    sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-  else
-    echo "Oh My Zsh is already installed"
+    read -p "Install Oh My Zsh for additional plugins? (y/n) " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+      sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+      echo "Oh My Zsh installed"
+    fi
   fi
-
-  echo "Setting up Powerlevel10k theme..."
-  if [ ! -d "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k" ]; then
-    git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k
-  else
-    echo "Powerlevel10k is already installed"
-  fi
-
-  if ! grep -q 'ZSH_THEME="powerlevel10k/powerlevel10k"' ~/.zshrc; then
-    sed -i 's/ZSH_THEME="robbyrussell"/ZSH_THEME="powerlevel10k\/powerlevel10k"/' ~/.zshrc
-  fi
-
-  if ! grep -q 'source ~/.p10k.zsh' ~/.zshrc; then
-    echo '[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh' >>~/.zshrc
-  fi
-
-  echo "Sourcing .zshrc to apply changes..."
-  zsh -c 'source ~/.zshrc && p10k configure'
 }
 
 install_packages() {
@@ -161,7 +157,7 @@ setup_symlinks() {
 }
 
 main() {
-  install_oh_my_zsh
+  install_shell_prompt
   install_packages
   install_nvm
   install_pnpm

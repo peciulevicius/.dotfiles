@@ -279,7 +279,7 @@ install_nodejs() {
 }
 
 #═══════════════════════════════════════════════════════
-# PHASE 4: Shell Setup (Zsh + Oh My Zsh + Powerlevel10k)
+# PHASE 4: Shell Setup (Zsh + Oh My Zsh + Starship)
 #═══════════════════════════════════════════════════════
 
 install_zsh() {
@@ -320,12 +320,15 @@ install_zsh() {
         print_step "Installing Nerd Fonts..."
         mkdir -p ~/.local/share/fonts
 
-        # MesloLGS Nerd Font (recommended for Starship and modern terminals)
+        # FiraCode Nerd Font (recommended for Starship and modern terminals)
         cd ~/.local/share/fonts
-        wget -q https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Regular.ttf
-        wget -q https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Bold.ttf
-        wget -q https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Italic.ttf
-        wget -q https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Bold%20Italic.ttf
+        wget -q https://github.com/ryanoasis/nerd-fonts/releases/download/v3.1.1/FiraCode.zip
+        unzip -q -o FiraCode.zip -d FiraCode
+        rm FiraCode.zip
+        # Also keep MesloLGS as an option
+        wget -q https://github.com/ryanoasis/nerd-fonts/releases/download/v3.1.1/Meslo.zip
+        unzip -q -o Meslo.zip -d Meslo
+        rm Meslo.zip
 
         fc-cache -f -v > /dev/null 2>&1
         cd - > /dev/null

@@ -15,7 +15,7 @@ cd ~/.dotfiles
 # ✓ Git + GitHub CLI
 # ✓ SSH key setup
 # ✓ Dotfiles (git config, zshrc, IdeaVim)
-# ✓ Optional: Powerlevel10k theme
+# ✓ Starship prompt (modern, fast)
 ```
 
 That's it! Everything else can be installed later when you need it.
@@ -32,9 +32,9 @@ That's it! Everything else can be installed later when you need it.
 
 ### Dotfiles Linked
 - `~/.gitconfig` - Git configuration with tons of useful aliases
-- `~/.zshrc` - Shell configuration (works with or without p10k!)
+- `~/.zshrc` - Shell configuration with Starship prompt
 - `~/.ideavimrc` - Vim keybindings for WebStorm
-- `~/.p10k.zsh` - Powerlevel10k config (if you choose to install it)
+- `~/.config/starship.toml` - Starship prompt configuration
 
 ### What's NOT Installed
 - ❌ Docker
@@ -122,26 +122,37 @@ This sets up:
 
 ---
 
-## Zsh & Powerlevel10k
+## Zsh & Starship Prompt
 
-**Good news**: The .zshrc works great with or without Powerlevel10k!
+**Good news**: The .zshrc comes with Starship, a modern cross-shell prompt!
 
-### Without P10k
-You get a clean, simple prompt:
+### Starship Features
+Beautiful, customizable prompt with icons:
+```
+~/code/project on main [!?] via 🦀 v1.70.0
+❯
+```
+
+Shows: directory + git branch + git status + language versions
+
+### Customize Your Prompt
+
+**Edit the config:**
+```bash
+vim ~/.config/starship.toml
+# Or
+vim ~/.dotfiles/config/starship/starship.toml
+```
+
+**See all presets:**
+```bash
+starship preset -l
+```
+
+### Fallback Prompt
+If Starship isn't installed, you get a clean basic prompt:
 ```
 ~/code/project (main) ❯
-```
-
-Shows: current directory + git branch
-
-### With P10k
-Beautiful, customizable prompt with icons
-
-**To install P10k later:**
-```bash
-brew install powerlevel10k
-source ~/.zshrc
-p10k configure
 ```
 
 ---
@@ -238,13 +249,19 @@ Changes are immediately reflected via symlinks!
 
 ## Troubleshooting
 
-### Zsh theme not loading
+### Starship prompt not loading
 ```bash
-# Check if p10k is installed
-brew list powerlevel10k
+# Check if Starship is installed
+which starship
 
-# Reinstall if needed
-brew install powerlevel10k
+# Install if needed
+brew install starship  # macOS
+# or
+pacman -S starship     # Arch Linux
+# or
+apt install starship   # Ubuntu/Debian
+
+# Reload shell
 source ~/.zshrc
 ```
 
@@ -262,7 +279,7 @@ rm ~/.gitconfig
 ### Want to start over
 ```bash
 # Remove symlinks
-rm ~/.zshrc ~/.gitconfig ~/.ideavimrc ~/.p10k.zsh
+rm ~/.zshrc ~/.gitconfig ~/.ideavimrc ~/.config/starship.toml
 
 # Restore backups
 mv ~/.zshrc.backup ~/.zshrc
@@ -280,14 +297,14 @@ cd ~/.dotfiles
 **"Do I need Oh My Zsh?"**
 No! The .zshrc works without it.
 
-**"Do I need Powerlevel10k?"**
-No! You get a clean basic prompt without it.
+**"Can I customize the Starship prompt?"**
+Yes! Edit `~/.config/starship.toml` - it's easy TOML configuration.
 
 **"Should I install all those CLI tools?"**
 No! Only install what you actually use.
 
 **"Will this slow down my shell?"**
-No! Minimal setup is fast. P10k has instant prompt feature.
+No! Minimal setup is fast. Starship is blazing fast (written in Rust).
 
 **"Can I use this with VS Code?"**
 Yes! The git config works everywhere. IdeaVim is for WebStorm/IntelliJ.
@@ -304,7 +321,7 @@ Based on your usage (Mac Terminal + WebStorm):
 - SSH key setup (one less thing to remember)
 
 ### Nice to Have 👍
-- Powerlevel10k (looks nice, but optional)
+- Starship prompt (beautiful, included by default)
 - macOS preferences script (saves manual clicking)
 - Zsh aliases (small conveniences)
 

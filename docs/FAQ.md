@@ -128,7 +128,7 @@ cd ~/.dotfiles && git pull
 **Option 1: Remove symlinks manually**
 ```bash
 # Remove symlinks (keeps backups)
-rm ~/.zshrc ~/.gitconfig ~/.ideavimrc ~/.p10k.zsh
+rm ~/.zshrc ~/.gitconfig ~/.ideavimrc ~/.config/starship.toml
 
 # Re-run installer
 cd ~/.dotfiles && ./install.sh
@@ -148,7 +148,7 @@ cd ~/.dotfiles && ./install.sh
 ```bash
 # Remove everything (including backups!)
 rm -rf ~/.dotfiles
-rm ~/.zshrc ~/.gitconfig ~/.ideavimrc ~/.p10k.zsh ~/.tmux.conf ~/.editorconfig
+rm ~/.zshrc ~/.gitconfig ~/.ideavimrc ~/.config/starship.toml ~/.tmux.conf ~/.editorconfig
 
 # Start over
 git clone https://github.com/peciulevicius/.dotfiles.git ~/.dotfiles
@@ -466,16 +466,19 @@ The installer will skip what's already done and continue where it left off.
 ### My shell looks different after re-running
 
 This can happen if:
-- Powerlevel10k was installed on second run but not first
+- Starship was installed on second run but not first
 - Nerd Font was installed after initial setup
 
 **Fix:**
 ```bash
-# If p10k is now installed
-p10k configure
+# Reload your shell configuration
+source ~/.zshrc
 
-# If font is now installed
-# Set terminal font to "MesloLGS NF" in terminal preferences
+# If Starship is now installed and working, you'll see the modern prompt
+# If not, check: which starship
+
+# If font is now installed (for icons)
+# Set terminal font to "FiraCode Nerd Font" in terminal preferences
 # Restart terminal
 ```
 
