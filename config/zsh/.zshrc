@@ -3,59 +3,33 @@
 # ===========================================================================
 
 # ----------------------------------------------------------------------------
-# Powerlevel10k Instant Prompt (Optional)
+# Starship Prompt (Modern, cross-shell, actively maintained)
 # ----------------------------------------------------------------------------
-# Enable instant prompt if p10k is installed. Keep this near the top of .zshrc.
-if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
-  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+# Starship is a modern replacement for Powerlevel10k
+# - Blazing fast (written in Rust)
+# - Works on all shells (zsh, bash, fish, PowerShell)
+# - Easy TOML configuration
+# - Actively maintained (2025+)
+#
+# Config: ~/.config/starship.toml or ~/.dotfiles/config/starship/starship.toml
+# Docs: https://starship.rs
+
+STARSHIP_LOADED=false
+
+# Try to initialize Starship if installed
+if command -v starship &> /dev/null; then
+  # Set Starship config location
+  export STARSHIP_CONFIG="$HOME/.dotfiles/config/starship/starship.toml"
+
+  # Initialize Starship
+  eval "$(starship init zsh)"
+  STARSHIP_LOADED=true
 fi
 
 # ----------------------------------------------------------------------------
-# Powerlevel10k Theme (Optional - works fine without it!)
+# Basic Prompt (Fallback if Starship not installed)
 # ----------------------------------------------------------------------------
-P10K_LOADED=false
-
-# Try to load Powerlevel10k based on OS
-case "$(uname -s)" in
-  Darwin*)
-    # macOS - Check Homebrew locations (Apple Silicon vs Intel)
-    if [[ -f "/opt/homebrew/share/powerlevel10k/powerlevel10k.zsh-theme" ]]; then
-      source /opt/homebrew/share/powerlevel10k/powerlevel10k.zsh-theme
-      P10K_LOADED=true
-    elif [[ -f "/usr/local/share/powerlevel10k/powerlevel10k.zsh-theme" ]]; then
-      source /usr/local/share/powerlevel10k/powerlevel10k.zsh-theme
-      P10K_LOADED=true
-    fi
-    ;;
-  Linux*)
-    # Linux - Check various installation locations
-    if [[ -f "$HOME/powerlevel10k/powerlevel10k.zsh-theme" ]]; then
-      source ~/powerlevel10k/powerlevel10k.zsh-theme
-      P10K_LOADED=true
-    elif [[ -f "$HOME/.powerlevel10k/powerlevel10k.zsh-theme" ]]; then
-      source ~/.powerlevel10k/powerlevel10k.zsh-theme
-      P10K_LOADED=true
-    elif [[ -f "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k/powerlevel10k.zsh-theme" ]]; then
-      source ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k/powerlevel10k.zsh-theme
-      P10K_LOADED=true
-    fi
-    ;;
-  CYGWIN*|MINGW*|MSYS*)
-    # Windows
-    if [[ -f "$HOME/powerlevel10k/powerlevel10k.zsh-theme" ]]; then
-      source ~/powerlevel10k/powerlevel10k.zsh-theme
-      P10K_LOADED=true
-    fi
-    ;;
-esac
-
-# Load p10k config if it exists
-[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
-
-# ----------------------------------------------------------------------------
-# Basic Prompt (Fallback if p10k not installed)
-# ----------------------------------------------------------------------------
-if [[ "$P10K_LOADED" != "true" ]]; then
+if [[ "$STARSHIP_LOADED" != "true" ]]; then
   # Enable command substitution in prompts
   setopt PROMPT_SUBST
 
@@ -73,7 +47,7 @@ fi
 # ----------------------------------------------------------------------------
 if [[ -d "$HOME/.oh-my-zsh" ]]; then
   export ZSH="$HOME/.oh-my-zsh"
-  # ZSH_THEME is ignored if p10k is loaded
+  # ZSH_THEME is ignored if Starship is loaded
   source $ZSH/oh-my-zsh.sh
 fi
 

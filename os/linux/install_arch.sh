@@ -34,7 +34,8 @@ DEVELOPER_CLI=(
   nodejs
   npm
   zsh
-  oh-my-zsh-git           # Framework for zsh (needed for p10k)
+  oh-my-zsh-git           # Framework for zsh
+  starship                # Modern, cross-shell prompt
   # Modern CLI tools (game changers!)
   bat                      # Better cat with syntax highlighting
   eza                      # Better ls with icons and git status
@@ -98,8 +99,9 @@ OPTIONAL_APPS=(
 FILES=(
   config/git/.gitconfig
   config/idea/.ideavimrc
-  config/zsh/.p10k.zsh
   config/zsh/.zshrc
+  # Note: Starship config is in ~/.dotfiles/config/starship/starship.toml
+  # No need to symlink - STARSHIP_CONFIG env var points to it
 )
 
 # =============================================================================
@@ -312,33 +314,30 @@ install_optional_apps() {
   done
 }
 
-setup_powerlevel10k() {
-  print_title "Setting Up Powerlevel10k Theme"
+setup_starship() {
+  print_title "Verifying Starship Prompt"
 
-  if [ ! -d "$HOME/.oh-my-zsh" ]; then
-    print_warning "Oh My Zsh not installed - cannot install Powerlevel10k"
-    return
-  fi
+  if command -v starship &> /dev/null; then
+    print_info "Starship is installed"
 
-  echo ""
-  echo "Powerlevel10k is a beautiful and fast zsh theme."
-  echo ""
-  read -p "Install Powerlevel10k theme? (y/n) " -n 1 -r
-  echo
-
-  if [[ $REPLY =~ ^[Yy]$ ]]; then
-    local P10K_DIR="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k"
-    if [ ! -d "$P10K_DIR" ]; then
-      git clone --depth=1 https://github.com/romkatv/powerlevel10k.git "$P10K_DIR"
-      print_info "Powerlevel10k installed"
+    # Verify config location
+    if [ -f "$HOME/.dotfiles/config/starship/starship.toml" ]; then
+      print_info "Starship config found"
       echo ""
-      echo "After logging in, run 'p10k configure' to customize your prompt"
-      echo ""
-    else
-      print_info "Powerlevel10k already installed"
+      echo "Starship is a modern, fast, cross-shell prompt"
+      echo "Config: ~/.dotfiles/config/starship/starship.toml"
+      echo "Customize: https://starship.rs/config/"
     fi
   else
-    print_warning "Skipped Powerlevel10k - you'll have a basic prompt"
+    print_warning "Starship not found - should have been installed with pacman"
+    echo ""
+    echo "Starship is a modern alternative to Powerlevel10k:"
+    echo "  • Blazing fast (written in Rust)"
+    echo "  • Cross-shell (zsh, bash, fish, PowerShell)"
+    echo "  • Actively maintained (2025+)"
+    echo "  • Easy TOML configuration"
+    echo ""
+    echo "Your .zshrc will use a basic fallback prompt if Starship isn't available."
   fi
 }
 
@@ -461,7 +460,7 @@ print_summary() {
   echo "  ✓ Essential CLI tools (git, gh, curl, openssh)"
   echo "  ✓ Development tools (docker, docker-compose, node, npm, nvm, pnpm)"
   echo "  ✓ Modern CLI tools (bat, eza, ripgrep, fd, fzf, zoxide, tldr, httpie, jq, delta)"
-  echo "  ✓ Shell setup (zsh, oh-my-zsh, powerlevel10k)"
+  echo "  ✓ Shell setup (zsh, oh-my-zsh, starship)"
   echo "  ✓ Nerd Fonts (for terminal icons)"
   echo "  ✓ GUI applications:"
   echo "    • Google Chrome"
@@ -471,13 +470,13 @@ print_summary() {
   echo "    • NordVPN"
   echo "    • Figma"
   echo "    • Notion"
-  echo "  ✓ Dotfiles (.gitconfig, .zshrc, .ideavimrc, .p10k.zsh)"
+  echo "  ✓ Dotfiles (.gitconfig, .zshrc, .ideavimrc, starship.toml)"
   echo "  ✓ SSH keys and GitHub authentication"
   echo ""
   echo "Next steps:"
   echo "  1. LOG OUT and log back in (required for docker group and zsh)"
   echo "  2. Set terminal font to 'MesloLGS Nerd Font' or 'FiraCode Nerd Font'"
-  echo "  3. Run 'p10k configure' to customize your prompt"
+  echo "  3. Customize Starship prompt: edit ~/.dotfiles/config/starship/starship.toml"
   echo "  4. Open JetBrains Toolbox and install WebStorm"
   echo "  5. In WebStorm: Install IdeaVim plugin (Settings → Plugins → IdeaVim)"
   echo "  6. Sign into Bitwarden/NordPass"
@@ -532,7 +531,7 @@ main() {
   install_developer_tools
   setup_oh_my_zsh
   install_fonts
-  setup_powerlevel10k
+  setup_starship
   install_gui_applications
   install_jetbrains_toolbox
   install_optional_apps

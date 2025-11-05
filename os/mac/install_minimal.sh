@@ -41,7 +41,8 @@ FILES=(
   config/git/.gitconfig
   config/idea/.ideavimrc
   config/zsh/.zshrc
-  config/zsh/.p10k.zsh
+  # Note: Starship config is in ~/.dotfiles/config/starship/starship.toml
+  # No need to symlink - STARSHIP_CONFIG env var points to it
 )
 
 print_info() {
@@ -109,24 +110,28 @@ install_modern_cli_tools() {
   fi
 }
 
-install_powerlevel10k() {
-  echo -e "\n${GREEN}Setting up Powerlevel10k theme...${NC}"
+install_starship() {
+  echo -e "\n${GREEN}Setting up Starship prompt...${NC}"
+  echo "Starship is a modern, fast, cross-shell prompt (written in Rust)"
+  echo ""
 
-  # Ask user if they want p10k
-  read -p "Install Powerlevel10k theme for a better prompt? (y/n) " -n 1 -r
+  read -p "Install Starship prompt? (highly recommended) (y/n) " -n 1 -r
   echo
 
   if [[ $REPLY =~ ^[Yy]$ ]]; then
-    if ! brew list powerlevel10k >/dev/null 2>&1; then
-      brew install powerlevel10k
-      print_info "Powerlevel10k installed"
+    if ! brew list starship >/dev/null 2>&1; then
+      brew install starship
+      print_info "Starship installed"
     else
-      print_info "Powerlevel10k already installed"
+      print_info "Starship already installed"
+    fi
+
+    if [ -f "$HOME/.dotfiles/config/starship/starship.toml" ]; then
+      print_info "Starship config found at ~/.dotfiles/config/starship/starship.toml"
+      echo "  Customize: https://starship.rs/config/"
     fi
   else
-    print_warning "Skipping Powerlevel10k - you'll have a basic prompt"
-    # Remove p10k files from symlink list
-    FILES=("${FILES[@]/config\/zsh\/.p10k.zsh/}")
+    print_warning "Skipping Starship - you'll have a basic prompt"
   fi
 }
 
@@ -235,7 +240,7 @@ main() {
   install_homebrew
   install_essential_packages
   install_modern_cli_tools
-  install_powerlevel10k
+  install_starship
   setup_symlinks
   setup_github_cli
   setup_ssh
@@ -248,9 +253,9 @@ main() {
   print_info "Your dotfiles are configured"
   print_info "Restart your terminal or run: source ~/.zshrc"
 
-  if brew list powerlevel10k >/dev/null 2>&1; then
+  if brew list starship >/dev/null 2>&1; then
     echo ""
-    print_warning "Run 'p10k configure' to customize your prompt"
+    print_info "Starship prompt installed - customize at ~/.dotfiles/config/starship/starship.toml"
   fi
 
   echo ""

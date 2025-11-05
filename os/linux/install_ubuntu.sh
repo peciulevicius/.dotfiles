@@ -298,12 +298,19 @@ install_zsh() {
             print_success "Oh My Zsh installed"
         fi
 
-        if ask_yes_no "Install Powerlevel10k theme?" "y"; then
-            if [ ! -d "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k" ]; then
-                print_step "Installing Powerlevel10k..."
-                git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k
-                print_success "Powerlevel10k installed"
-                print_warning "Remember to run 'p10k configure' after shell restart"
+        if ask_yes_no "Install Starship prompt (modern, cross-shell prompt)?" "y"; then
+            if ! command -v starship &> /dev/null; then
+                print_step "Installing Starship..."
+                # Install via official script
+                curl -sS https://starship.rs/install.sh | sh -s -- -y
+                print_success "Starship installed"
+
+                if [ -f "$HOME/.dotfiles/config/starship/starship.toml" ]; then
+                    print_info "Starship config: ~/.dotfiles/config/starship/starship.toml"
+                    print_info "Customize: https://starship.rs/config/"
+                fi
+            else
+                print_success "Starship already installed"
             fi
         fi
     fi
@@ -313,7 +320,7 @@ install_zsh() {
         print_step "Installing Nerd Fonts..."
         mkdir -p ~/.local/share/fonts
 
-        # MesloLGS Nerd Font (recommended for p10k)
+        # MesloLGS Nerd Font (recommended for Starship and modern terminals)
         cd ~/.local/share/fonts
         wget -q https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Regular.ttf
         wget -q https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Bold.ttf
@@ -450,12 +457,12 @@ setup_dotfiles() {
         "config/git/.gitconfig:.gitconfig"
         "config/git/.gitignore_global:.gitignore_global"
         "config/zsh/.zshrc:.zshrc"
-        "config/zsh/.p10k.zsh:.p10k.zsh"
         "config/idea/.ideavimrc:.ideavimrc"
         "config/tmux/.tmux.conf:.tmux.conf"
         "config/ssh/config:.ssh/config"
         "config/curl/.curlrc:.curlrc"
         "config/.editorconfig:.editorconfig"
+        # Note: Starship config at config/starship/starship.toml - handled via STARSHIP_CONFIG env var
     )
 
     for file_mapping in "${files[@]}"; do
@@ -548,14 +555,14 @@ print_summary() {
     echo "  ✓ Essential CLI tools (git, gh, curl, wget, build tools)"
     echo "  ✓ Modern CLI tools (bat, eza, ripgrep, fd, fzf, zoxide, tldr, httpie, jq, delta)"
     echo "  ✓ Development tools (Docker, Node.js via nvm, pnpm)"
-    echo "  ✓ Shell setup (zsh, Oh My Zsh, Powerlevel10k, Nerd Fonts)"
+    echo "  ✓ Shell setup (zsh, Oh My Zsh, Starship, Nerd Fonts)"
     echo "  ✓ GUI applications (as selected)"
     echo "  ✓ Dotfiles configuration"
     echo ""
     echo -e "${YELLOW}Next steps:${NC}"
     echo "  1. Log out and log back in (for group changes and shell)"
     echo "  2. Set terminal font to 'MesloLGS NF' for best experience"
-    echo "  3. Run 'p10k configure' to customize your prompt"
+    echo "  3. Customize Starship: edit ~/.dotfiles/config/starship/starship.toml"
     echo "  4. Open JetBrains Toolbox and install WebStorm"
     echo "  5. Sign into your apps (Bitwarden, NordPass, etc.)"
     echo ""

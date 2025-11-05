@@ -238,11 +238,11 @@ vim ~/.dotfiles/os/linux/install_ubuntu.sh
 ### Customize Zsh Prompt
 
 ```bash
-# If you installed Powerlevel10k
-p10k configure
+# Starship prompt - edit the config file
+vim ~/.dotfiles/config/starship/starship.toml
 
-# Or edit directly
-vim ~/.dotfiles/config/zsh/.p10k.zsh
+# See Starship docs for customization options
+# https://starship.rs/config/
 ```
 
 ### Add Your Own Aliases
@@ -289,7 +289,7 @@ See individual documentation files for more troubleshooting.
 Inspired by countless dotfiles repos in the community. Special thanks to:
 
 - [bat](https://github.com/sharkdp/bat), [eza](https://github.com/eza-community/eza), [ripgrep](https://github.com/BurntSushi/ripgrep), [fd](https://github.com/sharkdp/fd), [fzf](https://github.com/junegunn/fzf), [zoxide](https://github.com/ajeetdsouza/zoxide), and other modern CLI tool authors
-- [Oh My Zsh](https://ohmyz.sh) and [Powerlevel10k](https://github.com/romkatv/powerlevel10k)
+- [Oh My Zsh](https://ohmyz.sh) and [Starship](https://starship.rs)
 - The entire open-source community
 
 ## 📝 License
