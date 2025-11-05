@@ -45,7 +45,7 @@ FILES=(
     "$HOME/.gitconfig"
     "$HOME/.gitignore_global"
     "$HOME/.zshrc"
-    "$HOME/.p10k.zsh"
+    "$HOME/.dotfiles/config/starship/starship.toml"
     "$HOME/.ideavimrc"
     "$HOME/.tmux.conf"
     "$HOME/.curlrc"

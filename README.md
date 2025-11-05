@@ -5,7 +5,7 @@
 ## ✨ Features
 
 - 🚀 **Modern CLI Tools** - bat, eza, ripgrep, fd, fzf, zoxide, tldr, httpie, jq, delta
-- 🎨 **Beautiful Shell** - Zsh with Powerlevel10k (optional fallback to basic prompt)
+- 🎨 **Beautiful Shell** - Zsh with Starship (modern, fast, cross-shell prompt)
 - ⚙️ **Comprehensive Configs** - Git (40+ aliases), SSH, Tmux, EditorConfig, and more
 - 🛠️ **Utility Scripts** - Update, backup, cleanup, and health check tools
 - 📦 **Smart Installers** - OS-specific automated setup for all platforms
@@ -113,7 +113,8 @@ See [docs/UTILITY_SCRIPTS.md](docs/UTILITY_SCRIPTS.md) for detailed usage.
 │
 ├── config/                      # ⚙️ Configuration files
 │   ├── git/                     # Git config & global ignores
-│   ├── zsh/                     # Zsh & Powerlevel10k config
+│   ├── zsh/                     # Zsh configuration
+│   ├── starship/                # Starship prompt config
 │   ├── ssh/                     # SSH config template
 │   ├── tmux/                    # Tmux configuration
 │   ├── curl/                    # Curl preferences

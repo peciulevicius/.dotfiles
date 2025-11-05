@@ -42,8 +42,9 @@ CASKS=(
 FILES=(
   config/git/.gitconfig
   config/idea/.ideavimrc
-  config/zsh/.p10k.zsh
   config/zsh/.zshrc
+  # Note: Starship config is in ~/.dotfiles/config/starship/starship.toml
+  # No need to symlink - STARSHIP_CONFIG env var points to it (set in .zshrc)
 )
 
 install_homebrew() {
@@ -78,12 +79,11 @@ install_packages() {
     fi
   done
 
-  if ! brew list powerlevel10k >/dev/null 2>&1; then
-    echo -e "${GREEN}Installing Powerlevel10k..."
-    brew install powerlevel10k
-    echo "source $(brew --prefix)/share/powerlevel10k/powerlevel10k.zsh-theme" >>~/.zshrc
+  if ! brew list starship >/dev/null 2>&1; then
+    echo -e "${GREEN}Installing Starship prompt..."
+    brew install starship
   else
-    echo "Powerlevel10k is already installed"
+    echo "Starship is already installed"
   fi
 }
 

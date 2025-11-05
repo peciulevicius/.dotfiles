@@ -30,7 +30,7 @@ This guide explains what gets installed where and how to keep all your machines 
 - `~/.gitconfig` - Git configuration
 - `~/.zshrc` - Shell configuration
 - `~/.ideavimrc` - Vim keybindings for WebStorm/IntelliJ
-- `~/.p10k.zsh` - Powerlevel10k theme config (optional)
+- Starship config at `~/.dotfiles/config/starship/starship.toml`
 
 ---
 
@@ -49,7 +49,7 @@ cd ~/.dotfiles
 - Git + GitHub CLI
 - SSH key setup
 - Dotfiles (symlinks)
-- Optional: Powerlevel10k
+- Starship prompt (included)
 
 **Then install your apps:**
 ```bash
@@ -170,7 +170,7 @@ cd ~/.dotfiles
 - Homebrew
 - Git
 - GitHub CLI
-- Optional: Powerlevel10k
+- Starship prompt (included)
 
 **Skips:**
 - All GUI apps
@@ -477,7 +477,7 @@ finder        # Open current directory in Finder
 - [ ] Sign into NordPass
 - [ ] Sign into NordVPN
 - [ ] Configure WebStorm (enable IdeaVim plugin)
-- [ ] Run `p10k configure` if using Powerlevel10k
+- [ ] Starship is configured automatically
 
 ### Arch Linux
 - [ ] Clone dotfiles repo
@@ -489,7 +489,7 @@ finder        # Open current directory in Finder
 - [ ] Sign into NordVPN
 - [ ] Configure WebStorm (enable IdeaVim plugin)
 - [ ] Log out and back in (for docker group, zsh)
-- [ ] Run `p10k configure` if installed
+- [ ] Customize Starship: `vim ~/.dotfiles/config/starship/starship.toml`
 
 ### WSL
 - [ ] Clone dotfiles repo in WSL
@@ -506,7 +506,7 @@ finder        # Open current directory in Finder
 **Q: Do I need to install everything?**
 A: No! The Arch script asks before installing GUI apps. Mac has minimal option.
 
-**Q: What if I don't want Powerlevel10k?**
+**Q: Can I customize the Starship prompt?**
 A: Script asks. If you skip it, you get a clean basic prompt. Works great!
 
 **Q: Can I use this with Oh My Zsh?**

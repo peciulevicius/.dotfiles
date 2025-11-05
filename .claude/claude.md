@@ -201,7 +201,7 @@ Always consider these tools when suggesting commands:
 ### Languages & Runtimes
 - **Node.js:** via nvm
 - **Package Managers:** npm, pnpm
-- **Shell:** zsh with Powerlevel10k
+- **Shell:** zsh with Starship prompt
 
 ### Not Used
 - No nvim (uses IDEs instead)
