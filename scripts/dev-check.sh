@@ -276,7 +276,7 @@ increment
 check_file "$HOME/.zshrc" "Zsh config"
 increment
 
-check_file "$HOME/.p10k.zsh" "Powerlevel10k config"
+check_file "$HOME/.dotfiles/config/starship/starship.toml" "Starship config"
 increment
 
 check_file "$HOME/.ideavimrc" "IdeaVim config"
@@ -398,11 +398,11 @@ else
     increment
 fi
 
-if [ -d "${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k" ]; then
-    echo -e "${GREEN}✓${NC} Powerlevel10k: Installed"
+if command -v starship &> /dev/null; then
+    echo -e "${GREEN}✓${NC} Starship: Installed ($(starship --version | head -n1))"
     increment
 else
-    echo -e "${YELLOW}⚠${NC} Powerlevel10k: Not installed"
+    echo -e "${YELLOW}⚠${NC} Starship: Not installed"
     increment
 fi
 
