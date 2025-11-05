@@ -55,7 +55,7 @@ AUR_DEVELOPER=(
   pnpm-bin          # Fast npm alternative
 )
 
-# Fonts (needed for Powerlevel10k icons)
+# Fonts (needed for terminal icons and Starship prompt)
 AUR_FONTS=(
   ttf-meslo-nerd
   ttf-firacode-nerd
@@ -384,6 +384,228 @@ setup_github_cli() {
   fi
 }
 
+# =============================================================================
+# NETWORK CONFIGURATION
+# =============================================================================
+
+setup_network() {
+  print_title "Setting Up Network Configuration"
+
+  # Install NetworkManager if not installed
+  if ! pacman -Q networkmanager &> /dev/null; then
+    print_info "Installing NetworkManager..."
+    sudo pacman -S --noconfirm networkmanager
+  fi
+
+  # Enable and start NetworkManager
+  print_info "Enabling NetworkManager service..."
+  sudo systemctl enable NetworkManager
+  sudo systemctl start NetworkManager
+
+  # Check if we have network connectivity
+  if ping -c 1 8.8.8.8 &> /dev/null; then
+    print_success "Network is configured and working!"
+  else
+    print_warning "Network setup complete, but no internet connectivity detected"
+    print_warning "You may need to manually configure your network adapter:"
+    echo "  • Ethernet: Should work automatically"
+    echo "  • WiFi: Run 'nmtui' for interactive setup"
+    echo "  • Or use: nmcli device wifi connect <SSID> password <password>"
+  fi
+
+  # Optional: Install network tools
+  read -p "Install additional network tools (dig, traceroute, etc)? (y/n) " -n 1 -r
+  echo
+  if [[ $REPLY =~ ^[Yy]$ ]]; then
+    sudo pacman -S --noconfirm bind-tools traceroute net-tools
+    print_success "Network tools installed"
+  fi
+}
+
+# =============================================================================
+# DISPLAY/GRAPHICS CONFIGURATION
+# =============================================================================
+
+setup_display() {
+  print_title "Setting Up Display and Graphics"
+
+  # Detect graphics card
+  print_info "Detecting graphics hardware..."
+
+  if lspci | grep -i nvidia &> /dev/null; then
+    print_warning "NVIDIA GPU detected!"
+    echo "NVIDIA drivers can be complex on Arch. Options:"
+    echo "  1. nvidia - Latest drivers for newer cards"
+    echo "  2. nvidia-lts - For LTS kernel"
+    echo "  3. nvidia-open - Open source drivers (RTX 20+ series)"
+    echo ""
+    read -p "Install NVIDIA drivers? (1/2/3/n) " -n 1 -r
+    echo
+    case $REPLY in
+      1)
+        sudo pacman -S --noconfirm nvidia nvidia-utils
+        print_success "NVIDIA drivers installed"
+        ;;
+      2)
+        sudo pacman -S --noconfirm nvidia-lts nvidia-utils
+        print_success "NVIDIA LTS drivers installed"
+        ;;
+      3)
+        sudo pacman -S --noconfirm nvidia-open nvidia-utils
+        print_success "NVIDIA open drivers installed"
+        ;;
+      *)
+        print_info "Skipping NVIDIA drivers"
+        ;;
+    esac
+  elif lspci | grep -i amd &> /dev/null; then
+    print_info "AMD GPU detected"
+    read -p "Install AMD drivers (mesa, vulkan)? (y/n) " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+      sudo pacman -S --noconfirm mesa vulkan-radeon libva-mesa-driver
+      print_success "AMD drivers installed"
+    fi
+  elif lspci | grep -i intel &> /dev/null; then
+    print_info "Intel GPU detected"
+    read -p "Install Intel drivers (mesa, vulkan)? (y/n) " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+      sudo pacman -S --noconfirm mesa vulkan-intel libva-intel-driver intel-media-driver
+      print_success "Intel drivers installed"
+    fi
+  fi
+
+  # Install xrandr and display tools
+  print_info "Installing display configuration tools..."
+  sudo pacman -S --noconfirm xorg-xrandr arandr
+
+  print_success "Display tools installed!"
+  echo ""
+  echo "Multi-monitor setup help:"
+  echo "  • GUI tool: Run 'arandr' to configure displays visually"
+  echo "  • CLI tool: Use 'xrandr' for command-line configuration"
+  echo ""
+  echo "Example xrandr commands:"
+  echo "  xrandr                                    # List all displays"
+  echo "  xrandr --output HDMI-1 --auto             # Enable display"
+  echo "  xrandr --output HDMI-1 --right-of eDP-1   # Position display"
+  echo "  xrandr --output HDMI-1 --mode 1920x1080   # Set resolution"
+  echo ""
+
+  # Offer to save xrandr config
+  read -p "Configure displays now with arandr? (y/n) " -n 1 -r
+  echo
+  if [[ $REPLY =~ ^[Yy]$ ]]; then
+    if command -v arandr &> /dev/null; then
+      arandr &
+      print_info "ARandR launched. Configure your displays and save the layout."
+    fi
+  fi
+}
+
+# =============================================================================
+# SYSTEM CONFIGURATION
+# =============================================================================
+
+setup_system_config() {
+  print_title "System Configuration (Timezone, Locale, Hostname)"
+
+  # Timezone
+  print_info "Current timezone: $(timedatectl show -p Timezone --value)"
+  read -p "Configure timezone? (y/n) " -n 1 -r
+  echo
+  if [[ $REPLY =~ ^[Yy]$ ]]; then
+    echo "Available timezones (examples):"
+    echo "  Europe/London, Europe/Paris, America/New_York, America/Los_Angeles"
+    echo "  Asia/Tokyo, Australia/Sydney, etc."
+    echo ""
+    read -p "Enter timezone (e.g., Europe/London): " timezone
+    if [ -n "$timezone" ]; then
+      sudo timedatectl set-timezone "$timezone"
+      print_success "Timezone set to: $timezone"
+    fi
+  fi
+
+  # Locale
+  print_info "Current locale: $LANG"
+  read -p "Configure locale? (y/n) " -n 1 -r
+  echo
+  if [[ $REPLY =~ ^[Yy]$ ]]; then
+    echo "Common locales:"
+    echo "  en_US.UTF-8 (US English)"
+    echo "  en_GB.UTF-8 (UK English)"
+    echo "  lt_LT.UTF-8 (Lithuanian)"
+    echo ""
+    read -p "Enter locale (e.g., en_US.UTF-8): " locale
+    if [ -n "$locale" ]; then
+      # Ensure locale is generated
+      if ! grep -q "^$locale" /etc/locale.gen; then
+        sudo sed -i "s/^#$locale/$locale/" /etc/locale.gen 2>/dev/null || echo "$locale UTF-8" | sudo tee -a /etc/locale.gen
+      fi
+      sudo locale-gen
+      echo "LANG=$locale" | sudo tee /etc/locale.conf
+      print_success "Locale set to: $locale (will apply on next login)"
+    fi
+  fi
+
+  # Hostname
+  print_info "Current hostname: $(hostnamectl hostname)"
+  read -p "Configure hostname? (y/n) " -n 1 -r
+  echo
+  if [[ $REPLY =~ ^[Yy]$ ]]; then
+    read -p "Enter new hostname: " hostname
+    if [ -n "$hostname" ]; then
+      sudo hostnamectl set-hostname "$hostname"
+      print_success "Hostname set to: $hostname"
+    fi
+  fi
+}
+
+# =============================================================================
+# AUDIO CONFIGURATION
+# =============================================================================
+
+setup_audio() {
+  print_title "Audio System Setup"
+
+  print_info "Arch Linux can use:"
+  echo "  1. PipeWire (Modern, recommended - handles audio + video)"
+  echo "  2. PulseAudio (Traditional, stable)"
+  echo "  3. Skip (configure manually later)"
+  echo ""
+  read -p "Choose audio system (1/2/3): " -n 1 -r
+  echo
+
+  case $REPLY in
+    1)
+      print_info "Installing PipeWire..."
+      sudo pacman -S --noconfirm pipewire pipewire-alsa pipewire-pulse pipewire-jack wireplumber
+      systemctl --user enable pipewire pipewire-pulse wireplumber
+      print_success "PipeWire installed! (will start on next login)"
+      ;;
+    2)
+      print_info "Installing PulseAudio..."
+      sudo pacman -S --noconfirm pulseaudio pulseaudio-alsa
+      systemctl --user enable pulseaudio
+      print_success "PulseAudio installed! (will start on next login)"
+      ;;
+    *)
+      print_info "Skipping audio configuration"
+      ;;
+  esac
+
+  # Volume control tools
+  if [[ $REPLY =~ ^[12]$ ]]; then
+    read -p "Install GUI volume control (pavucontrol)? (y/n) " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+      sudo pacman -S --noconfirm pavucontrol
+      print_success "PulseAudio Volume Control installed"
+    fi
+  fi
+}
+
 clone_dotfiles_repo() {
   print_title "Setting Up Dotfiles Repository"
 
@@ -517,7 +739,10 @@ main() {
   echo "  • Install GUI apps (Chrome, VS Code, Claude Code, Bitwarden, etc.)"
   echo "  • Set up dotfiles (.gitconfig, .zshrc, .ideavimrc)"
   echo "  • Configure SSH and GitHub"
-  echo "  • Set up zsh with Powerlevel10k theme"
+  echo "  • Set up zsh with Starship prompt"
+  echo "  • Configure network (NetworkManager)"
+  echo "  • Set up display/graphics drivers"
+  echo "  • Configure system (timezone, locale)"
   echo ""
   read -p "Continue? (y/n) " -n 1 -r
   echo
@@ -527,19 +752,33 @@ main() {
     exit 0
   fi
 
+  # Core system setup
+  setup_network
+  setup_system_config
+
+  # Software installation
   install_essentials
   install_developer_tools
   setup_oh_my_zsh
   install_fonts
   setup_starship
+
+  # Hardware setup
+  setup_display
+  setup_audio
+
+  # Applications
   install_gui_applications
   install_jetbrains_toolbox
   install_optional_apps
+
+  # Configuration
   clone_dotfiles_repo
   setup_ssh
   setup_github_cli
   enable_docker
   change_shell_to_zsh
+
   print_summary
 }
 
