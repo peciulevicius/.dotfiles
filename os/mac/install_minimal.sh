@@ -22,6 +22,20 @@ ESSENTIAL_PACKAGES=(
   zsh          # Already installed on macOS, but listed for completeness
 )
 
+# Modern CLI tools (optional but highly recommended)
+MODERN_CLI_TOOLS=(
+  bat          # Better cat with syntax highlighting
+  eza          # Better ls with icons and git status
+  ripgrep      # Better grep - insanely fast (rg)
+  fd           # Better find - simple and fast
+  fzf          # Fuzzy finder - ESSENTIAL for productivity
+  zoxide       # Smart cd - learns your most-used directories
+  tldr         # Simplified man pages with examples
+  httpie       # Better curl for testing APIs
+  jq           # JSON processor - essential for API work
+  git-delta    # Better git diff with syntax highlighting
+)
+
 # Essential dotfiles to symlink
 FILES=(
   config/git/.gitconfig
@@ -67,6 +81,32 @@ install_essential_packages() {
       brew install "$PACKAGE"
     fi
   done
+}
+
+install_modern_cli_tools() {
+  echo -e "\n${GREEN}Modern CLI Tools (Game Changers!)${NC}"
+  echo "These tools significantly improve your terminal experience:"
+  echo "  • bat, eza, ripgrep, fd, fzf, zoxide, tldr, httpie, jq, git-delta"
+  echo ""
+
+  read -p "Install modern CLI tools? (highly recommended) (y/n) " -n 1 -r
+  echo
+
+  if [[ $REPLY =~ ^[Yy]$ ]]; then
+    for TOOL in "${MODERN_CLI_TOOLS[@]}"; do
+      # Extract just the package name (before any comment)
+      PACKAGE=$(echo "$TOOL" | awk '{print $1}')
+      if brew list "$PACKAGE" >/dev/null 2>&1; then
+        print_info "$PACKAGE already installed"
+      else
+        echo "Installing $PACKAGE..."
+        brew install "$PACKAGE"
+      fi
+    done
+    print_info "Modern CLI tools installed!"
+  else
+    print_warning "Skipping modern CLI tools"
+  fi
 }
 
 install_powerlevel10k() {
@@ -194,6 +234,7 @@ show_optional_tools() {
 main() {
   install_homebrew
   install_essential_packages
+  install_modern_cli_tools
   install_powerlevel10k
   setup_symlinks
   setup_github_cli

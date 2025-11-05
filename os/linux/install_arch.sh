@@ -35,6 +35,17 @@ DEVELOPER_CLI=(
   npm
   zsh
   oh-my-zsh-git           # Framework for zsh (needed for p10k)
+  # Modern CLI tools (game changers!)
+  bat                      # Better cat with syntax highlighting
+  eza                      # Better ls with icons and git status
+  ripgrep                  # Better grep - insanely fast (rg)
+  fd                       # Better find - simple and fast
+  fzf                      # Fuzzy finder - ESSENTIAL for productivity
+  zoxide                   # Smart cd - learns your most-used directories
+  tldr                     # Simplified man pages with examples
+  httpie                   # Better curl for testing APIs
+  jq                       # JSON processor - essential for API work
+  git-delta                # Better git diff with syntax highlighting
 )
 
 # AUR packages (require yay)
@@ -449,6 +460,7 @@ print_summary() {
   echo "What was installed:"
   echo "  ✓ Essential CLI tools (git, gh, curl, openssh)"
   echo "  ✓ Development tools (docker, docker-compose, node, npm, nvm, pnpm)"
+  echo "  ✓ Modern CLI tools (bat, eza, ripgrep, fd, fzf, zoxide, tldr, httpie, jq, delta)"
   echo "  ✓ Shell setup (zsh, oh-my-zsh, powerlevel10k)"
   echo "  ✓ Nerd Fonts (for terminal icons)"
   echo "  ✓ GUI applications:"
@@ -476,7 +488,18 @@ print_summary() {
   echo "  git aliases    # See all git aliases"
   echo "  git st         # Short status"
   echo "  git lg         # Pretty log"
-  echo "  brewup         # Update all packages (pacup on Arch)"
+  echo "  pacup          # Update all packages (alias in .zshrc)"
+  echo ""
+  echo "Modern CLI tools:"
+  echo "  bat <file>     # View files with syntax highlighting"
+  echo "  eza -la        # Better ls with icons"
+  echo "  rg <pattern>   # Lightning fast search"
+  echo "  fd <name>      # Quick file finding"
+  echo "  fzf            # Fuzzy finder (Ctrl+R for history)"
+  echo "  z <dir>        # Smart jump to directories"
+  echo "  tldr <cmd>     # Quick command examples"
+  echo "  http <url>     # Better curl for APIs"
+  echo "  jq             # JSON processor"
   echo ""
   print_warning "IMPORTANT: You MUST log out and back in for changes to take effect!"
   echo ""

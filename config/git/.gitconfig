@@ -9,6 +9,8 @@
     editor = vim
     autocrlf = input           # Convert CRLF to LF on commit
     excludesfile = ~/.gitignore_global
+    # Commit message template (use with: git commit without -m)
+    # template = ~/.gitmessage
 
 [pull]
     rebase = false             # Merge instead of rebase on pull

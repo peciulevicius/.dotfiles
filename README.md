@@ -1,310 +1,308 @@
 # .dotfiles
 
-Cross-platform dotfiles configuration for Windows, macOS, and Linux (Arch-based and Debian-based distributions).
+> Modern, cross-platform dotfiles with comprehensive tooling for macOS, Linux (Arch, Debian/Ubuntu, Kali), and Windows/WSL.
 
-## Quick Start
+## ✨ Features
+
+- 🚀 **Modern CLI Tools** - bat, eza, ripgrep, fd, fzf, zoxide, tldr, httpie, jq, delta
+- 🎨 **Beautiful Shell** - Zsh with Powerlevel10k (optional fallback to basic prompt)
+- ⚙️ **Comprehensive Configs** - Git (40+ aliases), SSH, Tmux, EditorConfig, and more
+- 🛠️ **Utility Scripts** - Update, backup, cleanup, and health check tools
+- 📦 **Smart Installers** - OS-specific automated setup for all platforms
+- 📚 **Complete Documentation** - Every feature thoroughly documented in `docs/`
+- 🔐 **Security** - GPG commit signing, modern SSH (ed25519), proper .gitignore
+
+## 🚀 Quick Start
 
 ```bash
 # Clone the repository
 git clone https://github.com/peciulevicius/.dotfiles.git ~/.dotfiles
 cd ~/.dotfiles
 
-# Run the installation script
+# Run the installer (automatically detects your OS)
 ./install.sh
 ```
 
-The script will automatically detect your operating system and run the appropriate setup.
+**That's it!** The installer will guide you through the setup process.
 
-## Supported Platforms
+For more details, see [docs/HOW_TO_INSTALL.md](docs/HOW_TO_INSTALL.md) or [docs/QUICKSTART.md](docs/QUICKSTART.md).
 
-- **Linux**: Native Linux (Arch, Debian/Ubuntu-based)
-- **macOS**: Full macOS support with Homebrew
-- **Windows**: PowerShell setup with Chocolatey/Scoop/Winget
-- **WSL**: Windows Subsystem for Linux (Ubuntu/Debian)
+## 🖥️ Supported Platforms
 
-## What's Included
+| Platform | Support | Installer |
+|----------|---------|-----------|
+| **macOS** (12+) | ✅ Full | `os/mac/install_minimal.sh` or `os/mac/install.sh` |
+| **Arch Linux** | ✅ Full | `os/linux/install_arch.sh` |
+| **Ubuntu/Debian** | ✅ Full | `os/linux/install_ubuntu.sh` |
+| **Kali Linux** | ✅ Full | `os/linux/install_ubuntu.sh` |
+| **Windows/WSL** | ⚠️ Basic | `os/windows/install_wsl.sh` |
 
-### Shell Configuration
-- **Zsh** with Oh My Zsh framework
-- **Powerlevel10k** theme for beautiful prompts
-- Cross-platform compatible `.zshrc` with platform detection
+## 📦 What Gets Installed
+
+### Modern CLI Tools
+
+These modern alternatives significantly improve your terminal experience:
+
+| Instead of | Use | Why |
+|------------|-----|-----|
+| `cat` | `bat` | Syntax highlighting, line numbers, Git integration |
+| `ls` | `eza` | Colors, icons, Git status, tree view |
+| `grep` | `rg` (ripgrep) | 10x faster, respects .gitignore |
+| `find` | `fd` | Simpler syntax, faster, colored output |
+| History search | `fzf` | Interactive fuzzy finder (Ctrl+R) |
+| `cd` | `z` (zoxide) | Smart jump to frequent directories |
+| `man` | `tldr` | Practical examples, not walls of text |
+| `curl` | `http` (httpie) | Intuitive syntax for APIs |
+| JSON parsing | `jq` | Powerful JSON manipulation |
+| `git diff` | `delta` | Syntax-highlighted diffs |
+
+See [docs/MODERN_CLI_TOOLS.md](docs/MODERN_CLI_TOOLS.md) for detailed usage guide.
 
 ### Development Tools
-- **Git** with custom aliases and configuration
-- **Node.js** ecosystem (nvm, npm, pnpm, yarn)
-- **CLI Tools**: gh (GitHub CLI), thefuck, tree-sitter
-- **Additional**: stripe-cli, supabase, angular-cli
 
-### Editor Configuration
-- **IdeaVim**: Comprehensive vim bindings for JetBrains IDEs
-- Custom keybindings and plugins setup
+- **Git** with 40+ useful aliases and optional GPG signing
+- **Docker** + Docker Compose
+- **Node.js** via nvm, plus npm and pnpm
+- **GitHub CLI** (gh) for GitHub operations
+- **VS Code**, Claude Code (automated on Arch)
+- **JetBrains Toolbox** for WebStorm/IntelliJ
 
-### AI/MCP Configuration
-- MCP (Model Context Protocol) servers configuration
-- Desktop commander, sequential thinking, and Context7 integrations
+### Configuration Files
 
-## Repository Structure
+All configs are in `config/` and automatically symlinked:
+
+- **Git** - `.gitconfig`, `.gitignore_global`, `.gitmessage` (commit template)
+- **Shell** - `.zshrc` with platform detection and modern aliases
+- **SSH** - `config` template with examples for multiple accounts
+- **Tmux** - `.tmux.conf` with vim-style keybindings
+- **Editor** - `.editorconfig` for consistent coding styles
+- **IdeaVim** - `.ideavimrc` for vim bindings in JetBrains IDEs
+- **Claude Code** - Settings sync template
+
+See [docs/CONFIG_GUIDE.md](docs/CONFIG_GUIDE.md) for details.
+
+### Utility Scripts
+
+Powerful scripts to maintain your environment:
+
+```bash
+~/.dotfiles/scripts/update.sh      # Update all package managers at once
+~/.dotfiles/scripts/backup.sh      # Backup all configs and package lists
+~/.dotfiles/scripts/cleanup.sh     # Free disk space (cleans Docker, npm, etc.)
+~/.dotfiles/scripts/dev-check.sh   # Health check your dev environment
+~/.dotfiles/scripts/setup-gpg.sh   # Set up GPG commit signing
+```
+
+See [docs/UTILITY_SCRIPTS.md](docs/UTILITY_SCRIPTS.md) for detailed usage.
+
+## 📁 Repository Structure
 
 ```
 .dotfiles/
-├── config/               # Configuration files
-│   ├── git/             # Git configuration
-│   │   ├── .gitconfig   # Main git config
-│   │   └── work/        # Work-specific git configs
-│   ├── zsh/             # Zsh configuration
-│   │   ├── .zshrc       # Zsh shell configuration
-│   │   └── .p10k.zsh    # Powerlevel10k theme configuration
-│   ├── idea/            # JetBrains IDEs configuration
-│   │   └── .ideavimrc   # IdeaVim configuration
-│   └── ai-mcp/          # AI MCP servers configuration
-│       └── mcp.json     # MCP server definitions
-├── os/                  # OS-specific installation scripts
-│   ├── linux/           # Linux-specific setup
-│   │   └── install.sh
-│   ├── mac/             # macOS-specific setup
-│   │   └── install.sh
-│   └── windows/         # Windows-specific setup
-│       ├── install.ps1  # PowerShell installation script
-│       ├── install_wsl.sh  # WSL-specific installation
-│       └── README.md    # Windows setup guide
-├── scripts/             # Utility scripts
-│   └── utils/
-│       └── utils.sh     # Shared utility functions
-└── install.sh           # Main installation script
-
+├── README.md                    # You are here
+├── install.sh                   # Main installer (auto-detects OS)
+│
+├── docs/                        # 📚 Complete documentation
+│   ├── README.md                # Documentation index
+│   ├── QUICKSTART.md            # TL;DR guide
+│   ├── HOW_TO_INSTALL.md        # Complete installation guide
+│   ├── CONFIG_GUIDE.md          # Configuration details
+│   ├── MODERN_CLI_TOOLS.md      # CLI tools guide
+│   └── UTILITY_SCRIPTS.md       # Scripts documentation
+│
+├── config/                      # ⚙️ Configuration files
+│   ├── git/                     # Git config & global ignores
+│   ├── zsh/                     # Zsh & Powerlevel10k config
+│   ├── ssh/                     # SSH config template
+│   ├── tmux/                    # Tmux configuration
+│   ├── curl/                    # Curl preferences
+│   ├── claude/                  # Claude Code settings
+│   ├── idea/                    # IdeaVim configuration
+│   └── .editorconfig            # EditorConfig
+│
+├── os/                          # 💻 OS-specific installers
+│   ├── mac/                     # macOS installers
+│   │   ├── install_minimal.sh   # Minimal setup (recommended)
+│   │   ├── install.sh           # Full setup
+│   │   └── install_optional.sh  # Optional tools
+│   ├── linux/                   # Linux installers
+│   │   ├── install_arch.sh      # Arch Linux (full featured)
+│   │   ├── install_ubuntu.sh    # Ubuntu/Debian/Kali
+│   │   └── install.sh           # Generic Linux (legacy)
+│   └── windows/                 # Windows/WSL
+│       └── install_wsl.sh       # WSL setup
+│
+└── scripts/                     # 🛠️ Utility scripts
+    ├── update.sh                # Update everything
+    ├── backup.sh                # Backup configs
+    ├── cleanup.sh               # Clean caches
+    ├── dev-check.sh             # Health check
+    └── setup-gpg.sh             # GPG setup
 ```
 
-## Installation Details
+## 🎯 Common Tasks
 
-### Linux (Arch Linux)
-
-For Arch Linux, the installer will:
-1. Install packages using `pacman` and `yay` (AUR helper)
-2. Set up Oh My Zsh and Powerlevel10k
-3. Create symlinks for all configuration files
-4. Install development tools (Node.js via nvm, Docker, etc.)
-5. Optionally install GUI applications
-
-**Arch-specific packages:**
-```bash
-# Core packages managed by pacman/yay
-git vim neovim zsh tmux docker nodejs npm github-cli pnpm yarn
-```
-
-### Linux (Debian/Ubuntu)
-
-For Debian-based distributions:
-1. Use `apt` package manager
-2. Add necessary repositories (GitHub CLI, Docker, etc.)
-3. Install packages and tools
-4. Set up shell and development environment
-
-### macOS
-
-The macOS installer will:
-1. Install Homebrew (if not present)
-2. Install packages via `brew`
-3. Install GUI applications via `brew cask` (optional)
-4. Configure zsh with Powerlevel10k
-5. Set up development environment
-
-**Casks (GUI applications):**
-- iTerm2, Raycast, Visual Studio Code, WebStorm, Notion, Spotify, etc.
-
-### Windows
-
-For native Windows (PowerShell):
-1. Install Chocolatey and Scoop package managers
-2. Install development tools
-3. Set up Windows Terminal with Oh My Posh
-4. Install Nerd Fonts
-5. Configure PowerShell profile
-
-See [Windows Setup Guide](os/windows/README.md) for detailed customization.
-
-### WSL (Windows Subsystem for Linux)
-
-For WSL environments:
-1. Detected automatically by checking `/proc/version` for "microsoft"
-2. Installs packages via apt
-3. Sets up zsh and Powerlevel10k
-4. Configures development environment for WSL
-
-## Configuration Files
-
-### Git Configuration (`config/git/.gitconfig`)
-
-Custom aliases included:
-- `git gl` - Show global git configuration
-- `git ac <message>` - Add all and commit
-- `git last` - Show last commit with stats
-- `git lg` - Beautiful git log graph
-- `git lg-me` - Git log filtered by your commits
-
-### Zsh Configuration (`config/zsh/.zshrc`)
-
-- Platform-aware path detection for Powerlevel10k
-- Works on macOS (Homebrew paths), Linux, and WSL
-- Instant prompt for faster shell startup
-- Easy customization through `.p10k.zsh`
-
-### IdeaVim Configuration (`config/idea/.ideavimrc`)
-
-Comprehensive vim bindings for JetBrains IDEs:
-- Custom leader key (Space)
-- Window/tab/buffer navigation
-- Code actions and refactoring shortcuts
-- Integrated with IdeaVim plugins
-- Full keybinding reference in the file
-
-### MCP Configuration (`config/ai-mcp/mcp.json`)
-
-Configured MCP servers:
-- Desktop Commander - Desktop automation
-- Sequential Thinking - Enhanced reasoning
-- Context7 - Context management
-
-## Customization
-
-### Adding Platform-Specific Packages
-
-Edit the appropriate OS installation script:
-- **Linux**: `os/linux/install.sh` - Modify `PACKAGES` array
-- **macOS**: `os/mac/install.sh` - Modify `PACKAGES` or `CASKS` arrays
-- **Windows**: `os/windows/install.ps1` - Modify `$packages` or `$apps` arrays
-
-### Customizing Zsh
-
-1. Edit `config/zsh/.zshrc` for shell configuration
-2. Run `p10k configure` to customize the prompt theme
-3. The configuration is saved to `config/zsh/.p10k.zsh`
-
-### Git Configuration
-
-For work-specific git configuration:
-- Check `config/git/work/` directory
-- Contains separate configs for personal and work profiles
-- Use `git config --global include.path` to switch contexts
-
-## Maintenance
-
-### Updating Dotfiles
+### Install on New Machine
 
 ```bash
-cd ~/.dotfiles
-git pull origin main
-./install.sh  # Re-run to update symlinks and packages
+git clone https://github.com/peciulevicius/.dotfiles.git ~/.dotfiles
+cd ~/.dotfiles && ./install.sh
 ```
 
-### Adding New Configurations
-
-1. Add your config file to appropriate directory under `config/`
-2. Update the OS-specific install script to create symlinks
-3. Document the configuration in this README
-
-### Backing Up Existing Configs
-
-The installation scripts automatically backup existing dotfiles:
-- Backups are created with `.backup` extension
-- Example: `~/.zshrc` → `~/.zshrc.backup`
-
-## Troubleshooting
-
-### Zsh Theme Not Loading
-
-**macOS (Homebrew):**
-```bash
-# Check if powerlevel10k is installed
-brew list powerlevel10k
-
-# Source should be at:
-source $(brew --prefix)/share/powerlevel10k/powerlevel10k.zsh-theme
-```
-
-**Linux:**
-```bash
-# Check if powerlevel10k is cloned
-ls -la ~/powerlevel10k
-
-# Or check Oh My Zsh custom themes
-ls -la ~/.oh-my-zsh/custom/themes/powerlevel10k
-```
-
-### Symlinks Not Created
+### Update Everything
 
 ```bash
-# Manually create symlinks
-ln -sf ~/.dotfiles/config/zsh/.zshrc ~/.zshrc
-ln -sf ~/.dotfiles/config/zsh/.p10k.zsh ~/.p10k.zsh
-ln -sf ~/.dotfiles/config/git/.gitconfig ~/.gitconfig
-ln -sf ~/.dotfiles/config/idea/.ideavimrc ~/.ideavimrc
+~/.dotfiles/scripts/update.sh
+# Updates: Homebrew, apt/pacman, npm, pnpm, pip, Rust, Oh My Zsh, dotfiles
 ```
 
-### SSH Key Setup
-
-The installer will prompt for SSH key generation. To manually set up:
+### Backup Your Configs
 
 ```bash
-ssh-keygen -t rsa -b 4096 -C "your_email@example.com"
-eval "$(ssh-agent -s)"
-ssh-add ~/.ssh/id_rsa
-
-# Copy public key to clipboard (Linux)
-cat ~/.ssh/id_rsa.pub | xclip -selection clipboard
-
-# Copy public key to clipboard (macOS)
-cat ~/.ssh/id_rsa.pub | pbcopy
-
-# Then add to GitHub: https://github.com/settings/keys
+~/.dotfiles/scripts/backup.sh
+# Creates: ~/dotfiles_backup_YYYYMMDD_HHMMSS.tar.gz
 ```
 
-### Windows Terminal Not Customizing
+### Clean Up Disk Space
 
-1. Ensure you've installed a Nerd Font
-2. Select the font in Windows Terminal settings
-3. Install Oh My Posh: `winget install JanDeDobbeleer.OhMyPosh`
-4. Configure PowerShell profile (see [Windows README](os/windows/README.md))
-
-## Platform-Specific Notes
-
-### Arch Linux
-
-For Arch, you may want to install `yay` AUR helper first:
 ```bash
-sudo pacman -S --needed git base-devel
-git clone https://aur.archlinux.org/yay.git
-cd yay
-makepkg -si
+~/.dotfiles/scripts/cleanup.sh
+# Cleans: Docker, npm cache, Homebrew, apt, system caches, temp files
 ```
 
-Then modify `os/linux/install.sh` to use `yay` instead of `apt`.
+### Check Environment Health
 
-### macOS Apple Silicon
+```bash
+~/.dotfiles/scripts/dev-check.sh
+# Verifies: All tools installed, configs present, SSH keys, GitHub auth
+```
 
-If you're on Apple Silicon (M1/M2/M3):
-- Homebrew installs to `/opt/homebrew` (already handled in `.zshrc`)
-- Intel Macs use `/usr/local/homebrew`
+### Set Up GPG Commit Signing
 
-### WSL Specific
+```bash
+~/.dotfiles/scripts/setup-gpg.sh
+# Sets up GPG for verified commits on GitHub
+```
 
-For WSL, you may want to:
-1. Install Windows Terminal from Microsoft Store
-2. Set up font in Windows Terminal settings (not in WSL)
-3. Consider using Windows-side Git for better performance
+## 💡 Useful Git Aliases
 
-## Contributing
+This repo includes 40+ git aliases. Here are the most useful ones:
 
-Feel free to fork this repository and customize it for your needs!
+```bash
+git st               # Short status
+git br               # List branches
+git lg               # Beautiful log graph
+git ac "message"     # Add all and commit
+git amend            # Amend last commit
+git undo             # Undo last commit (keeps changes)
+git sync             # Pull and push
+git cleanup          # Remove merged branches
+git aliases          # Show all aliases
+```
 
-## License
+See [docs/CONFIG_GUIDE.md](docs/CONFIG_GUIDE.md) for the complete list.
 
-MIT License - Feel free to use and modify as needed.
+## 📚 Documentation
 
-## Author
+All documentation is in the `docs/` folder:
 
-Džiugas Pečiulevičius ([@peciulevicius](https://github.com/peciulevicius))
+- **[QUICKSTART.md](docs/QUICKSTART.md)** - Quick start guide for Mac users
+- **[HOW_TO_INSTALL.md](docs/HOW_TO_INSTALL.md)** - Complete installation guide
+- **[CONFIG_GUIDE.md](docs/CONFIG_GUIDE.md)** - Configuration details
+- **[MODERN_CLI_TOOLS.md](docs/MODERN_CLI_TOOLS.md)** - Modern CLI tools guide
+- **[UTILITY_SCRIPTS.md](docs/UTILITY_SCRIPTS.md)** - Utility scripts documentation
+- **[INSTALLATION_GUIDE.md](docs/INSTALLATION_GUIDE.md)** - Platform-specific details
+- **[SCRIPTS_EXPLAINED.md](docs/SCRIPTS_EXPLAINED.md)** - Installer comparison
+- **[ARCH_INSTALLER_FLOW.md](docs/ARCH_INSTALLER_FLOW.md)** - Arch setup walkthrough
+
+## 🔧 Customization
+
+### Add Your Own Packages
+
+Edit the appropriate OS installer:
+
+```bash
+# macOS
+vim ~/.dotfiles/os/mac/install_minimal.sh
+
+# Arch Linux
+vim ~/.dotfiles/os/linux/install_arch.sh
+
+# Ubuntu/Debian
+vim ~/.dotfiles/os/linux/install_ubuntu.sh
+```
+
+### Customize Zsh Prompt
+
+```bash
+# If you installed Powerlevel10k
+p10k configure
+
+# Or edit directly
+vim ~/.dotfiles/config/zsh/.p10k.zsh
+```
+
+### Add Your Own Aliases
+
+```bash
+# Add to ~/.zshrc.local (not tracked by git)
+echo 'alias myalias="my command"' >> ~/.zshrc.local
+source ~/.zshrc
+```
+
+## 🆘 Troubleshooting
+
+### Something's not working?
+
+1. **Run health check:** `~/.dotfiles/scripts/dev-check.sh`
+2. **Check docs:** Look in `docs/` folder for relevant guide
+3. **Re-run installer:** `cd ~/.dotfiles && ./install.sh`
+
+### Common Issues
+
+**Shell theme not showing up:**
+- Install Nerd Font: MesloLGS NF or FiraCode Nerd Font
+- Set it in your terminal preferences
+- Restart terminal
+
+**Modern CLI tools not found:**
+- Make sure you ran the installer completely
+- Run: `~/.dotfiles/scripts/update.sh`
+- Add to PATH: `echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc`
+
+**SSH key not working:**
+- Generate one: `ssh-keygen -t ed25519 -C "your@email.com"`
+- Add to agent: `ssh-add ~/.ssh/id_ed25519`
+- Add to GitHub: https://github.com/settings/keys
+
+**Git commits not verified:**
+- Run: `~/.dotfiles/scripts/setup-gpg.sh`
+- Add GPG key to GitHub: https://github.com/settings/keys
+
+See individual documentation files for more troubleshooting.
+
+## 🤝 Credits
+
+Inspired by countless dotfiles repos in the community. Special thanks to:
+
+- [bat](https://github.com/sharkdp/bat), [eza](https://github.com/eza-community/eza), [ripgrep](https://github.com/BurntSushi/ripgrep), [fd](https://github.com/sharkdp/fd), [fzf](https://github.com/junegunn/fzf), [zoxide](https://github.com/ajeetdsouza/zoxide), and other modern CLI tool authors
+- [Oh My Zsh](https://ohmyz.sh) and [Powerlevel10k](https://github.com/romkatv/powerlevel10k)
+- The entire open-source community
+
+## 📝 License
+
+MIT License - Feel free to fork and customize!
+
+## 👤 Author
+
+**Džiugas Pečiulevičius**
+
+- GitHub: [@peciulevicius](https://github.com/peciulevicius)
 
 ---
 
-**Last Updated**: 2025-11-04
-**Supports**: Windows 10/11, macOS 12+, Ubuntu 20.04+, Arch Linux, WSL2
+**Last Updated**: 2025-11-05
+
+**Supports**: macOS 12+, Arch Linux, Ubuntu 20.04+, Debian 11+, Kali Linux, Windows WSL2
+
+**⭐ If you find this useful, consider giving it a star!**

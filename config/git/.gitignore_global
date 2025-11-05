@@ -1,0 +1,289 @@
+# Global Git Ignore File
+# Add this to your git config with: git config --global core.excludesfile ~/.gitignore_global
+
+# ═══════════════════════════════════════════════════════
+# Operating System Files
+# ═══════════════════════════════════════════════════════
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# ═══════════════════════════════════════════════════════
+# IDE & Editor Files
+# ═══════════════════════════════════════════════════════
+
+# JetBrains IDEs (WebStorm, IntelliJ, etc.)
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+.idea_modules/
+
+# VS Code
+.vscode/
+*.code-workspace
+.history/
+
+# Vim
+[._]*.s[a-v][a-z]
+[._]*.sw[a-p]
+[._]s[a-rt-v][a-z]
+[._]ss[a-gi-z]
+[._]sw[a-p]
+Session.vim
+Sessionx.vim
+.netrwhist
+
+# Sublime Text
+*.sublime-workspace
+*.sublime-project
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# ═══════════════════════════════════════════════════════
+# Development Files
+# ═══════════════════════════════════════════════════════
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+.npm
+.eslintcache
+.node_repl_history
+*.tgz
+.yarn-integrity
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+*.manifest
+*.spec
+pip-log.txt
+pip-delete-this-directory.txt
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Ruby
+*.gem
+*.rbc
+/.config
+/coverage/
+/InstalledFiles
+/pkg/
+/spec/reports/
+/spec/examples.txt
+/test/tmp/
+/test/version_tmp/
+/tmp/
+.bundle/
+vendor/bundle
+
+# Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+go.work
+
+# Rust
+target/
+Cargo.lock
+**/*.rs.bk
+*.pdb
+
+# Java
+*.class
+*.log
+*.ctxt
+.mtj.tmp/
+hs_err_pid*
+
+# ═══════════════════════════════════════════════════════
+# Build & Compiled Files
+# ═══════════════════════════════════════════════════════
+
+*.o
+*.a
+*.obj
+*.lib
+*.dll
+*.so
+*.dylib
+*.exe
+*.out
+*.app
+*.i*86
+*.x86_64
+*.hex
+
+# ═══════════════════════════════════════════════════════
+# Package Manager Files
+# ═══════════════════════════════════════════════════════
+
+# Keep lock files in git (don't ignore)
+# These are commented out - include lock files in repos
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+# Gemfile.lock
+# Cargo.lock
+# composer.lock
+
+# ═══════════════════════════════════════════════════════
+# Environment & Config Files
+# ═══════════════════════════════════════════════════════
+
+.env
+.env.local
+.env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.key
+*.pem
+*.p12
+*.pfx
+secrets.yml
+secrets.yaml
+secrets.json
+credentials.json
+.secrets
+
+# ═══════════════════════════════════════════════════════
+# Logs & Databases
+# ═══════════════════════════════════════════════════════
+
+*.log
+logs/
+*.sql
+*.sqlite
+*.sqlite3
+*.db
+
+# ═══════════════════════════════════════════════════════
+# Test Coverage
+# ═══════════════════════════════════════════════════════
+
+coverage/
+.nyc_output/
+*.cover
+*.coverage
+.hypothesis/
+.pytest_cache/
+htmlcov/
+
+# ═══════════════════════════════════════════════════════
+# Temporary Files
+# ═══════════════════════════════════════════════════════
+
+tmp/
+temp/
+*.tmp
+*.temp
+*.swp
+*.swo
+*.bak
+*.backup
+
+# ═══════════════════════════════════════════════════════
+# Cloud & Deployment
+# ═══════════════════════════════════════════════════════
+
+.terraform/
+*.tfstate
+*.tfstate.*
+.vagrant/
+.serverless/
+.netlify/
+.vercel/
+
+# ═══════════════════════════════════════════════════════
+# Miscellaneous
+# ═══════════════════════════════════════════════════════
+
+*.pid
+*.seed
+*.pid.lock
+.cache
+.parcel-cache
+.next
+.nuxt
+.docusaurus
+.cache-loader
