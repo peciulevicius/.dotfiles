@@ -8,6 +8,7 @@ Complete documentation for this dotfiles repository.
 
 - **[QUICKSTART.md](./QUICKSTART.md)** - TL;DR guide for Mac users who want to get up and running fast
 - **[HOW_TO_INSTALL.md](./HOW_TO_INSTALL.md)** - Complete step-by-step installation guide for all operating systems
+- **[FAQ.md](./FAQ.md)** - Frequently asked questions about installation, maintenance, and safety
 
 ### Configuration
 
@@ -69,13 +70,12 @@ Complete documentation for this dotfiles repository.
 
 - Get started quickly → [QUICKSTART.md](./QUICKSTART.md)
 - Install on a new machine → [HOW_TO_INSTALL.md](./HOW_TO_INSTALL.md)
+- Answer common questions → [FAQ.md](./FAQ.md) ⭐ **Start here if unsure!**
 - Understand what each config file does → [CONFIG_GUIDE.md](./CONFIG_GUIDE.md)
 - Learn about the installation scripts → [SCRIPTS_EXPLAINED.md](./SCRIPTS_EXPLAINED.md)
 - Install on Arch Linux → [ARCH_INSTALLER_FLOW.md](./ARCH_INSTALLER_FLOW.md)
 - Learn about modern CLI tools → [MODERN_CLI_TOOLS.md](./MODERN_CLI_TOOLS.md)
 - Use the utility scripts → [UTILITY_SCRIPTS.md](./UTILITY_SCRIPTS.md)
-- Set up GPG commit signing → [GIT_GUIDE.md](./GIT_GUIDE.md)
-- Configure SSH → [SSH_GUIDE.md](./SSH_GUIDE.md)
 
 ## 📁 Repository Structure
 

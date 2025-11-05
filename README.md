@@ -87,6 +87,7 @@ Powerful scripts to maintain your environment:
 
 ```bash
 ~/.dotfiles/scripts/update.sh      # Update all package managers at once
+~/.dotfiles/scripts/sync.sh        # Sync dotfiles configs (fast!)
 ~/.dotfiles/scripts/backup.sh      # Backup all configs and package lists
 ~/.dotfiles/scripts/cleanup.sh     # Free disk space (cleans Docker, npm, etc.)
 ~/.dotfiles/scripts/dev-check.sh   # Health check your dev environment
@@ -206,6 +207,7 @@ See [docs/CONFIG_GUIDE.md](docs/CONFIG_GUIDE.md) for the complete list.
 
 All documentation is in the `docs/` folder:
 
+- **[FAQ.md](docs/FAQ.md)** - Frequently asked questions ⭐ **Start here!**
 - **[QUICKSTART.md](docs/QUICKSTART.md)** - Quick start guide for Mac users
 - **[HOW_TO_INSTALL.md](docs/HOW_TO_INSTALL.md)** - Complete installation guide
 - **[CONFIG_GUIDE.md](docs/CONFIG_GUIDE.md)** - Configuration details
