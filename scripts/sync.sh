@@ -119,7 +119,7 @@ CONFIG_FILES=(
     "config/git/.gitignore_global:.gitignore_global"
     "config/git/.gitmessage:.gitmessage"
     "config/zsh/.zshrc:.zshrc"
-    "config/zsh/.p10k.zsh:.p10k.zsh"
+    # Starship config accessed via STARSHIP_CONFIG env var, no symlink needed
     "config/idea/.ideavimrc:.ideavimrc"
     "config/tmux/.tmux.conf:.tmux.conf"
     "config/ssh/config:.ssh/config"
