@@ -319,7 +319,7 @@ The installer creates these symlinks:
 | `~/.gitignore_global` | `~/.dotfiles/config/git/.gitignore_global` | Global git ignores |
 | `~/.gitmessage` | `~/.dotfiles/config/git/.gitmessage` | Commit message template |
 | `~/.zshrc` | `~/.dotfiles/config/zsh/.zshrc` | Zsh configuration |
-| `~/.p10k.zsh` | `~/.dotfiles/config/zsh/.p10k.zsh` | Powerlevel10k config |
+| (no symlink) | `~/.dotfiles/config/starship/starship.toml` | Starship config (via `$STARSHIP_CONFIG` env var) |
 | `~/.ideavimrc` | `~/.dotfiles/config/idea/.ideavimrc` | IdeaVim config |
 | `~/.tmux.conf` | `~/.dotfiles/config/tmux/.tmux.conf` | Tmux configuration |
 | `~/.ssh/config` | `~/.dotfiles/config/ssh/config` | SSH configuration |
