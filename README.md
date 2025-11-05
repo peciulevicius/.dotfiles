@@ -208,6 +208,7 @@ See [docs/CONFIG_GUIDE.md](docs/CONFIG_GUIDE.md) for the complete list.
 All documentation is in the `docs/` folder:
 
 - **[FAQ.md](docs/FAQ.md)** - Frequently asked questions ⭐ **Start here!**
+- **[SYMLINKS.md](docs/SYMLINKS.md)** - Understanding how symlinks work
 - **[QUICKSTART.md](docs/QUICKSTART.md)** - Quick start guide for Mac users
 - **[HOW_TO_INSTALL.md](docs/HOW_TO_INSTALL.md)** - Complete installation guide
 - **[CONFIG_GUIDE.md](docs/CONFIG_GUIDE.md)** - Configuration details

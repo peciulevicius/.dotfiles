@@ -9,6 +9,7 @@ Complete documentation for this dotfiles repository.
 - **[QUICKSTART.md](./QUICKSTART.md)** - TL;DR guide for Mac users who want to get up and running fast
 - **[HOW_TO_INSTALL.md](./HOW_TO_INSTALL.md)** - Complete step-by-step installation guide for all operating systems
 - **[FAQ.md](./FAQ.md)** - Frequently asked questions about installation, maintenance, and safety
+- **[SYMLINKS.md](./SYMLINKS.md)** - Understanding how symlinks work in dotfiles
 
 ### Configuration
 
