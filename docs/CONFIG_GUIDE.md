@@ -6,9 +6,9 @@ This guide provides detailed information about each configuration file in this d
 
 - [Git Configuration](#git-configuration)
 - [Zsh Configuration](#zsh-configuration)
-- [Powerlevel10k Theme](#powerlevel10k-theme)
+- [Starship Prompt](#starship-prompt)
 - [IdeaVim Configuration](#ideavim-configuration)
-- [MCP Configuration](#mcp-configuration)
+- [Tmux Configuration](#tmux-configuration)
 
 ---
 
@@ -83,22 +83,21 @@ Configures the Z shell with cross-platform compatibility, including theme setup,
 
 ### Key Features
 
-#### 1. Platform Detection
+#### 1. Prompt Configuration
 
-Automatically detects your OS and loads the appropriate Powerlevel10k theme:
+Automatically initializes the Starship prompt or falls back to a basic prompt:
 
-**macOS**:
-- Checks for Apple Silicon (`/opt/homebrew`) or Intel (`/usr/local`)
-- Sources Homebrew-installed Powerlevel10k
+**Starship Prompt (Modern)**:
+- Checks if `starship` command is available
+- Sets `STARSHIP_CONFIG` to point to `~/.dotfiles/config/starship/starship.toml`
+- Initializes Starship with `eval "$(starship init zsh)"`
+- Falls back to basic prompt if Starship not installed
 
-**Linux**:
-- Checks multiple installation locations:
-  - `~/powerlevel10k/` (standalone)
-  - `~/.powerlevel10k/` (alternative standalone)
-  - `~/.oh-my-zsh/custom/themes/powerlevel10k/` (Oh My Zsh)
-
-**Windows (Git Bash/MSYS2)**:
-- Checks for standalone installation in home directory
+**Fallback Prompt**:
+- If Starship is not installed, uses a clean, informative basic prompt
+- Shows current directory in cyan
+- Shows Git branch in yellow (via vcs_info)
+- Green arrow prompt character
 
 #### 2. Oh My Zsh Integration
 
@@ -193,56 +192,68 @@ export MY_VAR='value'
 
 ---
 
-## Powerlevel10k Theme
+## Starship Prompt
 
-**File**: `config/zsh/.p10k.zsh`
+**File**: `config/starship/starship.toml`
 
 ### What It Does
 
-Configures the Powerlevel10k prompt theme appearance and behavior.
+Configures the Starship prompt - a modern, blazing-fast, cross-shell prompt written in Rust.
 
 ### Key Features
 
-- **2-line prompt**: Command input on second line
-- **Left prompt elements**: OS icon, directory, Git status
-- **Right prompt elements**: Exit status, command execution time
-- **Instant prompt**: Faster shell startup
+- **Cross-shell**: Works on zsh, bash, fish, PowerShell, and more
+- **Blazing fast**: Written in Rust for maximum performance
+- **Simple TOML config**: Easy to read and customize
+- **Git integration**: Shows branch, status, and more
+- **Language versions**: Auto-detects Node, Python, Rust, etc.
 - **Nerd Font icons**: Beautiful glyphs and symbols
+- **Actively maintained**: Regular updates and improvements (2025+)
+
+### Configuration
+
+The config file is at `~/.dotfiles/config/starship/starship.toml` and is referenced via the `STARSHIP_CONFIG` environment variable in your `.zshrc`.
 
 ### Customization
 
-To reconfigure the theme:
+Edit `config/starship/starship.toml` directly:
+
+**Change prompt character**:
+```toml
+[character]
+success_symbol = "[❯](bold green)"
+error_symbol = "[❯](bold red)"
+```
+
+**Customize directory display**:
+```toml
+[directory]
+truncation_length = 3
+truncate_to_repo = true
+format = "[$path]($style)[$read_only]($read_only_style) "
+```
+
+**Show/hide language versions**:
+```toml
+[nodejs]
+symbol = " "
+detect_files = ["package.json"]
+
+[python]
+symbol = " "
+detect_extensions = ["py"]
+```
+
+**Add more modules**: See [Starship docs](https://starship.rs/config/) for all available modules and options.
+
+### Presets
+
+Starship has built-in presets you can use:
 ```bash
-p10k configure
+starship preset nerd-font-symbols -o ~/.dotfiles/config/starship/starship.toml
 ```
 
-This launches an interactive wizard to customize:
-- Prompt style (lean, classic, rainbow, etc.)
-- Character set (Unicode, ASCII)
-- Prompt colors
-- Show/hide elements
-- Icons vs. text
-- Spacing and alignment
-
-### Manual Configuration
-
-Edit `config/zsh/.p10k.zsh` directly:
-
-**Show/hide prompt elements**:
-```zsh
-typeset -g POWERLEVEL9K_LEFT_PROMPT_ELEMENTS=(
-  os_icon     # OS identifier
-  dir         # Current directory
-  vcs         # Git status
-)
-
-typeset -g POWERLEVEL9K_RIGHT_PROMPT_ELEMENTS=(
-  status                  # Exit code
-  command_execution_time  # Command duration
-)
-```
-
-**Add more elements**: See [Powerlevel10k docs](https://github.com/romkatv/powerlevel10k#configuration) for available elements.
+Available presets: nerd-font-symbols, bracketed-segments, plain-text-symbols, no-runtime-versions, pure-preset
 
 ---
 
@@ -581,17 +592,29 @@ source ~/.gitconfig
 
 ### Zsh Theme Not Loading
 
-Check if Powerlevel10k is installed:
+Check if Starship is installed:
 ```bash
-# macOS
-brew list powerlevel10k
+# All platforms
+command -v starship
 
-# Linux
-ls -la ~/powerlevel10k
-ls -la ~/.oh-my-zsh/custom/themes/powerlevel10k
+# Check version
+starship --version
+
+# Test initialization
+eval "$(starship init zsh)"
 ```
 
-Reinstall if needed (see main README).
+Reinstall if needed:
+```bash
+# macOS
+brew install starship
+
+# Linux (official installer)
+curl -sS https://starship.rs/install.sh | sh
+
+# Arch Linux
+sudo pacman -S starship
+```
 
 ### IdeaVim Actions Not Working
 
@@ -599,30 +622,30 @@ Reinstall if needed (see main README).
 2. Check if action exists: `Help → Find Action`
 3. Update action ID if changed in newer IDE versions
 
-### MCP Servers Not Starting
+### Tmux Not Working
 
-1. **Check Node.js**: Ensure Node.js and npm are installed
+1. **Check if tmux is installed**:
    ```bash
-   node --version
-   npm --version
+   command -v tmux
+   tmux -V
    ```
 
-2. **Test manually**:
+2. **Reload config**:
    ```bash
-   npx -y @smithery/cli@latest run @wonderwhy-er/desktop-commander --key YOUR_KEY
+   tmux source-file ~/.tmux.conf
    ```
 
-3. **Check logs**: Look for error messages in Claude Code logs
+3. **Check key bindings**: See [TMUX_GUIDE.md](./TMUX_GUIDE.md) for all shortcuts
 
 ---
 
 ## Additional Resources
 
-- [Powerlevel10k Documentation](https://github.com/romkatv/powerlevel10k)
+- [Starship Documentation](https://starship.rs)
 - [IdeaVim Documentation](https://github.com/JetBrains/ideavim)
 - [Git Configuration Reference](https://git-scm.com/docs/git-config)
 - [Oh My Zsh Documentation](https://github.com/ohmyzsh/ohmyzsh)
-- [Model Context Protocol](https://modelcontextprotocol.io/)
+- [Tmux Documentation](https://github.com/tmux/tmux/wiki)
 
 ---
 
