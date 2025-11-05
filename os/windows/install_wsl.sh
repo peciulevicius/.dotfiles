@@ -34,10 +34,10 @@ PACKAGES=(
   curl
 )
 FILES=(
-  ../../config/git/.gitconfig
-  ../../idea/.ideavimrc
-  ../../zsh/.p10k.zsh
-  ../../zsh/.zshrc
+  config/git/.gitconfig
+  config/idea/.ideavimrc
+  config/zsh/.p10k.zsh
+  config/zsh/.zshrc
 )
 
 install_oh_my_zsh() {
@@ -125,22 +125,8 @@ clone_dotfiles_repo() {
   print_title "Cloning Dotfiles Repository"
   if [ ! -d $DOTFILES_REPO ]; then
     git clone https://github.com/peciulevicius/.dotfiles.git $DOTFILES_REPO
-  fi
-
-  # Backup and remove existing dotfiles before checkout
-  for FILE in "${FILES[@]}"; do
-    if [ -f "$HOME/$(basename $FILE)" ]; then
-      echo "$(basename $FILE) already exists. Creating a backup."
-      mv "$HOME/$(basename $FILE)" "$HOME/$(basename $FILE).backup"
-    fi
-  done
-
-  # Checkout dotfiles
-  git -C $DOTFILES_REPO checkout
-  if [ $? != 0 ]; then
-    echo "Error checking out dotfiles, possible conflicts."
   else
-    echo "Dotfiles checked out successfully."
+    echo "Dotfiles repository already exists at $DOTFILES_REPO"
   fi
 
   setup_symlinks
@@ -148,13 +134,32 @@ clone_dotfiles_repo() {
 
 setup_symlinks() {
   print_title "Setting Up Symlinks for Dotfiles"
+
+  # Backup and create symlinks for each config file
   for FILE in "${FILES[@]}"; do
-    echo "Creating symlink for $FILE..."
-    ln -sf "$DOTFILES_REPO/$FILE" "$HOME/$(basename $FILE)"
+    local source_file="$DOTFILES_REPO/$FILE"
+    local target_file="$HOME/$(basename $FILE)"
+
+    # Check if source file exists
+    if [ ! -f "$source_file" ]; then
+      print_warning "Source file $source_file does not exist, skipping..."
+      continue
+    fi
+
+    # Backup existing file if it exists and is not a symlink
+    if [ -f "$target_file" ] && [ ! -L "$target_file" ]; then
+      print_warning "$(basename $FILE) already exists. Creating a backup."
+      mv "$target_file" "${target_file}.backup"
+    fi
+
+    # Create symlink
+    echo "Creating symlink: $target_file -> $source_file"
+    ln -sf "$source_file" "$target_file"
   done
+
+  print_success "Symlinks created successfully"
 }
 
-# TODO: needs cleanup
 main() {
   install_oh_my_zsh
   install_packages

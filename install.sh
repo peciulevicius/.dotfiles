@@ -3,24 +3,7 @@
 # Determine the dotfiles directory based on the script's location
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Convert from WSL path to Windows path (e.g., /mnt/c to C:\)
-DOTFILES_WIN_PATH=$(wslpath -w "$DOTFILES_DIR")
-
 echo "Dotfiles directory: $DOTFILES_DIR"
-echo "Dotfiles Windows directory: $DOTFILES_WIN_PATH"
-
-## Function to link the common .ideavimrc file
-#link_ideavimrc() {
-#    echo "Attempting to link .ideavimrc..."
-#    local source_path="${DOTFILES_DIR}/.ideavimrc"
-#    local target_path="${HOME}/.ideavimrc"
-#
-#    if [ -f "$target_path" ]; then
-#        echo "$target_path already exists. Creating a backup."
-#        mv "$target_path" "${target_path}.backup"
-#    fi
-#    ln -s "$source_path" "$target_path" && echo ".ideavimrc linked successfully."
-#}
 
 # Main execution function
 main() {
@@ -28,23 +11,65 @@ main() {
     case "$OS" in
         Linux*)
             # Detecting WSL environment
-            if grep -qi microsoft /proc/version; then
+            if grep -qi microsoft /proc/version 2>/dev/null; then
                 echo "Detected WSL environment. Running Windows-specific setup."
-                # Use the converted Windows path format
-                powershell.exe -File "${DOTFILES_WIN_PATH}\\windows\\install.ps1"
+                # Convert to Windows path for PowerShell (only in WSL)
+                DOTFILES_WIN_PATH=$(wslpath -w "$DOTFILES_DIR" 2>/dev/null || echo "$DOTFILES_DIR")
+                powershell.exe -File "${DOTFILES_WIN_PATH}\\os\\windows\\install.ps1"
             else
-                echo "Detected Linux. Running Linux-specific setup."
-#                link_ideavimrc
-                bash "$DOTFILES_DIR/os/linux/install.sh"
+                echo "Detected Linux."
+
+                # Check if Arch Linux
+                if [ -f /etc/arch-release ]; then
+                    echo "Arch Linux detected."
+                    echo ""
+                    echo "Choose installer:"
+                    echo "  1) Arch-specific (uses pacman/yay)"
+                    echo "  2) Generic (uses apt - not recommended)"
+                    echo ""
+                    read -p "Enter choice (1 or 2): " choice
+
+                    case $choice in
+                        1)
+                            bash "$DOTFILES_DIR/os/linux/install_arch.sh"
+                            ;;
+                        2)
+                            bash "$DOTFILES_DIR/os/linux/install.sh"
+                            ;;
+                        *)
+                            echo "Running Arch installer..."
+                            bash "$DOTFILES_DIR/os/linux/install_arch.sh"
+                            ;;
+                    esac
+                else
+                    # Debian/Ubuntu or other
+                    bash "$DOTFILES_DIR/os/linux/install.sh"
+                fi
             fi
             ;;
         Darwin*)
-            echo "Detected macOS. Running macOS-specific setup."
-#            link_ideavimrc
-            bash "$DOTFILES_DIR/os/mac/install.sh"
+            echo "Detected macOS."
+            echo ""
+            echo "Choose installation type:"
+            echo "  1) Minimal (recommended) - Git, GitHub CLI, SSH, dotfiles only"
+            echo "  2) Full - Installs many packages (not recommended)"
+            echo ""
+            read -p "Enter choice (1 or 2, default=1): " choice
+
+            case $choice in
+                2)
+                    echo "Running full setup..."
+                    bash "$DOTFILES_DIR/os/mac/install.sh"
+                    ;;
+                *)
+                    echo "Running minimal setup..."
+                    bash "$DOTFILES_DIR/os/mac/install_minimal.sh"
+                    ;;
+            esac
             ;;
         *)
             echo "Unsupported OS detected."
+            exit 1
             ;;
     esac
 }
