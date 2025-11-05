@@ -80,15 +80,14 @@ Enter choice (1 or 2, default=1):
 - GitHub CLI (gh)
 
 ✅ **Prompts you for:**
-- Powerlevel10k theme (optional, say yes if you want nice terminal)
 - SSH key generation (say yes)
 - GitHub authentication (say yes)
 
 ✅ **Dotfiles linked:**
 - `~/.gitconfig` → Git config with 40+ aliases
-- `~/.zshrc` → Shell config
+- `~/.zshrc` → Shell config (includes Starship prompt)
 - `~/.ideavimrc` → Vim keybindings for WebStorm/IntelliJ
-- `~/.p10k.zsh` → Powerlevel10k config (if installed)
+- Starship config at `~/.dotfiles/config/starship/starship.toml` (no symlink needed)
 
 ### Step 4: Install Applications
 ```bash
@@ -141,9 +140,10 @@ Enter choice (1 or 2, default=1):
 3. Restart WebStorm
 4. Your `~/.ideavimrc` is automatically loaded
 
-**Terminal (if using Powerlevel10k):**
+**Terminal prompt:**
+Starship is configured automatically via `.zshrc`. To customize:
 ```bash
-p10k configure
+vim ~/.dotfiles/config/starship/starship.toml
 ```
 Follow the wizard to customize your prompt.
 
@@ -214,7 +214,7 @@ Yay AUR helper is automatically installed if needed.
 ```
 Install Oh My Zsh? (y/n)
 ```
-**Say yes** - needed for Powerlevel10k
+**Say yes** - needed for terminal icons and Starship prompt
 
 #### Phase 4: Nerd Fonts (Asks)
 ```
@@ -226,11 +226,8 @@ Installs:
 - Meslo Nerd Font
 - FiraCode Nerd Font
 
-#### Phase 5: Powerlevel10k (Asks)
-```
-Install Powerlevel10k theme? (y/n)
-```
-**Say yes** if you want a nice prompt
+#### Phase 5: Starship Prompt
+Starship is automatically installed with the modern CLI tools. It provides a beautiful, fast, cross-shell prompt.
 
 #### Phase 6: GUI Applications (Asks)
 ```
@@ -302,9 +299,9 @@ sudo reboot
 1. Open terminal preferences
 2. Set font to: "MesloLGS Nerd Font" or "FiraCode Nerd Font"
 
-**Configure Powerlevel10k:**
+**Starship is configured automatically.** To customize:
 ```bash
-p10k configure
+vim ~/.dotfiles/config/starship/starship.toml
 ```
 
 **Install WebStorm:**
@@ -390,7 +387,7 @@ Or directly:
 Same as Arch:
 - Log out and back in
 - Configure terminal font
-- Run `p10k configure`
+- Starship is configured automatically
 - Sign into apps
 
 ---
@@ -528,7 +525,7 @@ source ~/.zshrc  # Reload shell if needed
 - Git config and aliases
 - Zsh config
 - IdeaVim config
-- Powerlevel10k config
+- Starship config
 
 ❌ **Manually sync:**
 - GUI app settings (Bitwarden, etc.)
@@ -576,29 +573,37 @@ cd ~/.dotfiles
 ln -sf ~/.dotfiles/config/zsh/.zshrc ~/.zshrc
 ```
 
-### Powerlevel10k not loading
+### Starship prompt not loading
 **Check installation:**
 ```bash
-# macOS
-brew list powerlevel10k
-
-# Linux
-ls -la ~/.oh-my-zsh/custom/themes/powerlevel10k
+which starship
+starship --version
 ```
 
 **Reinstall if needed:**
 ```bash
 # macOS
-brew install powerlevel10k
+brew install starship
 
-# Linux
-git clone --depth=1 https://github.com/romkatv/powerlevel10k.git ~/.oh-my-zsh/custom/themes/powerlevel10k
+# Linux (Arch)
+sudo pacman -S starship
+
+# Linux (Ubuntu/Debian)
+curl -sS https://starship.rs/install.sh | sh
 ```
 
 Then:
 ```bash
 source ~/.zshrc
-p10k configure
+```
+
+**Customize your prompt:**
+```bash
+# Edit the config
+vim ~/.dotfiles/config/starship/starship.toml
+
+# See available presets
+starship preset -l
 ```
 
 ---
