@@ -231,12 +231,23 @@ install_gui_applications() {
   check_yay_installed
 
   for APP in "${AUR_APPS[@]}"; do
+    # Check if package is already installed
     if yay -Qi "$APP" &> /dev/null || pacman -Qi "$APP" &> /dev/null; then
       print_info "$APP already installed"
-    else
-      print_title "Installing $APP..."
-      yay -S --noconfirm "$APP"
+      continue
     fi
+
+    # For -bin packages, also check if the non-bin version is installed
+    if [[ "$APP" == *-bin ]]; then
+      BASE_PKG="${APP%-bin}"
+      if yay -Qi "$BASE_PKG" &> /dev/null || pacman -Qi "$BASE_PKG" &> /dev/null; then
+        print_info "$BASE_PKG already installed (skipping $APP)"
+        continue
+      fi
+    fi
+
+    print_title "Installing $APP..."
+    yay -S --noconfirm "$APP"
   done
 
   print_info "GUI applications installed"
