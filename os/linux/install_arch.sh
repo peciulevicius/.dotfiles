@@ -237,10 +237,11 @@ install_gui_applications() {
       continue
     fi
 
-    # Special case: check for conflicting bitwarden packages
-    if [[ "$APP" == "bitwarden-bin" ]]; then
-      if yay -Qi "bitwarden" &> /dev/null || pacman -Qi "bitwarden" &> /dev/null; then
-        print_info "bitwarden already installed (skipping bitwarden-bin)"
+    # For -bin packages, also check if the non-bin version is installed
+    if [[ "$APP" == *-bin ]]; then
+      BASE_PKG="${APP%-bin}"
+      if yay -Qi "$BASE_PKG" &> /dev/null || pacman -Qi "$BASE_PKG" &> /dev/null; then
+        print_info "$BASE_PKG already installed (skipping $APP)"
         continue
       fi
     fi
