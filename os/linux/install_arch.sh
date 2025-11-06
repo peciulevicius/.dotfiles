@@ -231,12 +231,22 @@ install_gui_applications() {
   check_yay_installed
 
   for APP in "${AUR_APPS[@]}"; do
+    # Check if package is already installed
     if yay -Qi "$APP" &> /dev/null || pacman -Qi "$APP" &> /dev/null; then
       print_info "$APP already installed"
-    else
-      print_title "Installing $APP..."
-      yay -S --noconfirm "$APP"
+      continue
     fi
+
+    # Special case: check for conflicting bitwarden packages
+    if [[ "$APP" == "bitwarden-bin" ]]; then
+      if yay -Qi "bitwarden" &> /dev/null || pacman -Qi "bitwarden" &> /dev/null; then
+        print_info "bitwarden already installed (skipping bitwarden-bin)"
+        continue
+      fi
+    fi
+
+    print_title "Installing $APP..."
+    yay -S --noconfirm "$APP"
   done
 
   print_info "GUI applications installed"
