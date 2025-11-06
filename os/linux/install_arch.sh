@@ -34,7 +34,6 @@ DEVELOPER_CLI=(
   nodejs
   npm
   zsh
-  oh-my-zsh-git           # Framework for zsh
   starship                # Modern, cross-shell prompt
   # Modern CLI tools (game changers!)
   bat                      # Better cat with syntax highlighting
