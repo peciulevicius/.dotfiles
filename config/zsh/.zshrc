@@ -114,6 +114,11 @@ alias ..='cd ..'
 alias ...='cd ../..'
 alias ....='cd ../../..'
 
+# Homebrew deprecated the old `tldr` formula; keep command compatibility.
+if command -v tlrc &> /dev/null && ! command -v tldr &> /dev/null; then
+  alias tldr='tlrc'
+fi
+
 # Create directory and cd into it
 mkcd() {
   mkdir -p "$1" && cd "$1"
@@ -152,13 +157,17 @@ esac
 # Node Version Manager (NVM)
 # ----------------------------------------------------------------------------
 export NVM_DIR="$HOME/.nvm"
-# Load nvm if installed
+# Load nvm from user install or Homebrew
 if [[ -s "$NVM_DIR/nvm.sh" ]]; then
   source "$NVM_DIR/nvm.sh"
+elif [[ -s "/opt/homebrew/opt/nvm/nvm.sh" ]]; then
+  source "/opt/homebrew/opt/nvm/nvm.sh"
 fi
 # Load nvm bash completion
 if [[ -s "$NVM_DIR/bash_completion" ]]; then
   source "$NVM_DIR/bash_completion"
+elif [[ -s "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm" ]]; then
+  source "/opt/homebrew/opt/nvm/etc/bash_completion.d/nvm"
 fi
 
 # ----------------------------------------------------------------------------
@@ -168,6 +177,12 @@ export PNPM_HOME="$HOME/.local/share/pnpm"
 case ":$PATH:" in
   *":$PNPM_HOME:"*) ;;
   *) export PATH="$PNPM_HOME:$PATH" ;;
+esac
+
+# pipx apps (e.g., mkdocs) are installed here.
+case ":$PATH:" in
+  *":$HOME/.local/bin:"*) ;;
+  *) export PATH="$HOME/.local/bin:$PATH" ;;
 esac
 
 # ----------------------------------------------------------------------------

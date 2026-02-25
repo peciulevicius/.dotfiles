@@ -1,0 +1,60 @@
+site_name: Dotfiles Docs
+site_description: Personal workstation and dotfiles setup
+site_url: http://localhost:8000
+
+repo_name: peciulevicius/.dotfiles
+repo_url: https://github.com/peciulevicius/.dotfiles
+
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  features:
+    - navigation.sections
+    - navigation.expand
+    - search.highlight
+    - content.code.copy
+
+markdown_extensions:
+  - admonition
+  - toc:
+      permalink: true
+  - pymdownx.superfences
+  - pymdownx.details
+
+nav:
+  - Home: START_HERE.md
+  - Mac Setup:
+      - Workstation Guide: MAC_WORKSTATION_GUIDE.md
+      - New Mac Mini Checklist: NEW_MAC_MINI_CHECKLIST.md
+      - Wallpapers: WALLPAPERS.md
+  - AI:
+      - Local AI Setup: ai/LOCAL_AI_SETUP.md
+      - Remote Access: ai/REMOTE_ACCESS.md
+  - Tools:
+      - Modern CLI: MODERN_CLI_TOOLS.md
+      - Utility Scripts: UTILITY_SCRIPTS.md
+      - Tool Tutorials: tutorials/TOOL_TUTORIALS.md
+      - Docs Site Setup: SETUP_DOCS_SITE.md
+  - Reference:
+      - Config Guide: CONFIG_GUIDE.md
+      - FAQ: FAQ.md
+      - Quickstart: QUICKSTART.md
+      - How To Install: HOW_TO_INSTALL.md
+      - Installation Guide: INSTALLATION_GUIDE.md
+      - Scripts Explained: SCRIPTS_EXPLAINED.md
+      - Symlinks: SYMLINKS.md
+      - Tmux Guide: TMUX_GUIDE.md
+      - Arch Installer Flow: ARCH_INSTALLER_FLOW.md
+      - Cleanup Audit: CLEANUP_AUDIT.md
+      - Legacy Mac Setup + AI: MAC_SETUP_AND_LOCAL_AI.md
+      - Docs Index: README.md

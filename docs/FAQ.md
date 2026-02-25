@@ -347,16 +347,16 @@ Quick reference of what's installed:
 
 | Tool | Replaces | Documentation |
 |------|----------|---------------|
-| `bat` | `cat` | [MODERN_CLI_TOOLS.md](./MODERN_CLI_TOOLS.md#bat---better-cat) |
-| `eza` | `ls` | [MODERN_CLI_TOOLS.md](./MODERN_CLI_TOOLS.md#eza---better-ls) |
-| `rg` | `grep` | [MODERN_CLI_TOOLS.md](./MODERN_CLI_TOOLS.md#ripgrep-rg---better-grep) |
-| `fd` | `find` | [MODERN_CLI_TOOLS.md](./MODERN_CLI_TOOLS.md#fd---better-find) |
-| `fzf` | History search | [MODERN_CLI_TOOLS.md](./MODERN_CLI_TOOLS.md#fzf---fuzzy-finder) |
-| `z` | `cd` | [MODERN_CLI_TOOLS.md](./MODERN_CLI_TOOLS.md#zoxide---smart-cd) |
-| `tldr` | `man` | [MODERN_CLI_TOOLS.md](./MODERN_CLI_TOOLS.md#tldr---simplified-man-pages) |
-| `http` | `curl` | [MODERN_CLI_TOOLS.md](./MODERN_CLI_TOOLS.md#httpie---better-curl) |
-| `jq` | JSON parsing | [MODERN_CLI_TOOLS.md](./MODERN_CLI_TOOLS.md#jq---json-processor) |
-| `delta` | `git diff` | [MODERN_CLI_TOOLS.md](./MODERN_CLI_TOOLS.md#delta---better-git-diff) |
+| `bat` | `cat` | [MODERN_CLI_TOOLS.md](./MODERN_CLI_TOOLS.md) |
+| `eza` | `ls` | [MODERN_CLI_TOOLS.md](./MODERN_CLI_TOOLS.md) |
+| `rg` | `grep` | [MODERN_CLI_TOOLS.md](./MODERN_CLI_TOOLS.md) |
+| `fd` | `find` | [MODERN_CLI_TOOLS.md](./MODERN_CLI_TOOLS.md) |
+| `fzf` | History search | [MODERN_CLI_TOOLS.md](./MODERN_CLI_TOOLS.md) |
+| `z` | `cd` | [MODERN_CLI_TOOLS.md](./MODERN_CLI_TOOLS.md) |
+| `tldr` | `man` | [MODERN_CLI_TOOLS.md](./MODERN_CLI_TOOLS.md) |
+| `http` | `curl` | [MODERN_CLI_TOOLS.md](./MODERN_CLI_TOOLS.md) |
+| `jq` | JSON parsing | [MODERN_CLI_TOOLS.md](./MODERN_CLI_TOOLS.md) |
+| `delta` | `git diff` | [MODERN_CLI_TOOLS.md](./MODERN_CLI_TOOLS.md) |
 
 ### Do I need to learn all these tools?
 

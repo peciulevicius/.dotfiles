@@ -8,7 +8,7 @@ This guide provides detailed information about each configuration file in this d
 - [Zsh Configuration](#zsh-configuration)
 - [Starship Prompt](#starship-prompt)
 - [IdeaVim Configuration](#ideavim-configuration)
-- [Tmux Configuration](#tmux-configuration)
+- [Troubleshooting](#troubleshooting)
 
 ---
 

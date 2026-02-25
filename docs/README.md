@@ -2,12 +2,17 @@
 
 Complete documentation for this dotfiles repository.
 
+For macOS, the canonical source is [MAC_WORKSTATION_GUIDE.md](./MAC_WORKSTATION_GUIDE.md).
+
 ## 📖 Table of Contents
 
 ### Getting Started
 
+- **[START_HERE.md](./START_HERE.md)** - Recommended reading order and daily commands
+- **[MAC_WORKSTATION_GUIDE.md](./MAC_WORKSTATION_GUIDE.md)** - Canonical laptop/Mac mini setup and maintenance guide
 - **[QUICKSTART.md](./QUICKSTART.md)** - TL;DR guide for Mac users who want to get up and running fast
 - **[HOW_TO_INSTALL.md](./HOW_TO_INSTALL.md)** - Complete step-by-step installation guide for all operating systems
+- **[NEW_MAC_MINI_CHECKLIST.md](./NEW_MAC_MINI_CHECKLIST.md)** - One-pass setup for a new Mac mini
 - **[FAQ.md](./FAQ.md)** - Frequently asked questions about installation, maintenance, and safety
 - **[SYMLINKS.md](./SYMLINKS.md)** - Understanding how symlinks work in dotfiles
 
@@ -51,32 +56,33 @@ Complete documentation for this dotfiles repository.
   - `cleanup.sh` - Clean caches and free disk space
   - `dev-check.sh` - Check environment health
   - `setup-gpg.sh` - Set up GPG commit signing
+- **[MAC_SETUP_AND_LOCAL_AI.md](./MAC_SETUP_AND_LOCAL_AI.md)** - Practical macOS setup + local AI recommendations
+- **[ai/LOCAL_AI_SETUP.md](./ai/LOCAL_AI_SETUP.md)** - Exact local AI setup/run/remote workflow + troubleshooting
+- **[WALLPAPERS.md](./WALLPAPERS.md)** - Manage wallpapers from dotfiles
+- **[tutorials/TOOL_TUTORIALS.md](./tutorials/TOOL_TUTORIALS.md)** - Official docs + YouTube tutorial links per tool
+- **[SETUP_DOCS_SITE.md](./SETUP_DOCS_SITE.md)** - Browser-accessible docs via MkDocs + GitHub Pages
 
 ### Advanced Topics
 
-- **[GIT_GUIDE.md](./GIT_GUIDE.md)** - Advanced Git configuration:
-  - 40+ useful git aliases
-  - GPG commit signing
-  - Commit message templates
-  - Multiple GitHub accounts
-
-- **[SSH_GUIDE.md](./SSH_GUIDE.md)** - SSH configuration:
-  - SSH key setup (ed25519)
-  - SSH config file
-  - Multiple SSH keys for different services
+- **[CONFIG_GUIDE.md](./CONFIG_GUIDE.md)** - Git/SSH/Zsh/Tmux configuration details
 
 ## 🎯 Quick Navigation
 
 **I want to...**
 
 - Get started quickly → [QUICKSTART.md](./QUICKSTART.md)
+- Start in the right order → [START_HERE.md](./START_HERE.md)
+- Use one canonical Mac setup guide → [MAC_WORKSTATION_GUIDE.md](./MAC_WORKSTATION_GUIDE.md)
 - Install on a new machine → [HOW_TO_INSTALL.md](./HOW_TO_INSTALL.md)
+- Set up new Mac mini fast → [NEW_MAC_MINI_CHECKLIST.md](./NEW_MAC_MINI_CHECKLIST.md)
 - Answer common questions → [FAQ.md](./FAQ.md) ⭐ **Start here if unsure!**
 - Understand what each config file does → [CONFIG_GUIDE.md](./CONFIG_GUIDE.md)
 - Learn about the installation scripts → [SCRIPTS_EXPLAINED.md](./SCRIPTS_EXPLAINED.md)
 - Install on Arch Linux → [ARCH_INSTALLER_FLOW.md](./ARCH_INSTALLER_FLOW.md)
 - Learn about modern CLI tools → [MODERN_CLI_TOOLS.md](./MODERN_CLI_TOOLS.md)
 - Use the utility scripts → [UTILITY_SCRIPTS.md](./UTILITY_SCRIPTS.md)
+- Configure a new Mac + local AI → [MAC_SETUP_AND_LOCAL_AI.md](./MAC_SETUP_AND_LOCAL_AI.md)
+- Learn tools with tutorial links → [tutorials/TOOL_TUTORIALS.md](./tutorials/TOOL_TUTORIALS.md)
 
 ## 📁 Repository Structure
 

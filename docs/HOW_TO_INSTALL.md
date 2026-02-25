@@ -1,5 +1,8 @@
 # How to Install - Complete Step-by-Step Guide
 
+> Important: macOS install flow has been simplified.
+> Use [MAC_WORKSTATION_GUIDE.md](./MAC_WORKSTATION_GUIDE.md) and `os/mac/install.sh` as the source of truth.
+
 This is the **complete guide** for setting up your development environment on any machine.
 
 ---
@@ -91,7 +94,7 @@ Enter choice (1 or 2, default=1):
 
 ### Step 4: Install Applications
 ```bash
-./os/mac/install_optional.sh
+./os/mac/install.sh
 ```
 
 **This will ask about each tool:**
