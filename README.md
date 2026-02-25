@@ -4,7 +4,7 @@
 
 ## ✨ Features
 
-- 🚀 **Modern CLI Tools** - bat, eza, ripgrep, fd, fzf, zoxide, tldr, httpie, jq, delta
+- 🚀 **Modern CLI Tools** - bat, eza, ripgrep, fd, fzf, zoxide, tlrc/tldr, httpie, jq, delta
 - 🎨 **Beautiful Shell** - Zsh with Starship (modern, fast, cross-shell prompt)
 - ⚙️ **Comprehensive Configs** - Git (40+ aliases), SSH, Tmux, EditorConfig, and more
 - 🛠️ **Utility Scripts** - Update, backup, cleanup, and health check tools
@@ -27,15 +27,24 @@ cd ~/.dotfiles
 
 For more details, see [docs/HOW_TO_INSTALL.md](docs/HOW_TO_INSTALL.md) or [docs/QUICKSTART.md](docs/QUICKSTART.md).
 
+For guided onboarding, start with [docs/START_HERE.md](docs/START_HERE.md).
+Canonical Mac setup/maintenance guide: [docs/MAC_WORKSTATION_GUIDE.md](docs/MAC_WORKSTATION_GUIDE.md).
+
 ## 🖥️ Supported Platforms
 
 | Platform | Support | Installer |
 |----------|---------|-----------|
-| **macOS** (12+) | ✅ Full | `os/mac/install_minimal.sh` or `os/mac/install.sh` |
+| **macOS** (12+) | ✅ Full | `os/mac/install.sh` |
 | **Arch Linux** | ✅ Full | `os/linux/install_arch.sh` |
 | **Ubuntu/Debian** | ✅ Full | `os/linux/install_ubuntu.sh` |
 | **Kali Linux** | ✅ Full | `os/linux/install_ubuntu.sh` |
 | **Windows/WSL** | ⚠️ Basic | `os/windows/install_wsl.sh` |
+
+macOS non-interactive mode:
+
+```bash
+./os/mac/install.sh --yes
+```
 
 ## 📦 What Gets Installed
 
@@ -51,7 +60,7 @@ These modern alternatives significantly improve your terminal experience:
 | `find` | `fd` | Simpler syntax, faster, colored output |
 | History search | `fzf` | Interactive fuzzy finder (Ctrl+R) |
 | `cd` | `z` (zoxide) | Smart jump to frequent directories |
-| `man` | `tldr` | Practical examples, not walls of text |
+| `man` | `tldr` (via `tlrc`) | Practical examples, not walls of text |
 | `curl` | `http` (httpie) | Intuitive syntax for APIs |
 | JSON parsing | `jq` | Powerful JSON manipulation |
 | `git diff` | `delta` | Syntax-highlighted diffs |
@@ -124,9 +133,8 @@ See [docs/UTILITY_SCRIPTS.md](docs/UTILITY_SCRIPTS.md) for detailed usage.
 │
 ├── os/                          # 💻 OS-specific installers
 │   ├── mac/                     # macOS installers
-│   │   ├── install_minimal.sh   # Minimal setup (recommended)
-│   │   ├── install.sh           # Full setup
-│   │   └── install_optional.sh  # Optional tools
+│   │   ├── install.sh           # Unified macOS installer (primary)
+│   │   └── setup_macos_preferences.sh # Optional macOS defaults
 │   ├── linux/                   # Linux installers
 │   │   ├── install_arch.sh      # Arch Linux (full featured)
 │   │   ├── install_ubuntu.sh    # Ubuntu/Debian/Kali
@@ -209,12 +217,16 @@ See [docs/CONFIG_GUIDE.md](docs/CONFIG_GUIDE.md) for the complete list.
 All documentation is in the `docs/` folder:
 
 - **[FAQ.md](docs/FAQ.md)** - Frequently asked questions ⭐ **Start here!**
+- **[START_HERE.md](docs/START_HERE.md)** - Recommended setup/learning order
+- **[NEW_MAC_MINI_CHECKLIST.md](docs/NEW_MAC_MINI_CHECKLIST.md)** - New machine setup checklist
 - **[SYMLINKS.md](docs/SYMLINKS.md)** - Understanding how symlinks work
 - **[QUICKSTART.md](docs/QUICKSTART.md)** - Quick start guide for Mac users
 - **[HOW_TO_INSTALL.md](docs/HOW_TO_INSTALL.md)** - Complete installation guide
 - **[CONFIG_GUIDE.md](docs/CONFIG_GUIDE.md)** - Configuration details
 - **[MODERN_CLI_TOOLS.md](docs/MODERN_CLI_TOOLS.md)** - Modern CLI tools guide
 - **[UTILITY_SCRIPTS.md](docs/UTILITY_SCRIPTS.md)** - Utility scripts documentation
+- **[tutorials/TOOL_TUTORIALS.md](docs/tutorials/TOOL_TUTORIALS.md)** - Tool tutorials and YouTube links
+- **[WALLPAPERS.md](docs/WALLPAPERS.md)** - Wallpaper workflow
 - **[INSTALLATION_GUIDE.md](docs/INSTALLATION_GUIDE.md)** - Platform-specific details
 - **[SCRIPTS_EXPLAINED.md](docs/SCRIPTS_EXPLAINED.md)** - Installer comparison
 - **[ARCH_INSTALLER_FLOW.md](docs/ARCH_INSTALLER_FLOW.md)** - Arch setup walkthrough
@@ -227,7 +239,7 @@ Edit the appropriate OS installer:
 
 ```bash
 # macOS
-vim ~/.dotfiles/os/mac/install_minimal.sh
+vim ~/.dotfiles/os/mac/install.sh
 
 # Arch Linux
 vim ~/.dotfiles/os/linux/install_arch.sh

@@ -281,7 +281,7 @@ Verifies that all development tools are properly installed and configured.
 **Configuration Files:**
 - Git config, SSH config, Zsh config
 - Tmux, EditorConfig
-- IdeaVim, Powerlevel10k
+- IdeaVim, Starship config
 
 **SSH & GitHub:**
 - SSH keys (ed25519 or RSA)
@@ -333,16 +333,18 @@ User: john
 
 Health Check Results:
 
-  Passed:  45 / 50 (90%)
-  Failed:  5 / 50
+  Required passed: 16 / 16 (100%)
+  Required failed: 0
+  Optional passed: 4 / 22
+  Optional missing: 18
 
-✓ Your development environment is in great shape!
+✓ Core environment is healthy.
 
 Quick fixes:
-  • Install missing tools: Run the appropriate installer from os/
+  • Install missing CLI tools: brew install ...
+  • Install missing casks: brew install --cask ...
   • Update packages: Run scripts/update.sh
-  • Fix SSH: ssh-keygen -t ed25519 -C "your@email.com"
-  • Fix GitHub: gh auth login
+  • Install from: https://ohmyz.sh
 ```
 
 ### Use Cases

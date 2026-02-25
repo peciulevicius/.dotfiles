@@ -34,8 +34,8 @@ Audit of what should be removed, replaced, or kept in this dotfiles repository.
 - `os/linux/install.sh` - Old generic installer, replaced by install_arch.sh and install_ubuntu.sh
 
 **Keep:**
-- `os/mac/install_minimal.sh` - Primary macOS installer
-- `os/mac/install_optional.sh` - Optional tools
+- `os/mac/install.sh --profile minimal` - Primary macOS installer
+- `os/mac/install.sh` - Optional tools
 - `os/linux/install_arch.sh` - Arch Linux installer
 - `os/linux/install_ubuntu.sh` - Ubuntu/Debian installer
 

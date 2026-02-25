@@ -1,5 +1,8 @@
 # Complete Installation Guide
 
+> Important: macOS install flow has changed to a single installer.
+> Prefer [MAC_WORKSTATION_GUIDE.md](./MAC_WORKSTATION_GUIDE.md) for current macOS steps.
+
 ## Your Development Environment - Consistent Across All Machines
 
 This guide explains what gets installed where and how to keep all your machines in sync.
@@ -53,11 +56,11 @@ cd ~/.dotfiles
 
 **Then install your apps:**
 ```bash
-./os/mac/install_optional.sh
+./os/mac/install.sh
 ```
 
 #### Option 2: Everything (if you know what you want)
-Just say yes to everything in `install_optional.sh`
+Just say yes to everything in `install.sh`
 
 **Package Manager:** Homebrew
 ```bash
@@ -163,7 +166,7 @@ cd ~/.dotfiles
 - On **Arch**: Offers Arch-specific installer
 - On **other Linux**: Uses generic installer
 
-#### `os/mac/install_minimal.sh`
+#### `os/mac/install.sh --profile minimal`
 **Purpose:** Essential macOS setup only
 
 **Installs:**
@@ -179,7 +182,7 @@ cd ~/.dotfiles
 
 **Use when:** First time setup or you want to install apps manually
 
-#### `os/mac/install_optional.sh`
+#### `os/mac/install.sh`
 **Purpose:** Interactive tool installer
 
 **Asks about:**
@@ -286,7 +289,7 @@ AUR_APPS=(
 ```
 
 **macOS:**
-Edit `os/mac/install_optional.sh`:
+Edit `os/mac/install.sh`:
 ```bash
 install_if_confirmed "Your App" \
   "brew install --cask your-app" \
@@ -470,7 +473,7 @@ finder        # Open current directory in Finder
 ### Mac
 - [ ] Clone dotfiles repo
 - [ ] Run `./install.sh` (choose minimal)
-- [ ] Run `./os/mac/install_optional.sh`
+- [ ] Run `./os/mac/install.sh`
 - [ ] Run `./os/mac/setup_macos_preferences.sh`
 - [ ] Install WebStorm via JetBrains Toolbox
 - [ ] Download Claude Code from claude.ai

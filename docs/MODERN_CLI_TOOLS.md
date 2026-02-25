@@ -243,10 +243,10 @@ zi projects                      # Interactive selection if multiple matches
 
 ---
 
-### tldr - Simplified Man Pages
+### tlrc/tldr - Simplified Man Pages
 
 **Better than:** `man`
-**What it does:** Show practical examples of command usage
+**What it does:** Show practical examples of command usage (`tlrc` provides the `tldr` command on macOS/Homebrew)
 
 ```bash
 # Traditional

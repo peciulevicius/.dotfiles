@@ -49,23 +49,8 @@ main() {
             ;;
         Darwin*)
             echo "Detected macOS."
-            echo ""
-            echo "Choose installation type:"
-            echo "  1) Minimal (recommended) - Git, GitHub CLI, SSH, dotfiles only"
-            echo "  2) Full - Installs many packages (not recommended)"
-            echo ""
-            read -p "Enter choice (1 or 2, default=1): " choice
-
-            case $choice in
-                2)
-                    echo "Running full setup..."
-                    bash "$DOTFILES_DIR/os/mac/install.sh"
-                    ;;
-                *)
-                    echo "Running minimal setup..."
-                    bash "$DOTFILES_DIR/os/mac/install_minimal.sh"
-                    ;;
-            esac
+            echo "Running unified macOS installer..."
+            bash "$DOTFILES_DIR/os/mac/install.sh"
             ;;
         *)
             echo "Unsupported OS detected."

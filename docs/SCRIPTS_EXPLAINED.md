@@ -2,7 +2,7 @@
 
 ## Current Script Comparison (macOS)
 
-### install_minimal.sh
+### install.sh --profile minimal
 **Philosophy**: Bare minimum to get dotfiles working
 
 **Installs:**
@@ -30,7 +30,7 @@
 
 ---
 
-### install_optional.sh
+### install.sh
 **Philosophy**: Install additional tools interactively
 
 **Asks about each:**
@@ -189,7 +189,7 @@ Installs:
 - NordVPN
 - Figma
 
-### 4. `install_optional.sh` (All OS)
+### 4. `install.sh` (All OS)
 **What:** Project-specific tools
 **Why:** Not always needed
 

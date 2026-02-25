@@ -1,5 +1,8 @@
 # Quick Start Guide
 
+> Important: macOS install flow now uses one unified installer.
+> Run `./install.sh` (or `./os/mac/install.sh`) and follow [MAC_WORKSTATION_GUIDE.md](./MAC_WORKSTATION_GUIDE.md).
+
 ## TL;DR - For Your Mac Right Now
 
 ```bash
@@ -45,7 +48,7 @@ That's it! Everything else can be installed later when you need it.
 - ❌ Neovim
 - ❌ GUI apps
 
-**You can install these later** with `os/mac/install_optional.sh`
+**You can install these later** with `os/mac/install.sh`
 
 ---
 
@@ -94,7 +97,7 @@ When you actually need them:
 cd ~/.dotfiles
 
 # Interactive installer - asks for each tool
-./os/mac/install_optional.sh
+./os/mac/install.sh
 
 # Or install individually:
 brew install docker
@@ -216,7 +219,7 @@ cd ~/.dotfiles
 ./install.sh
 # Choose: 1) Minimal
 # Then run optional installer
-./os/mac/install_optional.sh
+./os/mac/install.sh
 ```
 
 ### Linux (Arch)
@@ -273,7 +276,7 @@ git config --global --list | grep alias
 # If not, reload:
 cd ~/.dotfiles
 rm ~/.gitconfig
-./os/mac/install_minimal.sh  # Re-run to recreate symlink
+./os/mac/install.sh --profile minimal  # Re-run to recreate symlink
 ```
 
 ### Want to start over
