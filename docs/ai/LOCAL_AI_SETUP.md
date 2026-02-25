@@ -49,6 +49,18 @@ ollama ps
 
 This flow is enough to run local AI without Codex/Claude subscriptions.
 
+## What Runs in Docker vs Native
+
+Recommended split:
+- Native on macOS: `ollama` (model runtime)
+- Docker: Open WebUI (optional browser UI layer)
+
+Why:
+- Native Ollama on Apple Silicon generally gives better GPU/Metal integration and fewer container GPU edge cases.
+- Docker is excellent for stateless app layers (UIs, gateways, supporting services).
+
+You can run LLM runtime in containers, but on macOS it is usually not simpler than native Ollama.
+
 ## Optional UI (Browser Chat)
 
 Run Open WebUI with Docker and connect to local Ollama:
@@ -92,6 +104,9 @@ ssh -N -L 11434:localhost:11434 youruser@<mac-mini-tailscale-ip>
 ```
 
 Now laptop can call `http://localhost:11434` securely through SSH tunnel.
+
+For full remote options (including no-Tailscale path), see:
+- [REMOTE_ACCESS.md](./REMOTE_ACCESS.md)
 
 ## Suggested Model Strategy (16GB RAM / 256GB SSD)
 
