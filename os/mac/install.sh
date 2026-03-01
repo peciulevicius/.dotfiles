@@ -69,7 +69,6 @@ OPTIONAL_CASKS=(
 # Optional cloud coding-agent apps/tools (off by default).
 # These can require subscriptions or API spend depending on provider/plan.
 AI_AGENT_CASKS=(
-  codex             # OpenAI Codex desktop app
   claude-code       # Anthropic Claude Code desktop/launcher cask
   opencode-desktop  # OpenCode desktop client
 )
