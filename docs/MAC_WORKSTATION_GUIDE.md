@@ -60,7 +60,7 @@ Defined in `os/mac/install.sh` with inline comments.
 - `docker`
 - `bitwarden`
 - `discord`, `figma`, `wispr-flow`
-- `darktable`, `calibre`, `adobe-digital-editions`
+- `darktable`, `calibre`
 - `logi-options+`, `yt-music`
 - `the-unarchiver`, `tg-pro`
 

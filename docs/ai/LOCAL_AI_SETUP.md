@@ -9,7 +9,6 @@ From your dotfiles installer:
 - `llama.cpp` (`llama-cli` for low-level local inference)
 
 Optional (off by default) in installer prompt:
-- `codex`
 - `claude-code`
 - `opencode-desktop`
 
@@ -47,7 +46,7 @@ ollama list
 ollama ps
 ```
 
-This flow is enough to run local AI without Codex/Claude subscriptions.
+This flow is enough to run local AI without cloud coding-agent subscriptions.
 
 ## What Runs in Docker vs Native
 

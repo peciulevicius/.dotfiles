@@ -19,6 +19,8 @@ scripts/dev-check.sh
 
 Open:
 - [Mac Workstation Guide](./MAC_WORKSTATION_GUIDE.md)
+- [Beginner Tool Setup Guide](./BEGINNER_TOOL_SETUP_GUIDE.md)
+- [Tool Coverage Matrix](./TOOL_COVERAGE_MATRIX.md)
 - [Local AI Setup](./ai/LOCAL_AI_SETUP.md)
 - [Tool Tutorials](./tutorials/TOOL_TUTORIALS.md)
 - [Docs Site Setup](./SETUP_DOCS_SITE.md)
