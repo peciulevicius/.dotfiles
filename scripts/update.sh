@@ -5,7 +5,7 @@
 #
 # Usage: ./update.sh
 
-set -e
+set +e
 
 # Colors
 GREEN='\033[0;32m'
@@ -189,8 +189,12 @@ fi
 if command -v pnpm &> /dev/null; then
     print_header "Updating pnpm"
 
-    pnpm add -g pnpm
-    pnpm update -g
+    echo "Updating pnpm itself..."
+    pnpm self-update || print_warning "pnpm self-update failed"
+
+    echo ""
+    echo "Updating global pnpm packages..."
+    pnpm update -g || print_warning "pnpm global package update failed"
 
     print_success "pnpm updated"
 fi

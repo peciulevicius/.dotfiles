@@ -3,7 +3,7 @@
 # Arch Linux Dotfiles Installation Script
 # Installs your consistent development environment across all machines
 
-set -e
+set +e
 
 # Import utility functions
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

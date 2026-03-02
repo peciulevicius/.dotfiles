@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euo pipefail
+set -uo pipefail
 
 MKDOCS_BIN="${MKDOCS_BIN:-}"
 if [[ -z "$MKDOCS_BIN" ]]; then

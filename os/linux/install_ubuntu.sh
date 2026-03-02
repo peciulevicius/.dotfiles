@@ -4,7 +4,7 @@
 # Works on: Ubuntu 20.04+, Debian 11+, Kali Linux, Pop!_OS, Linux Mint
 # This installer sets up a complete modern development environment
 
-set -e
+set +e
 
 # Colors for output
 RED='\033[0;31m'

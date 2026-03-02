@@ -3,7 +3,7 @@
 # macOS Unified Installer (single source of truth)
 # Keep setup clean and practical for both laptop and Mac mini.
 
-set -euo pipefail
+set -uo pipefail
 
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
