@@ -34,7 +34,8 @@ main() {
                             bash "$DOTFILES_DIR/os/linux/install_arch.sh"
                             ;;
                         2)
-                            bash "$DOTFILES_DIR/os/linux/install.sh"
+                            echo "Generic installer selected. Running Ubuntu/Debian installer."
+                            bash "$DOTFILES_DIR/os/linux/install_ubuntu.sh"
                             ;;
                         *)
                             echo "Running Arch installer..."
@@ -43,7 +44,7 @@ main() {
                     esac
                 else
                     # Debian/Ubuntu or other
-                    bash "$DOTFILES_DIR/os/linux/install.sh"
+                    bash "$DOTFILES_DIR/os/linux/install_ubuntu.sh"
                 fi
             fi
             ;;

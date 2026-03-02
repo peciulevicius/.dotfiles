@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Exit immediately if a command exits with a non-zero status
-set -e
+set +e
 
 # Install dos2unix if not already installed
 if ! command -v dos2unix &> /dev/null; then

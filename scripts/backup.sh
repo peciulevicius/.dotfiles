@@ -5,7 +5,7 @@
 #
 # Usage: ./backup.sh
 
-set -e
+set +e
 
 # Colors
 GREEN='\033[0;32m'

@@ -3,7 +3,7 @@
 # macOS System Preferences Automation
 # Sets up sensible defaults for a development machine
 
-set -e
+set +e
 
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
