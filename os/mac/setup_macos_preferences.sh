@@ -9,6 +9,26 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
+warn() {
+    echo -e "${YELLOW}⚠ $1${NC}"
+}
+
+safe_defaults_write() {
+    if ! defaults write "$@"; then
+        warn "Skipped: defaults write $*"
+        return 1
+    fi
+}
+
+safe_sudo() {
+    if sudo -n "$@" 2>/dev/null; then
+        return 0
+    fi
+
+    warn "Skipped (sudo password required): $*"
+    return 1
+}
+
 echo -e "${GREEN}========================================${NC}"
 echo -e "${GREEN}  macOS System Preferences Setup${NC}"
 echo -e "${GREEN}========================================${NC}\n"
@@ -113,7 +133,7 @@ defaults write com.apple.finder FXPreferredViewStyle -string "Nlsv"
 chflags nohidden ~/Library
 
 # Show the /Volumes folder
-sudo chflags nohidden /Volumes
+safe_sudo chflags nohidden /Volumes || true
 
 ###############################################################################
 # Dock                                                                        #
@@ -156,19 +176,19 @@ defaults write com.apple.dock show-recents -bool false
 echo "• Setting up Safari..."
 
 # Privacy: don't send search queries to Apple
-defaults write com.apple.Safari UniversalSearchEnabled -bool false
-defaults write com.apple.Safari SuppressSearchSuggestions -bool true
+safe_defaults_write com.apple.Safari UniversalSearchEnabled -bool false || true
+safe_defaults_write com.apple.Safari SuppressSearchSuggestions -bool true || true
 
 # Show the full URL in the address bar
-defaults write com.apple.Safari ShowFullURLInSmartSearchField -bool true
+safe_defaults_write com.apple.Safari ShowFullURLInSmartSearchField -bool true || true
 
 # Enable the Develop menu and the Web Inspector in Safari
-defaults write com.apple.Safari IncludeDevelopMenu -bool true
-defaults write com.apple.Safari WebKitDeveloperExtrasEnabledPreferenceKey -bool true
-defaults write com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebKit2DeveloperExtrasEnabled -bool true
+safe_defaults_write com.apple.Safari IncludeDevelopMenu -bool true || true
+safe_defaults_write com.apple.Safari WebKitDeveloperExtrasEnabledPreferenceKey -bool true || true
+safe_defaults_write com.apple.Safari com.apple.Safari.ContentPageGroupIdentifier.WebKit2DeveloperExtrasEnabled -bool true || true
 
 # Enable "Do Not Track"
-defaults write com.apple.Safari SendDoNotTrackHTTPHeader -bool true
+safe_defaults_write com.apple.Safari SendDoNotTrackHTTPHeader -bool true || true
 
 ###############################################################################
 # Terminal                                                                    #

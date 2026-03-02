@@ -53,7 +53,6 @@ CORE_CASKS=(
   wispr-flow             # Voice dictation workflow
   darktable              # Photo workflow
   calibre                # Ebook library manager
-  adobe-digital-editions # DRM ebook reader
   logi-options+          # Logitech devices config
   yt-music               # YouTube Music desktop app
   the-unarchiver         # Archive extraction utility
@@ -287,7 +286,7 @@ run_interactive() {
     install_cask_list "Optional Apps" "${OPTIONAL_CASKS[@]}"
   fi
 
-  if confirm "Install optional AI coding-agent apps (Codex, Claude Code, OpenCode Desktop)?" false; then
+  if confirm "Install optional AI coding-agent apps (Claude Code, OpenCode Desktop)?" false; then
     install_cask_list "AI Coding-Agent Apps" "${AI_AGENT_CASKS[@]}"
   fi
 

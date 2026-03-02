@@ -10,6 +10,8 @@ For macOS, the canonical source is [MAC_WORKSTATION_GUIDE.md](./MAC_WORKSTATION_
 
 - **[START_HERE.md](./START_HERE.md)** - Recommended reading order and daily commands
 - **[MAC_WORKSTATION_GUIDE.md](./MAC_WORKSTATION_GUIDE.md)** - Canonical laptop/Mac mini setup and maintenance guide
+- **[BEGINNER_TOOL_SETUP_GUIDE.md](./BEGINNER_TOOL_SETUP_GUIDE.md)** - Noob-friendly setup for every installed tool/app
+- **[TOOL_COVERAGE_MATRIX.md](./TOOL_COVERAGE_MATRIX.md)** - Coverage tracker for every installer formula/cask/manual app
 - **[QUICKSTART.md](./QUICKSTART.md)** - TL;DR guide for Mac users who want to get up and running fast
 - **[HOW_TO_INSTALL.md](./HOW_TO_INSTALL.md)** - Complete step-by-step installation guide for all operating systems
 - **[NEW_MAC_MINI_CHECKLIST.md](./NEW_MAC_MINI_CHECKLIST.md)** - One-pass setup for a new Mac mini
@@ -73,6 +75,8 @@ For macOS, the canonical source is [MAC_WORKSTATION_GUIDE.md](./MAC_WORKSTATION_
 - Get started quickly → [QUICKSTART.md](./QUICKSTART.md)
 - Start in the right order → [START_HERE.md](./START_HERE.md)
 - Use one canonical Mac setup guide → [MAC_WORKSTATION_GUIDE.md](./MAC_WORKSTATION_GUIDE.md)
+- Set up each installed tool step-by-step → [BEGINNER_TOOL_SETUP_GUIDE.md](./BEGINNER_TOOL_SETUP_GUIDE.md)
+- Check documentation coverage per installed tool → [TOOL_COVERAGE_MATRIX.md](./TOOL_COVERAGE_MATRIX.md)
 - Install on a new machine → [HOW_TO_INSTALL.md](./HOW_TO_INSTALL.md)
 - Set up new Mac mini fast → [NEW_MAC_MINI_CHECKLIST.md](./NEW_MAC_MINI_CHECKLIST.md)
 - Answer common questions → [FAQ.md](./FAQ.md) ⭐ **Start here if unsure!**
