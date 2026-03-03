@@ -15,26 +15,16 @@ Then run:
 scripts/dev-check.sh
 ```
 
-## 2) Learn the Tools Quickly
+## 2) Learn the Tools
 
-Open:
-- [Mac Workstation Guide](./MAC_WORKSTATION_GUIDE.md)
-- [Beginner Tool Setup Guide](./BEGINNER_TOOL_SETUP_GUIDE.md)
-- [Tool Coverage Matrix](./TOOL_COVERAGE_MATRIX.md)
-- [Local AI Setup](./ai/LOCAL_AI_SETUP.md)
-- [Tool Tutorials](./tutorials/TOOL_TUTORIALS.md)
-- [Docs Site Setup](./SETUP_DOCS_SITE.md)
-- [Modern CLI Tools](./MODERN_CLI_TOOLS.md)
-- [Mac Setup + Local AI](./MAC_SETUP_AND_LOCAL_AI.md)
+- [Mac Setup Guide](./MAC_SETUP.md) — installer, tools, local AI, remote access
+- [Beginner Tool Setup Guide](./BEGINNER_TOOL_SETUP_GUIDE.md) — step-by-step for each tool
+- [Tool Coverage Matrix](./TOOL_COVERAGE_MATRIX.md) — what's installed and documented
+- [Modern CLI Tools](./MODERN_CLI_TOOLS.md) — bat, eza, fzf, zoxide, etc.
+- [Tool Tutorials](./tutorials/TOOL_TUTORIALS.md) — official docs + video links
 
 ## 3) Daily Commands
 
 - Update system and packages: `scripts/update.sh`
-- Sync dotfiles symlinks/config: `scripts/sync.sh`
 - Health check: `scripts/dev-check.sh`
-- Set wallpaper: `scripts/wallpapers/set-wallpaper.sh`
-
-## 4) New Mac Mini Setup (next week)
-
-Use:
-- [New Mac Mini Checklist](./NEW_MAC_MINI_CHECKLIST.md)
+- Backup configs: `scripts/backup.sh`
