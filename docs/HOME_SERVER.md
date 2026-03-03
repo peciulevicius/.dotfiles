@@ -1,364 +1,131 @@
-# Mac mini Home Server Setup
+# Mac mini Setup
 
-Mac mini M4 (16GB / 256GB) as an always-on home server: dev machine, photo hub, remote access.
-
----
-
-## What It's Good For
-
-| Use case | Why |
-|----------|-----|
-| Always-on dev environment | Run long jobs, leave terminals open, never close your laptop |
-| Remote access from anywhere | SSH + Tailscale — laptop, phone, wherever |
-| Immich photo library | Self-hosted Google Photos replacement |
-| Local dev databases | Postgres + Redis in Docker — stop hitting Supabase prod during dev |
-| Self-hosted GitHub Actions | Free CI/CD for private repos |
-| Time Machine target | Automatic MacBook backups when you're home |
+Mac mini M4 as a second desk computer and photo hub. With a KVM you switch between MacBook and Mac mini using the same keyboard, mouse, and monitor.
 
 ---
 
-## Concepts to Understand First
+## What It Actually Does
 
-Before you start, read this. It'll save you a lot of confusion.
+| Thing | Value |
+|-------|-------|
+| **Immich** | Phone photos auto-backup wirelessly — your own Google Photos |
+| **Time Machine target** | MacBook backs up to the Mac mini's 500GB SSD automatically |
+| **Photo backup** | Nightly copy of photos from 1TB → 500GB in case 1TB fails |
+| **Tailscale** | So your phone can reach Immich when you're not home |
+| **SSH** | Optional — there when you need to check something remotely |
 
-### Sleep vs Locked
-
-These are completely different:
-
-| State | Machine | SSH | Services |
-|-------|---------|-----|---------|
-| **Sleeping** | Processor off | ❌ Can't connect | ❌ Nothing runs |
-| **Locked** | Fully running, screen off | ✅ Works | ✅ Everything runs |
-
-**When you lock your Mac mini or walk away, it's still running.** SSH works, Docker containers keep serving, backups run at 3am. The only thing that stops everything is sleep.
-
-**Should you prevent sleep?** Only if you want any of these:
-- SSH in from outside your house (phone, hotel, office)
-- Background tasks to run while you're not home (nightly backup, Immich syncing phone photos)
-- Services to stay available 24/7
-
-If you only use the Mac mini when you're sitting in front of it, sleep is fine. But as a home server the whole point is it keeps running when you're not there.
-
-### Why Docker?
-
-Docker runs services (like Postgres, Immich) in isolated containers instead of installing them directly on macOS.
-
-**Without Docker:** install Postgres directly → it writes files all over the system → updating it is risky → removing it is messy → it can conflict with other things.
-
-**With Docker:** Postgres runs in a self-contained box → start it with one command → stop it with one command → wipe and reinstall in seconds → completely isolated from your system.
-
-It's not magic — it's just a clean way to run server software on a Mac without making a mess of it.
-
-### How the backup actually works
-
-The nightly rsync is a **copy**, not a live mirror. Here's what that means:
-
-- Every night at 3am: photos from 1TB are copied to 500GB
-- If the 1TB fails: you have yesterday's photos on 500GB — but Immich is down
-- Recovery: manually point Immich at the 500GB backup, restart it, photos are back
-- **Not automatic** — you have to do the recovery steps yourself
-
-This is not RAID (which would mirror in real time). It's a daily snapshot backup. Your photos are safe, but you'd spend 20 minutes recovering, not 0 minutes.
+**The Mac mini does not need Time Machine itself.** Time Machine is for your MacBook — it backs up TO the Mac mini. The Mac mini's own data (photos) is protected by the nightly rsync copy to the 500GB.
 
 ---
 
-## Before You Touch the Drives
+## Storage
 
-**You said you have photos on both drives. Do this before formatting anything.**
+| Drive | Role |
+|-------|------|
+| 1TB SSD | Immich photo library (primary) |
+| 500GB SSD | 200GB Time Machine (MacBook) + 300GB photo backup (rsync) |
 
-### 1. See what's on each drive
+Both stay connected permanently.
 
+---
+
+## Before You Start — Migrate Existing Photos
+
+You have photos on both drives. Get everything onto the 1TB before touching anything.
+
+**1. See what drives are connected:**
 ```bash
 ls /Volumes/
-# Shows all mounted drives
 ```
 
+**2. Copy everything from 500GB to 1TB:**
 ```bash
-# See how much space is used on each
-df -h /Volumes/<drive-name>
+rsync -av --progress /Volumes/<500gb-name>/ /Volumes/<1tb-name>/
 ```
 
-### 2. Copy everything to the 1TB
-
-The 1TB is your primary drive. Get all photos onto it first.
-
+Wait for it to finish. Then verify the file count matches:
 ```bash
-# Replace drive names with what you actually see in /Volumes/
-rsync -av --progress /Volumes/<500gb-drive-name>/ /Volumes/<1tb-drive-name>/
+find /Volumes/<500gb-name> -type f | wc -l
+find /Volumes/<1tb-name> -type f | wc -l
 ```
 
-This copies everything from the 500GB to the 1TB. Wait for it to finish.
-
-### 3. Verify the copy
-
-```bash
-# Count files on source
-find /Volumes/<500gb-drive-name> -type f | wc -l
-
-# Count files on destination
-find /Volumes/<1tb-drive-name> -type f | wc -l
-```
-
-Numbers should match (or destination should be higher if 1TB already had files).
-
-Open Finder, browse both drives, spot-check that folders and files look right.
-
-### 4. Only then format the 500GB
-
-Once you're confident everything is on the 1TB, format and partition the 500GB (instructions below).
+**3. Only format the 500GB once you're sure everything is on the 1TB.**
 
 ---
 
-## Storage Layout
+## Setup
 
-| Drive | Size | Role |
-|-------|------|------|
-| 1TB SSD | Primary | Immich photos + Docker volumes + large files |
-| 500GB SSD | Split | 200GB Time Machine (MacBook) + 300GB Immich backup |
+### 1. Format the drives
 
-**Both stay connected permanently.** If a drive disconnects, services that depend on it stop working — Immich goes offline, backups fail. Treat them like internal drives.
-
----
-
-## Complete Setup
-
-Follow this in order. Replace `youruser` with your macOS username throughout.
-
----
-
-### Step 0 — Format and partition drives
-
-**Only do this after you've verified all photos are safe on the 1TB (see "Before You Touch the Drives" above).**
-
-**1TB → primary storage**
-
-Disk Utility → select 1TB → Erase:
-- Format: **APFS**
-- Scheme: **GUID Partition Map**
+**1TB → Disk Utility → Erase:**
+- Format: APFS
 - Name: `Storage`
 
-**500GB → split in two**
+**500GB → Disk Utility → Partition → two partitions:**
+- `TimeMachine` — 200GB
+- `ImmichBackup` — 300GB
 
-Disk Utility → select 500GB → Partition → click `+` twice to add two partitions:
-- Name: `TimeMachine`, Size: 200GB
-- Name: `ImmichBackup`, Size: 300GB
-
-Create the directory structure on the 1TB:
-
+Create folders on the 1TB:
 ```bash
 mkdir -p /Volumes/Storage/immich
-mkdir -p /Volumes/Storage/docker
 mkdir -p ~/services/immich
-mkdir -p ~/services/dev-db
 mkdir -p ~/logs
 ```
 
 ---
 
-### Step 1 — Mac mini server settings
+### 2. Tailscale
 
-**Prevent sleep** (so SSH works and background tasks run when you're not home):
+Lets your phone reach Immich when you're away from home. Also lets you SSH in if you ever need to.
 
-```bash
-sudo pmset -a sleep 0 disksleep 0 displaysleep 10
-```
-
-This means:
-- `sleep 0` — machine never sleeps
-- `disksleep 0` — drives never spin down
-- `displaysleep 10` — screen turns off after 10 minutes (saves power, doesn't affect anything)
-
-**Auto-restart after power outage** (so it comes back on its own if power cuts out):
-
-```bash
-sudo systemsetup -setrestartpowerfailure on
-```
-
-**Optional — auto-login on startup** (so services start immediately after a reboot without someone typing a password at the keyboard):
-
-`System Settings → Users & Groups → Automatic Login` → select your user
-
----
-
-### Step 2 — Tailscale
-
-Tailscale creates a private network between all your devices. Your Mac mini, MacBook, and phone all get a private IP that works from anywhere — no port forwarding, no exposed ports, encrypted.
-
-**On Mac mini:**
 ```bash
 brew install --cask tailscale
 open /Applications/Tailscale.app
 # Sign in with Google or GitHub
 ```
 
-**On MacBook:** download from [tailscale.com](https://tailscale.com/download), sign in with the same account.
-
-**On phone:** install from App Store, same account.
-
-Get your Mac mini's Tailscale IP:
+Install on your phone too (App Store, same account). Get the Mac mini's IP:
 ```bash
 tailscale ip -4
-# e.g. 100.64.0.12
-```
-
-Write this down. You'll use it for everything. Verify from MacBook (from any network, including mobile):
-```bash
-ping <tailscale-ip>
+# e.g. 100.64.0.12 — save this
 ```
 
 ---
 
-### Step 3 — SSH
+### 3. SSH (optional but quick to set up)
 
-SSH lets you open a terminal on the Mac mini from anywhere.
+Only useful if you ever need to check or fix something remotely. Takes 2 minutes so worth having.
 
-Enable on Mac mini:
 `System Settings → General → Sharing → Remote Login` → On
 
-Connect from MacBook:
-```bash
-ssh youruser@<tailscale-ip>
-# It'll ask for your password the first time
-```
-
-Copy your SSH key so you never need a password again:
-```bash
-ssh-copy-id youruser@<tailscale-ip>
-```
-
-Add a shortcut to `~/.ssh/config` on your MacBook:
+On your MacBook, add a shortcut (`~/.ssh/config`):
 ```
 Host macmini
   HostName <tailscale-ip>
   User youruser
 ```
 
-Now you just type:
+Copy your key so no password needed:
 ```bash
-ssh macmini
+ssh-copy-id macmini
 ```
 
 ---
 
-### Step 4 — tmux (persistent sessions)
+### 4. OrbStack (Docker)
 
-When you SSH into the Mac mini and close your laptop, the SSH connection drops and anything running in that terminal stops. tmux keeps sessions alive — you reconnect and everything is exactly where you left it.
-
-Install on Mac mini:
-```bash
-brew install tmux
-```
-
-**The workflow:**
-```bash
-ssh macmini               # connect
-tmux new -s work          # start a named session called "work"
-# ... do stuff ...
-# close laptop / lose connection
-ssh macmini               # reconnect later
-tmux attach -t work       # everything is still there
-```
-
-**Essential shortcuts** (all start with `Ctrl+B`, then a key):
-
-| Shortcut | What it does |
-|----------|-------------|
-| `Ctrl+B D` | Detach from session (leave it running) |
-| `Ctrl+B C` | New window |
-| `Ctrl+B N` | Next window |
-| `Ctrl+B P` | Previous window |
-| `Ctrl+B %` | Split pane vertically |
-| `Ctrl+B "` | Split pane horizontally |
-| `Ctrl+B →` | Move to pane on the right |
-| `Ctrl+B [` | Scroll mode (use arrow keys, `Q` to exit) |
-
-List all sessions:
-```bash
-tmux ls
-```
-
----
-
-### Step 5 — VS Code Remote SSH
-
-Edit files on the Mac mini from VS Code on your MacBook — full autocomplete, extensions, integrated terminal, everything.
-
-1. In VS Code on MacBook: install the **Remote - SSH** extension
-2. `Cmd+Shift+P` → type `Remote-SSH: Connect to Host` → select `macmini` (from your SSH config)
-3. VS Code opens a window connected to the Mac mini — files, terminal, everything runs there
-
-You can run `pnpm dev` in the terminal and the server runs on the Mac mini, accessible from `localhost` on your MacBook via port forwarding that VS Code does automatically.
-
----
-
-### Step 6 — OrbStack (Docker)
-
-OrbStack is a lighter, faster replacement for Docker Desktop on Mac. The `docker` and `docker compose` commands work identically.
+Immich runs in Docker. OrbStack is lighter than Docker Desktop.
 
 ```bash
 brew install --cask orbstack
-# Open OrbStack and let it start
+# Open it and let it start
 ```
-
-Verify:
-```bash
-docker --version
-docker compose version
-```
-
-OrbStack starts automatically on login and restarts containers marked `restart: always` after a reboot.
 
 ---
 
-### Step 7 — Dev databases
+### 5. Immich
 
-Run Postgres and Redis on the Mac mini instead of hitting Supabase or cloud databases during development. Faster, free, isolated, safe to wipe.
-
-Create `~/services/dev-db/docker-compose.yml`:
-
-```yaml
-services:
-  postgres:
-    image: postgres:16
-    container_name: dev-postgres
-    environment:
-      POSTGRES_USER: dev
-      POSTGRES_PASSWORD: dev
-      POSTGRES_DB: dev
-    ports:
-      - 5432:5432
-    volumes:
-      - /Volumes/Storage/docker/postgres:/var/lib/postgresql/data
-    restart: unless-stopped
-
-  redis:
-    image: redis:7-alpine
-    container_name: dev-redis
-    ports:
-      - 6379:6379
-    volumes:
-      - /Volumes/Storage/docker/redis:/data
-    restart: unless-stopped
-```
-
-Start:
-```bash
-cd ~/services/dev-db
-docker compose up -d
-```
-
-**Use from MacBook** — tunnel both ports over SSH in one command:
-```bash
-ssh -N -L 5432:localhost:5432 -L 6379:localhost:6379 macmini
-```
-
-Leave this running in a terminal tab. Your MacBook's `localhost:5432` now routes to Postgres on the Mac mini. No `.env` changes needed.
-
----
-
-### Step 8 — Immich (photo library)
-
-Immich is a self-hosted Google Photos replacement. It runs in Docker on the Mac mini and stores photos on the 1TB SSD.
+Self-hosted Google Photos. Your phone backs up to it automatically over WiFi.
 
 Create `~/services/immich/docker-compose.yml`:
 
@@ -425,29 +192,35 @@ docker compose up -d
 
 Open `http://<tailscale-ip>:2283` → create your admin account.
 
-**Phone setup:** install Immich from App Store → server URL: `http://<tailscale-ip>:2283` → sign in → enable automatic backup. Your phone photos now back up to your Mac mini automatically.
+---
 
-**Import existing photos from 1TB:** in Immich web UI → top right menu → Upload → drag your photo folders in. Or use the Immich CLI for large imports:
+### 6. Phone backup
+
+Install **Immich** from the App Store. Open it → enter server URL: `http://<tailscale-ip>:2283` → sign in → go to Profile → enable **Automatic Backup**.
+
+That's it. From now on:
+- Phone on home WiFi → Immich syncs automatically in the background
+- Phone anywhere → syncs over Tailscale when you open the app
+- No cables, no manual export, no iCloud needed
+
+**Import existing photos:** drag folders into the Immich web UI at `http://<tailscale-ip>:2283`, or use the CLI for large imports:
 ```bash
-# Install Immich CLI
 npm install -g @immich/cli
-
-# Upload a folder
 immich upload --recursive /Volumes/Storage/your-photos-folder
 ```
 
 ---
 
-### Step 9 — Backup (nightly rsync)
+### 7. Photo backup (nightly rsync)
 
-Copies your Immich photo library from 1TB to 500GB every night at 3am.
+Copies photos from 1TB → 500GB every night so a drive failure doesn't lose everything.
 
-Test it manually first:
+Test it:
 ```bash
 ~/.dotfiles/scripts/backup-immich.sh
 ```
 
-Schedule it:
+Schedule it (open crontab editor):
 ```bash
 crontab -e
 ```
@@ -457,121 +230,70 @@ Add this line:
 0 3 * * * ~/.dotfiles/scripts/backup-immich.sh >> ~/logs/immich-backup.log 2>&1
 ```
 
-Check it ran in the morning:
-```bash
-cat ~/logs/immich-backup.log
-```
-
 ---
 
-### Step 10 — Time Machine (MacBook backups)
+### 8. Time Machine (MacBook backup)
 
 **On Mac mini:**
 1. `System Settings → General → Sharing → File Sharing` → On
-2. Click `+` → add the `TimeMachine` partition
-3. Click `Options` → check **Share as Time Machine backup destination**
+2. Add the `TimeMachine` partition
+3. Options → check **Share as Time Machine backup destination**
 
 **On MacBook:**
-1. `System Settings → General → Time Machine`
-2. `Add Backup Disk` → select the Mac mini's `TimeMachine` share
-3. Backs up automatically when on the same network or over Tailscale
+1. `System Settings → General → Time Machine → Add Backup Disk`
+2. Select the Mac mini's `TimeMachine` share
 
----
-
-### Step 11 — Verify everything works
-
-```bash
-# All Docker containers running
-docker ps
-
-# Tailscale connected
-tailscale status
-
-# SSH works without password
-ssh macmini echo "connected"
-
-# Immich accessible
-open http://<tailscale-ip>:2283
-
-# Backup runs without errors
-~/.dotfiles/scripts/backup-immich.sh
-```
+MacBook backs up automatically when on the same network. Done.
 
 ---
 
 ## If a Drive Fails
 
-### 1TB fails (photo library)
+**1TB fails** — Immich goes offline, photos are on 500GB from last night.
 
-Immich goes offline. Photos are on the 500GB `ImmichBackup` partition from last night.
+Recovery: edit `~/services/immich/docker-compose.yml`, change the upload volume path from `/Volumes/Storage/immich/upload` to `/Volumes/ImmichBackup/immich/upload`, then `docker compose down && docker compose up -d`. Photos are back. Buy a new 1TB, copy data back, repoint Immich.
 
-Recovery:
-```bash
-# Update Immich to point at backup partition
-# Edit ~/services/immich/docker-compose.yml
-# Change this line in immich-server volumes:
-#   /Volumes/Storage/immich/upload:/usr/src/app/upload
-# To:
-#   /Volumes/ImmichBackup/immich/upload:/usr/src/app/upload
-
-# Also update the postgres volume path similarly, then:
-cd ~/services/immich
-docker compose down
-docker compose up -d
-```
-
-Buy a replacement drive, copy data back, repoint Immich to the new 1TB.
-
-### 500GB fails
-
-- MacBook Time Machine stops (buy new drive, re-point Time Machine)
-- Nightly backup stops (backup-immich.sh will error and log it)
-- Photos on 1TB are unaffected
+**500GB fails** — MacBook Time Machine stops, nightly backup stops. Photos on 1TB unaffected. Buy a replacement, reformat, re-point Time Machine and cron job.
 
 ---
 
-## Keeping Everything Running
+## Should It Sleep?
 
-Services start automatically on boot (OrbStack handles Docker, brew services handles native tools).
+Up to you.
 
+- **Let it sleep** — fine if you're always home when you need it. Immich won't sync phone photos while it sleeps. Time Machine won't run. SSH won't connect.
+- **Prevent sleep** — if you want phone photos to sync automatically overnight, or want to SSH from outside the house.
+
+To prevent sleep:
 ```bash
-# Check everything
-docker ps
-brew services list
-tailscale status
-
-# Update
-scripts/update.sh                                              # Homebrew tools
-cd ~/services/immich && docker compose pull && docker compose up -d   # Immich
-cd ~/services/dev-db && docker compose pull && docker compose up -d   # databases
+sudo pmset -a sleep 0 disksleep 0 displaysleep 10
 ```
 
----
-
-## Optional: Self-hosted GitHub Actions Runner
-
-Free CI for private repos. GitHub: repo → Settings → Actions → Runners → New self-hosted runner → follow instructions (~5 min).
+To revert to normal:
+```bash
+sudo pmset -a sleep 1
+```
 
 ---
 
 ## Quick Reference
 
 ```bash
-# Connect
+# SSH in
 ssh macmini
 
-# Reattach terminal session
-tmux attach -t work
+# Check services
+docker ps
 
-# Tunnel dev databases to MacBook
-ssh -N -L 5432:localhost:5432 -L 6379:localhost:6379 macmini
+# Restart Immich
+cd ~/services/immich && docker compose restart
 
-# Immich web UI
-open http://<tailscale-ip>:2283
+# Update Immich
+cd ~/services/immich && docker compose pull && docker compose up -d
 
-# Run backup now
+# Run backup manually
 ~/.dotfiles/scripts/backup-immich.sh
 
-# Check everything
-docker ps && tailscale status
+# Check backup log
+cat ~/logs/immich-backup.log
 ```
