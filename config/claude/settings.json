@@ -3,5 +3,46 @@
   "statusLine": {
     "type": "command",
     "command": "~/.dotfiles/config/claude/statusline.sh"
+  },
+  "permissions": {
+    "allow": [
+      "Bash(pnpm *)",
+      "Bash(npm *)",
+      "Bash(npx *)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git add*)",
+      "Bash(git commit*)",
+      "Bash(git push*)",
+      "Bash(git pull*)",
+      "Bash(git checkout*)",
+      "Bash(git branch*)",
+      "Bash(git stash*)",
+      "Bash(git fetch*)",
+      "Bash(gh *)",
+      "Bash(supabase *)",
+      "Bash(docker *)",
+      "Bash(docker-compose *)",
+      "Bash(ls*)",
+      "Bash(cat *)",
+      "Bash(echo *)",
+      "Bash(mkdir *)",
+      "Bash(cp *)",
+      "Bash(mv *)",
+      "Bash(chmod *)"
+    ],
+    "deny": [
+      "Bash(rm -rf *)",
+      "Bash(sudo rm *)",
+      "Bash(curl * | bash)",
+      "Bash(curl * | sh)",
+      "Bash(wget * | bash)",
+      "Bash(wget * | sh)",
+      "Bash(chmod 777 *)",
+      "Bash(sudo chmod *)",
+      "Bash(dd *)",
+      "Bash(mkfs *)"
+    ]
   }
 }
