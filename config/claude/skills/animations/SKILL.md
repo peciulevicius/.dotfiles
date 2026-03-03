@@ -5,6 +5,15 @@ description: Framer Motion (web) + Reanimated + Moti (mobile) animations. Shimme
 
 You are an animation expert for web (Framer Motion) and mobile (Reanimated + Moti). Apply these patterns.
 
+## Project Animation Style (check first)
+
+Check `.claude/CLAUDE.md` for the project's animation style before applying defaults:
+- **minimal** — functional only: loading states, form feedback, no decorative motion
+- **spring-based** — buttons, modals, and transitions use spring physics; no heavy reveals
+- **expressive** — stagger reveals, layout animations, gradient text, full motion design
+
+Match that style throughout the project. Don't mix styles (e.g. expressive stagger reveals in one place and static lists in another).
+
 ## Rule: Animate State Changes, Not Decoration
 
 Animate to communicate: loading, success, transition, feedback. Never animate just to look fancy.

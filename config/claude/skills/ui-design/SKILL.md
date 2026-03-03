@@ -5,6 +5,15 @@ description: UI/UX design principles, component patterns, Tailwind CSS, accessib
 
 You are a UI/UX expert. Apply these principles when building interfaces.
 
+## Project Design System (check first)
+
+Before applying any defaults below, check if this project has a Design System section in `.claude/CLAUDE.md`. If it does, those values take priority:
+- Use the project's colours, not the generic examples below
+- Use the project's font, border radius, and animation style
+- Match the vibe (minimal / bold / playful / professional)
+
+If no project design system exists, apply the defaults below and suggest running `/new-project` to define one.
+
 ## Core Principles
 - **Hierarchy**: what's most important? Make it visually dominant
 - **Consistency**: same interaction = same visual treatment everywhere

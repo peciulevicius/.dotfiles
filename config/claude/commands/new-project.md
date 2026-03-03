@@ -26,6 +26,23 @@ Don't ask all of these — only the ones that aren't obvious from what they alre
 
 ---
 
+## Phase 1b — Design Direction
+
+After understanding what they're building, ask about design. Keep it casual — one or two questions, not a form.
+
+Pick what's relevant and unknown:
+- Light mode, dark mode, or both?
+- What's the vibe? (minimal/clean, bold/striking, playful, professional/corporate, warm, techy)
+- Any reference sites or apps you like the look of?
+- Color preferences, or should I suggest something?
+- Font preferences, or should I suggest based on the vibe?
+
+Don't ask all of these. If they said "B2B SaaS", you know the vibe is probably professional. If they said "consumer app", ask about it. 1-2 questions max.
+
+If they have no preferences, note that — you'll make design decisions in Phase 2 and they can change them in Phase 3.
+
+---
+
 ## Phase 2 — Stack Recommendation
 
 Once you understand the project well enough, recommend a specific stack. Be opinionated — don't list 5 options, pick one and explain why.
@@ -41,6 +58,16 @@ Format:
 **Mobile:** [if needed]
 **Email:** [if needed]
 **Analytics:** [if needed]
+
+## Design Direction
+
+**Components:** [shadcn/ui for Next.js / Skeleton UI for SvelteKit / NativeWind for Expo]
+**Mode:** [Light / Dark / Both]
+**Vibe:** [1-2 words: minimal, bold, playful, professional, warm, etc.]
+**Primary colour:** [suggestion with hex — e.g. Slate blue #6366f1]
+**Neutral:** [e.g. Zinc grays]
+**Font:** [e.g. Inter (system-ui fallback), Geist, Cal Sans for headings]
+**Animations:** [minimal / spring-based / expressive — and what that means for this project]
 
 ## Why this stack
 
@@ -125,6 +152,25 @@ pnpm dev        # start dev server
 pnpm build      # production build
 pnpm test       # run tests
 pnpm lint       # lint
+
+## Design System
+
+**Components:** [shadcn/ui / Skeleton UI / NativeWind]
+**Mode:** [Light / Dark / Both]
+**Vibe:** [minimal / bold / playful / professional]
+
+**Colours:**
+- Primary: [name + hex — e.g. Indigo #6366f1]
+- Neutral: [e.g. Zinc — bg-zinc-950, text-zinc-50 in dark]
+- Accent: [if any]
+- Semantic: green = success, red = error, yellow = warning
+
+**Font:** [e.g. Inter — already Tailwind default]
+**Border radius:** [tight (rounded-md) / soft (rounded-xl) / pill-heavy]
+
+**Animations:** [minimal — functional only / spring-based — buttons and modals / expressive — stagger reveals, layout animations]
+
+**Reference:** [any sites/apps mentioned for design direction, or "none"]
 
 ## Conventions
 - pnpm always
