@@ -8,7 +8,7 @@ Complete documentation for this dotfiles repository.
 
 - **[START_HERE.md](./START_HERE.md)** - Recommended reading order and daily commands
 - **[MAC_SETUP.md](./MAC_SETUP.md)** - macOS setup, tools, local AI, and remote access (all-in-one)
-- **[HOME_SERVER.md](./HOME_SERVER.md)** - Mac mini as home server: storage, Tailscale, Immich, Ollama, Docker
+- **[HOME_SERVER.md](./HOME_SERVER.md)** - Mac mini setup: photo hub (Immich), Time Machine, Tailscale, SSH, drive backup
 - **[BEGINNER_TOOL_SETUP_GUIDE.md](./BEGINNER_TOOL_SETUP_GUIDE.md)** - Noob-friendly setup for every installed tool/app
 - **[TOOL_COVERAGE_MATRIX.md](./TOOL_COVERAGE_MATRIX.md)** - Coverage tracker for every installer formula/cask/manual app
 - **[QUICKSTART.md](./QUICKSTART.md)** - TL;DR guide for Mac users who want to get up and running fast
@@ -76,7 +76,7 @@ Complete documentation for this dotfiles repository.
 - Get started quickly → [QUICKSTART.md](./QUICKSTART.md)
 - Start in the right order → [START_HERE.md](./START_HERE.md)
 - Set up a Mac (setup, tools, local AI, remote access) → [MAC_SETUP.md](./MAC_SETUP.md)
-- Set up Mac mini as home server → [HOME_SERVER.md](./HOME_SERVER.md)
+- Set up Mac mini (photos, backups, remote access) → [HOME_SERVER.md](./HOME_SERVER.md)
 - Set up each installed tool step-by-step → [BEGINNER_TOOL_SETUP_GUIDE.md](./BEGINNER_TOOL_SETUP_GUIDE.md)
 - Check documentation coverage per installed tool → [TOOL_COVERAGE_MATRIX.md](./TOOL_COVERAGE_MATRIX.md)
 - Install on a new machine → [HOW_TO_INSTALL.md](./HOW_TO_INSTALL.md)
