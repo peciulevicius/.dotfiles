@@ -339,8 +339,6 @@ print_summary() {
     echo -e "  ${WHITE}CLAUDE.md:${RESET}    $CLAUDE_DIR/CLAUDE.md (symlinked)"
     echo -e "  ${WHITE}Settings:${RESET}     $CLAUDE_DIR/settings.json"
     echo ""
-    echo -e "  ${CYAN}MCP servers:${RESET} Run setup-mcp.sh to configure tokens"
-    echo -e "  ${WHITE}→${RESET} ~/.dotfiles/scripts/setup-mcp.sh"
     echo ""
     echo -e "  ${CYAN}Docs:${RESET} ~/.dotfiles/docs/CLAUDE_CODE_GUIDE.md"
     echo ""
