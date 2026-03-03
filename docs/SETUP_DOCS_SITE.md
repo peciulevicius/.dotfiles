@@ -106,9 +106,9 @@ Important:
 - So branch mode `/docs` will not render styled MkDocs site unless you commit built HTML there.
 - Recommended approach is current `GitHub Actions` workflow, which builds and deploys `site/` automatically.
 
-## Current important pages
+## Key pages
 
 - [Start Here](./START_HERE.md)
-- [Mac Workstation Guide](./MAC_WORKSTATION_GUIDE.md)
-- [Local AI Setup](./ai/LOCAL_AI_SETUP.md)
-- [Remote AI Access](./ai/REMOTE_ACCESS.md)
+- [macOS Setup](./MAC_SETUP.md)
+- [Mac mini Setup](./HOME_SERVER.md)
+- [Claude Code Guide](./CLAUDE_CODE_GUIDE.md)

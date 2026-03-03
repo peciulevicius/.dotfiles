@@ -1,6 +1,6 @@
-site_name: Dotfiles Docs
-site_description: Personal workstation and dotfiles setup
-site_url: http://localhost:8000
+site_name: Džiugas' Dotfiles
+site_description: Personal workstation setup, tools, Mac mini, Claude Code, and development environment
+site_url: https://docs.peciulevicius.com
 
 repo_name: peciulevicius/.dotfiles
 repo_url: https://github.com/peciulevicius/.dotfiles
@@ -21,8 +21,11 @@ theme:
   features:
     - navigation.sections
     - navigation.expand
+    - navigation.top
     - search.highlight
+    - search.suggest
     - content.code.copy
+    - toc.follow
 
 markdown_extensions:
   - admonition
@@ -30,31 +33,40 @@ markdown_extensions:
       permalink: true
   - pymdownx.superfences
   - pymdownx.details
+  - pymdownx.tabbed:
+      alternate_style: true
 
 nav:
-  - Home: START_HERE.md
-  - Mac Setup:
-      - Workstation Guide: MAC_WORKSTATION_GUIDE.md
-      - New Mac Mini Checklist: NEW_MAC_MINI_CHECKLIST.md
+  - Start Here: START_HERE.md
+
+  - Mac:
+      - macOS Setup: MAC_SETUP.md
+      - Mac mini Setup: HOME_SERVER.md
       - Wallpapers: WALLPAPERS.md
-  - AI:
-      - Local AI Setup: ai/LOCAL_AI_SETUP.md
-      - Remote Access: ai/REMOTE_ACCESS.md
+
+  - Claude Code:
+      - Claude Code Guide: CLAUDE_CODE_GUIDE.md
+      - Business Stack: BUSINESS_STACK_GUIDE.md
+
   - Tools:
-      - Modern CLI: MODERN_CLI_TOOLS.md
+      - Modern CLI Tools: MODERN_CLI_TOOLS.md
+      - Tmux Guide: TMUX_GUIDE.md
       - Utility Scripts: UTILITY_SCRIPTS.md
       - Tool Tutorials: tutorials/TOOL_TUTORIALS.md
-      - Docs Site Setup: SETUP_DOCS_SITE.md
+
+  - Installation:
+      - Quickstart: QUICKSTART.md
+      - How to Install: HOW_TO_INSTALL.md
+      - Installation Guide: INSTALLATION_GUIDE.md
+      - Scripts Explained: SCRIPTS_EXPLAINED.md
+      - Arch Linux: ARCH_INSTALLER_FLOW.md
+
   - Reference:
       - Config Guide: CONFIG_GUIDE.md
       - FAQ: FAQ.md
-      - Quickstart: QUICKSTART.md
-      - How To Install: HOW_TO_INSTALL.md
-      - Installation Guide: INSTALLATION_GUIDE.md
-      - Scripts Explained: SCRIPTS_EXPLAINED.md
       - Symlinks: SYMLINKS.md
-      - Tmux Guide: TMUX_GUIDE.md
-      - Arch Installer Flow: ARCH_INSTALLER_FLOW.md
+      - Tool Coverage Matrix: TOOL_COVERAGE_MATRIX.md
+      - Beginner Tool Setup: BEGINNER_TOOL_SETUP_GUIDE.md
+      - Docs Site Setup: SETUP_DOCS_SITE.md
       - Cleanup Audit: CLEANUP_AUDIT.md
-      - Legacy Mac Setup + AI: MAC_SETUP_AND_LOCAL_AI.md
       - Docs Index: README.md

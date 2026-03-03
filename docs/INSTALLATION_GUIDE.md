@@ -1,7 +1,7 @@
 # Complete Installation Guide
 
 > Important: macOS install flow has changed to a single installer.
-> Prefer [MAC_WORKSTATION_GUIDE.md](./MAC_WORKSTATION_GUIDE.md) for current macOS steps.
+> Prefer [MAC_SETUP.md](./MAC_SETUP.md) for current macOS steps.
 
 ## Your Development Environment - Consistent Across All Machines
 

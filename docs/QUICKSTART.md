@@ -1,7 +1,7 @@
 # Quick Start Guide
 
 > Important: macOS install flow now uses one unified installer.
-> Run `./install.sh` (or `./os/mac/install.sh`) and follow [MAC_WORKSTATION_GUIDE.md](./MAC_WORKSTATION_GUIDE.md).
+> Run `./install.sh` (or `./os/mac/install.sh`) and follow [MAC_SETUP.md](./MAC_SETUP.md).
 
 ## TL;DR - For Your Mac Right Now
 
