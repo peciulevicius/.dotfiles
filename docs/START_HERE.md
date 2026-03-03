@@ -15,9 +15,9 @@ Then run:
 scripts/dev-check.sh
 ```
 
-## 2) Set Up Mac mini as Home Server
+## 2) Set Up Mac mini
 
-- [Home Server Guide](./HOME_SERVER.md) — storage layout, Tailscale, Immich, Ollama, Docker
+- [Mac mini Setup Guide](./HOME_SERVER.md) — photo hub, Immich, Time Machine, Tailscale, SSH, backups
 
 ## 3) Learn the Tools
 
