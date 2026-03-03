@@ -8,12 +8,13 @@ All utility scripts are located in `scripts/` directory:
 
 ```
 scripts/
-├── update.sh          # Update all package managers + Claude Code
-├── setup-claude.sh    # Set up Claude Code (agents, skills, rules, commands, hooks)
-├── backup.sh          # Backup configurations
-├── cleanup.sh         # Clean caches and free disk space
-├── dev-check.sh       # Check environment health
-└── setup-gpg.sh       # Set up GPG commit signing
+├── update.sh           # Update all package managers + Claude Code
+├── setup-claude.sh     # Set up Claude Code (agents, skills, rules, commands, hooks)
+├── backup.sh           # Backup configurations
+├── backup-immich.sh    # Nightly rsync of Immich photos → 500GB backup partition
+├── cleanup.sh          # Clean caches and free disk space
+├── dev-check.sh        # Check environment health
+└── setup-gpg.sh        # Set up GPG commit signing
 ```
 
 ## 🚀 Quick Start

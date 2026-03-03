@@ -19,26 +19,51 @@ Both stay connected permanently.
 
 ## Backup Strategy
 
-**If the 1TB SSD fails without a backup, photos are gone.** An external SSD is not a backup — it's a single point of failure.
+**If the 1TB SSD fails without a backup, photos are gone.** An external SSD is not a backup — it's just primary storage.
 
-**The fix: Backblaze Personal Backup**
+### Use the 500GB you already have
 
-- $99/year, unlimited storage, runs on Mac mini
-- Backs up everything on the machine including external drives
-- If SSD fails, restore from Backblaze
+Partition the 500GB into two parts:
 
-Install from [backblaze.com](https://www.backblaze.com) → add the 1TB as an included drive in Backblaze preferences.
+| Partition | Size | Role |
+|-----------|------|------|
+| `TimeMachine` | 200GB | MacBook Time Machine backups |
+| `ImmichBackup` | 300GB | Nightly rsync copy of photos from 1TB |
 
-**Full picture after setup:**
+In Disk Utility → select 500GB → Partition → add two partitions with those names and sizes.
+
+### Set up nightly photo backup
+
+Create the backup script:
+
+```bash
+mkdir -p ~/.dotfiles/scripts
+```
+
+The script lives at `scripts/backup-immich.sh` in your dotfiles (see below). It rsyncs photos from the 1TB to the 500GB partition every night.
+
+Run it manually to test:
+
+```bash
+~/.dotfiles/scripts/backup-immich.sh
+```
+
+Schedule it nightly with cron (`crontab -e`):
+
+```
+0 3 * * * ~/.dotfiles/scripts/backup-immich.sh >> ~/logs/immich-backup.log 2>&1
+```
+
+### What this gives you
 
 | Data | Primary | Backup |
 |------|---------|--------|
-| Photos (Immich) | 1TB SSD | Backblaze cloud |
-| MacBook files | MacBook internal | 500GB SSD via Time Machine |
-| AI models (Ollama) | 1TB SSD | None needed — re-downloadable |
-| Docker volumes | 1TB SSD | Backblaze cloud (covered automatically) |
+| Photos (Immich) | 1TB SSD | 500GB partition (nightly rsync) |
+| MacBook files | MacBook internal | 500GB partition (Time Machine) |
+| AI models (Ollama) | 1TB SSD | None — re-downloadable, not worth backing up |
+| Docker volumes | 1TB SSD | Not backed up — Immich DB is on 1TB too |
 
-You don't need a third SSD. Backblaze covers the offsite copy.
+**The one risk you accept:** both drives are physically in the same room. Fire or theft loses both. For most people that's an acceptable tradeoff for self-hosting. If you ever want cloud as a third copy, Backblaze B2 is $6/TB/month (storage only, no subscription).
 
 ---
 
