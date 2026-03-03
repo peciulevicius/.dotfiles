@@ -14,6 +14,8 @@ Everything about the Claude Code setup in this dotfiles repo — the 6 things, h
   - [4. Agents](#4-agents)
   - [5. Settings](#5-settings)
   - [6. Commands](#6-commands)
+- [MCP Servers](#mcp-servers)
+- [Hooks](#hooks)
 - [Status Line](#status-line)
 - [Extending the Setup](#extending-the-setup)
 - [Reference](#reference)
@@ -27,11 +29,11 @@ Everything Claude Code uses lives in `~/.claude/`. All 6 are managed from this d
 | # | Path | What it is | Status |
 |---|------|------------|--------|
 | 1 | `~/.claude/CLAUDE.md` | Global instructions loaded every session | ✅ |
-| 2 | `~/.claude/rules/` | Detailed guidelines split by topic | ✅ 7 files |
-| 3 | `~/.claude/skills/` | Auto-triggered or slash-invoked skill packs | ✅ 22 skills |
-| 4 | `~/.claude/agents/` | Specialist subagents for delegation | ✅ 17 agents |
-| 5 | `~/.claude/settings.json` | Permissions, statusline, MCP | ✅ |
-| 6 | `~/.claude/commands/` | Manual slash commands (`/pr`, `/debug`, etc.) | ✅ 6 commands |
+| 2 | `~/.claude/rules/` | Detailed guidelines split by topic | ✅ 10 files |
+| 3 | `~/.claude/skills/` | Auto-triggered or slash-invoked skill packs | ✅ 23 skills |
+| 4 | `~/.claude/agents/` | Specialist subagents for delegation | ✅ 19 agents |
+| 5 | `~/.claude/settings.json` | Permissions, statusline, MCP, hooks | ✅ |
+| 6 | `~/.claude/commands/` | Manual slash commands (`/pr`, `/debug`, etc.) | ✅ 8 commands |
 
 All files live in `config/claude/` in this repo and are symlinked to `~/.claude/` by `setup-claude.sh`.
 
@@ -189,6 +191,9 @@ Detailed guidelines split by topic. Claude loads them on demand via `@rules/` re
 | `security.md` | Auth, secrets, input validation, Stripe webhooks |
 | `testing.md` | Vitest, RTL, Playwright — what to test and how |
 | `api.md` | Route handlers, response format, pagination, webhooks |
+| `mobile.md` | Expo, React Native, SecureStore, navigation, NativeWind |
+| `performance.md` | React rendering, memoization, bundles, images, caching |
+| `env.md` | Environment variables, validation, secrets, Vercel/Cloudflare |
 
 **Adding a rule:**
 1. Create `config/claude/rules/your-topic.md`
@@ -224,6 +229,7 @@ Skills are reusable instruction sets. Claude loads only the `name` + `descriptio
 | `security-audit` | Security review checklist |
 | `seo-content` | Next.js metadata, JSON-LD, Core Web Vitals |
 | `sql` | PostgreSQL queries and optimization |
+| `stripe` | Stripe payments, webhooks, subscriptions |
 | `supabase` | Schema, RLS, auth, edge functions |
 | `sveltekit` | SvelteKit, form actions, Cloudflare Pages |
 | `turborepo` | Monorepo setup, shared packages |
@@ -273,6 +279,7 @@ Specialist subagents with their own personas, tool restrictions, and optional mo
 | `architect` | System design, tech stack decisions, ADRs |
 | `backend-developer` | APIs, databases, server-side code |
 | `code-reviewer` | Code quality, best practices, refactoring |
+| `database-admin` | Database management, optimization, migrations |
 | `data-engineer` | SQL, data pipelines |
 | `designer` | UI/UX, wireframes, design systems |
 | `devops-engineer` | CI/CD, Docker, cloud infra |
@@ -280,6 +287,7 @@ Specialist subagents with their own personas, tool restrictions, and optional mo
 | `growth-hacker` | Virality, acquisition, retention experiments |
 | `marketing-engineer` | Marketing automation, analytics |
 | `mobile-developer` | iOS, Android, React Native |
+| `performance-engineer` | Optimization, profiling, benchmarking |
 | `pricing-strategist` | Pricing tiers, packaging, WTP |
 | `product-manager` | PRDs, feature specs, roadmaps |
 | `project-manager` | Planning, timelines |
@@ -361,6 +369,8 @@ Manual slash commands you invoke explicitly (vs skills which auto-trigger).
 | `/standup` | Generate standup from yesterday's git activity |
 | `/debug` | Systematic debugging — root cause analysis |
 | `/docs` | Generate or update documentation |
+| `/deploy` | Deploy to production |
+| `/check` | Run health check on project |
 
 **Adding a command:**
 ```bash
@@ -375,6 +385,57 @@ EOF
 ```
 
 Use `$ARGUMENTS` to capture what you type after the slash command name.
+
+---
+
+## MCP Servers
+
+MCP (Model Context Protocol) servers are background processes that expose extra tools Claude uses automatically — no invocation needed. They start via `npx` when Claude Code launches and are configured in `settings.json`.
+
+### The 5 Servers
+
+| Server | Provides | Requires |
+|--------|----------|----------|
+| `github` | Read repos, issues, PRs, search — interact with GitHub without typing commands | `GITHUB_TOKEN` — personal access token with repo scope |
+| `postgres` | Query Supabase DB directly — run SQL without jumping to terminal | `SUPABASE_DB_URL` — connection string to your dev/prod database |
+| `filesystem` | Read/write files in `~/code` and `~/Downloads` — persistent tools without asking | — (no token needed) |
+| `fetch` | Fetch any URL as a native tool — async web requests directly | — (no token needed) |
+| `brave-search` | Real-time web search — search the web from conversations (optional) | `BRAVE_API_KEY` — optional, only if you want search |
+
+### Setup
+
+Run `scripts/setup-mcp.sh` — it prompts you for each token and saves them to `~/.zshrc` as environment variables:
+
+```bash
+~/.dotfiles/scripts/setup-mcp.sh
+```
+
+The script adds lines like this to `~/.zshrc`:
+```bash
+export GITHUB_TOKEN=ghp_xxx
+export SUPABASE_DB_URL=postgresql://xxx
+export BRAVE_API_KEY=xxx  # optional
+```
+
+**Important:** Tokens are stored in env vars, never in the committed dotfiles. They persist across sessions and Claude always has access.
+
+---
+
+## Hooks
+
+Hooks are shell scripts that fire at specific points in Claude's workflow. Configured in `settings.json` and stored in `config/claude/hooks/`.
+
+### notify-done.sh
+
+Fires a macOS/Linux desktop notification when Claude finishes responding. Useful when you step away from long-running tasks (testing, analysis, building) — you get a notification when Claude is done instead of constantly checking back.
+
+Example:
+```
+$ /some-long-task
+[Claude thinking... notification fires when done]
+```
+
+Add more hooks to `config/claude/hooks/` as needed — they're auto-picked up by `setup-claude.sh`.
 
 ---
 
@@ -402,10 +463,11 @@ Script: `config/claude/statusline.sh`. Parses token counts from Claude's context
 
 | Type | Count | Add more to |
 |------|-------|-------------|
-| Agents | 17 | `config/claude/agents/` |
-| Skills | 22 | `config/claude/skills/` |
-| Rules | 7 | `config/claude/rules/` |
-| Commands | 6 | `config/claude/commands/` |
+| Agents | 19 | `config/claude/agents/` |
+| Skills | 23 | `config/claude/skills/` |
+| Rules | 10 | `config/claude/rules/` |
+| Commands | 8 | `config/claude/commands/` |
+| Hooks | 1 | `config/claude/hooks/` |
 
 ### After adding anything
 
@@ -444,10 +506,11 @@ config/claude/
 ├── settings.json          # settings → ~/.claude/settings.json
 ├── settings.example.json  # reference copy
 ├── statusline.sh          # statusline script
-├── agents/                # 17 agents → ~/.claude/agents/
-├── skills/                # 22 skills → ~/.claude/skills/
-├── rules/                 # 7 rules → ~/.claude/rules/
-└── commands/              # 6 commands → ~/.claude/commands/
+├── agents/                # 19 agents → ~/.claude/agents/
+├── skills/                # 23 skills → ~/.claude/skills/
+├── rules/                 # 10 rules → ~/.claude/rules/
+├── commands/              # 8 commands → ~/.claude/commands/
+└── hooks/                 # shell hooks (notify-done.sh, etc.)
 ```
 
 ### All scripts in this repo
@@ -455,7 +518,8 @@ config/claude/
 | Script | Interactive? | What it does |
 |--------|-------------|-------------|
 | `install.sh` | ✅ yes | Full machine setup — Homebrew, tools, symlinks |
-| `scripts/setup-claude.sh` | ✅ menu when no args | Claude Code setup (menu → pick 1–4) |
+| `scripts/setup-claude.sh` | ✅ menu when no args | Claude Code setup (menu → pick 1–4) + hooks |
+| `scripts/setup-mcp.sh` | ✅ yes | Set up MCP server tokens (GitHub, Supabase, Brave) |
 | `scripts/update.sh` | ❌ runs automatically | Update all package managers + Claude Code |
 | `scripts/backup.sh` | ❌ runs automatically | Backup configs to timestamped folder |
 | `scripts/cleanup.sh` | ❌ runs automatically | Clear caches (Homebrew, npm, pip, etc.) |

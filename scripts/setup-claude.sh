@@ -70,7 +70,8 @@ setup_dirs() {
     mkdir -p "$CLAUDE_DIR/skills"
     mkdir -p "$CLAUDE_DIR/rules"
     mkdir -p "$CLAUDE_DIR/commands"
-    print_success "Directories ready: $CLAUDE_DIR/{agents,skills,rules,commands}"
+    mkdir -p "$CLAUDE_DIR/hooks"
+    print_success "Directories ready: $CLAUDE_DIR/{agents,skills,rules,commands,hooks}"
 }
 
 # ---- Statusline ----
@@ -245,6 +246,28 @@ setup_commands() {
     print_success "Installed $count commands (symlinked from dotfiles)"
 }
 
+# ---- Hooks ----
+setup_hooks() {
+    print_section "Installing hooks"
+
+    local hooks_src="$CLAUDE_CONFIG_DIR/hooks"
+
+    if [ ! -d "$hooks_src" ] || [ -z "$(ls -A "$hooks_src" 2>/dev/null)" ]; then
+        print_info "No hooks in dotfiles yet (add them to $hooks_src/)"
+        return
+    fi
+
+    local count=0
+    for hook_file in "$hooks_src"/*.sh; do
+        [ -f "$hook_file" ] || continue
+        chmod +x "$hook_file"
+        count=$((count + 1))
+    done
+
+    print_success "Made $count hooks executable (referenced directly from dotfiles)"
+    print_info "Hooks run from: $hooks_src/"
+}
+
 # ---- Global CLAUDE.md ----
 setup_global_claude_md() {
     print_section "Installing global CLAUDE.md"
@@ -312,8 +335,12 @@ print_summary() {
     echo -e "  ${WHITE}Skills:${RESET}       $CLAUDE_DIR/skills/ (symlinked)"
     echo -e "  ${WHITE}Rules:${RESET}        $CLAUDE_DIR/rules/ (symlinked)"
     echo -e "  ${WHITE}Commands:${RESET}     $CLAUDE_DIR/commands/ (symlinked)"
+    echo -e "  ${WHITE}Hooks:${RESET}        $CLAUDE_CONFIG_DIR/hooks/ (referenced directly)"
     echo -e "  ${WHITE}CLAUDE.md:${RESET}    $CLAUDE_DIR/CLAUDE.md (symlinked)"
     echo -e "  ${WHITE}Settings:${RESET}     $CLAUDE_DIR/settings.json"
+    echo ""
+    echo -e "  ${CYAN}MCP servers:${RESET} Run setup-mcp.sh to configure tokens"
+    echo -e "  ${WHITE}→${RESET} ~/.dotfiles/scripts/setup-mcp.sh"
     echo ""
     echo -e "  ${CYAN}Docs:${RESET} ~/.dotfiles/docs/CLAUDE_CODE_GUIDE.md"
     echo ""
@@ -354,6 +381,7 @@ run_mode() {
             setup_skills
             setup_rules
             setup_commands
+            setup_hooks
             setup_global_claude_md
             print_summary
             ;;
@@ -364,6 +392,7 @@ run_mode() {
             setup_skills
             setup_rules
             setup_commands
+            setup_hooks
             setup_global_claude_md
             print_success "Claude Code config synced"
             ;;

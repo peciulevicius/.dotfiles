@@ -24,6 +24,10 @@
       "Bash(supabase *)",
       "Bash(docker *)",
       "Bash(docker-compose *)",
+      "Bash(vercel *)",
+      "Bash(wrangler *)",
+      "Bash(eas *)",
+      "Bash(stripe *)",
       "Bash(ls*)",
       "Bash(cat *)",
       "Bash(echo *)",
@@ -44,5 +48,45 @@
       "Bash(dd *)",
       "Bash(mkfs *)"
     ]
+  },
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.dotfiles/config/claude/hooks/notify-done.sh"
+          }
+        ]
+      }
+    ]
+  },
+  "mcpServers": {
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_TOKEN}"
+      }
+    },
+    "postgres": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-postgres", "${SUPABASE_DB_URL}"]
+    },
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "${HOME}/code", "${HOME}/Downloads"]
+    },
+    "fetch": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-fetch"]
+    },
+    "brave-search": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-brave-search"],
+      "env": {
+        "BRAVE_API_KEY": "${BRAVE_API_KEY}"
+      }
+    }
   }
 }
