@@ -132,20 +132,6 @@ Shell scripts that fire at specific points in Claude's workflow.
 
 Configured in `settings.json` and stored in `config/claude/hooks/`. Add more as needed.
 
-## MCP Servers
-
-Background processes that expose extra tools Claude uses automatically (no manual invocation needed). Configured in `settings.json` and started via `npx` when Claude Code starts.
-
-| Server | Provides | Requires |
-|--------|----------|----------|
-| `github` | Repos, issues, PRs, search | `GITHUB_TOKEN` |
-| `postgres` | Query Supabase DB directly | `SUPABASE_DB_URL` |
-| `filesystem` | Read/write `~/code` and `~/Downloads` | — |
-| `fetch` | Fetch any URL as a native tool | — |
-| `brave-search` | Real-time web search | `BRAVE_API_KEY` (optional) |
-
-**Setup:** Run `scripts/setup-mcp.sh` to configure tokens. They're stored in `~/.zshrc` as environment variables, never in the committed dotfiles.
-
 ## Adding New Content
 
 ```bash

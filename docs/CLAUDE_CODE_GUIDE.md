@@ -14,7 +14,6 @@ Everything about the Claude Code setup in this dotfiles repo — the 6 things, h
   - [4. Agents](#4-agents)
   - [5. Settings](#5-settings)
   - [6. Commands](#6-commands)
-- [MCP Servers](#mcp-servers)
 - [Hooks](#hooks)
 - [Status Line](#status-line)
 - [Extending the Setup](#extending-the-setup)
@@ -32,7 +31,7 @@ Everything Claude Code uses lives in `~/.claude/`. All 6 are managed from this d
 | 2 | `~/.claude/rules/` | Detailed guidelines split by topic | ✅ 10 files |
 | 3 | `~/.claude/skills/` | Auto-triggered or slash-invoked skill packs | ✅ 23 skills |
 | 4 | `~/.claude/agents/` | Specialist subagents for delegation | ✅ 19 agents |
-| 5 | `~/.claude/settings.json` | Permissions, statusline, MCP, hooks | ✅ |
+| 5 | `~/.claude/settings.json` | Permissions, statusline, hooks | ✅ |
 | 6 | `~/.claude/commands/` | Manual slash commands (`/pr`, `/debug`, etc.) | ✅ 8 commands |
 
 All files live in `config/claude/` in this repo and are symlinked to `~/.claude/` by `setup-claude.sh`.
@@ -388,39 +387,6 @@ Use `$ARGUMENTS` to capture what you type after the slash command name.
 
 ---
 
-## MCP Servers
-
-MCP (Model Context Protocol) servers are background processes that expose extra tools Claude uses automatically — no invocation needed. They start via `npx` when Claude Code launches and are configured in `settings.json`.
-
-### The 5 Servers
-
-| Server | Provides | Requires |
-|--------|----------|----------|
-| `github` | Read repos, issues, PRs, search — interact with GitHub without typing commands | `GITHUB_TOKEN` — personal access token with repo scope |
-| `postgres` | Query Supabase DB directly — run SQL without jumping to terminal | `SUPABASE_DB_URL` — connection string to your dev/prod database |
-| `filesystem` | Read/write files in `~/code` and `~/Downloads` — persistent tools without asking | — (no token needed) |
-| `fetch` | Fetch any URL as a native tool — async web requests directly | — (no token needed) |
-| `brave-search` | Real-time web search — search the web from conversations (optional) | `BRAVE_API_KEY` — optional, only if you want search |
-
-### Setup
-
-Run `scripts/setup-mcp.sh` — it prompts you for each token and saves them to `~/.zshrc` as environment variables:
-
-```bash
-~/.dotfiles/scripts/setup-mcp.sh
-```
-
-The script adds lines like this to `~/.zshrc`:
-```bash
-export GITHUB_TOKEN=ghp_xxx
-export SUPABASE_DB_URL=postgresql://xxx
-export BRAVE_API_KEY=xxx  # optional
-```
-
-**Important:** Tokens are stored in env vars, never in the committed dotfiles. They persist across sessions and Claude always has access.
-
----
-
 ## Hooks
 
 Hooks are shell scripts that fire at specific points in Claude's workflow. Configured in `settings.json` and stored in `config/claude/hooks/`.
@@ -519,7 +485,6 @@ config/claude/
 |--------|-------------|-------------|
 | `install.sh` | ✅ yes | Full machine setup — Homebrew, tools, symlinks |
 | `scripts/setup-claude.sh` | ✅ menu when no args | Claude Code setup (menu → pick 1–4) + hooks |
-| `scripts/setup-mcp.sh` | ✅ yes | Set up MCP server tokens (GitHub, Supabase, Brave) |
 | `scripts/update.sh` | ❌ runs automatically | Update all package managers + Claude Code |
 | `scripts/backup.sh` | ❌ runs automatically | Backup configs to timestamped folder |
 | `scripts/cleanup.sh` | ❌ runs automatically | Clear caches (Homebrew, npm, pip, etc.) |
