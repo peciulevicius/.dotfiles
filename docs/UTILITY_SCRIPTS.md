@@ -9,7 +9,8 @@ All utility scripts are located in `scripts/` directory:
 ```
 scripts/
 ├── update.sh          # Update all package managers + Claude Code
-├── setup-claude.sh    # Set up Claude Code (agents, skills, rules, commands)
+├── setup-claude.sh    # Set up Claude Code (agents, skills, rules, commands, hooks)
+├── setup-mcp.sh       # Configure MCP server tokens (GitHub, Supabase, Brave Search)
 ├── backup.sh          # Backup configurations
 ├── cleanup.sh         # Clean caches and free disk space
 ├── dev-check.sh       # Check environment health
@@ -63,6 +64,38 @@ Symlinks everything from `config/claude/` into `~/.claude/`:
 - **New machine:** run once after `./install.sh`
 - **After pulling dotfiles:** run with option 2 (or let `update.sh` do it)
 - **After adding new agents/skills:** run with option 2
+
+---
+
+## 🔌 setup-mcp.sh - MCP Server Setup
+
+Configures environment variables for Claude Code MCP servers — prompts for each token and saves to `~/.zshrc`.
+
+### What it configures
+
+| Server | What it needs |
+|--------|--------------|
+| GitHub | `GITHUB_TOKEN` — personal access token (repo, read:org scopes) |
+| Postgres | `SUPABASE_DB_URL` — direct connection string from Supabase Dashboard |
+| Filesystem | Nothing — configured automatically |
+| Fetch | Nothing — works out of the box |
+| Brave Search | `BRAVE_API_KEY` — optional, free tier at api.search.brave.com |
+
+### Usage
+
+```bash
+~/.dotfiles/scripts/setup-mcp.sh
+```
+
+Interactive — prompts for each token. Safe to rerun (overwrites existing values). Tokens go into `~/.zshrc` as `export` statements, never into the committed dotfiles.
+
+### After setup
+
+```bash
+source ~/.zshrc                                    # reload env vars
+~/.dotfiles/scripts/setup-claude.sh update        # sync settings.json
+# Then restart Claude Code — MCP servers start automatically
+```
 
 ---
 

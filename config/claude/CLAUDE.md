@@ -40,6 +40,9 @@ Džiugas — full-stack TypeScript developer. Building a SaaS product (landing +
 @rules/security.md
 @rules/testing.md
 @rules/api.md
+@rules/mobile.md
+@rules/performance.md
+@rules/env.md
 
 ## Project Setup
 Run `/new-project` at the start of any new project to scaffold `.claude/` config.
