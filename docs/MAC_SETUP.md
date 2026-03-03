@@ -77,11 +77,6 @@ Run it if you want these tweaks. Skip it if you prefer manual settings.
 | `pnpm` | Fast, space-efficient package manager |
 | `starship` | Cross-shell prompt |
 
-### Local AI (optional prompt during install)
-
-- `ollama` — model manager + local inference server
-- `llama.cpp` — low-level inference, benchmarking, fallback
-
 ### Core Apps
 
 - `google-chrome`, `brave-browser`
@@ -110,7 +105,6 @@ Edit one file: `os/mac/install.sh`
 
 Change the arrays:
 - `CORE_FORMULAS` — CLI tools always installed
-- `AI_FORMULAS` — local AI tools (Ollama, llama.cpp)
 - `CORE_CASKS` — GUI apps always installed
 - `OPTIONAL_CASKS` — prompted during install
 
@@ -155,116 +149,11 @@ scripts/dev-check.sh  # verify nothing broke
 
 ---
 
-## Local AI
-
-For Mac mini M4 (16GB RAM / 256GB SSD) or any Apple Silicon Mac.
-
-### Get Running
-
-1. Start Ollama service
-
-```bash
-brew services start ollama
-```
-
-2. Pull a coding model
-
-```bash
-ollama pull qwen2.5-coder:7b
-```
-
-3. Run a prompt
-
-```bash
-ollama run qwen2.5-coder:7b "Write a Python script that renames files by date"
-```
-
-4. Check loaded models
-
-```bash
-ollama list
-ollama ps
-```
-
-### Suggested Models
-
-Start with these on 16GB RAM:
-
-```bash
-ollama pull llama3.1:8b       # general purpose
-ollama pull qwen2.5-coder:7b  # coding tasks
-```
-
-Avoid 14B+ models on internal SSD — they saturate RAM and disk.
-
-### Native vs Docker
-
-- Run `ollama` **natively** on macOS — better Apple Silicon GPU/Metal integration
-- Run optional UIs (Open WebUI) **in Docker** — stateless, easy to remove
-
-### Optional Browser UI (Open WebUI)
-
-```bash
-docker run -d \
-  --name open-webui \
-  -p 3000:8080 \
-  -e OLLAMA_BASE_URL=http://host.docker.internal:11434 \
-  -v open-webui:/app/backend/data \
-  --restart unless-stopped \
-  ghcr.io/open-webui/open-webui:main
-```
-
-Open: `http://localhost:3000`
-
-### Storage Advice (256GB SSD)
-
-- Keep 2–3 active models at a time
-- Prefer 7B/8B quantized models
-- Move model cache to external SSD if the library grows
-
-### Troubleshooting Ollama
-
-If Ollama crashes with an MLX/Metal exception (`NSRangeException`):
-
-1. Run from a normal GUI session (not a restricted shell)
-2. Restart Mac and retry
-3. Reinstall:
-
-```bash
-brew reinstall ollama
-```
-
-4. Try the cask variant instead:
-
-```bash
-brew uninstall ollama
-brew install --cask ollama
-```
-
-5. Use `llama.cpp` as fallback:
-
-```bash
-llama-cli -m /path/to/model.gguf -p "Hello"
-```
-
----
-
 ## Remote Access (Mac mini at home)
 
-Use the Mac mini as a home server — access it from laptop or phone anywhere.
-
-### Recommended Architecture
-
-- Mac mini runs `ollama` on `localhost:11434`
-- Optional: Open WebUI in Docker on `localhost:3000`
-- Remote access via Tailscale + SSH (no open ports, no port forwarding needed)
+Access the Mac mini from your laptop or phone anywhere via Tailscale + SSH. No port forwarding.
 
 ### 1) On the Mac mini
-
-```bash
-brew services start ollama
-# optional: start Open WebUI via Docker (see Local AI section above)
-```
 
 Enable SSH:
 `System Settings → General → Sharing → Remote Login`
@@ -291,38 +180,28 @@ SSH into the Mac mini:
 ssh youruser@<mac-mini-tailnet-ip>
 ```
 
-Use tmux for persistent sessions:
+Use tmux for persistent sessions that survive disconnects:
 
 ```bash
 tmux new -s dev
+# detach: Ctrl+B D  |  reattach: tmux attach -t dev
 ```
 
-Tunnel Ollama API to local laptop (so local tools can call it):
+VS Code Remote SSH also works — connect and edit files directly on the mini.
+
+Tunnel a port from Mac mini to laptop (e.g., local dev database):
 
 ```bash
-ssh -N -L 11434:localhost:11434 youruser@<mac-mini-tailnet-ip>
+ssh -N -L 5432:localhost:5432 youruser@<mac-mini-tailnet-ip>
 ```
-
-Now `http://localhost:11434` on the laptop routes to the Mac mini.
-
-Tunnel Open WebUI:
-
-```bash
-ssh -N -L 3000:localhost:3000 youruser@<mac-mini-tailnet-ip>
-```
-
-Open `http://localhost:3000` in laptop browser.
-
-VS Code Remote SSH also works — connect directly and edit/run on the mini.
 
 ### 4) From Phone
 
-- Tailscale app → open browser to `http://<mac-mini-tailnet-ip>:3000`
-- SSH client app (e.g., Termius) → connect and use CLI/tmux
+- Tailscale app → Immich at `http://<mac-mini-tailnet-ip>:2283`
+- SSH client (e.g., Termius) → connect and use CLI/tmux
 
 ### Security Rules
 
-- Keep Ollama bound to `localhost` — never expose `11434` to the internet
 - Use Tailscale + SSH tunnels instead of open ports
 - SSH keys only, disable password auth
 - Long passwords + 2FA on all accounts
@@ -330,7 +209,6 @@ VS Code Remote SSH also works — connect directly and edit/run on the mini.
 ### Troubleshooting
 
 ```bash
-brew services restart ollama          # Ollama not responding
-docker logs open-webui                # Open WebUI issues
-# SSH: verify Remote Login is enabled + correct tailnet IP
+# SSH: verify Remote Login is enabled in System Settings + correct tailnet IP
+tailscale status   # check all devices are connected
 ```
