@@ -15,6 +15,33 @@ You have two external SSDs. Use them like this:
 
 Both stay connected permanently.
 
+---
+
+## Backup Strategy
+
+**If the 1TB SSD fails without a backup, photos are gone.** An external SSD is not a backup — it's a single point of failure.
+
+**The fix: Backblaze Personal Backup**
+
+- $99/year, unlimited storage, runs on Mac mini
+- Backs up everything on the machine including external drives
+- If SSD fails, restore from Backblaze
+
+Install from [backblaze.com](https://www.backblaze.com) → add the 1TB as an included drive in Backblaze preferences.
+
+**Full picture after setup:**
+
+| Data | Primary | Backup |
+|------|---------|--------|
+| Photos (Immich) | 1TB SSD | Backblaze cloud |
+| MacBook files | MacBook internal | 500GB SSD via Time Machine |
+| AI models (Ollama) | 1TB SSD | None needed — re-downloadable |
+| Docker volumes | 1TB SSD | Backblaze cloud (covered automatically) |
+
+You don't need a third SSD. Backblaze covers the offsite copy.
+
+---
+
 ### Format the 1TB (if not already APFS)
 
 Open Disk Utility → select the 1TB drive → Erase:
@@ -311,6 +338,19 @@ ollama list                 # loaded models
 | n8n | Add later if you need automation pipelines |
 
 Add these when you actually have a use case, not preemptively.
+
+---
+
+## Full Setup Order
+
+1. Format 1TB as APFS in Disk Utility
+2. Tailscale — install + sign in on Mac mini, MacBook, phone
+3. Enable SSH — System Settings → Sharing → Remote Login
+4. OrbStack — replaces Docker Desktop
+5. Backblaze Personal Backup — add 1TB as included drive
+6. Immich — Docker Compose, library on 1TB
+7. Ollama — native install, models on 1TB
+8. Time Machine — share 500GB over network, point MacBook at it
 
 ---
 
