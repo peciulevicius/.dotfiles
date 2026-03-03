@@ -249,6 +249,25 @@ if [ -d "$HOME/.dotfiles" ]; then
     fi
 
     cd - > /dev/null
+
+    # Re-sync Claude Code config after dotfiles update
+    if command -v claude &>/dev/null && [ -f "$HOME/.dotfiles/scripts/setup-claude.sh" ]; then
+        echo ""
+        echo "Syncing Claude Code config..."
+        bash "$HOME/.dotfiles/scripts/setup-claude.sh" update 2>/dev/null
+        print_success "Claude Code config synced"
+    fi
+fi
+
+# ═══════════════════════════════════════════════════════
+# Claude Code
+# ═══════════════════════════════════════════════════════
+
+if command -v claude &>/dev/null; then
+    print_header "Updating Claude Code"
+
+    echo "Checking for Claude Code updates..."
+    claude update 2>/dev/null && print_success "Claude Code updated" || print_warning "Claude Code update skipped (may already be latest)"
 fi
 
 # ═══════════════════════════════════════════════════════
@@ -319,6 +338,10 @@ fi
 
 if [ -d "$HOME/.dotfiles" ]; then
     echo "  ✓ Dotfiles"
+fi
+
+if command -v claude &>/dev/null; then
+    echo "  ✓ Claude Code"
 fi
 
 if [ -d "$HOME/.oh-my-zsh" ]; then

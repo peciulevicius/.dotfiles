@@ -6,117 +6,120 @@ Everything Claude Code needs, synced across machines via dotfiles.
 
 ```
 config/claude/
-├── statusline.sh         # Status line script (3-line display with usage bars)
-├── settings.json         # Claude Code settings (sync to ~/.claude/settings.json)
-├── agents/               # Sub-agent definitions (17 specialists)
-│   ├── architect.md
-│   ├── backend-developer.md
-│   ├── code-reviewer.md
-│   ├── data-engineer.md
-│   ├── designer.md
-│   ├── devops-engineer.md
-│   ├── frontend-developer.md
-│   ├── growth-hacker.md      ← NEW
-│   ├── marketing-engineer.md
-│   ├── mobile-developer.md
-│   ├── pricing-strategist.md ← NEW
-│   ├── product-manager.md
-│   ├── project-manager.md
-│   ├── qa-engineer.md
-│   ├── security-engineer.md
-│   ├── support-engineer.md
-│   └── technical-writer.md
-└── skills/               # Reusable skill definitions (22 skills)
-    ├── analytics-tracking/   ← PostHog, Sentry, RevenueCat events
-    ├── angular/              ← Angular patterns (work)
-    ├── animations/           ← Framer Motion + Reanimated + Moti
-    ├── astro/                ← Astro static sites + content collections
-    ├── cloudflare/           ← Pages, R2, Workers, Turnstile, KV
-    ├── commit/               ← Git conventional commits
-    ├── csharp/               ← C#/.NET (work)
-    ├── email-marketing/      ← Resend + Loops.so
-    ├── expo-mobile/          ← React Native + Expo
-    ├── landing-page/         ← High-converting landing pages
-    ├── market-research/      ← Market analysis
-    ├── nextjs/               ← Next.js App Router patterns
-    ├── product-spec/         ← PRDs and feature specs
-    ├── revenuecat/           ← Mobile in-app subscriptions
-    ├── saas-patterns/        ← Multi-tenancy, billing, auth
-    ├── security-audit/       ← OWASP checklist for SaaS
-    ├── seo-content/          ← Metadata, Core Web Vitals, JSON-LD
-    ├── sql/                  ← PostgreSQL queries (work)
-    ├── supabase/             ← Schema, RLS, auth, edge functions
-    ├── sveltekit/            ← SvelteKit routing, load, actions
-    ├── turborepo/            ← Monorepo setup + shared packages
-    └── ui-design/            ← UI components, Tailwind, a11y
+├── CLAUDE.md              # Global instructions — loaded every session
+├── settings.json          # Settings (statusline, permissions, thinking)
+├── settings.example.json  # Reference copy
+├── statusline.sh          # 3-line status display (model, tokens, usage bars)
+├── agents/                # 17 specialist sub-agents
+├── skills/                # 22 reusable skill packs
+├── rules/                 # 7 rule files (loaded on demand via @rules/)
+└── commands/              # 6 slash commands (/pr, /debug, etc.)
 ```
+
+All files are symlinked to `~/.claude/` by `scripts/setup-claude.sh`.
 
 ## Quick Setup
 
 ```bash
-# Full setup (run on new machine after ./install.sh)
-~/.dotfiles/scripts/setup-claude.sh
+# New machine or just want to see options:
+~/.dotfiles/scripts/setup-claude.sh        # shows interactive menu
 
-# Just the statusline
-~/.dotfiles/scripts/setup-claude.sh statusline-only
-
-# Sync new agents you created back into dotfiles
-~/.dotfiles/scripts/setup-claude.sh sync
+# Already set up, just resync after pulling:
+~/.dotfiles/scripts/setup-claude.sh update
 ```
 
-## Status Line
+## The 6 Things
 
-Shows model, token usage, context %, thinking mode, and usage limits:
+| # | File/Dir | What it does |
+|---|----------|-------------|
+| 1 | `CLAUDE.md` | Persona + stack + behaviour — loaded every session |
+| 2 | `rules/` | Detailed guidelines by topic (TypeScript, Git, React, etc.) |
+| 3 | `skills/` | Auto-triggered or `/slash-invoked` instruction packs |
+| 4 | `agents/` | Specialist subagents Claude delegates to automatically |
+| 5 | `settings.json` | Permissions (allow/deny Bash), statusline, thinking |
+| 6 | `commands/` | Manual slash commands you invoke explicitly |
 
-```
-Claude Sonnet 4.6 | 45k / 200k | 22% used 45,231 | 78% remain 154,769 | thinking: On
-current: ●●○○○○○○○○ 22%    | weekly: ●●●○○○○○○○ 34%
-resets 3:45pm              | resets mar 8, 11:00am
-```
+## Agents (17)
 
-Configured in `settings.json`:
-```json
-{
-  "statusLine": {
-    "type": "command",
-    "command": "~/.dotfiles/config/claude/statusline.sh"
-  }
-}
-```
+| Agent | Used for |
+|-------|---------|
+| `architect` | System design, tech stack decisions |
+| `backend-developer` | APIs, databases, server-side code |
+| `code-reviewer` | Code quality, best practices |
+| `data-engineer` | SQL, data pipelines |
+| `designer` | UI/UX, wireframes |
+| `devops-engineer` | CI/CD, Docker, cloud infra |
+| `frontend-developer` | React, components, CSS |
+| `growth-hacker` | Acquisition, virality, retention |
+| `marketing-engineer` | Marketing automation, analytics |
+| `mobile-developer` | iOS, Android, React Native |
+| `pricing-strategist` | Pricing tiers, packaging |
+| `product-manager` | PRDs, roadmaps |
+| `project-manager` | Planning, timelines |
+| `qa-engineer` | Testing, test plans |
+| `security-engineer` | Security audits, threat modeling |
+| `support-engineer` | Troubleshooting, docs |
+| `technical-writer` | READMEs, guides |
 
-## Settings
+## Skills (22)
 
-`settings.json` is the canonical settings file. The setup script syncs it to `~/.claude/settings.json`.
+| Skill | Trigger |
+|-------|---------|
+| `analytics-tracking` | PostHog, Sentry, Chartmogul |
+| `angular` | Angular + TypeScript (work) |
+| `animations` | Framer Motion, Reanimated |
+| `astro` | Astro sites, content collections |
+| `cloudflare` | Pages, R2, Workers, Turnstile |
+| `commit` | `/commit` — smart git commit |
+| `csharp` | C# / .NET / ASP.NET Core (work) |
+| `email-marketing` | Resend + Loops.so |
+| `expo-mobile` | React Native + Expo |
+| `landing-page` | High-converting SaaS pages |
+| `market-research` | Competitor analysis, positioning |
+| `nextjs` | Next.js App Router patterns |
+| `product-spec` | PRDs, feature specs |
+| `revenuecat` | Mobile in-app subscriptions |
+| `saas-patterns` | Multi-tenancy, billing, auth |
+| `security-audit` | OWASP checklist |
+| `seo-content` | Metadata, Core Web Vitals |
+| `sql` | PostgreSQL queries (work) |
+| `supabase` | Schema, RLS, auth, edge functions |
+| `sveltekit` | SvelteKit, Cloudflare Pages |
+| `turborepo` | Monorepo setup |
+| `ui-design` | UI components, Tailwind, a11y |
 
-Key settings:
-- `alwaysThinkingEnabled` — enable extended thinking
-- `statusLine` — custom status line script
+## Rules (7)
 
-## Agents
+Loaded on demand via `@rules/` references in `CLAUDE.md`:
 
-Agent `.md` files in `agents/` are symlinked to `~/.claude/agents/` by the setup script. Claude automatically uses them when relevant based on their `description` field.
+| Rule file | Covers |
+|-----------|--------|
+| `typescript.md` | Strict mode, no `any`, Zod, naming |
+| `git.md` | Conventional commits, branch naming, PR format |
+| `react.md` | Server vs client, data fetching, hooks, Tailwind |
+| `database.md` | Schema conventions, RLS, Supabase queries |
+| `security.md` | Auth, secrets, input validation, webhooks |
+| `testing.md` | Vitest, RTL, Playwright — what to test |
+| `api.md` | Route handlers, response format, pagination |
 
-To add a new agent:
-1. Create `.md` file in `agents/` OR use `/agents` in Claude Code
-2. Run `~/.dotfiles/scripts/setup-claude.sh agents-only` (or let the symlink auto-work)
-3. Commit to dotfiles
+## Commands (6)
 
-## Skills
+See `commands/README.md` for usage. Type `/` in Claude Code to see the full list.
 
-Skill directories in `skills/` are symlinked to `~/.claude/skills/` by the setup script.
+## Adding New Content
 
-Each skill is a directory with `SKILL.md`:
-```
-skills/my-skill/
-└── SKILL.md
-```
-
-You can also install community skills from [skills.sh](https://skills.sh):
 ```bash
-npx skills add vercel-labs/deploy
+# After adding any file to this directory:
+~/.dotfiles/scripts/setup-claude.sh update
+
+# Then commit
+cd ~/.dotfiles
+git add config/claude/
+git commit -m "feat: add [thing]"
 ```
 
 ## See Also
 
 - Full guide: `docs/CLAUDE_CODE_GUIDE.md`
 - Claude Code docs: https://code.claude.com/docs
+- Skills marketplace: https://skills.sh

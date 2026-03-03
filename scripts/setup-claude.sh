@@ -68,7 +68,9 @@ setup_dirs() {
     print_section "Setting up Claude directories"
     mkdir -p "$CLAUDE_DIR/agents"
     mkdir -p "$CLAUDE_DIR/skills"
-    print_success "Directories ready: $CLAUDE_DIR/{agents,skills}"
+    mkdir -p "$CLAUDE_DIR/rules"
+    mkdir -p "$CLAUDE_DIR/commands"
+    print_success "Directories ready: $CLAUDE_DIR/{agents,skills,rules,commands}"
 }
 
 # ---- Statusline ----
@@ -189,6 +191,82 @@ setup_skills() {
     print_success "Installed $count skills (symlinked from dotfiles)"
 }
 
+# ---- Rules ----
+setup_rules() {
+    print_section "Installing rules"
+
+    local rules_src="$CLAUDE_CONFIG_DIR/rules"
+    local rules_dst="$CLAUDE_DIR/rules"
+
+    if [ ! -d "$rules_src" ] || [ -z "$(ls -A "$rules_src" 2>/dev/null)" ]; then
+        print_info "No rules in dotfiles yet (add them to $rules_src/)"
+        return
+    fi
+
+    local count=0
+    for rule_file in "$rules_src"/*.md; do
+        [ -f "$rule_file" ] || continue
+        local name
+        name=$(basename "$rule_file")
+        local dst_file="$rules_dst/$name"
+
+        [ -L "$dst_file" ] && rm "$dst_file"
+        ln -sf "$rule_file" "$dst_file"
+        count=$((count + 1))
+    done
+
+    print_success "Installed $count rules (symlinked from dotfiles)"
+}
+
+# ---- Commands ----
+setup_commands() {
+    print_section "Installing commands"
+
+    local commands_src="$CLAUDE_CONFIG_DIR/commands"
+    local commands_dst="$CLAUDE_DIR/commands"
+
+    if [ ! -d "$commands_src" ] || [ -z "$(ls -A "$commands_src" 2>/dev/null)" ]; then
+        print_info "No commands in dotfiles yet (add them to $commands_src/)"
+        return
+    fi
+
+    local count=0
+    for cmd_file in "$commands_src"/*.md; do
+        [ -f "$cmd_file" ] || continue
+        local name
+        name=$(basename "$cmd_file")
+        local dst_file="$commands_dst/$name"
+
+        [ -L "$dst_file" ] && rm "$dst_file"
+        ln -sf "$cmd_file" "$dst_file"
+        count=$((count + 1))
+    done
+
+    print_success "Installed $count commands (symlinked from dotfiles)"
+}
+
+# ---- Global CLAUDE.md ----
+setup_global_claude_md() {
+    print_section "Installing global CLAUDE.md"
+
+    local src="$CLAUDE_CONFIG_DIR/CLAUDE.md"
+    local dst="$CLAUDE_DIR/CLAUDE.md"
+
+    if [ ! -f "$src" ]; then
+        print_info "No CLAUDE.md in dotfiles yet (add it to $src)"
+        return
+    fi
+
+    [ -L "$dst" ] && rm "$dst"
+    if [ -f "$dst" ]; then
+        cp "$dst" "${dst}.backup.$(date +%Y%m%d%H%M%S)"
+        print_info "Backed up existing CLAUDE.md"
+    fi
+
+    ln -sf "$src" "$dst"
+    print_success "Global CLAUDE.md symlinked"
+}
+
 # ---- Sync agents FROM live to dotfiles (for initial capture) ----
 sync_agents_to_dotfiles() {
     print_section "Syncing live agents to dotfiles"
@@ -232,18 +310,41 @@ print_summary() {
     echo -e "  ${WHITE}Status line:${RESET}  Active on next Claude Code start"
     echo -e "  ${WHITE}Agents:${RESET}       $CLAUDE_DIR/agents/ (symlinked)"
     echo -e "  ${WHITE}Skills:${RESET}       $CLAUDE_DIR/skills/ (symlinked)"
+    echo -e "  ${WHITE}Rules:${RESET}        $CLAUDE_DIR/rules/ (symlinked)"
+    echo -e "  ${WHITE}Commands:${RESET}     $CLAUDE_DIR/commands/ (symlinked)"
+    echo -e "  ${WHITE}CLAUDE.md:${RESET}    $CLAUDE_DIR/CLAUDE.md (symlinked)"
     echo -e "  ${WHITE}Settings:${RESET}     $CLAUDE_DIR/settings.json"
     echo ""
     echo -e "  ${CYAN}Docs:${RESET} ~/.dotfiles/docs/CLAUDE_CODE_GUIDE.md"
     echo ""
 }
 
-# ---- Main ----
-main() {
-    print_header
+# ---- Interactive menu (shown when run with no args) ----
+show_menu() {
+    echo -e "  ${WHITE}What do you want to do?${RESET}"
+    echo ""
+    echo -e "  ${CYAN}1)${RESET} First-time setup      ${WHITE}—${RESET} full install, prompts for settings"
+    echo -e "  ${CYAN}2)${RESET} Update / resync       ${WHITE}—${RESET} sync agents, skills, rules, commands"
+    echo -e "  ${CYAN}3)${RESET} Statusline only       ${WHITE}—${RESET} just configure the statusline"
+    echo -e "  ${CYAN}4)${RESET} Sync agents → dotfiles ${WHITE}—${RESET} pull live agents back into repo"
+    echo -e "  ${CYAN}q)${RESET} Quit"
+    echo ""
+    read -rp "  Choice: " choice
+    echo ""
 
-    local mode="${1:-install}"
+    case "$choice" in
+        1) run_mode install ;;
+        2) run_mode update ;;
+        3) run_mode statusline-only ;;
+        4) run_mode sync ;;
+        q|Q) echo "  Bye."; exit 0 ;;
+        *) print_error "Invalid choice '$choice'"; exit 1 ;;
+    esac
+}
 
+# ---- Run a mode ----
+run_mode() {
+    local mode="$1"
     case "$mode" in
         install)
             check_prereqs || true
@@ -251,14 +352,26 @@ main() {
             setup_settings
             setup_agents
             setup_skills
+            setup_rules
+            setup_commands
+            setup_global_claude_md
             print_summary
+            ;;
+        update)
+            # Non-interactive: resync all symlinked assets (used by update.sh)
+            setup_dirs
+            setup_agents
+            setup_skills
+            setup_rules
+            setup_commands
+            setup_global_claude_md
+            print_success "Claude Code config synced"
             ;;
         statusline-only)
             setup_statusline
             print_success "Statusline setup complete"
             ;;
         sync)
-            # Pull live agents/skills back into dotfiles
             sync_agents_to_dotfiles
             ;;
         agents-only)
@@ -266,15 +379,25 @@ main() {
             setup_agents
             ;;
         *)
-            echo "Usage: $0 [install|statusline-only|sync|agents-only]"
+            print_error "Unknown mode: $mode"
             echo ""
-            echo "  install          Full Claude Code setup (default)"
-            echo "  statusline-only  Only configure the statusline"
-            echo "  sync             Sync live agents back into dotfiles"
-            echo "  agents-only      Only install agents"
+            echo "  Valid modes: install | update | statusline-only | sync | agents-only"
             exit 1
             ;;
     esac
+}
+
+# ---- Main ----
+main() {
+    print_header
+
+    if [ $# -eq 0 ]; then
+        # No args — show interactive menu
+        show_menu
+    else
+        # Arg provided — run directly (for scripting / update.sh)
+        run_mode "$1"
+    fi
 }
 
 main "$@"

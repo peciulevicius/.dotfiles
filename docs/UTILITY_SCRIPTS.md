@@ -8,11 +8,12 @@ All utility scripts are located in `scripts/` directory:
 
 ```
 scripts/
-├── update.sh       # Update all package managers
-├── backup.sh       # Backup configurations
-├── cleanup.sh      # Clean caches and free disk space
-├── dev-check.sh    # Check environment health
-└── setup-gpg.sh    # Set up GPG commit signing
+├── update.sh          # Update all package managers + Claude Code
+├── setup-claude.sh    # Set up Claude Code (agents, skills, rules, commands)
+├── backup.sh          # Backup configurations
+├── cleanup.sh         # Clean caches and free disk space
+├── dev-check.sh       # Check environment health
+└── setup-gpg.sh       # Set up GPG commit signing
 ```
 
 ## 🚀 Quick Start
@@ -27,9 +28,47 @@ chmod +x ~/.dotfiles/scripts/*.sh
 
 ---
 
+## 🤖 setup-claude.sh - Claude Code Setup
+
+Sets up Claude Code configuration — agents, skills, rules, commands, CLAUDE.md, statusline.
+
+### Usage
+
+```bash
+~/.dotfiles/scripts/setup-claude.sh          # interactive menu (pick 1–4)
+~/.dotfiles/scripts/setup-claude.sh update   # non-interactive resync (used by update.sh)
+```
+
+### Menu options
+
+```
+1) First-time setup       — full install, prompts for settings.json
+2) Update / resync        — sync all symlinks after pulling dotfiles
+3) Statusline only        — just configure the status bar
+4) Sync agents → dotfiles — pull live agents back into the repo
+```
+
+### What it installs
+
+Symlinks everything from `config/claude/` into `~/.claude/`:
+- `agents/` — 17 specialist sub-agents
+- `skills/` — 22 reusable skills
+- `rules/` — 7 rule files (TypeScript, Git, React, etc.)
+- `commands/` — 6 slash commands (/pr, /debug, etc.)
+- `CLAUDE.md` — global instructions
+- `settings.json` — permissions and statusline config
+
+### When to run
+
+- **New machine:** run once after `./install.sh`
+- **After pulling dotfiles:** run with option 2 (or let `update.sh` do it)
+- **After adding new agents/skills:** run with option 2
+
+---
+
 ## 📦 update.sh - Universal System Update
 
-Updates all package managers and tools on your system.
+Updates all package managers, tools, and Claude Code config on your system.
 
 ### What it Updates
 
@@ -41,6 +80,7 @@ Updates all package managers and tools on your system.
 - Rust (via rustup)
 - Oh My Zsh
 - Dotfiles repository
+- Claude Code CLI + config resync
 
 **Linux (Arch):**
 - pacman packages
