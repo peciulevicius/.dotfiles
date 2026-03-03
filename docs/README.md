@@ -45,6 +45,11 @@ For macOS, the canonical source is [MAC_WORKSTATION_GUIDE.md](./MAC_WORKSTATION_
   - Interactive prompts
   - Post-installation steps
 
+### Claude Code & Product Development
+
+- **[CLAUDE_CODE_GUIDE.md](./CLAUDE_CODE_GUIDE.md)** - Complete Claude Code guide: skills, agents, statusline, settings, hooks
+- **[BUSINESS_STACK_GUIDE.md](./BUSINESS_STACK_GUIDE.md)** - Product stack reference: web/mobile frameworks, analytics, payments, deployment
+
 ### Tools & Scripts
 
 - **[MODERN_CLI_TOOLS.md](./MODERN_CLI_TOOLS.md)** - Guide to modern CLI tools:
