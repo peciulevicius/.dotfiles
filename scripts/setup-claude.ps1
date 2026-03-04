@@ -23,11 +23,11 @@ function Write-Header {
     Write-Host ""
 }
 
-function Write-Section($msg) { Write-Host "`n  ▸ $msg" -ForegroundColor Cyan }
-function Write-Ok($msg)      { Write-Host "    ✓ $msg" -ForegroundColor Green }
-function Write-Warn($msg)    { Write-Host "    ⚠ $msg" -ForegroundColor Yellow }
-function Write-Err($msg)     { Write-Host "    ✗ $msg" -ForegroundColor Red }
-function Write-Info($msg)    { Write-Host "    → $msg" -ForegroundColor Gray }
+function Write-Section($msg) { Write-Host "`n  > $msg" -ForegroundColor Cyan }
+function Write-Ok($msg)      { Write-Host "    [+] $msg" -ForegroundColor Green }
+function Write-Warn($msg)    { Write-Host "    [!] $msg" -ForegroundColor Yellow }
+function Write-Err($msg)     { Write-Host "    [x] $msg" -ForegroundColor Red }
+function Write-Info($msg)    { Write-Host "    --> $msg" -ForegroundColor Gray }
 
 # ---- Create base dirs ----
 function Setup-Dirs {
@@ -69,7 +69,7 @@ function Setup-Agents {
     $dst = Join-Path $ClaudeDir "agents"
     Link-Dir $src $dst
     $count = if (Test-Path $src) { (Get-ChildItem $src -Filter "*.md" -ErrorAction SilentlyContinue).Count } else { 0 }
-    Write-Ok "Linked $count agents (junction → dotfiles)"
+    Write-Ok "Linked $count agents (junction -> dotfiles)"
 }
 
 # ---- Skills ----
@@ -79,7 +79,7 @@ function Setup-Skills {
     $dst = Join-Path $ClaudeDir "skills"
     Link-Dir $src $dst
     $count = if (Test-Path $src) { (Get-ChildItem $src -Directory -ErrorAction SilentlyContinue).Count } else { 0 }
-    Write-Ok "Linked $count skills (junction → dotfiles)"
+    Write-Ok "Linked $count skills (junction -> dotfiles)"
 }
 
 # ---- Rules ----
@@ -89,7 +89,7 @@ function Setup-Rules {
     $dst = Join-Path $ClaudeDir "rules"
     Link-Dir $src $dst
     $count = if (Test-Path $src) { (Get-ChildItem $src -Filter "*.md" -ErrorAction SilentlyContinue).Count } else { 0 }
-    Write-Ok "Linked $count rules (junction → dotfiles)"
+    Write-Ok "Linked $count rules (junction -> dotfiles)"
 }
 
 # ---- Commands ----
@@ -99,7 +99,7 @@ function Setup-Commands {
     $dst = Join-Path $ClaudeDir "commands"
     Link-Dir $src $dst
     $count = if (Test-Path $src) { (Get-ChildItem $src -Filter "*.md" -ErrorAction SilentlyContinue).Count } else { 0 }
-    Write-Ok "Linked $count commands (junction → dotfiles)"
+    Write-Ok "Linked $count commands (junction -> dotfiles)"
 }
 
 # ---- Global CLAUDE.md ----
