@@ -1,4 +1,4 @@
-# Universal Update Script — Windows (PowerShell)
+# Universal Update Script - Windows (PowerShell)
 # Updates: winget, npm, pnpm, dotfiles, Claude Code config, Claude Code CLI
 #
 # Usage: .\scripts\update.ps1
@@ -27,7 +27,7 @@ if (Get-Command winget -ErrorAction SilentlyContinue) {
     winget upgrade --all --accept-source-agreements --accept-package-agreements
     Write-Ok "winget packages updated"
 } else {
-    Write-Warn "winget not found — install App Installer from Microsoft Store"
+    Write-Warn "winget not found - install App Installer from Microsoft Store"
 }
 
 # ---- npm ----
@@ -54,7 +54,7 @@ if (Test-Path $DotfilesDir) {
 
     $gitStatus = git status --short 2>$null
     if ($gitStatus) {
-        Write-Warn "Dotfiles have uncommitted changes — skipping git pull"
+        Write-Warn "Dotfiles have uncommitted changes - skipping git pull"
     } else {
         git pull
         Write-Ok "Dotfiles updated"
