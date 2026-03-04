@@ -15,9 +15,9 @@ function Write-Header($msg) {
     Write-Host ""
 }
 
-function Write-Ok($msg)   { Write-Host "  ✓ $msg" -ForegroundColor Green }
-function Write-Warn($msg) { Write-Host "  ⚠ $msg" -ForegroundColor Yellow }
-function Write-Info($msg) { Write-Host "  → $msg" -ForegroundColor Gray }
+function Write-Ok($msg)   { Write-Host "  [+] $msg" -ForegroundColor Green }
+function Write-Warn($msg) { Write-Host "  [!] $msg" -ForegroundColor Yellow }
+function Write-Info($msg) { Write-Host "  --> $msg" -ForegroundColor Gray }
 
 Write-Header "Windows Update Script"
 
