@@ -206,20 +206,19 @@ mv ~/.zshrc.backup ~/.zshrc
 
 ## Different Machines
 
-### Your Mac (what you have now)
+### macOS (minimal)
 ```bash
 cd ~/.dotfiles
 ./install.sh
 # Choose: 1) Minimal
 ```
 
-### Work Machine (maybe need more)
+### macOS (full dev setup)
 ```bash
 cd ~/.dotfiles
 ./install.sh
-# Choose: 1) Minimal
-# Then run optional installer
-./os/mac/install.sh
+# Choose: 1) Minimal, then:
+./os/mac/install.sh   # optional tools
 ```
 
 ### Linux (Arch)
@@ -316,22 +315,19 @@ Yes! The git config works everywhere. IdeaVim is for WebStorm/IntelliJ.
 
 ## What's Actually Worth It?
 
-Based on your usage (Mac Terminal + WebStorm):
-
 ### Must Have ✅
 - Git config with aliases (huge time saver)
-- IdeaVim config for WebStorm (those keybindings!)
 - SSH key setup (one less thing to remember)
+- Starship prompt (beautiful, fast, included by default)
 
 ### Nice to Have 👍
-- Starship prompt (beautiful, included by default)
+- IdeaVim config (if you use JetBrains IDEs)
 - macOS preferences script (saves manual clicking)
 - Zsh aliases (small conveniences)
 
 ### Skip for Now ⏭️
-- Docker (install when needed)
-- CLI tools (install per-project)
-- Neovim (you don't use it)
+- Docker (install when a project needs it)
+- Language-specific CLI tools (install per-project)
 
 ---
 

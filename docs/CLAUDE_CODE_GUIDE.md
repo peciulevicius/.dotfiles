@@ -40,21 +40,21 @@ All files live in `config/claude/` in this repo and are symlinked to `~/.claude/
 
 ## Setup & Update
 
-### New machine (first time)
+### macOS / Linux — new machine
 
 ```bash
 # 1. Clone dotfiles
 git clone https://github.com/peciulevicius/.dotfiles.git ~/.dotfiles
 cd ~/.dotfiles
 
-# 2. Install all tools (Homebrew, zsh, etc.)
+# 2. Install tools (Homebrew, zsh, CLI tools, etc.)
 ./install.sh
 
 # 3. Set up Claude Code — shows an interactive menu
 ./scripts/setup-claude.sh
 ```
 
-Running `setup-claude.sh` with no args shows a **numbered menu** — nothing to memorise:
+Running `setup-claude.sh` with no args shows a **numbered menu**:
 
 ```
 What do you want to do?
@@ -68,31 +68,56 @@ What do you want to do?
 
 Pick **1** on a new machine.
 
-### This machine (resync after pulling dotfiles)
+### Windows (PowerShell) — new machine
 
-Run `setup-claude.sh` → pick **2**, or just run the update script:
+```powershell
+# One-time: allow scripts to run
+Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
 
+# Clone and set up
+git clone https://github.com/peciulevicius/.dotfiles.git $HOME\.dotfiles
+cd $HOME\.dotfiles
+.\scripts\setup-claude.ps1
+```
+
+This installs agents, skills, rules, commands, and `CLAUDE.md` into `~/.claude\` using **directory junctions** (no admin rights required). The statusline is macOS/Linux-only and is skipped on Windows.
+
+### Windows (CMD)
+
+```cmd
+scripts\setup-claude.bat
+```
+
+The `.bat` file calls the PowerShell script automatically — no need to launch PowerShell manually.
+
+### Resync after pulling dotfiles
+
+**macOS / Linux:**
 ```bash
 ~/.dotfiles/scripts/update.sh
 ```
 
-### Weekly update — one script does everything
-
-```bash
-~/.dotfiles/scripts/update.sh
+**Windows (PowerShell):**
+```powershell
+.\scripts\update.ps1
 ```
 
-Updates Homebrew, npm, pnpm, Claude Code CLI, and resyncs the Claude Code config automatically. **One script, no separate step.**
+Both scripts pull the latest dotfiles and resync Claude Code config automatically. **One script, no separate step.**
 
-### Direct modes (for scripting)
-
-When called with an argument, the menu is skipped and the mode runs directly. This is how `update.sh` calls it internally:
+### macOS / Linux — direct modes (for scripting)
 
 ```bash
 ~/.dotfiles/scripts/setup-claude.sh update          # non-interactive resync
 ~/.dotfiles/scripts/setup-claude.sh install         # full setup, no menu
 ~/.dotfiles/scripts/setup-claude.sh statusline-only
 ~/.dotfiles/scripts/setup-claude.sh sync
+```
+
+### Windows — modes
+
+```powershell
+.\scripts\setup-claude.ps1          # interactive (prompts for settings.json)
+.\scripts\setup-claude.ps1 update   # non-interactive resync
 ```
 
 ---
@@ -481,15 +506,26 @@ config/claude/
 
 ### All scripts in this repo
 
+**macOS / Linux (bash):**
+
 | Script | Interactive? | What it does |
 |--------|-------------|-------------|
 | `install.sh` | ✅ yes | Full machine setup — Homebrew, tools, symlinks |
-| `scripts/setup-claude.sh` | ✅ menu when no args | Claude Code setup (menu → pick 1–4) + hooks |
-| `scripts/update.sh` | ❌ runs automatically | Update all package managers + Claude Code |
-| `scripts/backup.sh` | ❌ runs automatically | Backup configs to timestamped folder |
-| `scripts/cleanup.sh` | ❌ runs automatically | Clear caches (Homebrew, npm, pip, etc.) |
-| `scripts/dev-check.sh` | ❌ runs automatically | Health check — are all tools installed? |
+| `scripts/setup-claude.sh` | ✅ menu when no args | Claude Code setup (menu → pick 1–4) |
+| `scripts/update.sh` | ❌ | Update all package managers + Claude Code |
+| `scripts/backup.sh` | ❌ | Backup configs to timestamped folder |
+| `scripts/cleanup.sh` | ❌ | Clear caches (Homebrew, npm, pip, etc.) |
+| `scripts/dev-check.sh` | ❌ | Health check — are all tools installed? |
 | `scripts/setup-gpg.sh` | ✅ yes | Set up GPG commit signing |
+
+**Windows:**
+
+| Script | Shell | What it does |
+|--------|-------|-------------|
+| `scripts/setup-claude.ps1` | PowerShell | Claude Code setup (agents, skills, rules, CLAUDE.md) |
+| `scripts/setup-claude.bat` | CMD | Same — delegates to the `.ps1` |
+| `scripts/update.ps1` | PowerShell | Update winget, npm, pnpm, dotfiles, Claude Code |
+| `scripts/update.bat` | CMD | Same — delegates to the `.ps1` |
 
 "Interactive" means it pauses and asks you questions. Non-interactive scripts run to completion without prompts.
 
