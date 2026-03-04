@@ -1,4 +1,4 @@
-# Claude Code Setup — Windows (PowerShell)
+# Claude Code Setup - Windows (PowerShell)
 # Sets up Claude Code config: agents, skills, rules, commands, CLAUDE.md
 #
 # Usage:
@@ -17,9 +17,9 @@ $ConfigDir     = Join-Path $DotfilesDir "config\claude"
 # ---- Output helpers ----
 function Write-Header {
     Write-Host ""
-    Write-Host "╔══════════════════════════════════════╗" -ForegroundColor Blue
-    Write-Host "║    Claude Code Setup (Windows)       ║" -ForegroundColor Blue
-    Write-Host "╚══════════════════════════════════════╝" -ForegroundColor Blue
+    Write-Host "+======================================+" -ForegroundColor Blue
+    Write-Host "|    Claude Code Setup (Windows)       |" -ForegroundColor Blue
+    Write-Host "+======================================+" -ForegroundColor Blue
     Write-Host ""
 }
 
@@ -50,11 +50,11 @@ function Link-Dir($src, $dst) {
         if ($item.LinkType -eq "Junction" -or $item.Attributes -band [IO.FileAttributes]::ReparsePoint) {
             Remove-Item $dst -Force -Recurse
         } else {
-            # Real directory — only remove if empty
+            # Real directory - only remove if empty
             if ((Get-ChildItem $dst -Force).Count -eq 0) {
                 Remove-Item $dst -Force
             } else {
-                Write-Warn "Skipped $dst — real directory with content (remove manually to link)"
+                Write-Warn "Skipped $dst - real directory with content (remove manually to link)"
                 return
             }
         }
@@ -139,7 +139,7 @@ function Setup-Settings {
         Copy-Item $src $dst -Force
         Write-Ok "Settings synced"
     } else {
-        Write-Info "Skipped — keeping existing settings"
+        Write-Info "Skipped - keeping existing settings"
     }
 }
 
@@ -150,16 +150,16 @@ function Check-Prereqs {
         $ver = (claude --version 2>$null) | Select-Object -First 1
         Write-Ok "Claude Code: $ver"
     } else {
-        Write-Warn "Claude Code not found — install from https://claude.ai/code"
+        Write-Warn "Claude Code not found - install from https://claude.ai/code"
     }
 }
 
 # ---- Summary ----
 function Print-Summary {
     Write-Host ""
-    Write-Host "  ╔══════════════════════════════════════╗" -ForegroundColor Green
-    Write-Host "  ║    Setup Complete!                   ║" -ForegroundColor Green
-    Write-Host "  ╚══════════════════════════════════════╝" -ForegroundColor Green
+    Write-Host "  +======================================+" -ForegroundColor Green
+    Write-Host "  |    Setup Complete!                   |" -ForegroundColor Green
+    Write-Host "  +======================================+" -ForegroundColor Green
     Write-Host ""
     Write-Host "    Agents:    $ClaudeDir\agents  (junction)" -ForegroundColor White
     Write-Host "    Skills:    $ClaudeDir\skills  (junction)" -ForegroundColor White
