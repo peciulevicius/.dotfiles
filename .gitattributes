@@ -1,0 +1,9 @@
+# Force LF line endings for shell scripts on all platforms
+*.sh text eol=lf
+
+# Force LF for other text files that might be executed
+*.bash text eol=lf
+*.zsh text eol=lf
+
+# Auto-detect text files and normalize
+* text=auto
