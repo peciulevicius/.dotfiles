@@ -1,9 +1,10 @@
-# Force LF line endings for shell scripts on all platforms
-*.sh text eol=lf
+# Auto-detect text files and normalize to LF in repo
+* text=auto eol=lf
 
-# Force LF for other text files that might be executed
+# Shell scripts — always LF (bash breaks on CRLF)
+*.sh text eol=lf
 *.bash text eol=lf
 *.zsh text eol=lf
 
-# Auto-detect text files and normalize
-* text=auto
+# PowerShell scripts — LF is fine (PS handles both)
+*.ps1 text eol=lf
