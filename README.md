@@ -25,10 +25,8 @@ cd ~/.dotfiles
 
 **That's it!** The installer will guide you through the setup process.
 
-For more details, see [docs/HOW_TO_INSTALL.md](docs/HOW_TO_INSTALL.md) or [docs/QUICKSTART.md](docs/QUICKSTART.md).
-
 For guided onboarding, start with [docs/START_HERE.md](docs/START_HERE.md).
-Canonical Mac setup/maintenance guide: [docs/MAC_WORKSTATION_GUIDE.md](docs/MAC_WORKSTATION_GUIDE.md).
+For a detailed walkthrough, see [docs/HOW_TO_INSTALL.md](docs/HOW_TO_INSTALL.md).
 
 ## 🖥️ Supported Platforms
 
@@ -38,7 +36,8 @@ Canonical Mac setup/maintenance guide: [docs/MAC_WORKSTATION_GUIDE.md](docs/MAC_
 | **Arch Linux** | ✅ Full | `os/linux/install_arch.sh` |
 | **Ubuntu/Debian** | ✅ Full | `os/linux/install_ubuntu.sh` |
 | **Kali Linux** | ✅ Full | `os/linux/install_ubuntu.sh` |
-| **Windows/WSL** | ⚠️ Basic | `os/windows/install_wsl.sh` |
+| **Windows** | ✅ Claude + packages | `scripts/setup-claude.ps1`, `scripts/update.ps1` |
+| **Windows/WSL** | ⚠️ Shell tools | `os/windows/install_wsl.sh` |
 
 macOS non-interactive mode:
 
@@ -94,13 +93,19 @@ See [docs/CONFIG_GUIDE.md](docs/CONFIG_GUIDE.md) for details.
 
 Powerful scripts to maintain your environment:
 
+**macOS / Linux:**
 ```bash
-~/.dotfiles/scripts/update.sh      # Update all package managers at once
-~/.dotfiles/scripts/sync.sh        # Sync dotfiles configs (fast!)
+~/.dotfiles/scripts/update.sh      # Update all package managers + Claude Code
 ~/.dotfiles/scripts/backup.sh      # Backup all configs and package lists
 ~/.dotfiles/scripts/cleanup.sh     # Free disk space (cleans Docker, npm, etc.)
 ~/.dotfiles/scripts/dev-check.sh   # Health check your dev environment
 ~/.dotfiles/scripts/setup-gpg.sh   # Set up GPG commit signing
+```
+
+**Windows (PowerShell):**
+```powershell
+.\scripts\update.ps1               # Update winget, npm, pnpm, Claude Code
+.\scripts\setup-claude.ps1         # Set up Claude Code config
 ```
 
 See [docs/UTILITY_SCRIPTS.md](docs/UTILITY_SCRIPTS.md) for detailed usage.
@@ -216,20 +221,16 @@ See [docs/CONFIG_GUIDE.md](docs/CONFIG_GUIDE.md) for the complete list.
 
 All documentation is in the `docs/` folder:
 
-- **[FAQ.md](docs/FAQ.md)** - Frequently asked questions ⭐ **Start here!**
-- **[START_HERE.md](docs/START_HERE.md)** - Recommended setup/learning order
-- **[NEW_MAC_MINI_CHECKLIST.md](docs/NEW_MAC_MINI_CHECKLIST.md)** - New machine setup checklist
-- **[SYMLINKS.md](docs/SYMLINKS.md)** - Understanding how symlinks work
-- **[QUICKSTART.md](docs/QUICKSTART.md)** - Quick start guide for Mac users
-- **[HOW_TO_INSTALL.md](docs/HOW_TO_INSTALL.md)** - Complete installation guide
-- **[CONFIG_GUIDE.md](docs/CONFIG_GUIDE.md)** - Configuration details
-- **[MODERN_CLI_TOOLS.md](docs/MODERN_CLI_TOOLS.md)** - Modern CLI tools guide
-- **[UTILITY_SCRIPTS.md](docs/UTILITY_SCRIPTS.md)** - Utility scripts documentation
-- **[tutorials/TOOL_TUTORIALS.md](docs/tutorials/TOOL_TUTORIALS.md)** - Tool tutorials and YouTube links
-- **[WALLPAPERS.md](docs/WALLPAPERS.md)** - Wallpaper workflow
-- **[INSTALLATION_GUIDE.md](docs/INSTALLATION_GUIDE.md)** - Platform-specific details
-- **[SCRIPTS_EXPLAINED.md](docs/SCRIPTS_EXPLAINED.md)** - Installer comparison
-- **[ARCH_INSTALLER_FLOW.md](docs/ARCH_INSTALLER_FLOW.md)** - Arch setup walkthrough
+- **[START_HERE.md](docs/START_HERE.md)** — Where to begin (all platforms)
+- **[HOW_TO_INSTALL.md](docs/HOW_TO_INSTALL.md)** — Complete installation guide
+- **[CLAUDE_CODE_GUIDE.md](docs/CLAUDE_CODE_GUIDE.md)** — Claude Code agents, skills, rules setup
+- **[MAC_SETUP.md](docs/MAC_SETUP.md)** — macOS-specific setup and tools
+- **[MODERN_CLI_TOOLS.md](docs/MODERN_CLI_TOOLS.md)** — bat, eza, fzf, zoxide, and more
+- **[CONFIG_GUIDE.md](docs/CONFIG_GUIDE.md)** — Configuration details
+- **[UTILITY_SCRIPTS.md](docs/UTILITY_SCRIPTS.md)** — Scripts documentation
+- **[FAQ.md](docs/FAQ.md)** — Frequently asked questions
+- **[SYMLINKS.md](docs/SYMLINKS.md)** — How symlinks work in this repo
+- **[ARCH_INSTALLER_FLOW.md](docs/ARCH_INSTALLER_FLOW.md)** — Arch Linux setup walkthrough
 
 ## 🔧 Customization
 
@@ -317,8 +318,6 @@ MIT License - Feel free to fork and customize!
 
 ---
 
-**Last Updated**: 2025-11-05
-
-**Supports**: macOS 12+, Arch Linux, Ubuntu 20.04+, Debian 11+, Kali Linux, Windows WSL2
+**Supports**: macOS 12+, Arch Linux, Ubuntu 20.04+, Debian 11+, Kali Linux, Windows 10/11 (PowerShell + WSL2)
 
 **⭐ If you find this useful, consider giving it a star!**
