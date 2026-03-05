@@ -8,6 +8,16 @@ set -f  # disable globbing
 
 input=$(cat)
 
+# On Windows (Git Bash/MSYS), delegate to PowerShell script
+case "$(uname -s)" in
+    MINGW*|MSYS*|CYGWIN*)
+        script_dir="$(cd "$(dirname "$0")" && pwd -W 2>/dev/null || pwd)"
+        ps_script="${script_dir}\\statusline.ps1"
+        printf '%s' "$input" | powershell.exe -NoProfile -NonInteractive -Command ". '${ps_script}'"
+        exit $?
+        ;;
+esac
+
 if [ -z "$input" ]; then
     printf "Claude"
     exit 0
