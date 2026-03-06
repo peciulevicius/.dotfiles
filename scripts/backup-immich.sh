@@ -1,8 +1,18 @@
 #!/bin/bash
-# Nightly rsync backup of Immich photo library from 1TB to 500GB partition.
+# Nightly rsync backup of Immich photo library from T7 to T5 (ImmichBackup).
 # Scheduled via cron: 0 3 * * * ~/.dotfiles/scripts/backup-immich.sh
+#
+# Reads IMMICH_VOLUME from ~/.config/dotfiles/mac-mini.conf (set by mac-mini-setup.sh).
 
-SRC="/Volumes/Storage/immich"
+LOCAL_CONFIG="$HOME/.config/dotfiles/mac-mini.conf"
+[ -f "$LOCAL_CONFIG" ] && source "$LOCAL_CONFIG"
+
+if [ -z "${IMMICH_VOLUME:-}" ]; then
+  echo "ERROR: IMMICH_VOLUME not set. Run scripts/mac-mini-setup.sh first." >&2
+  exit 1
+fi
+
+SRC="/Volumes/$IMMICH_VOLUME/immich"
 DST="/Volumes/ImmichBackup/immich"
 LOG_DIR="$HOME/logs"
 
