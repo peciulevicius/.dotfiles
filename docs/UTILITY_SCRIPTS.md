@@ -6,14 +6,16 @@ This dotfiles repository includes several utility scripts to help maintain and m
 
 | Script | What it does | When to run |
 |--------|-------------|-------------|
-| `update.sh` | Updates all package managers + Claude Code | Weekly |
-| `setup-claude.sh` | Syncs Claude Code config (agents, skills, rules) | After pulling dotfiles |
-| `backup.sh` | Backs up config files to a timestamped archive | Before major changes |
-| `backup-immich.sh` | Rsync Immich photos from T7 → T5 (ImmichBackup) | Nightly via cron |
+| `update.sh` | Updates all package managers + pulls dotfiles + Claude Code | Weekly |
+| `sync.sh` | Pulls dotfiles from git + re-symlinks configs (no package updates) | After pulling dotfiles |
+| `setup-claude.sh` | Syncs Claude Code config (agents, skills, rules, commands) | After install / as needed |
+| `backup.sh` | Backs up config files + package lists to a timestamped archive | Before major changes |
+| `backup-immich.sh` | Rsync Immich photos T7 → T5 `ImmichBackup` (Mac mini only) | Nightly via cron |
 | `cleanup.sh` | Cleans caches and frees disk space | Monthly |
-| `dev-check.sh` | Checks environment health | After fresh install / troubleshooting |
+| `dev-check.sh` | Checks all dev tools are installed and configured | After fresh install / troubleshooting |
 | `setup-gpg.sh` | Sets up GPG commit signing | Once per machine |
-| `mac-mini.sh` | Mac mini sleep toggle + Immich setup | On Mac mini setup / as needed |
+| `docs.sh` | Serves or builds the MkDocs documentation site | Dev / CI |
+| `mac-mini.sh` | Mac mini sleep toggle + one-time Immich setup | Mac mini only |
 
 ---
 
@@ -23,14 +25,18 @@ All utility scripts are located in `scripts/` directory:
 
 ```
 scripts/
-├── update.sh           # Update all package managers + Claude Code
-├── setup-claude.sh     # Set up Claude Code (agents, skills, rules, commands, hooks)
-├── backup.sh           # Backup configurations
-├── backup-immich.sh    # Nightly rsync of Immich photos → T5 (ImmichBackup)
+├── update.sh           # Update all package managers + pull dotfiles + Claude Code
+├── sync.sh             # Pull dotfiles from git + re-symlink configs (no package updates)
+├── setup-claude.sh     # Sync Claude Code config (agents, skills, rules, commands)
+├── backup.sh           # Back up config files + package lists to timestamped archive
+├── backup-immich.sh    # Rsync Immich photos T7 → T5 ImmichBackup (Mac mini only)
 ├── cleanup.sh          # Clean caches and free disk space
 ├── dev-check.sh        # Check environment health
 ├── setup-gpg.sh        # Set up GPG commit signing
-└── mac-mini.sh         # Mac mini: sleep toggle + Immich setup
+├── docs.sh             # Serve or build MkDocs docs site
+├── mac-mini.sh         # Mac mini: sleep toggle + Immich setup (Mac mini only)
+├── utils/utils.sh      # Shared print functions used by Linux + Windows installers
+└── wallpapers/         # Wallpaper management
 ```
 
 ## 🚀 Quick Start
