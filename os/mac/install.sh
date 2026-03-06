@@ -45,6 +45,7 @@ CORE_CASKS=(
   brave-browser          # Secondary privacy browser
   visual-studio-code     # Editor
   docker                 # Containers
+  tailscale              # Private network (remote access, Immich from phone anywhere)
   claude                 # Claude desktop app
   bitwarden              # Password manager
   jetbrains-toolbox      # Install/manage JetBrains IDEs (instead of direct WebStorm cask)
@@ -61,8 +62,9 @@ CORE_CASKS=(
 
 # Optional apps to keep off by default for cleanliness.
 OPTIONAL_CASKS=(
-  iterm2   # Alternative terminal (skip if Terminal.app is enough)
-  raycast  # Launcher (skip if Spotlight is enough)
+  iterm2    # Alternative terminal (skip if Terminal.app is enough)
+  raycast   # Launcher (skip if Spotlight is enough)
+  orbstack  # Lightweight Docker Desktop alternative (faster on Mac, same docker commands)
 )
 
 # Optional cloud coding-agent apps/tools (off by default).
