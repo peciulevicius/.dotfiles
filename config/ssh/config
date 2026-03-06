@@ -80,8 +80,8 @@ Host bitbucket.org
 # ═══════════════════════════════════════════════════════
 
 Host macmini
-    HostName <tailscale-ip>
-    User <pc-mac-username>
+    HostName 100.81.171.49
+    User dziugaspeciulevicius
 
 # Example: Personal server
 # Host myserver
