@@ -79,6 +79,10 @@ Host bitbucket.org
 # Custom Hosts (Examples)
 # ═══════════════════════════════════════════════════════
 
+Host macmini
+    HostName <tailscale-ip>
+    User <pc-mac-username>
+
 # Example: Personal server
 # Host myserver
 #     HostName example.com
