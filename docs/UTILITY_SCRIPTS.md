@@ -2,6 +2,21 @@
 
 This dotfiles repository includes several utility scripts to help maintain and manage your development environment.
 
+## Quick Reference
+
+| Script | What it does | When to run |
+|--------|-------------|-------------|
+| `update.sh` | Updates all package managers + Claude Code | Weekly |
+| `setup-claude.sh` | Syncs Claude Code config (agents, skills, rules) | After pulling dotfiles |
+| `backup.sh` | Backs up config files to a timestamped archive | Before major changes |
+| `backup-immich.sh` | Rsync Immich photos from T7 → T5 (ImmichBackup) | Nightly via cron |
+| `cleanup.sh` | Cleans caches and frees disk space | Monthly |
+| `dev-check.sh` | Checks environment health | After fresh install / troubleshooting |
+| `setup-gpg.sh` | Sets up GPG commit signing | Once per machine |
+| `mac-mini.sh` | Mac mini sleep toggle + Immich setup | On Mac mini setup / as needed |
+
+---
+
 ## 📍 Location
 
 All utility scripts are located in `scripts/` directory:
@@ -11,10 +26,11 @@ scripts/
 ├── update.sh           # Update all package managers + Claude Code
 ├── setup-claude.sh     # Set up Claude Code (agents, skills, rules, commands, hooks)
 ├── backup.sh           # Backup configurations
-├── backup-immich.sh    # Nightly rsync of Immich photos → 500GB backup partition
+├── backup-immich.sh    # Nightly rsync of Immich photos → T5 (ImmichBackup)
 ├── cleanup.sh          # Clean caches and free disk space
 ├── dev-check.sh        # Check environment health
-└── setup-gpg.sh        # Set up GPG commit signing
+├── setup-gpg.sh        # Set up GPG commit signing
+└── mac-mini.sh         # Mac mini: sleep toggle + Immich setup
 ```
 
 ## 🚀 Quick Start
@@ -541,6 +557,66 @@ brew install pinentry-mac
 # Configure it
 echo "pinentry-program $(which pinentry-mac)" >> ~/.gnupg/gpg-agent.conf
 gpgconf --kill gpg-agent
+```
+
+---
+
+## 🖥️ mac-mini.sh — Mac mini Management
+
+Manages sleep settings and Immich setup on the Mac mini. Not relevant on MacBook.
+
+### Usage
+
+```bash
+~/.dotfiles/scripts/mac-mini.sh sleep off   # server mode: disable sleep
+~/.dotfiles/scripts/mac-mini.sh sleep on    # normal mode: re-enable sleep
+~/.dotfiles/scripts/mac-mini.sh setup       # one-time Immich setup
+```
+
+### Commands
+
+| Command | What it does |
+|---------|-------------|
+| `sleep off` | Disables sleep, enables auto-restart after power failure. Run on first boot. |
+| `sleep on` | Restores normal sleep behaviour. |
+| `setup` | Creates Immich folders, writes `docker-compose.yml` and `.env` to `~/services/immich/`. Run once after drives are connected. |
+
+### When to run
+
+- **First boot on Mac mini:** `mac-mini.sh sleep off` then later `mac-mini.sh setup`
+- **Temporarily need sleep:** `mac-mini.sh sleep on` / `mac-mini.sh sleep off` to toggle
+- **Re-running setup:** safe to rerun — existing files are skipped, not overwritten
+
+### What `setup` does
+
+1. Lists `/Volumes/` so you can see what your T7 drive is named in macOS
+2. Asks for the T7 volume name (e.g. `Samsung T7`, `T7 Touch` — whatever macOS calls it)
+3. Saves that name to `~/.config/dotfiles/mac-mini.conf` so `backup-immich.sh` can read it
+4. Creates `/Volumes/<T7>/immich/`, `~/services/immich/`, `~/logs/`
+5. Writes `~/services/immich/docker-compose.yml` from `config/immich/docker-compose.yml` with your volume name substituted in
+6. Copies `config/immich/.env.example` to `~/services/immich/.env`
+
+---
+
+## 📸 backup-immich.sh — Immich Photo Backup
+
+Rsync copy of Immich photos from T7 (primary) to T5 `ImmichBackup` (backup). Reads the T7 volume name from `~/.config/dotfiles/mac-mini.conf` — run `mac-mini.sh setup` first.
+
+### Usage
+
+```bash
+# Run manually
+~/.dotfiles/scripts/backup-immich.sh
+
+# Schedule via cron (3am daily)
+crontab -e
+# Add: 0 3 * * * ~/.dotfiles/scripts/backup-immich.sh >> ~/logs/immich-backup.log 2>&1
+```
+
+### Check the log
+
+```bash
+cat ~/logs/immich-backup.log
 ```
 
 ---

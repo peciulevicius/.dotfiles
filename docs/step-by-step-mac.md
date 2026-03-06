@@ -1,47 +1,47 @@
 # Mac Mini Setup — Step by Step
 
-Condensed checklist for setting up the Mac mini from scratch. Full details and troubleshooting in [HOME_SERVER.md](HOME_SERVER.md).
+Condensed checklist for setting up the Mac mini. Full details and troubleshooting: [HOME_SERVER.md](HOME_SERVER.md).
 
 **Drives:**
-- T7 (1TB, has existing photos) → Immich library + TimeMachine volume (both machines)
-- T5 (500GB, empty) → ImmichBackup only (nightly rsync of Immich photos from T7)
+- T7 (1TB, has existing photos) → Immich library + `TimeMachine` APFS volume
+- T5 (500GB, empty) → `ImmichBackup` (nightly rsync of Immich photos)
 
 ---
 
-## Phase 1 — Mac mini first boot prep
+## Phase 1 — First boot: disable sleep
 
-Run the setup script — it handles sleep config, folder creation, and Immich file setup in one go:
+On the Mac mini, open Terminal:
 
 ```bash
-~/.dotfiles/scripts/mac-mini-setup.sh
+~/.dotfiles/scripts/mac-mini.sh sleep off
 ```
 
-It will ask for your T7 volume name, then set everything up. To toggle sleep mode later:
+This disables sleep so Immich syncs and backups run overnight. To toggle later:
 
 ```bash
-~/.dotfiles/scripts/mac-mini-setup.sh --sleep       # re-enable normal sleep
-~/.dotfiles/scripts/mac-mini-setup.sh --sleep-only  # server mode sleep settings only
+~/.dotfiles/scripts/mac-mini.sh sleep on    # normal sleep (if you ever need it)
+~/.dotfiles/scripts/mac-mini.sh sleep off   # back to server mode
 ```
 
 ---
 
 ## Phase 2 — Prepare the drives
 
-**T7 — add a TimeMachine volume (no data loss)**
+**T7 — add a TimeMachine APFS volume (no data loss)**
 
-T7 already has photos. APFS lets you add a new volume to the same drive without erasing anything.
+T7 already has your photos. APFS lets you add a new volume without touching existing files.
 
 Open **Disk Utility**:
-1. Select **T7** in the left sidebar (the container/disk, not a volume)
+1. Select **T7** in the left sidebar — the disk/container row, not a volume row
 2. Click **+** (Add Volume) in the toolbar — do NOT click Erase
 3. Name: `TimeMachine`, Format: `APFS`, leave size limits blank
 4. Click **Add**
 
-Existing files are untouched. T7 now has two APFS volumes sharing its space.
+Done. Existing photos untouched. T7 now has two APFS volumes sharing its space dynamically.
 
 **T5 — format as ImmichBackup**
 
-T5 is empty, so a clean format:
+T5 is empty, clean format:
 1. Select **T5** in the left sidebar
 2. Click **Erase**
 3. Name: `ImmichBackup`, Format: `APFS`
@@ -51,7 +51,7 @@ T5 is empty, so a clean format:
 
 ## Phase 3 — Tailscale
 
-Tailscale creates a private network connecting Mac mini, MacBook, and phone. Required for Immich from anywhere (not just home WiFi).
+Tailscale connects Mac mini, MacBook, and phone on a private network. Required for Immich access from anywhere outside home WiFi.
 
 **Mac mini:**
 ```bash
@@ -62,22 +62,17 @@ open /Applications/Tailscale.app
 
 **MacBook + iPhone:** install Tailscale, sign in with the same account.
 
-Get the Mac mini's Tailscale IP — you'll use it everywhere:
+Get the Mac mini's Tailscale IP — used everywhere from here on:
 ```bash
 tailscale ip -4
 # e.g. 100.64.0.12 — write this down
-```
-
-Test from MacBook (works from any network):
-```bash
-ping <tailscale-ip>
 ```
 
 ---
 
 ## Phase 4 — SSH
 
-Lets you control the Mac mini from MacBook terminal from anywhere.
+Lets you control the Mac mini from MacBook terminal remotely.
 
 **On Mac mini:**
 `System Settings → General → Sharing → Remote Login` → turn **On**
@@ -90,43 +85,45 @@ Host macmini
   User <your-mac-mini-username>
 EOF
 
-ssh-copy-id macmini   # copy key, no password needed after this
+ssh-copy-id macmini   # copy key — no password prompt after this
 ssh macmini           # test
 ```
 
 ---
 
-## Phase 5 — Docker + Immich
+## Phase 5 — Immich setup
 
-Docker is installed by the dotfiles installer. Open **Docker Desktop** and let it start (or **OrbStack** if you installed that instead — same commands, lighter).
+Now that the drives are ready and connected, run the setup command:
 
 ```bash
-docker --version       # verify Docker is running
-docker compose version
+~/.dotfiles/scripts/mac-mini.sh setup
 ```
 
-The setup script from Phase 1 already created `~/services/immich/docker-compose.yml` and `~/services/immich/.env`. Edit the `.env` and set a real password:
+It will show connected volumes, ask for your T7 volume name (whatever macOS calls it — e.g. `Samsung T7`, `T7 Touch`), then:
+- Create the Immich folders on T7
+- Write `~/services/immich/docker-compose.yml` with your volume name already in it
+- Copy `.env` template to `~/services/immich/.env`
+
+---
+
+## Phase 6 — Start Immich
+
+Open Docker Desktop (or OrbStack) and let it start, then:
 
 ```bash
-nano ~/services/immich/.env
-# Change DB_PASSWORD to something strong
-```
-
-Start Immich:
-
-```bash
+nano ~/services/immich/.env        # set DB_PASSWORD to something strong
 cd ~/services/immich
 docker compose up -d
-docker ps   # should show 4 containers after ~30 seconds
+docker ps                          # should show 4 containers after ~30s
 ```
 
 Open `http://<tailscale-ip>:2283` → create your admin account.
 
-The template files live in `~/.dotfiles/config/immich/` if you ever need to reference them.
-
 ---
 
-## Phase 6 — Import existing photos
+## Phase 7 — Import existing photos
+
+Your existing photos/videos are already on T7. Import them into Immich:
 
 ```bash
 npm install -g @immich/cli
@@ -138,13 +135,13 @@ Large libraries take a while. Let it run.
 
 ---
 
-## Phase 7 — Nightly photo backup (T7 → T5)
+## Phase 8 — Nightly photo backup (T7 → T5)
 
 ```bash
-# Test manually first
+# Test it manually first
 ~/.dotfiles/scripts/backup-immich.sh
 
-# Schedule at 3am daily
+# Schedule it at 3am daily
 crontab -e
 ```
 
@@ -155,18 +152,18 @@ Add:
 
 ---
 
-## Phase 8 — Time Machine (Mac mini + MacBook)
+## Phase 9 — Time Machine (Mac mini + MacBook)
 
-The `TimeMachine` volume on T7 serves both machines.
+The `TimeMachine` APFS volume on T7 backs up both machines.
 
-**Mac mini (local backup):**
+**Mac mini (local):**
 1. `System Settings → General → Time Machine`
 2. Add Backup Disk → select `TimeMachine` on T7
 3. Done
 
-**MacBook (network backup) — on Mac mini first:**
+**MacBook (over network) — on Mac mini first:**
 1. `System Settings → General → Sharing → File Sharing` → On
-2. Add the `TimeMachine` volume as a shared folder
+2. Add `TimeMachine` volume as a shared folder
 3. Options → check **Share as Time Machine backup destination**
 
 **On MacBook:**
@@ -176,14 +173,14 @@ The `TimeMachine` volume on T7 serves both machines.
 
 ---
 
-## Phase 9 — Phone setup
+## Phase 10 — Phone
 
 1. App Store → **Immich**
 2. Server URL: `http://<tailscale-ip>:2283`
 3. Sign in
 4. Profile → **App Settings** → **Background Backup** → enable
 
-Home WiFi = silent background sync. Anywhere else = syncs over Tailscale.
+Home WiFi = silent background sync. Anywhere else = syncs over Tailscale when you open the app.
 
 ---
 
@@ -193,6 +190,7 @@ Home WiFi = silent background sync. Anywhere else = syncs over Tailscale.
 docker ps                              # 4 Immich containers running
 tailscale status                       # all devices connected
 ssh macmini echo "connected"           # SSH works
-open http://<tailscale-ip>:2283        # Immich UI loads
 ~/.dotfiles/scripts/backup-immich.sh   # backup runs without errors
 ```
+
+Open `http://<tailscale-ip>:2283` in browser — Immich loads.

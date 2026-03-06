@@ -42,7 +42,6 @@ nav:
   - Mac:
       - macOS Setup: MAC_SETUP.md
       - Mac mini Setup: HOME_SERVER.md
-      - Mac mini Step-by-Step: step-by-step-mac.md
       - Wallpapers: WALLPAPERS.md
 
   - Claude Code:
