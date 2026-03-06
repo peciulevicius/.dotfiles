@@ -81,16 +81,18 @@ You have two external SSDs. Both stay permanently connected to the Mac mini.
 
 | Drive | Size | What goes on it |
 |-------|------|-----------------|
-| 1TB SSD | Primary | All your photos (Immich library) |
-| 500GB SSD | Split in two | Half for MacBook Time Machine, half for photo backup |
+| T7 (1TB) | Primary | Immich photos + Time Machine (both MacBook and Mac mini) |
+| T5 (500GB) | Backup | Nightly copy of Immich photos from the T7 |
 
-**Why split the 500GB?**
-- 200GB → MacBook Time Machine backups
-- 300GB → nightly copy of your photos from the 1TB
+**Why this split?**
 
-This gives you two copies of your photos on two separate physical drives. If the 1TB fails, your photos from last night are on the 500GB.
+The backup drive (T5) must hold a copy of your photos. Using the smaller drive (T5) as the backup and the larger drive (T7) as primary means:
+- T7 handles active data — photos grow here over time
+- T5 can back up up to 500GB of photos. When your library exceeds that, you'll need a larger backup drive.
 
-**The one risk you accept:** both drives are in the same room. Fire or theft would lose both. For a personal photo library that's a reasonable tradeoff. If you ever want a cloud copy, iCloud or Backblaze can be added later.
+Time Machine for both machines lives on T7 because it's the larger drive and can accommodate both system backups alongside the Immich library (APFS volumes share space dynamically — no fixed partitions needed).
+
+**The one risk you accept:** both drives are in the same room. Fire or theft would lose both. For a personal photo library that's a reasonable tradeoff. If you ever want a cloud copy, Backblaze can be added later.
 
 ---
 
@@ -149,33 +151,36 @@ Replace `youruser` with your macOS username throughout (check it with `whoami`).
 
 ---
 
-### Step 1 — Format and prepare the drives
+### Step 1 — Prepare the drives
 
-**Format the 1TB as your primary storage**
+**T7 (1TB) — add a TimeMachine volume without touching existing files**
+
+T7 already has your photos. With APFS you can add a new volume to the same drive without erasing anything — volumes share the pool of space dynamically.
 
 Open **Disk Utility** (Spotlight → Disk Utility):
-- Select the 1TB drive in the left sidebar
-- Click **Erase**
-- Format: **APFS**
-- Scheme: **GUID Partition Map**
-- Name: `Storage`
-- Click Erase
+- Select **T7** in the left sidebar (the container, not the volume)
+- Click **+** (Add Volume) in the toolbar — do NOT click Erase
+- Name: `TimeMachine`, Format: `APFS`
+- Leave size limits blank (APFS shares space dynamically)
+- Click **Add**
 
-**Partition the 500GB into two**
+Your existing files on T7 are untouched. You now have two APFS volumes on T7: the original (with your photos) and the new `TimeMachine`.
 
-- Select the 500GB drive in the left sidebar
-- Click **Partition**
-- Click `+` to add a partition, set size to 200GB, name it `TimeMachine`
-- Click `+` again, set remaining space (~300GB), name it `ImmichBackup`
-- Click Apply
-
-**Create the folder structure on the 1TB**
-
+Create the Immich folder on T7 (use the existing volume name):
 ```bash
-mkdir -p /Volumes/Storage/immich
+ls /Volumes/   # check what T7's existing volume is named
+mkdir -p /Volumes/<T7-volume-name>/immich
 mkdir -p ~/services/immich
 mkdir -p ~/logs
 ```
+
+**T5 (500GB) — format as ImmichBackup**
+
+T5 is empty, so format it cleanly:
+- Select **T5** in the left sidebar
+- Click **Erase**
+- Name: `ImmichBackup`, Format: `APFS`
+- Click **Erase**
 
 ---
 
@@ -268,21 +273,17 @@ exit
 
 ---
 
-### Step 5 — OrbStack (Docker)
+### Step 5 — Docker
 
-Immich runs inside Docker. OrbStack is a lighter, faster version of Docker Desktop for Mac — same commands, just better.
+Immich runs inside Docker containers. Docker is already installed by the dotfiles installer.
 
-```bash
-brew install --cask orbstack
-```
-
-Open OrbStack and let it start. Verify:
+Open **Docker Desktop** (it installs as a cask via Homebrew) and let it start. Verify:
 ```bash
 docker --version
 docker compose version
 ```
 
-OrbStack starts automatically when you log in and restarts containers after a reboot.
+Docker starts automatically when you log in and restarts containers after a reboot.
 
 ---
 
@@ -307,7 +308,7 @@ services:
     container_name: immich_server
     image: ghcr.io/immich-app/immich-server:release
     volumes:
-      - /Volumes/Storage/immich/upload:/usr/src/app/upload
+      - /Volumes/<T7-volume-name>/immich/upload:/usr/src/app/upload
       - /etc/localtime:/etc/localtime:ro
     env_file:
       - .env
@@ -322,7 +323,7 @@ services:
     container_name: immich_machine_learning
     image: ghcr.io/immich-app/immich-machine-learning:release
     volumes:
-      - /Volumes/Storage/immich/model-cache:/cache
+      - /Volumes/<T7-volume-name>/immich/model-cache:/cache
     env_file:
       - .env
     restart: always
@@ -342,7 +343,7 @@ services:
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_DB: ${DB_DATABASE_NAME}
     volumes:
-      - /Volumes/Storage/immich/postgres:/var/lib/postgresql/data
+      - /Volumes/<T7-volume-name>/immich/postgres:/var/lib/postgresql/data
     restart: always
 ```
 
@@ -431,20 +432,28 @@ cat ~/logs/immich-backup.log
 
 ---
 
-### Step 9 — MacBook Time Machine backup
+### Step 9 — Time Machine (MacBook + Mac mini)
 
-This backs up your MacBook to the Mac mini's 500GB SSD automatically whenever you're on the same network.
+The `TimeMachine` APFS volume on T7 backs up both machines. One volume, two sources — macOS handles it.
 
-**On the Mac mini:**
+**Mac mini Time Machine (backs up the Mac mini itself):**
+1. `System Settings → General → Time Machine`
+2. Click **Add Backup Disk**
+3. Select the `TimeMachine` volume on T7
+4. Done — Mac mini backs up its own system data to T7
+
+**MacBook Time Machine (backs up over the network):**
+
+On the Mac mini first:
 1. `System Settings → General → Sharing → File Sharing` → turn On
-2. Click `+` under Shared Folders → navigate to the `TimeMachine` partition → add it
+2. Click `+` under Shared Folders → navigate to the `TimeMachine` volume on T7 → add it
 3. Click **Options** → check **Share as Time Machine backup destination**
 
-**On your MacBook:**
+On your MacBook:
 1. `System Settings → General → Time Machine`
 2. Click **Add Backup Disk**
 3. Select the Mac mini's `TimeMachine` share
-4. Done — MacBook backs up automatically whenever it's on the same network
+4. Done — MacBook backs up automatically whenever it's on the same network (home WiFi or Tailscale)
 
 ---
 
@@ -482,37 +491,36 @@ docker compose logs -f     # see what's wrong
 docker compose restart     # restart everything
 ```
 
-### 1TB SSD fails — photo recovery
+### T7 fails — photo recovery
 
-Immich goes offline. Photos are on the 500GB `ImmichBackup` partition from last night.
+Immich goes offline. Photos are on the T5 `ImmichBackup` volume from last night.
 
 ```bash
 # Edit the docker-compose.yml to point at the backup
 nano ~/services/immich/docker-compose.yml
 ```
 
-Find this line:
+Find these lines and update them to point at ImmichBackup:
 ```
-/Volumes/Storage/immich/upload:/usr/src/app/upload
-```
-
-Change it to:
-```
-/Volumes/ImmichBackup/immich/upload:/usr/src/app/upload
+/Volumes/<T7-volume-name>/immich/upload:/usr/src/app/upload
+/Volumes/<T7-volume-name>/immich/postgres:/var/lib/postgresql/data
+/Volumes/<T7-volume-name>/immich/model-cache:/cache
 ```
 
-Also change the postgres volume path the same way, then:
+Change each to `/Volumes/ImmichBackup/immich/...`, then:
 ```bash
 cd ~/services/immich
 docker compose down
 docker compose up -d
 ```
 
-Immich is back with yesterday's photos. Buy a replacement 1TB, copy the data back, repoint Immich to the new drive.
+Immich is back with yesterday's photos. Buy a replacement drive, copy data back, repoint Immich.
 
-### 500GB SSD fails
+Note: Time Machine also lives on T7, so MacBook and Mac mini backups stop too. Replace T7 first priority.
 
-Photos on the 1TB are completely unaffected. MacBook Time Machine stops working. Nightly backup stops. Buy a replacement 500GB, format and partition it the same way, re-point Time Machine on your MacBook, re-add the cron job.
+### T5 fails
+
+Photos on T7 are completely unaffected. Immich keeps running. Nightly backup stops. Buy a replacement, format it as `ImmichBackup`, re-add the cron job.
 
 ### Immich app on phone can't connect
 
