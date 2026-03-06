@@ -3,9 +3,9 @@
 # Mac mini management script.
 #
 # Usage:
-#   scripts/mac-mini.sh sleep off   # server mode: disable sleep (run on first boot)
-#   scripts/mac-mini.sh sleep on    # normal mode: re-enable sleep
-#   scripts/mac-mini.sh setup       # one-time Immich setup (run after drives are ready)
+#   scripts/mac-mini.sh sleep off      # server mode: disable sleep (run on first boot)
+#   scripts/mac-mini.sh sleep on       # normal mode: re-enable sleep
+#   scripts/mac-mini.sh immich-setup   # one-time Immich setup (run after drives are ready)
 
 set -uo pipefail
 
@@ -118,9 +118,9 @@ usage() {
   echo "Usage: scripts/mac-mini.sh <command>"
   echo ""
   echo "Commands:"
-  echo "  sleep off   Disable sleep — server/always-on mode (run on first boot)"
-  echo "  sleep on    Re-enable normal sleep"
-  echo "  setup       One-time Immich setup (run after drives are connected)"
+  echo "  sleep off      Disable sleep — server/always-on mode"
+  echo "  sleep on       Re-enable normal sleep"
+  echo "  immich-setup   One-time Immich setup (run after drives are connected)"
   echo ""
 }
 
@@ -135,6 +135,6 @@ case "${1:-}" in
       *)   echo "Usage: mac-mini.sh sleep on|off"; exit 1 ;;
     esac
     ;;
-  setup) cmd_setup ;;
-  *)     usage ;;
+  immich-setup) cmd_setup ;;
+  *)            usage ;;
 esac

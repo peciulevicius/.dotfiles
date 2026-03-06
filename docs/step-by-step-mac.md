@@ -96,7 +96,7 @@ ssh macmini           # test
 Now that the drives are ready and connected, run the setup command:
 
 ```bash
-~/.dotfiles/scripts/mac-mini.sh setup
+~/.dotfiles/scripts/mac-mini.sh immich-setup
 ```
 
 It will show connected volumes, ask for your T7 volume name (whatever macOS calls it — e.g. `Samsung T7`, `T7 Touch`), then:
