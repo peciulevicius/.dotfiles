@@ -37,10 +37,10 @@ Use this when you just pulled changes and want configs to update — faster than
 
 ### Mac mini only
 ```
-scripts/mac-mini.sh sleep off   ← run on first boot (disables sleep, enables auto-restart)
-scripts/mac-mini.sh sleep on    ← re-enable normal sleep
-scripts/mac-mini.sh setup       ← one-time Immich setup (run after drives are connected)
-scripts/backup-immich.sh        ← manual photo backup (also runs nightly via cron)
+scripts/mac-mini.sh sleep off      ← run on first boot (disables sleep, enables auto-restart)
+scripts/mac-mini.sh sleep on       ← re-enable normal sleep whenever needed
+scripts/mac-mini.sh immich-setup   ← one-time Immich setup (run after drives are connected)
+scripts/backup-immich.sh           ← manual photo backup (also runs nightly via cron)
 ```
 
 ### Docs site
