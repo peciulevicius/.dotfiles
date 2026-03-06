@@ -10,17 +10,17 @@ Condensed checklist for setting up the Mac mini from scratch. Full details and t
 
 ## Phase 1 — Mac mini first boot prep
 
+Run the setup script — it handles sleep config, folder creation, and Immich file setup in one go:
+
 ```bash
-# Prevent sleep so Immich syncs and backups run overnight
-sudo pmset -a sleep 0 disksleep 0 displaysleep 10
+~/.dotfiles/scripts/mac-mini-setup.sh
+```
 
-# Auto-restart after power cut
-sudo systemsetup -setrestartpowerfailure on
+It will ask for your T7 volume name, then set everything up. To toggle sleep mode later:
 
-# Create folders (replace <T7-volume-name> with actual name — check with: ls /Volumes/)
-mkdir -p /Volumes/<T7-volume-name>/immich
-mkdir -p ~/services/immich
-mkdir -p ~/logs
+```bash
+~/.dotfiles/scripts/mac-mini-setup.sh --sleep       # re-enable normal sleep
+~/.dotfiles/scripts/mac-mini-setup.sh --sleep-only  # server mode sleep settings only
 ```
 
 ---
@@ -98,69 +98,18 @@ ssh macmini           # test
 
 ## Phase 5 — Docker + Immich
 
-Docker is installed by the dotfiles installer (`docker` in CORE_CASKS). Open **Docker Desktop** and let it start. Alternatively, use **OrbStack** (lighter, same commands — also in installer as optional).
+Docker is installed by the dotfiles installer. Open **Docker Desktop** and let it start (or **OrbStack** if you installed that instead — same commands, lighter).
 
 ```bash
-docker --version
+docker --version       # verify Docker is running
 docker compose version
 ```
 
-Create `~/services/immich/docker-compose.yml`:
+The setup script from Phase 1 already created `~/services/immich/docker-compose.yml` and `~/services/immich/.env`. Edit the `.env` and set a real password:
 
-```yaml
-name: immich
-
-services:
-  immich-server:
-    container_name: immich_server
-    image: ghcr.io/immich-app/immich-server:release
-    volumes:
-      - /Volumes/<T7-volume-name>/immich/upload:/usr/src/app/upload
-      - /etc/localtime:/etc/localtime:ro
-    env_file:
-      - .env
-    ports:
-      - 2283:2283
-    depends_on:
-      - redis
-      - database
-    restart: always
-
-  immich-machine-learning:
-    container_name: immich_machine_learning
-    image: ghcr.io/immich-app/immich-machine-learning:release
-    volumes:
-      - /Volumes/<T7-volume-name>/immich/model-cache:/cache
-    env_file:
-      - .env
-    restart: always
-
-  redis:
-    container_name: immich_redis
-    image: docker.io/redis:6.2-alpine
-    restart: always
-
-  database:
-    container_name: immich_postgres
-    image: docker.io/tensorchord/pgvecto-rs:pg14-v0.2.0
-    env_file:
-      - .env
-    environment:
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_USER: ${DB_USERNAME}
-      POSTGRES_DB: ${DB_DATABASE_NAME}
-    volumes:
-      - /Volumes/<T7-volume-name>/immich/postgres:/var/lib/postgresql/data
-    restart: always
-```
-
-Create `~/services/immich/.env`:
-
-```env
-DB_PASSWORD=pick-a-strong-password-here
-DB_USERNAME=postgres
-DB_DATABASE_NAME=immich
-REDIS_HOSTNAME=redis
+```bash
+nano ~/services/immich/.env
+# Change DB_PASSWORD to something strong
 ```
 
 Start Immich:
@@ -172,6 +121,8 @@ docker ps   # should show 4 containers after ~30 seconds
 ```
 
 Open `http://<tailscale-ip>:2283` → create your admin account.
+
+The template files live in `~/.dotfiles/config/immich/` if you ever need to reference them.
 
 ---
 
