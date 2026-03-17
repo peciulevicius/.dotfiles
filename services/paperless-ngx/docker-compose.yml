@@ -1,0 +1,63 @@
+# Paperless-ngx — document scanner and organiser
+# Docs: https://docs.paperless-ngx.com/
+
+name: paperless-ngx
+
+services:
+  paperless-broker:
+    container_name: paperless_broker
+    image: redis:7.4-alpine
+    restart: unless-stopped
+    healthcheck:
+      test: redis-cli ping
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  paperless-db:
+    container_name: paperless_db
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: paperless
+      POSTGRES_USER: paperless
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD required}
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: pg_isready -U paperless
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  paperless:
+    container_name: paperless
+    image: ghcr.io/paperless-ngx/paperless-ngx:2.14.7
+    restart: unless-stopped
+    ports:
+      - "${PAPERLESS_PORT:-8000}:8000"
+    volumes:
+      - ./data/data:/usr/src/paperless/data
+      - ./data/media:/usr/src/paperless/media
+      - ./data/export:/usr/src/paperless/export
+      - ./data/consume:/usr/src/paperless/consume
+    environment:
+      PAPERLESS_REDIS: redis://paperless-broker:6379
+      PAPERLESS_DBHOST: paperless-db
+      PAPERLESS_DBUSER: paperless
+      PAPERLESS_DBPASS: ${DB_PASSWORD:?DB_PASSWORD required}
+      PAPERLESS_SECRET_KEY: ${SECRET_KEY:?SECRET_KEY required}
+      PAPERLESS_ADMIN_USER: ${ADMIN_USER:-admin}
+      PAPERLESS_ADMIN_PASSWORD: ${ADMIN_PASSWORD:?ADMIN_PASSWORD required}
+      PAPERLESS_TIME_ZONE: ${TZ:-Europe/Vilnius}
+      USERMAP_UID: ${PUID:-1000}
+      USERMAP_GID: ${PGID:-1000}
+    depends_on:
+      paperless-db:
+        condition: service_healthy
+      paperless-broker:
+        condition: service_healthy
+
+networks:
+  default:
+    name: paperless-ngx

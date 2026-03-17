@@ -6,7 +6,7 @@ This dotfiles repository includes several utility scripts to help maintain and m
 
 | Script | What it does | When to run |
 |--------|-------------|-------------|
-| `update.sh` | Updates all package managers + pulls dotfiles + Claude Code | Weekly |
+| `update.sh` | Updates all package managers + pulls dotfiles + Claude Code + Docker images | Weekly |
 | `sync.sh` | Pulls dotfiles from git + re-symlinks configs (no package updates) | After pulling dotfiles |
 | `setup-claude.sh` | Syncs Claude Code config (agents, skills, rules, commands) | After install / as needed |
 | `backup.sh` | Backs up config files + package lists to a timestamped archive | Before major changes |
@@ -14,8 +14,11 @@ This dotfiles repository includes several utility scripts to help maintain and m
 | `cleanup.sh` | Cleans caches and frees disk space | Monthly |
 | `dev-check.sh` | Checks all dev tools are installed and configured | After fresh install / troubleshooting |
 | `setup-gpg.sh` | Sets up GPG commit signing | Once per machine |
+| `setup-obsidian.sh` | Creates Obsidian vault with PARA folder structure | Once per machine |
 | `docs.sh` | Serves or builds the MkDocs documentation site | Dev / CI |
 | `mac-mini.sh` | Mac mini sleep toggle + one-time Immich setup | Mac mini only |
+| `services/setup-services.sh` | Stages Docker Compose stacks to `~/docker/` | After fresh install |
+| `services/rclone/rclone-backup.sh` | Backs up `~/docker/` to Backblaze B2 via rclone | Nightly via cron |
 
 ---
 
@@ -28,6 +31,7 @@ scripts/
 ├── update.sh           # Update all package managers + pull dotfiles + Claude Code
 ├── sync.sh             # Pull dotfiles from git + re-symlink configs (no package updates)
 ├── setup-claude.sh     # Sync Claude Code config (agents, skills, rules, commands)
+├── setup-obsidian.sh   # Create Obsidian vault with PARA folder structure
 ├── backup.sh           # Back up config files + package lists to timestamped archive
 ├── backup-immich.sh    # Rsync Immich photos T7 → T5 ImmichBackup (Mac mini only)
 ├── cleanup.sh          # Clean caches and free disk space
@@ -37,6 +41,22 @@ scripts/
 ├── mac-mini.sh         # Mac mini: sleep toggle + Immich setup (Mac mini only)
 ├── utils/utils.sh      # Shared print functions used by Linux + Windows installers
 └── wallpapers/         # Wallpaper management
+
+services/
+├── setup-services.sh             # Stage all Docker Compose stacks to ~/docker/
+├── immich/                       # Google Photos replacement
+├── vaultwarden/                  # Bitwarden password manager server
+├── nextcloud/                    # Google Drive replacement
+├── uptime-kuma/                  # Uptime monitoring dashboard
+├── freshrss/                     # RSS reader
+├── ollama/                       # Local LLM inference
+├── syncthing/                    # File sync (Dropbox replacement)
+├── portainer/                    # Docker management UI
+├── watchtower/                   # Automatic Docker image updates
+├── homarr/                       # Home dashboard
+├── paperless-ngx/                # Document scanner and organiser
+├── calibre-web/                  # Ebook library server
+└── rclone/rclone-backup.sh       # Cloud backup to B2/S3
 ```
 
 ## 🚀 Quick Start
@@ -144,6 +164,114 @@ alias update='~/.dotfiles/scripts/update.sh'
 # Then simply run
 update
 ```
+
+---
+
+## 📓 setup-obsidian.sh - Obsidian Vault Setup
+
+Creates an Obsidian vault with a PARA folder structure, minimal config, and a daily note template.
+
+### Usage
+
+```bash
+# Create vault at ~/obsidian-vault (default)
+~/.dotfiles/scripts/setup-obsidian.sh
+
+# Custom path
+VAULT_PATH=/Volumes/SSD/notes ~/.dotfiles/scripts/setup-obsidian.sh
+```
+
+### What it creates
+
+```
+~/obsidian-vault/
+├── 000 Inbox/           # Quick captures
+├── 100 Projects/        # Active projects
+├── 200 Areas/           # Ongoing responsibilities
+├── 300 Resources/       # Reference material
+├── 400 Archive/         # Completed items
+├── 500 Templates/       # Daily Note template included
+├── 600 Daily Notes/
+├── 700 Books/
+├── 800 Kindle Highlights/
+└── .obsidian/           # Core plugins enabled (daily-notes, templates, etc.)
+```
+
+See [NOTES.md](./NOTES.md) for the full Obsidian + Syncthing + Git workflow.
+
+---
+
+## 🐳 services/setup-services.sh - Docker Services Setup
+
+Stages Docker Compose stacks and `.env` templates to `~/docker/<service>/`.
+
+### Usage
+
+```bash
+# Stage all 13 services
+~/.dotfiles/services/setup-services.sh
+
+# Stage one service
+~/.dotfiles/services/setup-services.sh immich
+
+# Preview without changes
+~/.dotfiles/services/setup-services.sh --dry-run
+```
+
+### Services staged
+
+| Service | Port | Replaces |
+|---------|------|---------|
+| immich | 2283 | Google Photos |
+| vaultwarden | 8001 | Bitwarden Cloud |
+| nextcloud | 8080 | Google Drive |
+| uptime-kuma | 3001 | StatusCake |
+| freshrss | 8082 | Feedly |
+| ollama | 11434 | OpenAI API |
+| syncthing | 8384 | Dropbox |
+| portainer | 9000 | Docker UI |
+| watchtower | — | Manual updates |
+| homarr | 7575 | Home dashboard |
+| paperless-ngx | 8000 | Paper filing |
+| calibre-web | 8083 | Kindle Cloud |
+| rclone | — | Cloud backup |
+
+See [SERVICES.md](./SERVICES.md) for full setup guide.
+
+---
+
+## ☁️ services/rclone/rclone-backup.sh - Cloud Backup
+
+Backs up `~/docker/` volumes to Backblaze B2 (or any rclone remote).
+
+### Usage
+
+```bash
+# Test first
+~/.dotfiles/services/rclone/rclone-backup.sh --dry-run
+
+# Live backup
+~/.dotfiles/services/rclone/rclone-backup.sh
+```
+
+### Setup
+
+```bash
+brew install rclone
+rclone config  # configure B2 remote named 'b2-backup'
+cp ~/.dotfiles/services/rclone/.env.example ~/docker/rclone/.env
+nano ~/docker/rclone/.env
+```
+
+### Automate
+
+```bash
+crontab -e
+# Daily at 3 AM:
+0 3 * * * ~/.dotfiles/services/rclone/rclone-backup.sh >> ~/logs/rclone-cron.log 2>&1
+```
+
+See [BACKUPS.md](./BACKUPS.md) for full strategy.
 
 ---
 

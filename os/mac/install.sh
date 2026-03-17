@@ -31,6 +31,7 @@ CORE_FORMULAS=(
   nvm         # Node version manager
   pnpm        # Fast Node package manager
   starship    # Prompt
+  rclone      # Cloud backup (B2/S3 sync)
 )
 
 # Optional local AI tools.
@@ -269,6 +270,24 @@ parse_args() {
   done
 }
 
+maybe_setup_services() {
+  echo ""
+  if confirm "Stage self-hosted services to ~/docker/?" false; then
+    if command -v docker &>/dev/null; then
+      bash "$DOTFILES_DIR/services/setup-services.sh"
+    else
+      log_warn "Docker not found — run services/setup-services.sh after installing Docker"
+    fi
+  fi
+}
+
+maybe_setup_obsidian() {
+  if confirm "Set up Obsidian vault at ~/obsidian-vault/?" false; then
+    bash "$DOTFILES_DIR/scripts/setup-obsidian.sh"
+  fi
+  mkdir -p "$HOME/logs"
+}
+
 run_interactive() {
   log_header "macOS Unified Installer"
   echo "Lean setup with your requested apps and no unnecessary defaults."
@@ -295,6 +314,8 @@ run_interactive() {
   link_dotfiles
   setup_code_cli
   post_install_summary
+  maybe_setup_services
+  maybe_setup_obsidian
 }
 
 main() {

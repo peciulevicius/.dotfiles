@@ -349,3 +349,44 @@ if [ -d "$HOME/.oh-my-zsh" ]; then
 fi
 
 echo ""
+
+# ── Docker Services Update ──────────────────────────────────────────────────
+if command -v docker &>/dev/null && docker info &>/dev/null 2>&1; then
+    DOCKER_DIR="$HOME/docker"
+    if [[ -d "$DOCKER_DIR" ]]; then
+        print_header "Updating Docker Services"
+        for svc_dir in "$DOCKER_DIR"/*/; do
+            svc_name="$(basename "$svc_dir")"
+            compose_file="$svc_dir/docker-compose.yml"
+            if [[ -f "$compose_file" ]]; then
+                echo "  Pulling $svc_name..."
+                docker compose -f "$compose_file" pull --quiet 2>&1 | tail -1 || true
+                echo "  ✓ $svc_name"
+            fi
+        done
+    fi
+fi
+
+# ── Obsidian Vault Backup ───────────────────────────────────────────────────
+OBSIDIAN_VAULT="$HOME/obsidian-vault"
+if [[ -d "$OBSIDIAN_VAULT/.git" ]]; then
+    print_header "Backing Up Obsidian Vault"
+    pushd "$OBSIDIAN_VAULT" > /dev/null
+    git add -A
+    if ! git diff --cached --quiet; then
+        git commit -m "chore: vault backup $(date +%Y-%m-%d)"
+        git push origin HEAD 2>/dev/null && echo "  ✓ Vault pushed" || echo "  ⚠ Push failed (offline?)"
+    else
+        echo "  ✓ Vault already up to date"
+    fi
+    popd > /dev/null
+fi
+
+# ── Rclone Cloud Backup ─────────────────────────────────────────────────────
+RCLONE_SCRIPT="$HOME/.dotfiles/services/rclone/rclone-backup.sh"
+if command -v rclone &>/dev/null && [[ -f "$RCLONE_SCRIPT" ]]; then
+    if rclone listremotes 2>/dev/null | grep -q ":"; then
+        print_header "Running Rclone Cloud Backup"
+        bash "$RCLONE_SCRIPT" && echo "  ✓ Rclone backup done" || echo "  ⚠ Rclone backup failed"
+    fi
+fi

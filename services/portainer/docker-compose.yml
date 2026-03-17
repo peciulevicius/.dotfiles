@@ -1,0 +1,19 @@
+# Portainer CE — Docker management UI
+# Docs: https://docs.portainer.io/
+
+name: portainer
+
+services:
+  portainer:
+    container_name: portainer
+    image: portainer/portainer-ce:latest
+    restart: unless-stopped
+    ports:
+      - "${PORTAINER_PORT:-9000}:9000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./data:/data
+
+networks:
+  default:
+    name: portainer

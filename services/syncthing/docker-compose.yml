@@ -1,0 +1,25 @@
+# Syncthing — file sync (Dropbox replacement)
+# Docs: https://syncthing.net/
+
+name: syncthing
+
+services:
+  syncthing:
+    container_name: syncthing
+    image: syncthing/syncthing:1.29.6
+    restart: unless-stopped
+    ports:
+      - "${SYNC_GUI_PORT:-8384}:8384"   # Web UI
+      - "22000:22000/tcp"               # Sync protocol
+      - "22000:22000/udp"
+      - "21027:21027/udp"               # Discovery
+    volumes:
+      - ./data/config:/var/syncthing/config
+      - ${SYNC_DIR:-./data/sync}:/var/syncthing/data
+    environment:
+      PUID: ${PUID:-1000}
+      PGID: ${PGID:-1000}
+
+networks:
+  default:
+    name: syncthing

@@ -1,2 +1,13 @@
 config/nvim/plugin/packer_compiled.lua
 site/
+
+# Self-hosted services — never commit secrets or data
+services/**/.env
+services/**/data/
+services/**/library/
+
+# Obsidian vault has its own repo
+obsidian-vault/
+
+# Backup logs
+logs/

@@ -60,6 +60,13 @@ nav:
       - How to Install: HOW_TO_INSTALL.md
       - Arch Linux: ARCH_INSTALLER_FLOW.md
 
+  - Self-Hosted:
+      - Services Overview: SERVICES.md
+      - Backup Strategy: BACKUPS.md
+      - Notes & Obsidian: NOTES.md
+      - Books & Reading: BOOKS.md
+      - Degoogle Guide: DEGOOGLE.md
+
   - Reference:
       - Config Guide: CONFIG_GUIDE.md
       - Symlinks: SYMLINKS.md

@@ -1,0 +1,23 @@
+# Vaultwarden — Bitwarden-compatible password manager server
+# Docs: https://github.com/dani-garcia/vaultwarden/wiki
+
+name: vaultwarden
+
+services:
+  vaultwarden:
+    container_name: vaultwarden
+    image: vaultwarden/server:1.32.7
+    restart: unless-stopped
+    ports:
+      - "${VW_PORT:-8001}:80"
+    volumes:
+      - ./data:/data
+    environment:
+      ADMIN_TOKEN: ${ADMIN_TOKEN:?ADMIN_TOKEN required}
+      DOMAIN: ${DOMAIN:-http://localhost:8001}
+      SIGNUPS_ALLOWED: ${SIGNUPS_ALLOWED:-false}
+      LOG_LEVEL: warn
+
+networks:
+  default:
+    name: vaultwarden

@@ -1,0 +1,22 @@
+# FreshRSS — RSS reader (Google Reader replacement)
+# Docs: https://github.com/FreshRSS/FreshRSS
+
+name: freshrss
+
+services:
+  freshrss:
+    container_name: freshrss
+    image: freshrss/freshrss:1.24.3
+    restart: unless-stopped
+    ports:
+      - "${FRSS_PORT:-8082}:80"
+    volumes:
+      - ./data/data:/var/www/FreshRSS/data
+      - ./data/extensions:/var/www/FreshRSS/extensions
+    environment:
+      TZ: ${TZ:-Europe/Vilnius}
+      CRON_MIN: "1,31"
+
+networks:
+  default:
+    name: freshrss

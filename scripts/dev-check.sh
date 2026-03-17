@@ -353,6 +353,42 @@ else
     fi
 fi
 
+print_header "Self-Hosted Services"
+
+check_command optional rclone "rclone" "brew install rclone"
+
+if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
+    DOCKER_DIR="$HOME/docker"
+    SERVICES=(immich vaultwarden nextcloud uptime-kuma freshrss ollama syncthing portainer watchtower homarr paperless-ngx calibre-web)
+
+    if [[ -d "$DOCKER_DIR" ]]; then
+        staged_count=0
+        running_count=0
+        for svc in "${SERVICES[@]}"; do
+            [[ -d "$DOCKER_DIR/$svc" ]] && staged_count=$((staged_count + 1))
+            if docker ps --format '{{.Names}}' 2>/dev/null | grep -qi "$svc"; then
+                running_count=$((running_count + 1))
+            fi
+        done
+        record_result optional true "Docker services staged" "$staged_count / ${#SERVICES[@]} services in $DOCKER_DIR" ""
+        echo -e "${CYAN}  └─${NC} Running containers: $running_count"
+    else
+        record_result optional false "Docker services" "~/docker/ not found — run services/setup-services.sh" "services/setup-services.sh"
+    fi
+
+    OBSIDIAN_VAULT="$HOME/obsidian-vault"
+    if [[ -d "$OBSIDIAN_VAULT/.obsidian" ]]; then
+        record_result optional true "Obsidian vault" "$OBSIDIAN_VAULT" ""
+        if [[ -d "$OBSIDIAN_VAULT/.git" ]]; then
+            echo -e "${CYAN}  └─${NC} Git backup: enabled"
+        else
+            echo -e "${YELLOW}  └─${NC} Git backup: not set up (run: cd ~/obsidian-vault && git init)"
+        fi
+    else
+        record_result optional false "Obsidian vault" "Not found — run scripts/setup-obsidian.sh" "scripts/setup-obsidian.sh"
+    fi
+fi
+
 print_header "Summary"
 
 REQUIRED_PERCENT=0

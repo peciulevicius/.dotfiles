@@ -1,0 +1,18 @@
+# Uptime Kuma — uptime monitoring dashboard
+# Docs: https://github.com/louislam/uptime-kuma
+
+name: uptime-kuma
+
+services:
+  uptime-kuma:
+    container_name: uptime_kuma
+    image: louislam/uptime-kuma:1.23.16
+    restart: unless-stopped
+    ports:
+      - "${UK_PORT:-3001}:3001"
+    volumes:
+      - ./data:/app/data
+
+networks:
+  default:
+    name: uptime-kuma

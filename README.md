@@ -8,6 +8,9 @@
 - 🎨 **Beautiful Shell** - Zsh with Starship (modern, fast, cross-shell prompt)
 - ⚙️ **Comprehensive Configs** - Git (40+ aliases), SSH, Tmux, EditorConfig, and more
 - 🛠️ **Utility Scripts** - Update, backup, cleanup, and health check tools
+- 🐳 **Self-Hosted Services** - 13 Docker Compose stacks: Immich, Vaultwarden, Nextcloud, Ollama, and more
+- 📓 **Knowledge Management** - Obsidian vault setup with PARA structure, Syncthing sync, Kindle highlights
+- ☁️ **Cloud Backup** - Rclone → Backblaze B2 with automatic Docker volume backup
 - 📦 **Smart Installers** - OS-specific automated setup for all platforms
 - 📚 **Complete Documentation** - Every feature thoroughly documented in `docs/`
 - 🔐 **Security** - GPG commit signing, modern SSH (ed25519), proper .gitignore
@@ -147,12 +150,22 @@ See [docs/UTILITY_SCRIPTS.md](docs/UTILITY_SCRIPTS.md) for detailed usage.
 │   └── windows/                 # Windows/WSL
 │       └── install_wsl.sh       # WSL setup
 │
-└── scripts/                     # 🛠️ Utility scripts
-    ├── update.sh                # Update everything
-    ├── backup.sh                # Backup configs
-    ├── cleanup.sh               # Clean caches
-    ├── dev-check.sh             # Health check
-    └── setup-gpg.sh             # GPG setup
+├── scripts/                     # 🛠️ Utility scripts
+│   ├── update.sh                # Update everything
+│   ├── backup.sh                # Backup configs
+│   ├── cleanup.sh               # Clean caches
+│   ├── dev-check.sh             # Health check
+│   ├── setup-gpg.sh             # GPG setup
+│   └── setup-obsidian.sh        # Obsidian vault setup
+│
+└── services/                    # 🐳 Self-hosted Docker Compose stacks
+    ├── setup-services.sh        # Stage all stacks to ~/docker/
+    ├── immich/                  # Google Photos replacement
+    ├── vaultwarden/             # Bitwarden password manager
+    ├── nextcloud/               # Google Drive replacement
+    ├── ollama/                  # Local LLM inference
+    ├── syncthing/               # File sync
+    └── rclone/rclone-backup.sh  # Cloud backup (B2/S3)
 ```
 
 ## 🎯 Common Tasks

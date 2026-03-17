@@ -48,6 +48,14 @@ Complete documentation for this dotfiles repository.
 - **[CLAUDE_CODE_GUIDE.md](./CLAUDE_CODE_GUIDE.md)** - Complete Claude Code guide: skills, agents, statusline, settings, hooks
 - **[BUSINESS_STACK_GUIDE.md](./BUSINESS_STACK_GUIDE.md)** - Product stack reference: web/mobile frameworks, analytics, payments, deployment
 
+### Self-Hosted & Privacy
+
+- **[SERVICES.md](./SERVICES.md)** - 13 Docker Compose stacks: Immich, Vaultwarden, Nextcloud, Ollama, and more
+- **[BACKUPS.md](./BACKUPS.md)** - 3-2-1 backup strategy for services, photos, and personal data
+- **[NOTES.md](./NOTES.md)** - Obsidian vault setup, Syncthing sync, git backup, and Ollama integration
+- **[BOOKS.md](./BOOKS.md)** - Calibre-Web library server, Kindle highlights pipeline, mobile reading
+- **[DEGOOGLE.md](./DEGOOGLE.md)** - Migration checklist: replace Google services with self-hosted alternatives
+
 ### Tools & Scripts
 
 - **[MODERN_CLI_TOOLS.md](./MODERN_CLI_TOOLS.md)** - Guide to modern CLI tools:
@@ -87,6 +95,10 @@ Complete documentation for this dotfiles repository.
 - Learn about modern CLI tools → [MODERN_CLI_TOOLS.md](./MODERN_CLI_TOOLS.md)
 - Use the utility scripts → [UTILITY_SCRIPTS.md](./UTILITY_SCRIPTS.md)
 - Learn tools with tutorial links → [tutorials/TOOL_TUTORIALS.md](./tutorials/TOOL_TUTORIALS.md)
+- Run self-hosted services (Immich, Vaultwarden, etc.) → [SERVICES.md](./SERVICES.md)
+- Back up everything → [BACKUPS.md](./BACKUPS.md)
+- Manage notes with Obsidian → [NOTES.md](./NOTES.md)
+- Stop using Google → [DEGOOGLE.md](./DEGOOGLE.md)
 
 ## 📁 Repository Structure
 
@@ -106,12 +118,20 @@ Complete documentation for this dotfiles repository.
 │   ├── mac/                  # macOS installers
 │   ├── linux/                # Linux installers
 │   └── windows/              # Windows/WSL installer
-└── scripts/                  # Utility scripts
-    ├── update.sh             # Update all package managers
-    ├── backup.sh             # Backup configs
-    ├── cleanup.sh            # Clean caches
-    ├── dev-check.sh          # Health check
-    └── setup-gpg.sh          # GPG setup
+├── scripts/                  # Utility scripts
+│   ├── update.sh             # Update all package managers
+│   ├── backup.sh             # Backup configs
+│   ├── cleanup.sh            # Clean caches
+│   ├── dev-check.sh          # Health check
+│   ├── setup-gpg.sh          # GPG setup
+│   └── setup-obsidian.sh     # Obsidian vault setup
+│
+└── services/                 # Self-hosted Docker Compose stacks
+    ├── setup-services.sh     # Stage stacks to ~/docker/
+    ├── immich/               # Google Photos replacement
+    ├── vaultwarden/          # Bitwarden server
+    ├── nextcloud/            # Google Drive replacement
+    └── rclone/               # Cloud backup
 ```
 
 ## 🚀 Quick Start Commands

@@ -1,0 +1,22 @@
+# Watchtower — automatic Docker image updates
+# Docs: https://containrrr.dev/watchtower/
+
+name: watchtower
+
+services:
+  watchtower:
+    container_name: watchtower
+    image: containrrr/watchtower:1.7.1
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      WATCHTOWER_SCHEDULE: ${WATCHTOWER_SCHEDULE:-0 0 4 * * *}
+      WATCHTOWER_CLEANUP: ${WATCHTOWER_CLEANUP:-true}
+      WATCHTOWER_INCLUDE_STOPPED: "false"
+      WATCHTOWER_LABEL_ENABLE: ${WATCHTOWER_LABEL_ENABLE:-false}
+      TZ: ${TZ:-Europe/Vilnius}
+
+networks:
+  default:
+    name: watchtower

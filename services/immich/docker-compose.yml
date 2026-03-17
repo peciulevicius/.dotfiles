@@ -1,0 +1,74 @@
+# Immich — Google Photos replacement
+# Docs: https://immich.app/docs/install/docker-compose
+# Version tag: https://github.com/immich-app/immich/releases
+
+name: immich
+
+services:
+  immich-server:
+    container_name: immich_server
+    image: ghcr.io/immich-app/immich-server:${IMMICH_VERSION:-release}
+    restart: unless-stopped
+    ports:
+      - "${IMMICH_PORT:-2283}:3001"
+    volumes:
+      - ${UPLOAD_LOCATION:-./library}:/usr/src/app/upload
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      DB_HOSTNAME: immich_postgres
+      DB_USERNAME: ${DB_USERNAME:-immich}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD required}
+      DB_DATABASE_NAME: ${DB_DATABASE_NAME:-immich}
+      REDIS_HOSTNAME: immich_redis
+    depends_on:
+      - immich-redis
+      - immich-postgres
+    labels:
+      com.centurylinklabs.watchtower.enable: "false"
+
+  immich-machine-learning:
+    container_name: immich_machine_learning
+    image: ghcr.io/immich-app/immich-machine-learning:${IMMICH_VERSION:-release}
+    restart: unless-stopped
+    volumes:
+      - immich-model-cache:/cache
+    environment:
+      DB_HOSTNAME: immich_postgres
+      DB_USERNAME: ${DB_USERNAME:-immich}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD required}
+      DB_DATABASE_NAME: ${DB_DATABASE_NAME:-immich}
+    labels:
+      com.centurylinklabs.watchtower.enable: "false"
+
+  immich-redis:
+    container_name: immich_redis
+    image: redis:7.4-alpine
+    restart: unless-stopped
+    healthcheck:
+      test: redis-cli ping
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    labels:
+      com.centurylinklabs.watchtower.enable: "false"
+
+  immich-postgres:
+    container_name: immich_postgres
+    image: tensorchord/pgvecto-rs:pg14-v0.2.0
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD required}
+      POSTGRES_USER: ${DB_USERNAME:-immich}
+      POSTGRES_DB: ${DB_DATABASE_NAME:-immich}
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: pg_isready -U ${DB_USERNAME:-immich} -d ${DB_DATABASE_NAME:-immich}
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    labels:
+      com.centurylinklabs.watchtower.enable: "false"
+
+volumes:
+  immich-model-cache:
