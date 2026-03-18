@@ -6,7 +6,7 @@ name: vaultwarden
 services:
   vaultwarden:
     container_name: vaultwarden
-    image: vaultwarden/server:1.32.7
+    image: vaultwarden/server:1.35.4
     restart: unless-stopped
     ports:
       - "${VW_PORT:-8001}:80"
