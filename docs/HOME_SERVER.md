@@ -482,7 +482,7 @@ open http://<tailscale-ip>:2283
 
 ### Step 11 — Deploy remaining services
 
-With Immich running, deploy everything else. See [SERVICES.md](SERVICES.md) for per-service details.
+With Immich running, deploy everything else. See [SERVICES.md](SERVICES.md) for what each service does.
 
 ```bash
 cd ~/.dotfiles
@@ -490,10 +490,10 @@ cd ~/.dotfiles
 # Stage all services to ~/services/
 ./services/setup-services.sh
 
-# Recommended deployment order:
+# Deploy each service:
 for svc in watchtower portainer ollama uptime-kuma syncthing vaultwarden nextcloud freshrss homarr paperless-ngx calibre-web; do
   cd ~/services/$svc
-  nano .env          # fill in passwords/settings
+  nano .env          # fill in passwords/settings (generate secrets with: openssl rand -base64 32)
   docker compose up -d
   cd -
 done
@@ -507,7 +507,14 @@ cd ~/services/ollama
 # Set WEBUI_SECRET_KEY=$(openssl rand -hex 32) in .env
 docker compose up -d
 docker exec ollama ollama pull llama3.2:3b
-# Open WebUI: http://100.81.171.49:3030
+```
+
+For Calibre-Web — books on T7:
+```bash
+mkdir -p /Volumes/T7/calibre-books
+cd ~/services/calibre-web
+# Set BOOKS_DIR=/Volumes/T7/calibre-books in .env
+docker compose up -d
 ```
 
 Deploy everything, stop containers later if not needed:
@@ -515,6 +522,40 @@ Deploy everything, stop containers later if not needed:
 docker stop <container_name>  # stop a service
 docker start <container_name> # start it again
 ```
+
+---
+
+### Step 12 — Cloudflare Tunnel (HTTPS for all services)
+
+This gives every service a real HTTPS URL like `https://vault.peciulevicius.com`. Required for the Bitwarden app (which rejects HTTP).
+
+```bash
+~/.dotfiles/scripts/setup/setup-cloudflare-tunnel.sh
+```
+
+The script will:
+1. Open your browser to authenticate with Cloudflare
+2. Create a tunnel named "macmini"
+3. Create DNS records for all service subdomains
+4. Start the tunnel as a background service (auto-starts on boot)
+
+After it finishes, all services are live at:
+
+| Service | URL |
+|---------|-----|
+| Dashboard | https://home.peciulevicius.com |
+| Vaultwarden | https://vault.peciulevicius.com |
+| Immich | https://photos.peciulevicius.com |
+| Nextcloud | https://cloud.peciulevicius.com |
+| Open WebUI | https://ai.peciulevicius.com |
+| Paperless | https://papers.peciulevicius.com |
+| FreshRSS | https://rss.peciulevicius.com |
+| Uptime Kuma | https://status.peciulevicius.com |
+| Syncthing | https://sync.peciulevicius.com |
+| Calibre-Web | https://books.peciulevicius.com |
+| Portainer | https://portainer.peciulevicius.com |
+
+**Bitwarden app:** set server URL to `https://vault.peciulevicius.com` — works on all devices with no certificate warnings.
 
 ---
 
@@ -594,30 +635,80 @@ docker ps
 
 ---
 
+## New Machine Setup — TL;DR
+
+Complete checklist for setting up a new Mac mini from scratch:
+
+```bash
+# 1. Clone dotfiles and run installer
+git clone https://github.com/peciulevicius/.dotfiles.git ~/.dotfiles
+cd ~/.dotfiles && ./install.sh
+
+# 2. Prepare drives (see steps 1-2 above for details)
+# - T7: add TimeMachine APFS volume, create /Volumes/T7/immich
+# - T5: format as ImmichBackup
+# - Prevent sleep: sudo pmset -a sleep 0 disksleep 0 displaysleep 10
+
+# 3. Set up networking
+# - Install Tailscale, sign in
+# - Enable SSH: System Settings → General → Sharing → Remote Login
+
+# 4. Deploy all services
+./services/setup-services.sh                            # stage configs to ~/services/
+for svc in immich watchtower portainer ollama uptime-kuma syncthing \
+           vaultwarden nextcloud freshrss homarr paperless-ngx calibre-web; do
+  cd ~/services/$svc
+  nano .env          # fill in secrets (openssl rand -base64 32)
+  docker compose up -d
+  cd -
+done
+
+# 5. Set up Cloudflare Tunnel (HTTPS for all services)
+~/.dotfiles/scripts/setup/setup-cloudflare-tunnel.sh
+
+# 6. Set up backups
+crontab -e
+# Add:
+# 0 3 * * * ~/.dotfiles/scripts/backup/backup-immich.sh >> ~/logs/immich-backup.log 2>&1
+# 0 4 * * 0 ~/.dotfiles/scripts/backup/backup-databases.sh >> ~/logs/db-backup.log 2>&1
+
+# 7. Set up Time Machine (see step 9 above)
+
+# 8. Verify
+docker ps                    # all containers running
+tailscale status             # devices connected
+curl https://vault.peciulevicius.com  # tunnel working
+```
+
 ## Quick Reference
 
 ```bash
 # SSH into Mac mini from anywhere
 ssh macmini
 
-# Check Immich containers
+# Check all containers
 docker ps
 
-# Restart Immich
-cd ~/services/immich && docker compose restart
+# Restart a service
+cd ~/services/<service> && docker compose restart
 
-# Update Immich
-cd ~/services/immich && docker compose pull && docker compose up -d
+# Update a service
+cd ~/services/<service> && docker compose pull && docker compose up -d
 
 # Run photo backup manually
 ~/.dotfiles/scripts/backup/backup-immich.sh
 
-# Check backup log
-cat ~/logs/immich-backup.log
+# Dump databases
+~/.dotfiles/scripts/backup/backup-databases.sh
 
 # Check Tailscale status
 tailscale status
 
-# Immich web UI (open in browser)
-# http://<tailscale-ip>:2283
+# Service URLs
+# https://home.peciulevicius.com   (dashboard)
+# https://photos.peciulevicius.com (Immich)
+# https://vault.peciulevicius.com  (Vaultwarden)
+# https://cloud.peciulevicius.com  (Nextcloud)
+# https://ai.peciulevicius.com     (Open WebUI)
+# See SERVICES.md for full list
 ```
