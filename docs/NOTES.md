@@ -7,23 +7,51 @@ Personal knowledge management with Obsidian, synced across devices with Syncthin
 | Tool | Role |
 |------|------|
 | Obsidian | PKM app (desktop + mobile) |
-| Syncthing | Vault sync (Mac ↔ Mac mini ↔ iPhone) |
-| Git | Version control + GitHub backup |
+| Syncthing | Live vault sync (Mac ↔ Mac mini ↔ iPhone) |
+| Rclone → B2 | Offsite backup (nightly, via rclone-backup.sh) |
 | Kindle highlights | Via Readwise or manual export |
 
-## Vault Structure (PARA)
+## Vault Structure
 
 ```
 ~/obsidian-vault/
-├── 000 Inbox/          # Quick capture, process weekly
-├── 100 Projects/       # Active projects (with deadlines)
-├── 200 Areas/          # Ongoing responsibilities
-├── 300 Resources/      # Reference by topic
-├── 400 Archive/        # Completed / inactive
-├── 500 Templates/      # Note templates
-├── 600 Daily Notes/    # Daily journal
-├── 700 Books/          # Book notes
-└── 800 Kindle Highlights/  # Imported highlights
+├── HOME.md                          ← root dashboard, open on startup
+├── ⚡ Capture/
+│   └── Quick Capture.md
+├── 🏢 Visma/
+│   ├── VFS.md
+│   ├── Gweb.md
+│   ├── 1on1 Justas D.md
+│   ├── Young Professionals Program 25-26.md
+│   └── VCDM.md
+├── 🚀 Build/
+│   ├── Ideas & Brainstorm.md
+│   ├── SaaS Stack & Research.md
+│   ├── Ventures & Business Models.md
+│   └── Writing & Content.md
+├── 📚 Books & Learning/
+│   ├── Currently Reading.md
+│   ├── Quotes & Principles.md
+│   └── Book Notes/
+│       └── _Book Template.md
+├── 🏊 Training & Health/
+│   ├── Training Log.md
+│   ├── Race Planning.md
+│   ├── Gear & Nutrition.md
+│   └── Health & Recovery.md
+├── 💰 Finance/
+│   ├── Budget & Overview.md
+│   └── Notes.md
+├── ✈️ Travel/
+│   ├── _Trip Template.md
+│   └── Ideas & Wishlist.md
+├── 🙋 Personal/
+│   ├── Goals & Priorities.md
+│   └── Weekly Reflection.md
+├── 📥 Imports/
+│   └── README.md
+└── 📦 Archive/
+    └── README.md
 ```
 
 ## Setup
@@ -37,6 +65,7 @@ VAULT_PATH=/Volumes/SSD/obsidian-vault ./scripts/setup/setup-obsidian.sh
 ```
 
 Then open Obsidian → **Open folder as vault** → select `~/obsidian-vault`.
+Set HOME.md as the startup note (Settings → Files & Links → Default note).
 
 ## Syncthing Setup
 
@@ -44,11 +73,11 @@ Syncthing syncs the vault peer-to-peer (no cloud needed).
 
 **Mac mini (host):**
 ```bash
-cd ~/docker/syncthing
+cd ~/services/syncthing
 docker compose up -d
 # Open http://localhost:8384
 # Add device: your MacBook's device ID
-# Share folder: ~/obsidian-vault → ~/docker/syncthing/data/sync/obsidian-vault
+# Add folder: ~/obsidian-vault
 ```
 
 **MacBook:**
@@ -60,39 +89,33 @@ syncthing  # opens at http://127.0.0.1:8384
 ```
 
 **iPhone:**
-Install Möbius Sync (iOS) or Syncthing (Android), add the Mac mini as a device.
+Install Möbius Sync (iOS), add the Mac mini as a device, accept the shared folder.
 
-## Git Backup
+## Backup
 
-```bash
-cd ~/obsidian-vault
-git init
-git remote add origin git@github.com:yourusername/obsidian-vault.git
-git add -A && git commit -m "init"
-git push -u origin main
-```
+Obsidian vault is backed up to Backblaze B2 nightly via the rclone backup script (alongside Docker configs). No git needed — Syncthing handles live sync, rclone handles offsite backup.
 
-The `scripts/update.sh` will auto-commit and push daily when run.
+Excluded from backup: `.obsidian/workspace*`, `.obsidian/plugins/`, `.DS_Store`, `.stfolder`.
 
-## Recommended Plugins
+## Weekly Routine (10 min every Sunday)
 
-| Plugin | Purpose |
-|--------|---------|
-| Dataview | Query notes as a database |
-| Calendar | Visual daily note navigation |
-| Templater | Advanced templates |
-| Git | Backup from within Obsidian |
-| Kindle Highlights | Import Kindle highlights |
-| Omnisearch | Full-text search |
+1. Clear ⚡ Quick Capture — move items to their home, delete noise
+2. Process 📥 Imports — paste TXT content into correct notes, delete raw files
+3. Add one entry to 🙋 Personal/Weekly Reflection.md
 
-## Capture Workflow
+## Kindle Scribe → Obsidian Routing
 
-1. **Quick thought** → `000 Inbox/` (Ctrl+N, add to inbox)
-2. **Meeting notes** → `100 Projects/<project>/` or `200 Areas/`
-3. **Article/book** → `300 Resources/<topic>/`
-4. **Daily review** → `600 Daily Notes/YYYY-MM-DD`
-
-Process inbox weekly: every note either moves to Projects/Areas/Resources/Archive or gets deleted.
+| Notebook name contains | Paste into |
+|---|---|
+| VFS / Gweb / Justas / VCDM / Young Prof | 🏢 Visma/[matching file] |
+| Ideas / SaaS / Ventures / Writing | 🚀 Build/[matching file] |
+| Book / Reading / Quotes | 📚 Books & Learning/[matching file] |
+| Training / Swim / Bike / Run / Race | 🏊 Training & Health/[matching file] |
+| Health / Recovery / Physio | 🏊 Training & Health/Health & Recovery.md |
+| Budget / Finance / Money | 💰 Finance/[matching file] |
+| Travel / Trip | ✈️ Travel/[trip name].md |
+| Goals / Reflection / Journal | 🙋 Personal/[matching file] |
+| Anything unclear / mixed | 📥 Imports/ — review manually |
 
 ## Scribe Workflow (Voice → Note)
 
@@ -108,7 +131,7 @@ With Ollama running locally, use the Obsidian plugin **Smart Connections** or **
 
 ```bash
 # Start Ollama
-cd ~/docker/ollama
+cd ~/services/ollama
 docker compose up -d
 
 # In Obsidian: install Smart Connections → set model to Ollama → llama3.2:3b

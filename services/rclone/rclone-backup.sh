@@ -57,6 +57,7 @@ echo "$(date '+%Y-%m-%d %H:%M:%S') — rclone backup started" >> "$LOG_FILE"
 log_info "Backing up $DOCKER_DIR → $BACKUP_DEST"
 [[ "$DRY_RUN" == "true" ]] && log_warn "Dry run — no data will be transferred"
 
+# Backup 1: Docker service configs
 SYNC_CMD=(rclone sync "$DOCKER_DIR" "$BACKUP_DEST")
 SYNC_CMD+=(--exclude "**/.env")
 SYNC_CMD+=(--exclude "**/library/**")
@@ -65,8 +66,32 @@ SYNC_CMD+=($RCLONE_FLAGS)
 [[ "$DRY_RUN" == "true" ]] && SYNC_CMD+=(--dry-run)
 
 if "${SYNC_CMD[@]}" 2>&1 | tee -a "$LOG_FILE"; then
-  log_ok "Backup complete"
+  log_ok "Services backup complete"
 else
-  log_err "Backup failed — check $LOG_FILE"
+  log_err "Services backup failed — check $LOG_FILE"
   exit 1
+fi
+
+# Backup 2: Obsidian vault
+OBSIDIAN_DIR="$HOME/obsidian-vault"
+OBSIDIAN_DEST="${RCLONE_REMOTE}:my-backup-bucket/obsidian-vault"
+
+if [[ -d "$OBSIDIAN_DIR" ]]; then
+  log_info "Backing up $OBSIDIAN_DIR → $OBSIDIAN_DEST"
+  VAULT_CMD=(rclone sync "$OBSIDIAN_DIR" "$OBSIDIAN_DEST")
+  VAULT_CMD+=(--exclude ".obsidian/workspace*")
+  VAULT_CMD+=(--exclude ".obsidian/plugins/**")
+  VAULT_CMD+=(--exclude ".DS_Store")
+  VAULT_CMD+=(--exclude ".stfolder")
+  VAULT_CMD+=($RCLONE_FLAGS)
+  [[ "$DRY_RUN" == "true" ]] && VAULT_CMD+=(--dry-run)
+
+  if "${VAULT_CMD[@]}" 2>&1 | tee -a "$LOG_FILE"; then
+    log_ok "Obsidian vault backup complete"
+  else
+    log_err "Obsidian vault backup failed — check $LOG_FILE"
+    exit 1
+  fi
+else
+  log_warn "Obsidian vault not found at $OBSIDIAN_DIR — skipping"
 fi

@@ -175,7 +175,7 @@ update
 
 ## 📓 setup/setup-obsidian.sh - Obsidian Vault Setup
 
-Creates an Obsidian vault with a PARA folder structure, minimal config, and a daily note template.
+Creates an Obsidian vault with 10 emoji-prefixed folders and 27 template files.
 
 ### Usage
 
@@ -191,19 +191,20 @@ VAULT_PATH=/Volumes/SSD/notes ~/.dotfiles/scripts/setup/setup-obsidian.sh
 
 ```
 ~/obsidian-vault/
-├── 000 Inbox/           # Quick captures
-├── 100 Projects/        # Active projects
-├── 200 Areas/           # Ongoing responsibilities
-├── 300 Resources/       # Reference material
-├── 400 Archive/         # Completed items
-├── 500 Templates/       # Daily Note template included
-├── 600 Daily Notes/
-├── 700 Books/
-├── 800 Kindle Highlights/
-└── .obsidian/           # Core plugins enabled (daily-notes, templates, etc.)
+├── HOME.md              # Root dashboard — open on startup
+├── ⚡ Capture/           # Quick capture inbox
+├── 🏢 Visma/            # Work notes (VFS, Gweb, 1on1, VCDM, YPP)
+├── 🚀 Build/            # Business ideas, SaaS research, writing
+├── 📚 Books & Learning/ # Currently reading, quotes, book notes
+├── 🏊 Training & Health/# Training log, races, gear, health
+├── 💰 Finance/          # Budget, finance notes
+├── ✈️ Travel/           # Trip templates, wishlist
+├── 🙋 Personal/         # Goals, weekly reflection
+├── 📥 Imports/          # Kindle TXT exports (process weekly)
+└── 📦 Archive/          # Dead ideas, old notes
 ```
 
-See [NOTES.md](./NOTES.md) for the full Obsidian + Syncthing + Git workflow.
+See [NOTES.md](./NOTES.md) for the full Obsidian + Syncthing workflow.
 
 ---
 

@@ -14,7 +14,7 @@
 |------|-------------|----------------|----------|-------|
 | Immich photos | ✅ Primary | ✅ nightly rsync | ✅ rclone | Primary backup |
 | Docker configs | ✅ ~/services/ | — | ✅ rclone | `.env` excluded |
-| Obsidian vault | ✅ ~/obsidian-vault | — | ✅ git push | GitHub |
+| Obsidian vault | ✅ ~/obsidian-vault | — | ✅ rclone | Syncthing live sync + B2 offsite |
 | Paperless docs | ✅ ~/services/paperless-ngx | — | ✅ rclone | OCR + originals |
 | Calibre library | ✅ ~/Books | — | ✅ rclone | metadata.db |
 | MacBook | — | ✅ Time Machine | — | USB drive |
@@ -77,15 +77,9 @@ Add to weekly cron.
 
 ## Obsidian Vault Backup
 
-The vault is a git repo pushed to GitHub:
+The vault syncs live between devices via Syncthing and is backed up offsite to B2 by the rclone backup script (runs nightly alongside Docker configs).
 
-```bash
-cd ~/obsidian-vault
-git init
-git remote add origin git@github.com:yourusername/obsidian-vault.git
-```
-
-`scripts/update.sh` auto-commits and pushes when run.
+Excluded from B2 backup: `.obsidian/workspace*`, `.obsidian/plugins/`, `.DS_Store`, `.stfolder`.
 
 ## Backblaze B2 Setup
 

@@ -367,22 +367,7 @@ if command -v docker &>/dev/null && docker info &>/dev/null 2>&1; then
     fi
 fi
 
-# ── Obsidian Vault Backup ───────────────────────────────────────────────────
-OBSIDIAN_VAULT="$HOME/obsidian-vault"
-if [[ -d "$OBSIDIAN_VAULT/.git" ]]; then
-    print_header "Backing Up Obsidian Vault"
-    pushd "$OBSIDIAN_VAULT" > /dev/null
-    git add -A
-    if ! git diff --cached --quiet; then
-        git commit -m "chore: vault backup $(date +%Y-%m-%d)"
-        git push origin HEAD 2>/dev/null && echo "  ✓ Vault pushed" || echo "  ⚠ Push failed (offline?)"
-    else
-        echo "  ✓ Vault already up to date"
-    fi
-    popd > /dev/null
-fi
-
-# ── Rclone Cloud Backup ─────────────────────────────────────────────────────
+# ── Rclone Cloud Backup (includes Obsidian vault) ─────────────────────────────────────────────────────
 RCLONE_SCRIPT="$HOME/.dotfiles/services/rclone/rclone-backup.sh"
 if command -v rclone &>/dev/null && [[ -f "$RCLONE_SCRIPT" ]]; then
     if rclone listremotes 2>/dev/null | grep -q ":"; then

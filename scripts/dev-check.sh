@@ -379,11 +379,7 @@ if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
     OBSIDIAN_VAULT="$HOME/obsidian-vault"
     if [[ -d "$OBSIDIAN_VAULT/.obsidian" ]]; then
         record_result optional true "Obsidian vault" "$OBSIDIAN_VAULT" ""
-        if [[ -d "$OBSIDIAN_VAULT/.git" ]]; then
-            echo -e "${CYAN}  └─${NC} Git backup: enabled"
-        else
-            echo -e "${YELLOW}  └─${NC} Git backup: not set up (run: cd ~/obsidian-vault && git init)"
-        fi
+        echo -e "${CYAN}  └─${NC} Backup: Syncthing (live sync) + rclone → B2 (nightly)"
     else
         record_result optional false "Obsidian vault" "Not found — run scripts/setup/setup-obsidian.sh" "scripts/setup/setup-obsidian.sh"
     fi
