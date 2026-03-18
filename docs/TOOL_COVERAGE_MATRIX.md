@@ -10,7 +10,7 @@ Status meaning:
 
 | Tool | Installed by Default | Coverage | Primary Guide |
 |---|---|---|---|
-| `git` | Yes | Full | `QUICKSTART.md`, `CONFIG_GUIDE.md` |
+| `git` | Yes | Full | `HOW_TO_INSTALL.md`, `CONFIG_GUIDE.md` |
 | `gh` | Yes | Full | `tutorials/TOOL_TUTORIALS.md` |
 | `wget` | Yes | Full | `MODERN_CLI_TOOLS.md` |
 | `bat` | Yes | Full | `MODERN_CLI_TOOLS.md` |

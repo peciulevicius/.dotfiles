@@ -1,5 +1,5 @@
 #!/bin/bash
-# Rclone cloud backup — backs up ~/docker volumes to B2/S3
+# Rclone cloud backup — backs up ~/services volumes to B2/S3
 # Usage: ./rclone-backup.sh [--dry-run]
 # Set up rclone remote first: rclone config
 
@@ -30,8 +30,8 @@ if [[ -f "$ENV_FILE" ]]; then
 fi
 
 RCLONE_REMOTE="${RCLONE_REMOTE:-b2-backup}"
-DOCKER_DIR="${DOCKER_DIR:-$HOME/docker}"
-BACKUP_DEST="${BACKUP_DEST:-${RCLONE_REMOTE}:my-backup-bucket/docker}"
+DOCKER_DIR="${DOCKER_DIR:-$HOME/services}"
+BACKUP_DEST="${BACKUP_DEST:-${RCLONE_REMOTE}:my-backup-bucket/services}"
 RCLONE_FLAGS="${RCLONE_FLAGS:---transfers=4 --checkers=8 --fast-list --stats=60s}"
 
 mkdir -p "$LOG_DIR"

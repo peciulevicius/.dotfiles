@@ -613,22 +613,9 @@ starship preset -l
 
 ## Next Steps After Installation
 
-1. ✅ Read QUICKSTART.md for git aliases
-2. ✅ Read CONFIG_GUIDE.md for configuration details
-3. ✅ Customize ~/.zshrc.local for machine-specific settings
-4. ✅ Star this repo to remember where it is!
-5. ✅ Enjoy your consistent development environment! 🎉
-
----
-
-**Need Help?**
-- Check INSTALLATION_GUIDE.md for detailed reference
-- Check TROUBLESHOOTING.md (if it exists)
-- Check individual config README files
-
-**Found a Bug?**
-- Open an issue on GitHub
-- Or fix it and submit a PR!
+1. ✅ Read CONFIG_GUIDE.md for configuration details
+2. ✅ Customize ~/.zshrc.local for machine-specific settings
+3. ✅ Run `git aliases` to see all available git shortcuts
 
 ---
 

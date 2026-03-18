@@ -6,7 +6,7 @@ name: watchtower
 services:
   watchtower:
     container_name: watchtower
-    image: containrrr/watchtower:1.7.1
+    image: containrrr/watchtower:latest
     restart: unless-stopped
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
@@ -16,6 +16,7 @@ services:
       WATCHTOWER_INCLUDE_STOPPED: "false"
       WATCHTOWER_LABEL_ENABLE: ${WATCHTOWER_LABEL_ENABLE:-false}
       TZ: ${TZ:-Europe/Vilnius}
+      DOCKER_API_VERSION: "1.44"
 
 networks:
   default:

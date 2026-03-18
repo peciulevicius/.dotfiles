@@ -28,8 +28,6 @@ When working with this repository:
 ├── README.md                    # Main overview (keep concise)
 ├── install.sh                   # Main installer (detects OS)
 ├── docs/                        # All documentation
-│   ├── README.md                # Documentation index
-│   ├── QUICKSTART.md            # Quick start guide
 │   ├── HOW_TO_INSTALL.md        # Complete installation guide
 │   ├── CONFIG_GUIDE.md          # Configuration details
 │   ├── MODERN_CLI_TOOLS.md      # CLI tools guide
@@ -50,7 +48,7 @@ When working with this repository:
     ├── backup.sh                # Backup configs
     ├── cleanup.sh               # Clean caches
     ├── dev-check.sh             # Health check
-    └── setup-gpg.sh             # GPG signing setup
+    └── setup-gpg.sh             # GPG signing setup (in scripts/setup/)
 ```
 
 ## 🔧 Common Tasks
@@ -211,7 +209,7 @@ Always consider these tools when suggesting commands:
 ## 📝 When Helping the User
 
 ### For Installation Questions
-→ Direct to `docs/HOW_TO_INSTALL.md` or `docs/QUICKSTART.md`
+→ Direct to `docs/HOW_TO_INSTALL.md`
 
 ### For Configuration Questions
 → Direct to `docs/CONFIG_GUIDE.md`
@@ -306,14 +304,14 @@ cd ~/.dotfiles && ./install.sh
 
 # Maintenance
 ~/.dotfiles/scripts/update.sh      # Update everything
-~/.dotfiles/scripts/backup.sh      # Backup configs
+~/.dotfiles/scripts/backup/backup-dotfiles.sh      # Backup configs
 ~/.dotfiles/scripts/cleanup.sh     # Clean caches
 ~/.dotfiles/scripts/dev-check.sh   # Health check
 
 # Quick access
 alias dotfiles='cd ~/.dotfiles'
 alias update='~/.dotfiles/scripts/update.sh'
-alias backup='~/.dotfiles/scripts/backup.sh'
+alias backup='~/.dotfiles/scripts/backup/backup-dotfiles.sh'
 ```
 
 ---

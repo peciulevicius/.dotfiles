@@ -385,7 +385,7 @@ if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
             echo -e "${YELLOW}  └─${NC} Git backup: not set up (run: cd ~/obsidian-vault && git init)"
         fi
     else
-        record_result optional false "Obsidian vault" "Not found — run scripts/setup-obsidian.sh" "scripts/setup-obsidian.sh"
+        record_result optional false "Obsidian vault" "Not found — run scripts/setup/setup-obsidian.sh" "scripts/setup/setup-obsidian.sh"
     fi
 fi
 

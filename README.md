@@ -39,7 +39,7 @@ For a detailed walkthrough, see [docs/HOW_TO_INSTALL.md](docs/HOW_TO_INSTALL.md)
 | **Arch Linux** | ✅ Full | `os/linux/install_arch.sh` |
 | **Ubuntu/Debian** | ✅ Full | `os/linux/install_ubuntu.sh` |
 | **Kali Linux** | ✅ Full | `os/linux/install_ubuntu.sh` |
-| **Windows** | ✅ Claude + packages | `scripts/setup-claude.ps1`, `scripts/update.ps1` |
+| **Windows** | ✅ Claude + packages | `scripts/setup/setup-claude.ps1`, `scripts/update.ps1` |
 | **Windows/WSL** | ⚠️ Shell tools | `os/windows/install_wsl.sh` |
 
 macOS non-interactive mode:
@@ -99,16 +99,16 @@ Powerful scripts to maintain your environment:
 **macOS / Linux:**
 ```bash
 ~/.dotfiles/scripts/update.sh      # Update all package managers + Claude Code
-~/.dotfiles/scripts/backup.sh      # Backup all configs and package lists
+~/.dotfiles/scripts/backup/backup-dotfiles.sh      # Backup all configs and package lists
 ~/.dotfiles/scripts/cleanup.sh     # Free disk space (cleans Docker, npm, etc.)
 ~/.dotfiles/scripts/dev-check.sh   # Health check your dev environment
-~/.dotfiles/scripts/setup-gpg.sh   # Set up GPG commit signing
+~/.dotfiles/scripts/setup/setup-gpg.sh   # Set up GPG commit signing
 ```
 
 **Windows (PowerShell):**
 ```powershell
 .\scripts\update.ps1               # Update winget, npm, pnpm, Claude Code
-.\scripts\setup-claude.ps1         # Set up Claude Code config
+.\scripts\setup\setup-claude.ps1   # Set up Claude Code config
 ```
 
 See [docs/UTILITY_SCRIPTS.md](docs/UTILITY_SCRIPTS.md) for detailed usage.
@@ -121,8 +121,6 @@ See [docs/UTILITY_SCRIPTS.md](docs/UTILITY_SCRIPTS.md) for detailed usage.
 ├── install.sh                   # Main installer (auto-detects OS)
 │
 ├── docs/                        # 📚 Complete documentation
-│   ├── README.md                # Documentation index
-│   ├── QUICKSTART.md            # TL;DR guide
 │   ├── HOW_TO_INSTALL.md        # Complete installation guide
 │   ├── CONFIG_GUIDE.md          # Configuration details
 │   ├── MODERN_CLI_TOOLS.md      # CLI tools guide
@@ -152,11 +150,11 @@ See [docs/UTILITY_SCRIPTS.md](docs/UTILITY_SCRIPTS.md) for detailed usage.
 │
 ├── scripts/                     # 🛠️ Utility scripts
 │   ├── update.sh                # Update everything
-│   ├── backup.sh                # Backup configs
+│   ├── backup/backup-dotfiles.sh # Backup configs
 │   ├── cleanup.sh               # Clean caches
 │   ├── dev-check.sh             # Health check
-│   ├── setup-gpg.sh             # GPG setup
-│   └── setup-obsidian.sh        # Obsidian vault setup
+│   ├── setup/setup-gpg.sh       # GPG setup
+│   └── setup/setup-obsidian.sh  # Obsidian vault setup
 │
 └── services/                    # 🐳 Self-hosted Docker Compose stacks
     ├── setup-services.sh        # Stage all stacks to ~/docker/
@@ -187,7 +185,7 @@ cd ~/.dotfiles && ./install.sh
 ### Backup Your Configs
 
 ```bash
-~/.dotfiles/scripts/backup.sh
+~/.dotfiles/scripts/backup/backup-dotfiles.sh
 # Creates: ~/dotfiles_backup_YYYYMMDD_HHMMSS.tar.gz
 ```
 
@@ -208,7 +206,7 @@ cd ~/.dotfiles && ./install.sh
 ### Set Up GPG Commit Signing
 
 ```bash
-~/.dotfiles/scripts/setup-gpg.sh
+~/.dotfiles/scripts/setup/setup-gpg.sh
 # Sets up GPG for verified commits on GitHub
 ```
 
@@ -306,7 +304,7 @@ source ~/.zshrc
 - Add to GitHub: https://github.com/settings/keys
 
 **Git commits not verified:**
-- Run: `~/.dotfiles/scripts/setup-gpg.sh`
+- Run: `~/.dotfiles/scripts/setup/setup-gpg.sh`
 - Add GPG key to GitHub: https://github.com/settings/keys
 
 See individual documentation files for more troubleshooting.

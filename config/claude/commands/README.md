@@ -41,5 +41,5 @@ Do X for $ARGUMENTS.
 ...
 EOF
 
-~/.dotfiles/scripts/setup-claude.sh update
+~/.dotfiles/scripts/setup/setup-claude.sh update
 ```

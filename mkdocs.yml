@@ -56,7 +56,6 @@ nav:
       - Tutorials: tutorials/TOOL_TUTORIALS.md
 
   - Installation:
-      - Quick Start: QUICKSTART.md
       - How to Install: HOW_TO_INSTALL.md
       - Arch Linux: ARCH_INSTALLER_FLOW.md
 

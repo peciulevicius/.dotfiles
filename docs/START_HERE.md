@@ -34,7 +34,7 @@ New to this repo? Follow this order.
     # Clone and set up Claude Code
     git clone https://github.com/peciulevicius/.dotfiles.git $HOME\.dotfiles
     cd $HOME\.dotfiles
-    .\scripts\setup-claude.ps1
+    .\scripts\setup\setup-claude.ps1
     ```
 
 === "WSL"
@@ -59,19 +59,19 @@ Installs agents, skills, rules, and commands into `~/.claude/`.
 === "macOS / Linux / WSL"
 
     ```bash
-    scripts/setup-claude.sh   # shows an interactive menu — pick 1
+    scripts/setup/setup-claude.sh   # shows an interactive menu — pick 1
     ```
 
 === "Windows (PowerShell)"
 
     ```powershell
-    .\scripts\setup-claude.ps1
+    .\scripts\setup\setup-claude.ps1
     ```
 
 === "Windows (CMD)"
 
     ```cmd
-    scripts\setup-claude.bat
+    scripts\setup\setup-claude.bat
     ```
 
 Full guide: [Claude Code Guide](./CLAUDE_CODE_GUIDE.md)
@@ -94,7 +94,7 @@ Full guide: [Claude Code Guide](./CLAUDE_CODE_GUIDE.md)
     ```bash
     scripts/update.sh     # update all package managers + Claude Code
     scripts/dev-check.sh  # health check
-    scripts/backup.sh     # backup configs
+    scripts/backup/backup-dotfiles.sh     # backup configs
     ```
 
 === "Windows (PowerShell)"

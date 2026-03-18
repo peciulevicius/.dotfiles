@@ -51,7 +51,7 @@ cd ~/.dotfiles
 ./install.sh
 
 # 3. Set up Claude Code — shows an interactive menu
-./scripts/setup-claude.sh
+./scripts/setup/setup-claude.sh
 ```
 
 Running `setup-claude.sh` with no args shows a **numbered menu**:
@@ -77,7 +77,7 @@ Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
 # Clone and set up
 git clone https://github.com/peciulevicius/.dotfiles.git $HOME\.dotfiles
 cd $HOME\.dotfiles
-.\scripts\setup-claude.ps1
+.\scripts\setup\setup-claude.ps1
 ```
 
 This installs agents, skills, rules, commands, and `CLAUDE.md` into `~/.claude\` using **directory junctions** (no admin rights required). The statusline is macOS/Linux-only and is skipped on Windows.
@@ -85,7 +85,7 @@ This installs agents, skills, rules, commands, and `CLAUDE.md` into `~/.claude\`
 ### Windows (CMD)
 
 ```cmd
-scripts\setup-claude.bat
+scripts\setup\setup-claude.bat
 ```
 
 The `.bat` file calls the PowerShell script automatically — no need to launch PowerShell manually.
@@ -107,17 +107,17 @@ Both scripts pull the latest dotfiles and resync Claude Code config automaticall
 ### macOS / Linux — direct modes (for scripting)
 
 ```bash
-~/.dotfiles/scripts/setup-claude.sh update          # non-interactive resync
-~/.dotfiles/scripts/setup-claude.sh install         # full setup, no menu
-~/.dotfiles/scripts/setup-claude.sh statusline-only
-~/.dotfiles/scripts/setup-claude.sh sync
+~/.dotfiles/scripts/setup/setup-claude.sh update          # non-interactive resync
+~/.dotfiles/scripts/setup/setup-claude.sh install         # full setup, no menu
+~/.dotfiles/scripts/setup/setup-claude.sh statusline-only
+~/.dotfiles/scripts/setup/setup-claude.sh sync
 ```
 
 ### Windows — modes
 
 ```powershell
-.\scripts\setup-claude.ps1          # interactive (prompts for settings.json)
-.\scripts\setup-claude.ps1 update   # non-interactive resync
+.\scripts\setup\setup-claude.ps1          # interactive (prompts for settings.json)
+.\scripts\setup\setup-claude.ps1 update   # non-interactive resync
 ```
 
 ---
@@ -222,7 +222,7 @@ Detailed guidelines split by topic. Claude loads them on demand via `@rules/` re
 **Adding a rule:**
 1. Create `config/claude/rules/your-topic.md`
 2. Add `@rules/your-topic.md` to `config/claude/CLAUDE.md`
-3. Run `~/.dotfiles/scripts/setup-claude.sh update` (symlink is created automatically)
+3. Run `~/.dotfiles/scripts/setup/setup-claude.sh update` (symlink is created automatically)
 
 ### 3. Skills
 
@@ -274,7 +274,7 @@ When invoked, do:
 EOF
 
 # Then sync
-~/.dotfiles/scripts/setup-claude.sh update
+~/.dotfiles/scripts/setup/setup-claude.sh update
 ```
 
 **Skill frontmatter options:**
@@ -336,7 +336,7 @@ System prompt for this agent...
 **Adding an agent to dotfiles:**
 ```bash
 # If you created an agent in ~/.claude/agents/ manually:
-~/.dotfiles/scripts/setup-claude.sh sync
+~/.dotfiles/scripts/setup/setup-claude.sh sync
 
 # Then commit it
 cd ~/.dotfiles
@@ -405,7 +405,7 @@ Do X for $ARGUMENTS.
 ...
 EOF
 
-~/.dotfiles/scripts/setup-claude.sh update
+~/.dotfiles/scripts/setup/setup-claude.sh update
 ```
 
 Use `$ARGUMENTS` to capture what you type after the slash command name.
@@ -464,7 +464,7 @@ Script: `config/claude/statusline.sh`. Parses token counts from Claude's context
 
 ```bash
 # Resync symlinks
-~/.dotfiles/scripts/setup-claude.sh update
+~/.dotfiles/scripts/setup/setup-claude.sh update
 
 # Commit
 cd ~/.dotfiles
@@ -482,11 +482,11 @@ The next `update.sh` run on any machine will automatically pick up the new files
 ### All setup-claude.sh modes
 
 ```bash
-./scripts/setup-claude.sh            # full interactive install
-./scripts/setup-claude.sh update     # non-interactive resync (use for updates)
-./scripts/setup-claude.sh statusline-only
-./scripts/setup-claude.sh sync       # pull live agents back into dotfiles
-./scripts/setup-claude.sh agents-only
+./scripts/setup/setup-claude.sh            # full interactive install
+./scripts/setup/setup-claude.sh update     # non-interactive resync (use for updates)
+./scripts/setup/setup-claude.sh statusline-only
+./scripts/setup/setup-claude.sh sync       # pull live agents back into dotfiles
+./scripts/setup/setup-claude.sh agents-only
 ```
 
 ### Directory structure
@@ -511,19 +511,19 @@ config/claude/
 | Script | Interactive? | What it does |
 |--------|-------------|-------------|
 | `install.sh` | ✅ yes | Full machine setup — Homebrew, tools, symlinks |
-| `scripts/setup-claude.sh` | ✅ menu when no args | Claude Code setup (menu → pick 1–4) |
+| `scripts/setup/setup-claude.sh` | ✅ menu when no args | Claude Code setup (menu → pick 1–4) |
 | `scripts/update.sh` | ❌ | Update all package managers + Claude Code |
-| `scripts/backup.sh` | ❌ | Backup configs to timestamped folder |
+| `scripts/backup/backup-dotfiles.sh` | ❌ | Backup configs to timestamped folder |
 | `scripts/cleanup.sh` | ❌ | Clear caches (Homebrew, npm, pip, etc.) |
 | `scripts/dev-check.sh` | ❌ | Health check — are all tools installed? |
-| `scripts/setup-gpg.sh` | ✅ yes | Set up GPG commit signing |
+| `scripts/setup/setup-gpg.sh` | ✅ yes | Set up GPG commit signing |
 
 **Windows:**
 
 | Script | Shell | What it does |
 |--------|-------|-------------|
-| `scripts/setup-claude.ps1` | PowerShell | Claude Code setup (agents, skills, rules, CLAUDE.md) |
-| `scripts/setup-claude.bat` | CMD | Same — delegates to the `.ps1` |
+| `scripts/setup/setup-claude.ps1` | PowerShell | Claude Code setup (agents, skills, rules, CLAUDE.md) |
+| `scripts/setup/setup-claude.bat` | CMD | Same — delegates to the `.ps1` |
 | `scripts/update.ps1` | PowerShell | Update winget, npm, pnpm, dotfiles, Claude Code |
 | `scripts/update.bat` | CMD | Same — delegates to the `.ps1` |
 

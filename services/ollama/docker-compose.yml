@@ -1,5 +1,5 @@
-# Ollama — local LLM inference server
-# Docs: https://ollama.com/
+# Ollama + Open WebUI — local LLM inference + chat UI
+# Docs: https://ollama.com/ | https://docs.openwebui.com/
 
 name: ollama
 
@@ -11,9 +11,27 @@ services:
     ports:
       - "${OLLAMA_PORT:-11434}:11434"
     volumes:
-      - ./data/models:/root/.ollama
+      - ${OLLAMA_MODELS_PATH:-./data/models}:/root/.ollama
     environment:
       OLLAMA_HOST: 0.0.0.0
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+
+  open-webui:
+    container_name: open_webui
+    image: ghcr.io/open-webui/open-webui:v0.6.5
+    restart: unless-stopped
+    ports:
+      - "${WEBUI_PORT:-3030}:8080"
+    volumes:
+      - ./data/webui:/app/backend/data
+    environment:
+      OLLAMA_BASE_URL: http://ollama:11434
+      WEBUI_SECRET_KEY: ${WEBUI_SECRET_KEY:?Set WEBUI_SECRET_KEY in .env}
+    depends_on:
+      - ollama
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
 
 networks:
   default:

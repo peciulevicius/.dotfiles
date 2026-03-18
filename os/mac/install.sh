@@ -32,6 +32,7 @@ CORE_FORMULAS=(
   pnpm        # Fast Node package manager
   starship    # Prompt
   rclone      # Cloud backup (B2/S3 sync)
+  cloudflared # Cloudflare Tunnel (HTTPS for self-hosted services)
 )
 
 # Optional local AI tools.
@@ -283,7 +284,7 @@ maybe_setup_services() {
 
 maybe_setup_obsidian() {
   if confirm "Set up Obsidian vault at ~/obsidian-vault/?" false; then
-    bash "$DOTFILES_DIR/scripts/setup-obsidian.sh"
+    bash "$DOTFILES_DIR/scripts/setup/setup-obsidian.sh"
   fi
   mkdir -p "$HOME/logs"
 }

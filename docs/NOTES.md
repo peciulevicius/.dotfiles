@@ -30,10 +30,10 @@ Personal knowledge management with Obsidian, synced across devices with Syncthin
 
 ```bash
 # Create vault structure
-./scripts/setup-obsidian.sh
+./scripts/setup/setup-obsidian.sh
 
 # Or with custom path
-VAULT_PATH=/Volumes/SSD/obsidian-vault ./scripts/setup-obsidian.sh
+VAULT_PATH=/Volumes/SSD/obsidian-vault ./scripts/setup/setup-obsidian.sh
 ```
 
 Then open Obsidian → **Open folder as vault** → select `~/obsidian-vault`.

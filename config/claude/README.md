@@ -17,16 +17,16 @@ config/claude/
 └── hooks/                 # Shell hooks (notify-done.sh, etc.)
 ```
 
-All files are symlinked to `~/.claude/` by `scripts/setup-claude.sh`.
+All files are symlinked to `~/.claude/` by `scripts/setup/setup-claude.sh`.
 
 ## Quick Setup
 
 ```bash
 # New machine or just want to see options:
-~/.dotfiles/scripts/setup-claude.sh        # shows interactive menu
+~/.dotfiles/scripts/setup/setup-claude.sh        # shows interactive menu
 
 # Already set up, just resync after pulling:
-~/.dotfiles/scripts/setup-claude.sh update
+~/.dotfiles/scripts/setup/setup-claude.sh update
 ```
 
 ## The 6 Things
@@ -136,7 +136,7 @@ Configured in `settings.json` and stored in `config/claude/hooks/`. Add more as 
 
 ```bash
 # After adding any file to this directory:
-~/.dotfiles/scripts/setup-claude.sh update
+~/.dotfiles/scripts/setup/setup-claude.sh update
 
 # Then commit
 cd ~/.dotfiles

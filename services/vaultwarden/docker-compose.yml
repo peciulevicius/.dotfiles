@@ -14,9 +14,11 @@ services:
       - ./data:/data
     environment:
       ADMIN_TOKEN: ${ADMIN_TOKEN:?ADMIN_TOKEN required}
-      DOMAIN: ${DOMAIN:-http://localhost:8001}
+      DOMAIN: ${DOMAIN:-https://localhost:8001}
       SIGNUPS_ALLOWED: ${SIGNUPS_ALLOWED:-false}
       LOG_LEVEL: warn
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
 
 networks:
   default:

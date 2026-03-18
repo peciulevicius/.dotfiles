@@ -412,7 +412,7 @@ This copies your Immich photos from the 1TB to the 500GB every night at 3am. If 
 
 Test the backup script manually first:
 ```bash
-~/.dotfiles/scripts/backup-immich.sh
+~/.dotfiles/scripts/backup/backup-immich.sh
 ```
 
 If it runs without errors, schedule it:
@@ -422,7 +422,7 @@ crontab -e
 
 Add this line (this is standard cron syntax — `0 3 * * *` means "at 3:00am every day"):
 ```
-0 3 * * * ~/.dotfiles/scripts/backup-immich.sh >> ~/logs/immich-backup.log 2>&1
+0 3 * * * ~/.dotfiles/scripts/backup/backup-immich.sh >> ~/logs/immich-backup.log 2>&1
 ```
 
 Save and close. Check it ran the next morning:
@@ -475,7 +475,45 @@ ssh macmini echo "connected"
 open http://<tailscale-ip>:2283
 
 # Backup script works
-~/.dotfiles/scripts/backup-immich.sh
+~/.dotfiles/scripts/backup/backup-immich.sh
+```
+
+---
+
+### Step 11 — Deploy remaining services
+
+With Immich running, deploy everything else. See [SERVICES.md](SERVICES.md) for per-service details.
+
+```bash
+cd ~/.dotfiles
+
+# Stage all services to ~/services/
+./services/setup-services.sh
+
+# Recommended deployment order:
+for svc in watchtower portainer ollama uptime-kuma syncthing vaultwarden nextcloud freshrss homarr paperless-ngx calibre-web; do
+  cd ~/services/$svc
+  nano .env          # fill in passwords/settings
+  docker compose up -d
+  cd -
+done
+```
+
+For Ollama specifically — models on T7, Open WebUI on port 3030:
+```bash
+mkdir -p /Volumes/T7/ollama-models
+cd ~/services/ollama
+# Set OLLAMA_MODELS_PATH=/Volumes/T7/ollama-models in .env
+# Set WEBUI_SECRET_KEY=$(openssl rand -hex 32) in .env
+docker compose up -d
+docker exec ollama ollama pull llama3.2:3b
+# Open WebUI: http://100.81.171.49:3030
+```
+
+Deploy everything, stop containers later if not needed:
+```bash
+docker stop <container_name>  # stop a service
+docker start <container_name> # start it again
 ```
 
 ---
@@ -572,7 +610,7 @@ cd ~/services/immich && docker compose restart
 cd ~/services/immich && docker compose pull && docker compose up -d
 
 # Run photo backup manually
-~/.dotfiles/scripts/backup-immich.sh
+~/.dotfiles/scripts/backup/backup-immich.sh
 
 # Check backup log
 cat ~/logs/immich-backup.log

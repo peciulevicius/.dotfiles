@@ -8,17 +8,20 @@ This dotfiles repository includes several utility scripts to help maintain and m
 |--------|-------------|-------------|
 | `update.sh` | Updates all package managers + pulls dotfiles + Claude Code + Docker images | Weekly |
 | `sync.sh` | Pulls dotfiles from git + re-symlinks configs (no package updates) | After pulling dotfiles |
-| `setup-claude.sh` | Syncs Claude Code config (agents, skills, rules, commands) | After install / as needed |
-| `backup.sh` | Backs up config files + package lists to a timestamped archive | Before major changes |
-| `backup-immich.sh` | Rsync Immich photos T7 → T5 `ImmichBackup` (Mac mini only) | Nightly via cron |
+| `setup/setup-claude.sh` | Syncs Claude Code config (agents, skills, rules, commands) | After install / as needed |
+| `backup/backup-dotfiles.sh` | Backs up config files + package lists to a timestamped archive | Before major changes |
+| `backup/backup-immich.sh` | Rsync Immich photos T7 → T5 `ImmichBackup` (Mac mini only) | Nightly via cron |
 | `cleanup.sh` | Cleans caches and frees disk space | Monthly |
 | `dev-check.sh` | Checks all dev tools are installed and configured | After fresh install / troubleshooting |
-| `setup-gpg.sh` | Sets up GPG commit signing | Once per machine |
-| `setup-obsidian.sh` | Creates Obsidian vault with PARA folder structure | Once per machine |
+| `setup/setup-gpg.sh` | Sets up GPG commit signing | Once per machine |
+| `setup/setup-obsidian.sh` | Creates Obsidian vault with PARA folder structure | Once per machine |
 | `docs.sh` | Serves or builds the MkDocs documentation site | Dev / CI |
-| `mac-mini.sh` | Mac mini sleep toggle + one-time Immich setup | Mac mini only |
-| `services/setup-services.sh` | Stages Docker Compose stacks to `~/docker/` | After fresh install |
-| `services/rclone/rclone-backup.sh` | Backs up `~/docker/` to Backblaze B2 via rclone | Nightly via cron |
+| `setup/mac-mini.sh` | Mac mini sleep toggle + one-time Immich setup | Mac mini only |
+| `setup/setup-cloudflare-tunnel.sh` | Sets up Cloudflare Tunnel for HTTPS on all services | Once per machine |
+| `backup/backup-databases.sh` | Dumps PostgreSQL + MariaDB databases from Docker | Weekly via cron |
+| `backup/restore.sh` | Restores service data from Backblaze B2 | When needed |
+| `services/setup-services.sh` | Stages Docker Compose stacks to `~/services/` | After fresh install |
+| `services/rclone/rclone-backup.sh` | Backs up `~/services/` to Backblaze B2 via rclone | Nightly via cron |
 
 ---
 
@@ -30,20 +33,23 @@ All utility scripts are located in `scripts/` directory:
 scripts/
 ├── update.sh           # Update all package managers + pull dotfiles + Claude Code
 ├── sync.sh             # Pull dotfiles from git + re-symlink configs (no package updates)
-├── setup-claude.sh     # Sync Claude Code config (agents, skills, rules, commands)
-├── setup-obsidian.sh   # Create Obsidian vault with PARA folder structure
-├── backup.sh           # Back up config files + package lists to timestamped archive
-├── backup-immich.sh    # Rsync Immich photos T7 → T5 ImmichBackup (Mac mini only)
+├── setup/setup-claude.sh     # Sync Claude Code config (agents, skills, rules, commands)
+├── setup/setup-obsidian.sh   # Create Obsidian vault with PARA folder structure
+├── backup/backup-dotfiles.sh # Back up config files + package lists to timestamped archive
+├── backup/backup-immich.sh   # Rsync Immich photos T7 → T5 ImmichBackup (Mac mini only)
 ├── cleanup.sh          # Clean caches and free disk space
 ├── dev-check.sh        # Check environment health
-├── setup-gpg.sh        # Set up GPG commit signing
+├── setup/setup-gpg.sh  # Set up GPG commit signing
+├── setup/setup-cloudflare-tunnel.sh  # Set up Cloudflare Tunnel for HTTPS
+├── backup/backup-databases.sh  # Dump databases from Docker containers
+├── backup/restore.sh   # Restore service data from B2
 ├── docs.sh             # Serve or build MkDocs docs site
-├── mac-mini.sh         # Mac mini: sleep toggle + Immich setup (Mac mini only)
+├── setup/mac-mini.sh   # Mac mini: sleep toggle + Immich setup (Mac mini only)
 ├── utils/utils.sh      # Shared print functions used by Linux + Windows installers
 └── wallpapers/         # Wallpaper management
 
 services/
-├── setup-services.sh             # Stage all Docker Compose stacks to ~/docker/
+├── setup-services.sh             # Stage all Docker Compose stacks to ~/services/
 ├── immich/                       # Google Photos replacement
 ├── vaultwarden/                  # Bitwarden password manager server
 ├── nextcloud/                    # Google Drive replacement
@@ -71,15 +77,15 @@ chmod +x ~/.dotfiles/scripts/*.sh
 
 ---
 
-## 🤖 setup-claude.sh - Claude Code Setup
+## 🤖 setup/setup-claude.sh - Claude Code Setup
 
 Sets up Claude Code configuration — agents, skills, rules, commands, CLAUDE.md, statusline.
 
 ### Usage
 
 ```bash
-~/.dotfiles/scripts/setup-claude.sh          # interactive menu (pick 1–4)
-~/.dotfiles/scripts/setup-claude.sh update   # non-interactive resync (used by update.sh)
+~/.dotfiles/scripts/setup/setup-claude.sh          # interactive menu (pick 1–4)
+~/.dotfiles/scripts/setup/setup-claude.sh update   # non-interactive resync (used by update.sh)
 ```
 
 ### Menu options
@@ -167,7 +173,7 @@ update
 
 ---
 
-## 📓 setup-obsidian.sh - Obsidian Vault Setup
+## 📓 setup/setup-obsidian.sh - Obsidian Vault Setup
 
 Creates an Obsidian vault with a PARA folder structure, minimal config, and a daily note template.
 
@@ -175,10 +181,10 @@ Creates an Obsidian vault with a PARA folder structure, minimal config, and a da
 
 ```bash
 # Create vault at ~/obsidian-vault (default)
-~/.dotfiles/scripts/setup-obsidian.sh
+~/.dotfiles/scripts/setup/setup-obsidian.sh
 
 # Custom path
-VAULT_PATH=/Volumes/SSD/notes ~/.dotfiles/scripts/setup-obsidian.sh
+VAULT_PATH=/Volumes/SSD/notes ~/.dotfiles/scripts/setup/setup-obsidian.sh
 ```
 
 ### What it creates
@@ -275,7 +281,7 @@ See [BACKUPS.md](./BACKUPS.md) for full strategy.
 
 ---
 
-## 💾 backup.sh - Configuration Backup
+## 💾 backup-dotfiles.sh - Configuration Backup
 
 Creates timestamped backups of your configuration files and settings.
 
@@ -303,7 +309,7 @@ Creates timestamped backups of your configuration files and settings.
 
 ```bash
 # Create a backup
-~/.dotfiles/scripts/backup.sh
+~/.dotfiles/scripts/backup/backup-dotfiles.sh
 ```
 
 ### Output
@@ -347,11 +353,11 @@ sudo apt-get dselect-upgrade
 
 ```bash
 # Before major changes
-~/.dotfiles/scripts/backup.sh
+~/.dotfiles/scripts/backup/backup-dotfiles.sh
 
 # Set up a cron job for automatic backups (weekly)
 # Add to crontab (crontab -e):
-0 0 * * 0 ~/.dotfiles/scripts/backup.sh
+0 0 * * 0 ~/.dotfiles/scripts/backup/backup-dotfiles.sh
 ```
 
 ---
@@ -584,7 +590,7 @@ Sets up GPG keys for signing Git commits, making your commits verified on GitHub
 
 ```bash
 # Run the setup wizard
-~/.dotfiles/scripts/setup-gpg.sh
+~/.dotfiles/scripts/setup/setup-gpg.sh
 ```
 
 ### Interactive Setup
@@ -702,9 +708,9 @@ Manages sleep settings and Immich setup on the Mac mini. Not relevant on MacBook
 ### Usage
 
 ```bash
-~/.dotfiles/scripts/mac-mini.sh sleep off   # server mode: disable sleep
-~/.dotfiles/scripts/mac-mini.sh sleep on    # normal mode: re-enable sleep
-~/.dotfiles/scripts/mac-mini.sh setup       # one-time Immich setup
+~/.dotfiles/scripts/setup/mac-mini.sh sleep off   # server mode: disable sleep
+~/.dotfiles/scripts/setup/mac-mini.sh sleep on    # normal mode: re-enable sleep
+~/.dotfiles/scripts/setup/mac-mini.sh setup       # one-time Immich setup
 ```
 
 ### Commands
@@ -740,11 +746,11 @@ Rsync copy of Immich photos from T7 (primary) to T5 `ImmichBackup` (backup). Rea
 
 ```bash
 # Run manually
-~/.dotfiles/scripts/backup-immich.sh
+~/.dotfiles/scripts/backup/backup-immich.sh
 
 # Schedule via cron (3am daily)
 crontab -e
-# Add: 0 3 * * * ~/.dotfiles/scripts/backup-immich.sh >> ~/logs/immich-backup.log 2>&1
+# Add: 0 3 * * * ~/.dotfiles/scripts/backup/backup-immich.sh >> ~/logs/immich-backup.log 2>&1
 ```
 
 ### Check the log
@@ -761,7 +767,7 @@ cat ~/logs/immich-backup.log
 
 ```bash
 # 1. Backup current state
-~/.dotfiles/scripts/backup.sh
+~/.dotfiles/scripts/backup/backup-dotfiles.sh
 
 # 2. Update everything
 ~/.dotfiles/scripts/update.sh
@@ -783,20 +789,20 @@ git clone https://github.com/yourusername/.dotfiles.git ~/.dotfiles
 ~/.dotfiles/install.sh
 
 # 3. Set up GPG signing
-~/.dotfiles/scripts/setup-gpg.sh
+~/.dotfiles/scripts/setup/setup-gpg.sh
 
 # 4. Verify everything
 ~/.dotfiles/scripts/dev-check.sh
 
 # 5. Create first backup
-~/.dotfiles/scripts/backup.sh
+~/.dotfiles/scripts/backup/backup-dotfiles.sh
 ```
 
 ### Before Major Changes
 
 ```bash
 # 1. Create backup
-~/.dotfiles/scripts/backup.sh
+~/.dotfiles/scripts/backup/backup-dotfiles.sh
 
 # 2. Check current state
 ~/.dotfiles/scripts/dev-check.sh
@@ -817,7 +823,7 @@ Add these to your `.zshrc`:
 
 ```bash
 alias update='~/.dotfiles/scripts/update.sh'
-alias backup='~/.dotfiles/scripts/backup.sh'
+alias backup='~/.dotfiles/scripts/backup/backup-dotfiles.sh'
 alias cleanup='~/.dotfiles/scripts/cleanup.sh'
 alias check='~/.dotfiles/scripts/dev-check.sh'
 ```
@@ -831,7 +837,7 @@ alias check='~/.dotfiles/scripts/dev-check.sh'
 0 2 * * 0 ~/.dotfiles/scripts/update.sh
 
 # Weekly backups (Sundays at 3 AM)
-0 3 * * 0 ~/.dotfiles/scripts/backup.sh
+0 3 * * 0 ~/.dotfiles/scripts/backup/backup-dotfiles.sh
 
 # Monthly cleanup (1st of month at 4 AM)
 0 4 1 * * ~/.dotfiles/scripts/cleanup.sh
@@ -849,7 +855,7 @@ alias check='~/.dotfiles/scripts/dev-check.sh'
 
 ## 📚 See Also
 
-- [INSTALLATION_GUIDE.md](./INSTALLATION_GUIDE.md) - Installation instructions
+- [HOW_TO_INSTALL.md](./HOW_TO_INSTALL.md) - Installation instructions
 - [CONFIG_GUIDE.md](./CONFIG_GUIDE.md) - Configuration details
 - [MODERN_CLI_TOOLS.md](./MODERN_CLI_TOOLS.md) - Modern CLI tools guide
 

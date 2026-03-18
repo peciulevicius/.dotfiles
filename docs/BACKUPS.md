@@ -13,9 +13,9 @@
 | Data | Mac mini SSD | Mac mini SSD 2 | B2 Cloud | Notes |
 |------|-------------|----------------|----------|-------|
 | Immich photos | ✅ Primary | ✅ nightly rsync | ✅ rclone | Primary backup |
-| Docker configs | ✅ ~/docker/ | — | ✅ rclone | `.env` excluded |
+| Docker configs | ✅ ~/services/ | — | ✅ rclone | `.env` excluded |
 | Obsidian vault | ✅ ~/obsidian-vault | — | ✅ git push | GitHub |
-| Paperless docs | ✅ ~/docker/paperless-ngx | — | ✅ rclone | OCR + originals |
+| Paperless docs | ✅ ~/services/paperless-ngx | — | ✅ rclone | OCR + originals |
 | Calibre library | ✅ ~/Books | — | ✅ rclone | metadata.db |
 | MacBook | — | ✅ Time Machine | — | USB drive |
 
@@ -24,14 +24,14 @@
 The Mac mini has two SSDs. Nightly rsync from primary → secondary:
 
 ```bash
-# scripts/backup-immich.sh (see docs/HOME_SERVER.md)
-rsync -avz --delete ~/docker/immich/library/ /Volumes/BackupSSD/ImmichBackup/
+# scripts/backup/backup-immich.sh (see docs/HOME_SERVER.md)
+rsync -avz --delete /Volumes/T7/immich/upload/ /Volumes/ImmichBackup/immich/
 ```
 
 Add to crontab:
 ```bash
 crontab -e
-0 2 * * * ~/.dotfiles/scripts/backup-immich.sh
+0 2 * * * ~/.dotfiles/scripts/backup/backup-immich.sh
 ```
 
 ## Docker Volume Backup (Rclone → B2)
@@ -42,7 +42,7 @@ brew install rclone
 rclone config  # choose b2, name it b2-backup
 
 # Stage rclone config
-cd ~/docker/rclone
+cd ~/services/rclone
 nano .env  # set RCLONE_REMOTE, BACKUP_DEST
 
 # Test
@@ -109,10 +109,10 @@ rclone config
 rclone ls b2-backup:my-backup-bucket/docker
 
 # Restore a specific service
-rclone copy b2-backup:my-backup-bucket/docker/immich ~/docker/immich-restore
+rclone copy b2-backup:my-backup-bucket/docker/immich ~/services/immich-restore
 
 # Or restore everything
-rclone sync b2-backup:my-backup-bucket/docker ~/docker-restore
+rclone sync b2-backup:my-backup-bucket/services ~/services-restore
 ```
 
 ## Backup Monitoring

@@ -61,7 +61,7 @@ if (Test-Path $DotfilesDir) {
     }
 
     # Resync Claude Code config
-    $setupScript = Join-Path $DotfilesDir "scripts\setup-claude.ps1"
+    $setupScript = Join-Path $DotfilesDir "scripts\setup\setup-claude.ps1"
     if (Test-Path $setupScript) {
         Write-Host ""
         Write-Info "Syncing Claude Code config..."

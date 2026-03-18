@@ -1,11 +1,11 @@
 #!/bin/bash
-# Stage Docker Compose stacks to ~/docker/<service>/
+# Stage Docker Compose stacks to ~/services/<service>/
 # Usage: ./services/setup-services.sh [--dry-run] [service-name]
 
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-DOCKER_DIR="$HOME/docker"
+DOCKER_DIR="$HOME/services"
 DRY_RUN=false
 TARGET_SERVICE=""
 
@@ -36,7 +36,7 @@ SERVICE_PORTS=(
   "nextcloud:8080"
   "uptime-kuma:3001"
   "freshrss:8082"
-  "ollama:11434"
+  "ollama:11434,3030"
   "syncthing:8384"
   "portainer:9000"
   "watchtower:—"
@@ -128,7 +128,7 @@ print_summary() {
   echo -e "${CYAN}╚══════════════════════════════════════════════╝${NC}"
   echo ""
   echo "Next: edit .env files in $DOCKER_DIR/<service>/, then:"
-  echo "  cd ~/docker/<service> && docker compose up -d"
+  echo "  cd ~/services/<service> && docker compose up -d"
 }
 
 # Parse args

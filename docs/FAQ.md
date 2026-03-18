@@ -189,7 +189,7 @@ cd ~/.dotfiles
 
 #### `backup.sh` - Backs up configs (read-only)
 ```bash
-~/.dotfiles/scripts/backup.sh
+~/.dotfiles/scripts/backup/backup-dotfiles.sh
 ```
 
 **Does:**
@@ -315,7 +315,7 @@ Add to your `~/.zshrc.local`:
 ```bash
 # Maintenance shortcuts
 alias update='~/.dotfiles/scripts/update.sh'
-alias backup='~/.dotfiles/scripts/backup.sh'
+alias backup='~/.dotfiles/scripts/backup/backup-dotfiles.sh'
 alias cleanup='~/.dotfiles/scripts/cleanup.sh'
 alias check='~/.dotfiles/scripts/dev-check.sh'
 alias sync='~/.dotfiles/scripts/sync.sh'
@@ -551,7 +551,7 @@ Add to `~/.zshrc.local` (not tracked by git):
 # Maintenance
 alias update='~/.dotfiles/scripts/update.sh'
 alias sync='~/.dotfiles/scripts/sync.sh'
-alias backup='~/.dotfiles/scripts/backup.sh'
+alias backup='~/.dotfiles/scripts/backup/backup-dotfiles.sh'
 alias cleanup='~/.dotfiles/scripts/cleanup.sh'
 alias check='~/.dotfiles/scripts/dev-check.sh'
 
@@ -589,7 +589,7 @@ dotfiles-full       # Major updates
 - [MODERN_CLI_TOOLS.md](./MODERN_CLI_TOOLS.md) - Tool documentation
 - [UTILITY_SCRIPTS.md](./UTILITY_SCRIPTS.md) - Script details
 - [CONFIG_GUIDE.md](./CONFIG_GUIDE.md) - Configuration reference
-- [QUICKSTART.md](./QUICKSTART.md) - Quick start guide
+- [SERVICES.md](./SERVICES.md) - Self-hosted services
 
 ---
 

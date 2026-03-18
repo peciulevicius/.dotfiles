@@ -251,10 +251,10 @@ if [ -d "$HOME/.dotfiles" ]; then
     cd - > /dev/null
 
     # Re-sync Claude Code config after dotfiles update
-    if command -v claude &>/dev/null && [ -f "$HOME/.dotfiles/scripts/setup-claude.sh" ]; then
+    if command -v claude &>/dev/null && [ -f "$HOME/.dotfiles/scripts/setup/setup-claude.sh" ]; then
         echo ""
         echo "Syncing Claude Code config..."
-        bash "$HOME/.dotfiles/scripts/setup-claude.sh" update 2>/dev/null
+        bash "$HOME/.dotfiles/scripts/setup/setup-claude.sh" update 2>/dev/null
         print_success "Claude Code config synced"
     fi
 fi

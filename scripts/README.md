@@ -9,8 +9,8 @@ Quick reference for all scripts in this directory. Full docs: [../docs/UTILITY_S
 ### New machine setup
 ```
 install.sh                    ← always start here (detects OS, runs the right installer)
-scripts/setup-claude.sh       ← set up Claude Code after install
-scripts/setup-gpg.sh          ← (optional) GPG commit signing
+scripts/setup/setup-claude.sh       ← set up Claude Code after install
+scripts/setup/setup-gpg.sh          ← (optional) GPG commit signing
 ```
 
 `install.sh` at the root is the entry point for any OS. It delegates to:
@@ -23,7 +23,7 @@ You can also run `os/mac/install.sh` directly if you know you're on macOS.
 ### Regular maintenance
 ```
 scripts/update.sh             ← run weekly (updates packages + pulls dotfiles)
-scripts/backup.sh             ← run before major changes
+scripts/backup/backup-dotfiles.sh             ← run before major changes
 scripts/cleanup.sh            ← run monthly (frees disk space)
 scripts/dev-check.sh          ← run when something seems broken
 ```
@@ -37,10 +37,10 @@ Use this when you just pulled changes and want configs to update — faster than
 
 ### Mac mini only
 ```
-scripts/mac-mini.sh sleep off      ← run on first boot (disables sleep, enables auto-restart)
-scripts/mac-mini.sh sleep on       ← re-enable normal sleep whenever needed
-scripts/mac-mini.sh immich-setup   ← one-time Immich setup (run after drives are connected)
-scripts/backup-immich.sh           ← manual photo backup (also runs nightly via cron)
+scripts/setup/mac-mini.sh sleep off      ← run on first boot (disables sleep, enables auto-restart)
+scripts/setup/mac-mini.sh sleep on       ← re-enable normal sleep whenever needed
+scripts/setup/mac-mini.sh immich-setup   ← one-time Immich setup (run after drives are connected)
+scripts/backup/backup-immich.sh           ← manual photo backup (also runs nightly via cron)
 ```
 
 ### Docs site
@@ -57,14 +57,14 @@ scripts/docs.sh build         ← build static site (runs in CI)
 |--------|-------------|--------|
 | `update.sh` | Updates Homebrew/apt/pacman, npm, pnpm, pip + pulls dotfiles | All machines, weekly |
 | `sync.sh` | Pulls dotfiles from git + re-symlinks configs (no package updates) | All machines, as needed |
-| `setup-claude.sh` | Syncs Claude Code config (agents, skills, rules, commands) | All machines, after install |
-| `backup.sh` | Backs up config files + package lists to a timestamped `.tar.gz` | All machines, as needed |
-| `backup-immich.sh` | Rsync Immich photos from T7 → T5 `ImmichBackup` | Mac mini only |
+| `setup/setup-claude.sh` | Syncs Claude Code config (agents, skills, rules, commands) | All machines, after install |
+| `backup/backup-dotfiles.sh` | Backs up config files + package lists to a timestamped `.tar.gz` | All machines, as needed |
+| `backup/backup-immich.sh` | Rsync Immich photos from T7 → T5 `ImmichBackup` | Mac mini only |
 | `cleanup.sh` | Cleans package caches, Docker, IDE caches, temp files | All machines, monthly |
 | `dev-check.sh` | Checks all dev tools are installed and configured | All machines |
-| `setup-gpg.sh` | Sets up GPG key for signed commits | Once per machine |
+| `setup/setup-gpg.sh` | Sets up GPG key for signed commits | Once per machine |
 | `docs.sh` | Serves or builds the MkDocs documentation site | Dev only |
-| `mac-mini.sh` | Toggles sleep mode, runs one-time Immich setup | Mac mini only |
+| `setup/mac-mini.sh` | Toggles sleep mode, runs one-time Immich setup | Mac mini only |
 
 ### Subdirectories
 | Path | What it is |
@@ -74,9 +74,9 @@ scripts/docs.sh build         ← build static site (runs in CI)
 
 ---
 
-## backup.sh vs backup-immich.sh — what's the difference?
+## backup-dotfiles.sh vs backup-immich.sh — what's the difference?
 
-| | `backup.sh` | `backup-immich.sh` |
+| | `backup-dotfiles.sh` | `backup-immich.sh` |
 |--|--|--|
 | **What** | Config files, package lists, dotfiles | Immich photo library |
 | **Where to** | `~/dotfiles_backup_<timestamp>.tar.gz` | T5 `ImmichBackup` via rsync |
