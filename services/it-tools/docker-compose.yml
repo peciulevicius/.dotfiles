@@ -1,0 +1,18 @@
+# IT-Tools — developer utilities collection
+# Docs: https://github.com/CorentinTh/it-tools
+
+name: it-tools
+
+services:
+  it-tools:
+    container_name: it_tools
+    image: corentinth/it-tools:2023.11.2-7d94e11
+    restart: unless-stopped
+    ports:
+      - "${TOOLS_PORT:-8085}:80"
+    environment:
+      TZ: ${TZ:-Europe/Vilnius}
+
+networks:
+  default:
+    name: it-tools

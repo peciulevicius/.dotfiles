@@ -1,0 +1,22 @@
+# Stirling PDF — all-in-one PDF manipulation tool
+# Docs: https://github.com/Stirling-Tools/Stirling-PDF
+
+name: stirling-pdf
+
+services:
+  stirling-pdf:
+    container_name: stirling_pdf
+    image: frooodle/s-pdf:0.36.5
+    restart: unless-stopped
+    ports:
+      - "${PDF_PORT:-8084}:8080"
+    volumes:
+      - ./data/config:/configs
+      - ./data/logs:/logs
+    environment:
+      TZ: ${TZ:-Europe/Vilnius}
+      DOCKER_ENABLE_SECURITY: "false"
+
+networks:
+  default:
+    name: stirling-pdf

@@ -28,6 +28,15 @@ SERVICES=(
   paperless-ngx
   calibre-web
   rclone
+  pihole
+  stirling-pdf
+  it-tools
+  audiobookshelf
+  linkwarden
+  mealie
+  jellyfin
+  sonarr-radarr
+  transmission
 )
 
 SERVICE_PORTS=(
@@ -44,6 +53,15 @@ SERVICE_PORTS=(
   "paperless-ngx:8000"
   "calibre-web:8083"
   "rclone:—"
+  "pihole:8053,53"
+  "stirling-pdf:8084"
+  "it-tools:8085"
+  "audiobookshelf:13378"
+  "linkwarden:3005"
+  "mealie:9925"
+  "jellyfin:8096"
+  "sonarr-radarr:8989,7878,9696"
+  "transmission:9091"
 )
 
 log_ok()   { echo -e "${GREEN}✓${NC} $1"; }

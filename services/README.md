@@ -4,6 +4,8 @@ Docker Compose stacks for running your own cloud on a Mac mini (or any Docker ho
 
 ## Services
 
+### Core (13)
+
 | Service | Port | Purpose |
 |---------|------|---------|
 | Immich | 2283 | Google Photos replacement |
@@ -20,10 +22,31 @@ Docker Compose stacks for running your own cloud on a Mac mini (or any Docker ho
 | Calibre-Web | 8083 | Ebook library server |
 | Rclone | — | Cloud backup (B2/S3) |
 
+### Utilities (6)
+
+| Service | Port | Purpose |
+|---------|------|---------|
+| Pi-hole | 8053, 53 | Network-wide ad blocker + local DNS |
+| Stirling PDF | 8084 | PDF manipulation tool |
+| IT-Tools | 8085 | Developer utilities collection |
+| Audiobookshelf | 13378 | Audiobook and podcast server |
+| Linkwarden | 3005 | Bookmark manager with archiving |
+| Mealie | 9925 | Recipe manager and meal planner |
+
+### Media (5)
+
+| Service | Port | Purpose |
+|---------|------|---------|
+| Jellyfin | 8096 | Media server (movies, TV) |
+| Sonarr | 8989 | TV show management |
+| Radarr | 7878 | Movie management |
+| Prowlarr | 9696 | Indexer manager |
+| Transmission | 9091 | BitTorrent client |
+
 ## Quick Start
 
 ```bash
-# Stage all services to ~/docker/
+# Stage all services to ~/services/
 ./services/setup-services.sh
 
 # Or stage a single service
@@ -33,7 +56,7 @@ Docker Compose stacks for running your own cloud on a Mac mini (or any Docker ho
 ./services/setup-services.sh --dry-run
 ```
 
-Then edit the `.env` files in `~/docker/<service>/` before running `docker compose up -d`.
+Then edit the `.env` files in `~/services/<service>/` before running `docker compose up -d`.
 
 ## Documentation
 

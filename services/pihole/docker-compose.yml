@@ -1,0 +1,28 @@
+# Pi-hole — network-wide ad blocker + local DNS
+# Docs: https://github.com/pi-hole/docker-pi-hole
+
+name: pihole
+
+services:
+  pihole:
+    container_name: pihole
+    image: pihole/pihole:2024.07.0
+    restart: unless-stopped
+    ports:
+      - "${PIHOLE_WEB_PORT:-8053}:80"
+      - "${PIHOLE_DNS_PORT:-53}:53/tcp"
+      - "${PIHOLE_DNS_PORT:-53}:53/udp"
+    volumes:
+      - ./data/etc-pihole:/etc/pihole
+      - ./data/etc-dnsmasq.d:/etc/dnsmasq.d
+    environment:
+      TZ: ${TZ:-Europe/Vilnius}
+      WEBPASSWORD: ${PIHOLE_PASSWORD:-changeme}
+      FTLCONF_LOCAL_IPV4: ${LOCAL_IP:-192.168.1.100}
+      PIHOLE_DNS_: ${UPSTREAM_DNS:-1.1.1.1;1.0.0.1}
+    cap_add:
+      - NET_ADMIN
+
+networks:
+  default:
+    name: pihole

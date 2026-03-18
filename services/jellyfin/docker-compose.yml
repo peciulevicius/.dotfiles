@@ -1,0 +1,23 @@
+# Jellyfin — media server (movies, TV shows, music)
+# Docs: https://jellyfin.org/docs/
+
+name: jellyfin
+
+services:
+  jellyfin:
+    container_name: jellyfin
+    image: jellyfin/jellyfin:10.10.6
+    restart: unless-stopped
+    ports:
+      - "${JELLYFIN_PORT:-8096}:8096"
+    volumes:
+      - ./data/config:/config
+      - ./data/cache:/cache
+      - ${MEDIA_DIR:-/Volumes/T7/media}/movies:/media/movies:ro
+      - ${MEDIA_DIR:-/Volumes/T7/media}/tv:/media/tv:ro
+    environment:
+      TZ: ${TZ:-Europe/Vilnius}
+
+networks:
+  default:
+    name: jellyfin

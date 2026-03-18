@@ -1,0 +1,35 @@
+# Linkwarden — bookmark manager with archiving
+# Docs: https://github.com/linkwarden/linkwarden
+
+name: linkwarden
+
+services:
+  linkwarden:
+    container_name: linkwarden
+    image: ghcr.io/linkwarden/linkwarden:v2.9.3
+    restart: unless-stopped
+    ports:
+      - "${LW_PORT:-3005}:3000"
+    volumes:
+      - ./data:/data/data
+    environment:
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:-changeme}@linkwarden-db:5432/linkwarden
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET:-changeme}
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3005}
+    depends_on:
+      - linkwarden-db
+
+  linkwarden-db:
+    container_name: linkwarden_db
+    image: postgres:16-alpine
+    restart: unless-stopped
+    volumes:
+      - ./data/pgdata:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+      POSTGRES_DB: linkwarden
+
+networks:
+  default:
+    name: linkwarden

@@ -33,6 +33,7 @@ CORE_FORMULAS=(
   starship    # Prompt
   rclone      # Cloud backup (B2/S3 sync)
   cloudflared # Cloudflare Tunnel (HTTPS for self-hosted services)
+  syncthing   # Peer-to-peer file sync (Obsidian vault across devices)
 )
 
 # Optional local AI tools.
@@ -56,6 +57,7 @@ CORE_CASKS=(
   wispr-flow             # Voice dictation workflow
   darktable              # Photo workflow
   calibre                # Ebook library manager
+  obsidian               # Notes / second brain (synced via Syncthing)
   logi-options+          # Logitech devices config
   yt-music               # YouTube Music desktop app
   the-unarchiver         # Archive extraction utility

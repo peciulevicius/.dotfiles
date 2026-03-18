@@ -75,6 +75,7 @@ if [[ ! -f "$CREDS_FILE" ]]; then
 fi
 
 # --- 5. Service subdomain mapping ---
+# NOTE: Syncthing and Portainer are NOT exposed via tunnel (Tailscale-only access)
 declare -A SERVICES=(
     ["home"]=7575       # Homarr dashboard
     ["vault"]=8001      # Vaultwarden
@@ -84,9 +85,17 @@ declare -A SERVICES=(
     ["papers"]=8000     # Paperless-ngx
     ["rss"]=8082        # FreshRSS
     ["status"]=3001     # Uptime Kuma
-    ["sync"]=8384       # Syncthing
     ["books"]=8083      # Calibre-Web
-    ["portainer"]=9000  # Portainer
+    ["pihole"]=8053     # Pi-hole admin
+    ["pdf"]=8084        # Stirling PDF
+    ["tools"]=8085      # IT-Tools
+    ["links"]=3005      # Linkwarden
+    ["recipes"]=9925    # Mealie
+    ["watch"]=8096      # Jellyfin
+    ["sonarr"]=8989     # Sonarr
+    ["radarr"]=7878     # Radarr
+    ["prowlarr"]=9696   # Prowlarr
+    ["downloads"]=9091  # Transmission
 )
 
 # --- 6. Write config ---
@@ -100,7 +109,7 @@ credentials-file: ${CREDS_FILE}
 ingress:
 EOF
 
-for sub in home vault photos cloud ai papers rss status sync books portainer; do
+for sub in home vault photos cloud ai papers rss status books pihole pdf tools links recipes watch sonarr radarr prowlarr downloads; do
     port="${SERVICES[$sub]}"
     echo "  - hostname: ${sub}.${DOMAIN}" >> "$CONFIG_FILE"
     echo "    service: http://localhost:${port}" >> "$CONFIG_FILE"
@@ -112,7 +121,7 @@ print_success "Config written"
 
 # --- 7. Create DNS records ---
 print_info "Creating DNS records..."
-for sub in home vault photos cloud ai papers rss status sync books portainer; do
+for sub in home vault photos cloud ai papers rss status books pihole pdf tools links recipes watch sonarr radarr prowlarr downloads; do
     OUTPUT=$(cloudflared tunnel route dns "$TUNNEL_NAME" "${sub}.${DOMAIN}" 2>&1)
     if echo "$OUTPUT" | grep -q "Added CNAME"; then
         print_success "${sub}.${DOMAIN}"
@@ -161,17 +170,29 @@ echo "╚═══════════════════════�
 echo ""
 echo "  Service URLs (all HTTPS):"
 echo ""
-printf "  %-14s → %s\n" "Dashboard"  "https://home.${DOMAIN}"
-printf "  %-14s → %s\n" "Vaultwarden" "https://vault.${DOMAIN}"
-printf "  %-14s → %s\n" "Immich"      "https://photos.${DOMAIN}"
-printf "  %-14s → %s\n" "Nextcloud"   "https://cloud.${DOMAIN}"
-printf "  %-14s → %s\n" "Open WebUI"  "https://ai.${DOMAIN}"
-printf "  %-14s → %s\n" "Paperless"   "https://papers.${DOMAIN}"
-printf "  %-14s → %s\n" "FreshRSS"    "https://rss.${DOMAIN}"
-printf "  %-14s → %s\n" "Uptime Kuma" "https://status.${DOMAIN}"
-printf "  %-14s → %s\n" "Syncthing"   "https://sync.${DOMAIN}"
-printf "  %-14s → %s\n" "Calibre-Web" "https://books.${DOMAIN}"
-printf "  %-14s → %s\n" "Portainer"   "https://portainer.${DOMAIN}"
+printf "  %-16s → %s\n" "Dashboard"      "https://home.${DOMAIN}"
+printf "  %-16s → %s\n" "Vaultwarden"    "https://vault.${DOMAIN}"
+printf "  %-16s → %s\n" "Immich"         "https://photos.${DOMAIN}"
+printf "  %-16s → %s\n" "Nextcloud"      "https://cloud.${DOMAIN}"
+printf "  %-16s → %s\n" "Open WebUI"     "https://ai.${DOMAIN}"
+printf "  %-16s → %s\n" "Paperless"      "https://papers.${DOMAIN}"
+printf "  %-16s → %s\n" "FreshRSS"       "https://rss.${DOMAIN}"
+printf "  %-16s → %s\n" "Uptime Kuma"    "https://status.${DOMAIN}"
+printf "  %-16s → %s\n" "Calibre-Web"    "https://books.${DOMAIN}"
+printf "  %-16s → %s\n" "Pi-hole"        "https://pihole.${DOMAIN}"
+printf "  %-16s → %s\n" "Stirling PDF"   "https://pdf.${DOMAIN}"
+printf "  %-16s → %s\n" "IT-Tools"       "https://tools.${DOMAIN}"
+printf "  %-16s → %s\n" "Linkwarden"     "https://links.${DOMAIN}"
+printf "  %-16s → %s\n" "Mealie"         "https://recipes.${DOMAIN}"
+printf "  %-16s → %s\n" "Jellyfin"       "https://watch.${DOMAIN}"
+printf "  %-16s → %s\n" "Sonarr"         "https://sonarr.${DOMAIN}"
+printf "  %-16s → %s\n" "Radarr"         "https://radarr.${DOMAIN}"
+printf "  %-16s → %s\n" "Prowlarr"       "https://prowlarr.${DOMAIN}"
+printf "  %-16s → %s\n" "Transmission"   "https://downloads.${DOMAIN}"
+echo ""
+echo "  Tailscale-only (not exposed via tunnel):"
+printf "  %-16s → %s\n" "Syncthing"      "http://<tailscale-ip>:8384"
+printf "  %-16s → %s\n" "Portainer"      "http://<tailscale-ip>:9000"
 echo ""
 print_info "Bitwarden app server URL: https://vault.${DOMAIN}"
 echo ""

@@ -1,0 +1,23 @@
+# Audiobookshelf — audiobook and podcast server
+# Docs: https://github.com/advplyr/audiobookshelf
+
+name: audiobookshelf
+
+services:
+  audiobookshelf:
+    container_name: audiobookshelf
+    image: ghcr.io/advplyr/audiobookshelf:2.17.7
+    restart: unless-stopped
+    ports:
+      - "${ABS_PORT:-13378}:80"
+    volumes:
+      - ${AUDIOBOOKS_DIR:-./data/audiobooks}:/audiobooks
+      - ${PODCASTS_DIR:-./data/podcasts}:/podcasts
+      - ./data/config:/config
+      - ./data/metadata:/metadata
+    environment:
+      TZ: ${TZ:-Europe/Vilnius}
+
+networks:
+  default:
+    name: audiobookshelf

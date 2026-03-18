@@ -1,0 +1,27 @@
+# Transmission — BitTorrent client
+# Docs: https://github.com/linuxserver/docker-transmission
+
+name: transmission
+
+services:
+  transmission:
+    container_name: transmission
+    image: lscr.io/linuxserver/transmission:4.0.6
+    restart: unless-stopped
+    ports:
+      - "${TRANSMISSION_PORT:-9091}:9091"
+      - "51413:51413"
+      - "51413:51413/udp"
+    volumes:
+      - ./data/config:/config
+      - ${MEDIA_DIR:-/Volumes/T7/media}/downloads:/downloads
+    environment:
+      PUID: ${PUID:-1000}
+      PGID: ${PGID:-1000}
+      TZ: ${TZ:-Europe/Vilnius}
+      USER: ${TRANSMISSION_USER:-admin}
+      PASS: ${TRANSMISSION_PASS:-changeme}
+
+networks:
+  default:
+    name: media

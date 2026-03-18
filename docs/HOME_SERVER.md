@@ -482,7 +482,7 @@ open http://<tailscale-ip>:2283
 
 ### Step 11 — Deploy remaining services
 
-With Immich running, deploy everything else. See [SERVICES.md](SERVICES.md) for what each service does.
+With Immich running, deploy everything else. See [SERVICES.md](SERVICES.md) for what each service does (24 services total).
 
 ```bash
 cd ~/.dotfiles
@@ -490,10 +490,27 @@ cd ~/.dotfiles
 # Stage all services to ~/services/
 ./services/setup-services.sh
 
-# Deploy each service:
+# Deploy core services:
 for svc in watchtower portainer ollama uptime-kuma syncthing vaultwarden nextcloud freshrss homarr paperless-ngx calibre-web; do
   cd ~/services/$svc
   nano .env          # fill in passwords/settings (generate secrets with: openssl rand -base64 32)
+  docker compose up -d
+  cd -
+done
+
+# Deploy utility services:
+for svc in pihole stirling-pdf it-tools audiobookshelf linkwarden mealie; do
+  cd ~/services/$svc
+  nano .env
+  docker compose up -d
+  cd -
+done
+
+# Deploy media stack:
+mkdir -p /Volumes/T7/media/{movies,tv,downloads}
+for svc in transmission sonarr-radarr jellyfin; do
+  cd ~/services/$svc
+  nano .env
   docker compose up -d
   cd -
 done
@@ -522,6 +539,34 @@ Deploy everything, stop containers later if not needed:
 docker stop <container_name>  # stop a service
 docker start <container_name> # start it again
 ```
+
+### Step 11b — Pi-hole DNS setup
+
+Pi-hole provides ad blocking + local DNS. Local DNS means `*.peciulevicius.com` resolves directly to the Mac mini when you're on home WiFi (instead of going through Cloudflare).
+
+```bash
+cd ~/services/pihole
+nano .env          # set PIHOLE_PASSWORD, LOCAL_IP
+docker compose up -d
+```
+
+**Add local DNS records** (Pi-hole admin → Settings → Local DNS → DNS Records):
+
+Add an entry for each subdomain pointing to the Mac mini's local IP:
+```
+home.peciulevicius.com       → 192.168.1.100
+vault.peciulevicius.com      → 192.168.1.100
+photos.peciulevicius.com     → 192.168.1.100
+cloud.peciulevicius.com      → 192.168.1.100
+... (all subdomains — see .env.example for full list)
+```
+
+**Router configuration:**
+1. Log into your router admin panel
+2. Set DNS servers to:
+   - Primary: Mac mini local IP (e.g. 192.168.1.100)
+   - Secondary: 1.1.1.1 (fallback if Mac mini is down)
+3. All devices on the network now use Pi-hole for DNS
 
 ---
 
@@ -655,8 +700,11 @@ cd ~/.dotfiles && ./install.sh
 
 # 4. Deploy all services
 ./services/setup-services.sh                            # stage configs to ~/services/
+mkdir -p /Volumes/T7/media/{movies,tv,downloads}
 for svc in immich watchtower portainer ollama uptime-kuma syncthing \
-           vaultwarden nextcloud freshrss homarr paperless-ngx calibre-web; do
+           vaultwarden nextcloud freshrss homarr paperless-ngx calibre-web \
+           pihole stirling-pdf it-tools audiobookshelf linkwarden mealie \
+           transmission sonarr-radarr jellyfin; do
   cd ~/services/$svc
   nano .env          # fill in secrets (openssl rand -base64 32)
   docker compose up -d
@@ -704,11 +752,14 @@ cd ~/services/<service> && docker compose pull && docker compose up -d
 # Check Tailscale status
 tailscale status
 
-# Service URLs
-# https://home.peciulevicius.com   (dashboard)
-# https://photos.peciulevicius.com (Immich)
-# https://vault.peciulevicius.com  (Vaultwarden)
-# https://cloud.peciulevicius.com  (Nextcloud)
-# https://ai.peciulevicius.com     (Open WebUI)
-# See SERVICES.md for full list
+# Service URLs (24 total — see SERVICES.md for full list)
+# https://home.peciulevicius.com      (dashboard)
+# https://photos.peciulevicius.com    (Immich)
+# https://vault.peciulevicius.com     (Vaultwarden)
+# https://cloud.peciulevicius.com     (Nextcloud)
+# https://ai.peciulevicius.com        (Open WebUI)
+# https://watch.peciulevicius.com     (Jellyfin)
+# https://recipes.peciulevicius.com   (Mealie)
+# https://pihole.peciulevicius.com    (Pi-hole)
+# ... and more — see SERVICES.md
 ```
