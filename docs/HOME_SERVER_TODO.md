@@ -80,6 +80,29 @@
 
 ---
 
+## 4. Calibre-Web bugs
+
+### `no such table: metadata_dirtied` on book upload / metadata update
+
+- [ ] This is a known SQLite schema migration bug in Calibre-Web
+- [ ] Fix: exec into the container and run the migration manually:
+  ```bash
+  docker exec -it calibre-web sqlite3 /books/metadata.db \
+    "CREATE TABLE IF NOT EXISTS metadata_dirtied (id INTEGER PRIMARY KEY, book INTEGER NOT NULL, UNIQUE(book));"
+  ```
+- [ ] Or: stop the container, delete `/config/app.db` (Calibre-Web's own DB, not the library), restart — it will rebuild
+- [ ] If persists: upgrade Calibre-Web image to latest (`docker compose pull && docker compose up -d`)
+
+### Can't add folders in Calibre-Web (Papers / collections)
+
+- [ ] Calibre-Web does not support folder creation from the UI — folders = Calibre "shelves" or "virtual libraries"
+- [ ] To organise by folder/collection use **Custom Columns** or **Bookshelves** in Calibre-Web:
+  - Admin → Edit Shelves → create a shelf → add books to it
+- [ ] Or manage folder structure in Calibre desktop (Calibre-Web mirrors it automatically)
+- [ ] Alternative: switch to **Kavita** which has native folder/series support
+
+---
+
 ## Quick reference
 
 | Service | Container path | Mac mini path (example) |
