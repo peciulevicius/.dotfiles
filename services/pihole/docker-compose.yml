@@ -15,6 +15,7 @@ services:
     volumes:
       - ./data/etc-pihole:/etc/pihole
       - ./data/etc-dnsmasq.d:/etc/dnsmasq.d
+      - ./config/99-redirect.conf:/etc/lighttpd/conf-enabled/99-redirect.conf:ro
     environment:
       TZ: ${TZ:-Europe/Vilnius}
       WEBPASSWORD: ${PIHOLE_PASSWORD:-changeme}

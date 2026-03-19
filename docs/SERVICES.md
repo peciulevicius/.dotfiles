@@ -29,7 +29,7 @@ Run your own cloud on a Mac mini (or any Docker host). 24 services covering phot
 | [Pi-hole](#pi-hole) | pihole.peciulevicius.com | 8053, 53 | Router DNS + ad blocker |
 | [Stirling PDF](#stirling-pdf) | pdf.peciulevicius.com | 8084 | Adobe Acrobat |
 | [IT-Tools](#it-tools) | tools.peciulevicius.com | 8085 | Online dev tools |
-| [Audiobookshelf](#audiobookshelf) | books.peciulevicius.com | 13378 | Audible |
+| [Audiobookshelf](#audiobookshelf) | listen.peciulevicius.com | 13378 | Audible |
 | [Linkwarden](#linkwarden) | links.peciulevicius.com | 3005 | Pocket / Raindrop |
 | [Mealie](#mealie) | recipes.peciulevicius.com | 9925 | Paprika / online recipes |
 
