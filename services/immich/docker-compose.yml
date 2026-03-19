@@ -63,7 +63,7 @@ services:
       POSTGRES_USER: ${DB_USERNAME:-immich}
       POSTGRES_DB: ${DB_DATABASE_NAME:-immich}
     volumes:
-      - ./data/postgres:/var/lib/postgresql/data
+      - ${DB_DATA_LOCATION:-./data/postgres}:/var/lib/postgresql/data
     healthcheck:
       test: pg_isready -U ${DB_USERNAME:-immich} -d ${DB_DATABASE_NAME:-immich}
       interval: 10s
