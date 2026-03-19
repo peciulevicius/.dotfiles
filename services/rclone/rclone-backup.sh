@@ -31,7 +31,7 @@ fi
 
 RCLONE_REMOTE="${RCLONE_REMOTE:-b2-backup}"
 DOCKER_DIR="${DOCKER_DIR:-$HOME/services}"
-BACKUP_DEST="${BACKUP_DEST:-${RCLONE_REMOTE}:my-backup-bucket/services}"
+BACKUP_DEST="${BACKUP_DEST:-${RCLONE_REMOTE}:peciulevicius-services-backup/services}"
 RCLONE_FLAGS="${RCLONE_FLAGS:---transfers=4 --checkers=8 --fast-list --stats=60s}"
 
 mkdir -p "$LOG_DIR"
@@ -74,7 +74,7 @@ fi
 
 # Backup 2: Obsidian vault
 OBSIDIAN_DIR="$HOME/obsidian-vault"
-OBSIDIAN_DEST="${RCLONE_REMOTE}:my-backup-bucket/obsidian-vault"
+OBSIDIAN_DEST="${OBSIDIAN_DEST:-${RCLONE_REMOTE}:peciulevicius-services-backup/obsidian-vault}"
 
 if [[ -d "$OBSIDIAN_DIR" ]]; then
   log_info "Backing up $OBSIDIAN_DIR → $OBSIDIAN_DEST"
