@@ -12,8 +12,9 @@
 - [x] **Sonarr** → Add Transmission as download client
 - [x] **Radarr** → Add root folder `/media/movies`
 - [x] **Radarr** → Add Transmission as download client
-- [ ] **Jellyfin** → Add libraries: Dashboard → Libraries → Add Media Library → Movies (`/media/movies`), TV Shows (`/media/tv`)
-- [ ] Test: Narcos finishes downloading → Sonarr moves to `/media/tv/` → appears in Jellyfin
+- [x] **Jellyfin** → Added TV Shows + Movies libraries
+- [x] Test: Narcos S1-S3 → Sonarr → Transmission → imported → playing in Jellyfin
+- [x] Fixed remote path mapping (Transmission `/downloads/` → Sonarr/Radarr `/media/downloads/`)
 
 ### 2. VPN for torrents (gluetun + Mullvad or Proton VPN)
 
@@ -72,12 +73,9 @@ Calibre-Web doesn't support folder creation from the UI. Use **Bookshelves** ins
 - [ ] Add Telegram, Discord, or email notification channel
 - [ ] Test notification with a "Test" button
 
-### 7. Cloudflare DNS cleanup
+### 7. ~~Cloudflare DNS cleanup~~ ✅
 
-- [ ] Delete stale CNAME records in Cloudflare dashboard:
-  - `sync.peciulevicius.com` (Syncthing — Tailscale only now)
-  - `portainer.peciulevicius.com` (Portainer — Tailscale only now)
-  - `ai.peciulevicius.com` (Ollama/Open WebUI — removed)
+- [x] Deleted stale CNAMEs: `sync`, `portainer`, `ai`
 
 ### 8. Verify B2 cloud backup
 
