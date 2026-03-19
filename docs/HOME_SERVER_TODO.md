@@ -103,6 +103,44 @@
 
 ---
 
+## 5. ai.peciulevicius.com — 502 Bad Gateway
+
+**Problem:** Reverse proxy returning 502 on ai.peciulevicius.com (and possibly other services).
+
+- [ ] SSH into Mac mini: `ssh macmini`
+- [ ] Check if the Open WebUI container is running: `docker ps | grep webui`
+- [ ] If container is down: `docker compose up -d` in the open-webui directory
+- [ ] Check reverse proxy (Caddy/Nginx/Traefik) logs for upstream errors:
+  ```bash
+  docker logs caddy --tail 50   # or nginx/traefik
+  ```
+- [ ] Check which other services are returning 502 — likely the reverse proxy container itself crashed or has a bad config
+- [ ] Restart the proxy: `docker compose restart caddy` (or nginx/traefik)
+- [ ] If the proxy config was recently changed, validate it before restarting
+
+---
+
+## 6. ai.peciulevicius.com — Ollama 500 Internal Server Error
+
+**Problem:** Open WebUI connects but Ollama returns `500: Internal Server Error` at `http://ollama:11434/api/chat` when a prompt is submitted.
+
+**Likely causes:** Ollama container crashed, ran out of VRAM/RAM, or model is corrupted/missing.
+
+- [ ] SSH into Mac mini and check Ollama container: `docker ps | grep ollama`
+- [ ] Check Ollama logs: `docker logs ollama --tail 100`
+- [ ] If OOM (out of memory): check `docker stats` — Ollama may need more RAM allocated
+- [ ] Try pulling the model again inside the container:
+  ```bash
+  docker exec -it ollama ollama pull <model-name>
+  docker exec -it ollama ollama list   # confirm it's there
+  ```
+- [ ] Restart Ollama container: `docker compose restart ollama`
+- [ ] In Open WebUI → Settings → Connections → verify Ollama URL is `http://ollama:11434` (not localhost)
+- [ ] If Mac mini has no GPU, ensure you're running a model that fits in CPU RAM (7B ≈ 5-8GB)
+- [ ] Note: if you're now using Claude instead of local AI, consider whether Ollama is worth keeping running
+
+---
+
 ## Quick reference
 
 | Service | Container path | Mac mini path (example) |

@@ -12,6 +12,7 @@ Type these inside Claude Code to invoke them manually.
 | `/docs` | Generates or updates documentation for a file, function, feature, or README |
 | `/deploy` | Deploy to Vercel/Cloudflare/EAS — runs checks first, confirms before production |
 | `/check` | Pre-commit checks — lint, types, tests, secret scan |
+| `/dotfiles` | Pull latest dotfiles, check status, optionally run update.sh |
 
 ## Usage
 
@@ -25,6 +26,7 @@ Type these inside Claude Code to invoke them manually.
 /deploy                       # deploy to production
 /deploy staging               # deploy to staging
 /check                        # run before committing
+/dotfiles                     # pull latest dotfiles + optional update
 ```
 
 ## Note on `/deploy`
