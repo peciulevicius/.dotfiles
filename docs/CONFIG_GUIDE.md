@@ -8,6 +8,7 @@ This guide provides detailed information about each configuration file in this d
 - [Zsh Configuration](#zsh-configuration)
 - [Starship Prompt](#starship-prompt)
 - [IdeaVim Configuration](#ideavim-configuration)
+- [Docker Configuration](#docker-configuration)
 - [Troubleshooting](#troubleshooting)
 
 ---
@@ -573,6 +574,16 @@ The installation scripts automatically back up existing files with `.backup` ext
 ```bash
 mv ~/.zshrc.backup ~/.zshrc
 ```
+
+---
+
+## Docker Configuration
+
+**File**: `config/docker/daemon.json` → `~/.docker/daemon.json`
+
+Configures Docker Desktop network pools to use `/24` subnets instead of the default `/16`. Without this, Docker exhausts available subnets after ~15 service networks, causing new containers to get unreachable `192.168.x.x` addresses.
+
+Copied (not symlinked) by the macOS installer since Docker Desktop may modify the file.
 
 ---
 

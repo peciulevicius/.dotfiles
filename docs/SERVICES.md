@@ -571,40 +571,63 @@ The script will:
 3. Create DNS records for all subdomains
 4. Configure and start the tunnel as a background service
 
-### Service URLs
+### Service Directory
 
-| Service | URL |
-|---------|-----|
-| Dashboard (Homarr) | https://home.peciulevicius.com |
-| Vaultwarden | https://vault.peciulevicius.com |
-| Immich (photos) | https://photos.peciulevicius.com |
-| Nextcloud | https://cloud.peciulevicius.com |
-| Open WebUI (AI) | https://ai.peciulevicius.com |
-| Paperless-ngx | https://papers.peciulevicius.com |
-| FreshRSS | https://rss.peciulevicius.com |
-| Uptime Kuma | https://status.peciulevicius.com |
-| Calibre-Web | https://books.peciulevicius.com |
-| Pi-hole | https://pihole.peciulevicius.com |
-| Stirling PDF | https://pdf.peciulevicius.com |
-| IT-Tools | https://tools.peciulevicius.com |
-| Linkwarden | https://links.peciulevicius.com |
-| Mealie | https://recipes.peciulevicius.com |
-| Jellyfin | https://watch.peciulevicius.com |
-| Sonarr | https://sonarr.peciulevicius.com |
-| Radarr | https://radarr.peciulevicius.com |
-| Prowlarr | https://prowlarr.peciulevicius.com |
-| Transmission | https://downloads.peciulevicius.com |
+Every service is accessible three ways: localhost (on the Mac mini), Tailscale (from any device on your tailnet), and public HTTPS (via Cloudflare Tunnel + Access gate).
 
-**Tailscale-only (not exposed via tunnel):**
+**Core:**
 
-| Service | Access |
-|---------|--------|
-| Syncthing | http://\<tailscale-ip\>:8384 |
-| Portainer | http://\<tailscale-ip\>:9000 |
+| Service | Port | Tailscale | Public |
+|---------|------|-----------|--------|
+| Homarr (dashboard) | 7575 | http://100.81.171.49:7575 | https://home.peciulevicius.com |
+| Vaultwarden | 8001 | http://100.81.171.49:8001 | https://vault.peciulevicius.com |
+| Immich (photos) | 2283 | http://100.81.171.49:2283 | https://photos.peciulevicius.com |
+| Nextcloud | 8080 | http://100.81.171.49:8080 | https://cloud.peciulevicius.com |
+| Open WebUI (AI) | 3030 | http://100.81.171.49:3030 | https://ai.peciulevicius.com |
+| Paperless-ngx | 8000 | http://100.81.171.49:8000 | https://papers.peciulevicius.com |
+| FreshRSS | 8082 | http://100.81.171.49:8082 | https://rss.peciulevicius.com |
+| Uptime Kuma | 3001 | http://100.81.171.49:3001 | https://status.peciulevicius.com |
+| Calibre-Web | 8083 | http://100.81.171.49:8083 | https://books.peciulevicius.com |
 
-### Local Access
+**Utilities:**
 
-Services also remain accessible locally via `http://localhost:<port>` and via Tailscale at `http://100.x.x.x:<port>`.
+| Service | Port | Tailscale | Public |
+|---------|------|-----------|--------|
+| Pi-hole | 8053 | http://100.81.171.49:8053/admin | https://pihole.peciulevicius.com |
+| Stirling PDF | 8084 | http://100.81.171.49:8084 | https://pdf.peciulevicius.com |
+| IT-Tools | 8085 | http://100.81.171.49:8085 | https://tools.peciulevicius.com |
+| Audiobookshelf | 13378 | http://100.81.171.49:13378 | https://listen.peciulevicius.com |
+| Linkwarden | 3005 | http://100.81.171.49:3005 | https://links.peciulevicius.com |
+| Mealie | 9925 | http://100.81.171.49:9925 | https://recipes.peciulevicius.com |
+
+**Media:**
+
+| Service | Port | Tailscale | Public |
+|---------|------|-----------|--------|
+| Jellyfin | 8096 | http://100.81.171.49:8096 | https://watch.peciulevicius.com |
+| Sonarr | 8989 | http://100.81.171.49:8989 | https://sonarr.peciulevicius.com |
+| Radarr | 7878 | http://100.81.171.49:7878 | https://radarr.peciulevicius.com |
+| Prowlarr | 9696 | http://100.81.171.49:9696 | https://prowlarr.peciulevicius.com |
+| Transmission | 9091 | http://100.81.171.49:9091 | https://downloads.peciulevicius.com |
+
+**Tailscale-only (no public URL):**
+
+| Service | Port | Tailscale |
+|---------|------|-----------|
+| Syncthing | 8384 | http://100.81.171.49:8384 |
+| Portainer | 9000 | http://100.81.171.49:9000 |
+| Ollama API | 11434 | http://100.81.171.49:11434 |
+
+**Mobile apps (use Tailscale URLs to bypass Cloudflare Access gate):**
+
+| App | Server URL |
+|-----|-----------|
+| Bitwarden | http://100.81.171.49:8001 |
+| Immich | http://100.81.171.49:2283 |
+| Jellyfin | http://100.81.171.49:8096 |
+| Audiobookshelf | http://100.81.171.49:13378 |
+
+All localhost URLs follow the pattern `http://localhost:<port>`.
 
 ### Security — Cloudflare Access (Zero Trust)
 
@@ -630,6 +653,38 @@ All services behind the Cloudflare Tunnel are protected by a [Cloudflare Access]
 - After that, you're authenticated for 24 hours across all subdomains
 - No one else can even see the login pages without passing the email check
 
+## Post-Deploy Setup
+
+Manual steps after deploying all services on a new machine.
+
+### Pi-hole Local DNS
+
+Add DNS records so `*.peciulevicius.com` resolves to the Mac mini on the local network (bypasses Cloudflare when on home WiFi):
+
+1. Open Pi-hole admin: http://localhost:8053/admin
+2. Go to Local DNS → DNS Records
+3. Add an entry for each subdomain pointing to the Mac mini's local IP:
+   - `home`, `vault`, `photos`, `cloud`, `ai`, `papers`, `rss`, `status`, `books`
+   - `pihole`, `pdf`, `tools`, `links`, `recipes`, `listen`
+   - `watch`, `sonarr`, `radarr`, `prowlarr`, `downloads`
+   - All as `<subdomain>.peciulevicius.com` → Mac mini local IP
+
+### Router DNS
+
+Set the router's DNS to use Pi-hole:
+- Primary DNS: Mac mini local IP
+- Fallback DNS: `1.1.1.1`
+
+This enables network-wide ad blocking and local DNS resolution for all devices on WiFi.
+
+### Media Stack
+
+1. **Prowlarr** (http://localhost:9696) → add indexers
+2. **Sonarr** (http://localhost:8989) → Settings → Download Clients → add Transmission (`localhost:9091`)
+3. **Radarr** (http://localhost:7878) → Settings → Download Clients → add Transmission (`localhost:9091`)
+4. **Sonarr/Radarr** → Settings → General → copy API key, then in Prowlarr → Settings → Apps → add Sonarr + Radarr
+5. **Jellyfin** (http://localhost:8096) → add libraries: Movies (`/media/movies`), TV Shows (`/media/tv`)
+
 ## Backup Strategy
 
 See [BACKUPS.md](BACKUPS.md) for the full 3-2-1 backup strategy.
@@ -650,4 +705,22 @@ lsof -i :<port>
 ```bash
 docker system df
 docker system prune
+```
+
+**Ports open but services unreachable (Docker Desktop on Mac):**
+
+Docker Desktop allocates `/16` subnets by default, which exhausts the `172.16.0.0/12` range after ~15 networks. New services get `192.168.x.x` subnets that Docker Desktop's port proxy can't forward correctly — TCP connects but HTTP hangs.
+
+Fix (already handled by the dotfiles installer):
+```bash
+# Ensure ~/.docker/daemon.json has default-address-pools with /24 size
+cat ~/.docker/daemon.json
+# Should include:
+# "default-address-pools": [
+#   {"base": "172.16.0.0/12", "size": 24},
+#   {"base": "10.99.0.0/16", "size": 24}
+# ]
+
+# Then restart Docker Desktop and recreate affected services:
+cd ~/services/<service> && docker compose down && docker compose up -d
 ```

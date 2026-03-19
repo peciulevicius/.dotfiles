@@ -226,6 +226,30 @@ link_dotfiles() {
   [[ -f "$HOME/.ssh/config" ]] && chmod 600 "$HOME/.ssh/config"
 }
 
+setup_docker_config() {
+  local src="$DOTFILES_DIR/config/docker/daemon.json"
+  local dest="$HOME/.docker/daemon.json"
+
+  [[ -f "$src" ]] || return
+
+  mkdir -p "$HOME/.docker"
+
+  if [[ -f "$dest" ]]; then
+    # Merge: ensure default-address-pools is set (Docker Desktop may add its own keys)
+    if ! grep -q "default-address-pools" "$dest" 2>/dev/null; then
+      cp "$dest" "${dest}.backup.$(date +%Y%m%d_%H%M%S)"
+      cp "$src" "$dest"
+      log_warn "Docker daemon.json updated (old config backed up)"
+      log_warn "Restart Docker Desktop to apply network pool changes"
+    else
+      log_ok "Docker daemon.json already configured"
+    fi
+  else
+    cp "$src" "$dest"
+    log_ok "Docker daemon.json created (network pool: /24 subnets)"
+  fi
+}
+
 setup_code_cli() {
   local code_app="/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code"
   if [[ -x "$code_app" ]]; then
@@ -315,6 +339,7 @@ run_interactive() {
   fi
 
   link_dotfiles
+  setup_docker_config
   setup_code_cli
   post_install_summary
   maybe_setup_services

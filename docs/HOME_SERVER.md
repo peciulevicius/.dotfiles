@@ -285,6 +285,8 @@ docker compose version
 
 Docker starts automatically when you log in and restarts containers after a reboot.
 
+**Important — network pool config:** The dotfiles installer copies `config/docker/daemon.json` to `~/.docker/daemon.json`. This sets Docker to allocate `/24` subnets instead of the default `/16`. Without this, Docker exhausts the `172.16.0.0/12` range after ~15 networks, and new containers get `192.168.x.x` subnets that Docker Desktop can't proxy correctly (ports appear open but HTTP traffic doesn't flow). If you hit this issue on an existing install, restart Docker Desktop after the config is in place, then recreate affected services with `docker compose down && docker compose up -d`.
+
 ---
 
 ### Step 6 — Immich

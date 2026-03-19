@@ -1,0 +1,19 @@
+{
+  "builder": {
+    "gc": {
+      "defaultKeepStorage": "20GB",
+      "enabled": true
+    }
+  },
+  "default-address-pools": [
+    {
+      "base": "172.16.0.0/12",
+      "size": 24
+    },
+    {
+      "base": "10.99.0.0/16",
+      "size": 24
+    }
+  ],
+  "experimental": false
+}
