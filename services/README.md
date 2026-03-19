@@ -4,7 +4,7 @@ Docker Compose stacks for running your own cloud on a Mac mini (or any Docker ho
 
 ## Services
 
-### Core (13)
+### Core (12)
 
 | Service | Port | Purpose |
 |---------|------|---------|
@@ -13,7 +13,6 @@ Docker Compose stacks for running your own cloud on a Mac mini (or any Docker ho
 | Nextcloud | 8080 | Google Drive / Docs replacement |
 | Uptime Kuma | 3001 | Uptime monitoring dashboard |
 | FreshRSS | 8082 | RSS reader (Google Reader replacement) |
-| Ollama | 11434 | Local LLM inference |
 | Syncthing | 8384 | File sync (Dropbox replacement) |
 | Portainer | 9000 | Docker management UI |
 | Watchtower | — | Automatic Docker image updates |

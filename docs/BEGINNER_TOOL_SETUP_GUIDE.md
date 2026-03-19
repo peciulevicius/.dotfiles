@@ -220,30 +220,6 @@ Setup:
 
 ## 2. Local AI Tools
 
-### `ollama`
-
-What it does:
-- Runs LLMs locally on your machine.
-
-Setup:
-1. Start service:
-   ```bash
-   brew services start ollama
-   ```
-2. Pull a model:
-   ```bash
-   ollama pull qwen2.5-coder:7b
-   ```
-3. Run:
-   ```bash
-   ollama run qwen2.5-coder:7b "Write a hello world in Python"
-   ```
-4. Verify:
-   ```bash
-   ollama list
-   ollama ps
-   ```
-
 ### `llama.cpp`
 
 What it does:
@@ -308,9 +284,6 @@ Setup:
    docker --version
    docker run --rm hello-world
    ```
-3. Optional Open WebUI for local AI chat:
-   - Follow `docs/ai/LOCAL_AI_SETUP.md`.
-
 ### `claude`
 
 What it does:
@@ -500,6 +473,5 @@ Then manually confirm:
 1. Terminal opens and prompt looks correct.
 2. `git`, `gh`, `node`, `pnpm`, `docker` commands work.
 3. At least one browser and one editor open successfully.
-4. Ollama runs one prompt if local AI was installed.
-5. Password manager and key daily apps launch/sign in.
+4. Password manager and key daily apps launch/sign in.
 

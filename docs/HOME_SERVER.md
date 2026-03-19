@@ -484,7 +484,7 @@ open http://<tailscale-ip>:2283
 
 ### Step 11 — Deploy remaining services
 
-With Immich running, deploy everything else. See [SERVICES.md](SERVICES.md) for what each service does (24 services total).
+With Immich running, deploy everything else. See [SERVICES.md](SERVICES.md) for what each service does (23 services total).
 
 ```bash
 cd ~/.dotfiles
@@ -493,7 +493,7 @@ cd ~/.dotfiles
 ./services/setup-services.sh
 
 # Deploy core services:
-for svc in watchtower portainer ollama uptime-kuma syncthing vaultwarden nextcloud freshrss homarr paperless-ngx calibre-web; do
+for svc in watchtower portainer uptime-kuma syncthing vaultwarden nextcloud freshrss homarr paperless-ngx calibre-web; do
   cd ~/services/$svc
   nano .env          # fill in passwords/settings (generate secrets with: openssl rand -base64 32)
   docker compose up -d
@@ -516,16 +516,6 @@ for svc in transmission sonarr-radarr jellyfin; do
   docker compose up -d
   cd -
 done
-```
-
-For Ollama specifically — models on T7, Open WebUI on port 3030:
-```bash
-mkdir -p /Volumes/T7/ollama-models
-cd ~/services/ollama
-# Set OLLAMA_MODELS_PATH=/Volumes/T7/ollama-models in .env
-# Set WEBUI_SECRET_KEY=$(openssl rand -hex 32) in .env
-docker compose up -d
-docker exec ollama ollama pull llama3.2:3b
 ```
 
 For Calibre-Web — books on T7:
@@ -594,13 +584,10 @@ After it finishes, all services are live at:
 | Vaultwarden | https://vault.peciulevicius.com |
 | Immich | https://photos.peciulevicius.com |
 | Nextcloud | https://cloud.peciulevicius.com |
-| Open WebUI | https://ai.peciulevicius.com |
 | Paperless | https://papers.peciulevicius.com |
 | FreshRSS | https://rss.peciulevicius.com |
 | Uptime Kuma | https://status.peciulevicius.com |
-| Syncthing | https://sync.peciulevicius.com |
 | Calibre-Web | https://books.peciulevicius.com |
-| Portainer | https://portainer.peciulevicius.com |
 
 **Bitwarden app:** set server URL to `https://vault.peciulevicius.com` — works on all devices with no certificate warnings.
 
@@ -703,7 +690,7 @@ cd ~/.dotfiles && ./install.sh
 # 4. Deploy all services
 ./services/setup-services.sh                            # stage configs to ~/services/
 mkdir -p /Volumes/T7/media/{movies,tv,downloads}
-for svc in immich watchtower portainer ollama uptime-kuma syncthing \
+for svc in immich watchtower portainer uptime-kuma syncthing \
            vaultwarden nextcloud freshrss homarr paperless-ngx calibre-web \
            pihole stirling-pdf it-tools audiobookshelf linkwarden mealie \
            transmission sonarr-radarr jellyfin; do
@@ -754,12 +741,11 @@ cd ~/services/<service> && docker compose pull && docker compose up -d
 # Check Tailscale status
 tailscale status
 
-# Service URLs (24 total — see SERVICES.md for full list)
+# Service URLs (23 total — see SERVICES.md for full list)
 # https://home.peciulevicius.com      (dashboard)
 # https://photos.peciulevicius.com    (Immich)
 # https://vault.peciulevicius.com     (Vaultwarden)
 # https://cloud.peciulevicius.com     (Nextcloud)
-# https://ai.peciulevicius.com        (Open WebUI)
 # https://watch.peciulevicius.com     (Jellyfin)
 # https://recipes.peciulevicius.com   (Mealie)
 # https://pihole.peciulevicius.com    (Pi-hole)

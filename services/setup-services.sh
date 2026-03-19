@@ -20,7 +20,6 @@ SERVICES=(
   nextcloud
   uptime-kuma
   freshrss
-  ollama
   syncthing
   portainer
   watchtower
@@ -45,7 +44,6 @@ SERVICE_PORTS=(
   "nextcloud:8080"
   "uptime-kuma:3001"
   "freshrss:8082"
-  "ollama:11434,3030"
   "syncthing:8384"
   "portainer:9000"
   "watchtower:—"

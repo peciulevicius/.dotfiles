@@ -8,7 +8,7 @@
 - 🎨 **Beautiful Shell** - Zsh with Starship (modern, fast, cross-shell prompt)
 - ⚙️ **Comprehensive Configs** - Git (40+ aliases), SSH, Tmux, EditorConfig, and more
 - 🛠️ **Utility Scripts** - Update, backup, cleanup, and health check tools
-- 🐳 **Self-Hosted Services** - 13 Docker Compose stacks: Immich, Vaultwarden, Nextcloud, Ollama, and more
+- 🐳 **Self-Hosted Services** - Docker Compose stacks: Immich, Vaultwarden, Nextcloud, and more
 - 📓 **Knowledge Management** - Obsidian vault setup with PARA structure, Syncthing sync, Kindle highlights
 - ☁️ **Cloud Backup** - Rclone → Backblaze B2 with automatic Docker volume backup
 - 📦 **Smart Installers** - OS-specific automated setup for all platforms
@@ -161,7 +161,6 @@ See [docs/UTILITY_SCRIPTS.md](docs/UTILITY_SCRIPTS.md) for detailed usage.
     ├── immich/                  # Google Photos replacement
     ├── vaultwarden/             # Bitwarden password manager
     ├── nextcloud/               # Google Drive replacement
-    ├── ollama/                  # Local LLM inference
     ├── syncthing/               # File sync
     └── rclone/rclone-backup.sh  # Cloud backup (B2/S3)
 ```

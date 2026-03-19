@@ -31,7 +31,6 @@ Status meaning:
 
 | Tool | Installed by Default | Coverage | Primary Guide |
 |---|---|---|---|
-| `ollama` | Prompted (default Yes) | Full | `ai/LOCAL_AI_SETUP.md` |
 | `llama.cpp` | Prompted (default Yes) | Full | `ai/LOCAL_AI_SETUP.md` |
 
 ## Core Casks

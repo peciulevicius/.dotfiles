@@ -15,26 +15,17 @@
 - [ ] **Jellyfin** → Add libraries: Dashboard → Libraries → Add Media Library → Movies (`/media/movies`), TV Shows (`/media/tv`)
 - [ ] Test: add a movie in Radarr → verify it downloads via Transmission → appears in Jellyfin
 
-### 2. Ollama — Out of Memory
-
-**Status:** `llama3.2:3b` needs 3.4GB but only ~1.6GB free. Docker Desktop has 7.6GB of 16GB system RAM; 31 containers use ~6GB.
-
-**Options (pick one):**
-- [ ] Increase Docker Desktop memory to 12GB: Docker Desktop → Settings → Resources → Memory → 12GB → restart
-- [ ] Or use a smaller model: `docker exec ollama ollama pull tinyllama` (1.1GB) and remove llama3.2
-- [ ] Or stop Ollama + Open WebUI if you mainly use Claude now (saves ~500MB idle RAM)
-
-### 3. Pi-hole local DNS
+### 2. Pi-hole local DNS
 
 **Goal:** Access `*.peciulevicius.com` on local WiFi without going through Cloudflare.
 
 - [ ] In Pi-hole admin (http://localhost:8053/admin) → Local DNS → DNS Records
 - [ ] Add for each subdomain: `home.peciulevicius.com` → `192.168.x.x` (Mac mini local IP)
-- [ ] Repeat for: `vault`, `photos`, `cloud`, `ai`, `papers`, `rss`, `status`, `books`, `pihole`, `pdf`, `tools`, `listen`, `links`, `recipes`, `watch`, `sonarr`, `radarr`, `prowlarr`, `downloads`
+- [ ] Repeat for: `vault`, `photos`, `cloud`, `papers`, `rss`, `status`, `books`, `pihole`, `pdf`, `tools`, `listen`, `links`, `recipes`, `watch`, `sonarr`, `radarr`, `prowlarr`, `downloads`
 - [ ] Set router DNS to Mac mini IP (primary) + `1.1.1.1` (fallback)
 - [ ] Test: on a WiFi device, `nslookup home.peciulevicius.com` should return Mac mini local IP
 
-### 4. Convert Audible AAX → Audiobookshelf
+### 3. Convert Audible AAX → Audiobookshelf
 
 **Goal:** Strip DRM from Audible AAX files, convert to M4B, add to Audiobookshelf.
 
@@ -51,7 +42,7 @@
 - [ ] Place converted files in `~/services/audiobookshelf/data/audiobooks/`
 - [ ] In Audiobookshelf → Libraries → scan
 
-### 5. DeDRM Kindle books → Calibre-Web
+### 4. DeDRM Kindle books → Calibre-Web
 
 **Goal:** Remove DRM from Kindle ebooks, add to Calibre-Web.
 
@@ -62,7 +53,7 @@
 - [ ] Convert to EPUB: right-click → Convert → EPUB
 - [ ] Books appear in Calibre-Web automatically (shared library folder)
 
-### 6. Calibre-Web — organising books
+### 5. Calibre-Web — organising books
 
 Calibre-Web doesn't support folder creation from the UI. Use **Bookshelves** instead:
 - [ ] Admin → Edit Shelves → create shelves (e.g. "Fiction", "Tech", "Papers")
@@ -70,19 +61,20 @@ Calibre-Web doesn't support folder creation from the UI. Use **Bookshelves** ins
 - [ ] Or manage folder structure in Calibre desktop (mirrored to Calibre-Web)
 - [ ] Alternative: consider **Kavita** if folder/series support is needed
 
-### 7. Uptime Kuma notifications
+### 6. Uptime Kuma notifications
 
 - [ ] Open http://localhost:3001 → Settings → Notifications
 - [ ] Add Telegram, Discord, or email notification channel
 - [ ] Test notification with a "Test" button
 
-### 8. Cloudflare DNS cleanup
+### 7. Cloudflare DNS cleanup
 
 - [ ] Delete stale CNAME records in Cloudflare dashboard:
   - `sync.peciulevicius.com` (Syncthing — Tailscale only now)
   - `portainer.peciulevicius.com` (Portainer — Tailscale only now)
+  - `ai.peciulevicius.com` (Ollama/Open WebUI — removed)
 
-### 9. Verify B2 cloud backup
+### 8. Verify B2 cloud backup
 
 **Status:** Nightly cron at 5am backs up `~/services` configs + Obsidian vault → Backblaze B2. Was broken because cron didn't have `/opt/homebrew/bin` in PATH — fixed by adding `PATH=` line to crontab.
 
@@ -101,17 +93,17 @@ Calibre-Web doesn't support folder creation from the UI. Use **Bookshelves** ins
 - [ ] Consider: should database dumps also go to B2? (add to rclone-backup.sh)
 - [ ] Consider: should `.env` files be backed up (encrypted) to B2?
 
-### 10. FreshRSS — add feeds
+### 9. FreshRSS — add feeds
 
 - [ ] Open http://localhost:8082, create account if needed
 - [ ] Import OPML file or manually add RSS feeds
 
-### 11. Mealie — first-time setup
+### 10. Mealie — first-time setup
 
 - [ ] Open http://localhost:9925, create admin account
 - [ ] Default credentials: `changeme@email.com` / `MyPassword` — change immediately
 
-### 12. Linkwarden — first-time setup
+### 11. Linkwarden — first-time setup
 
 - [ ] Open http://localhost:3005 — account created
 - [ ] Install browser extension: Chrome ✅, Brave ⚠️ (disable Shields for links.peciulevicius.com)
@@ -122,13 +114,13 @@ Calibre-Web doesn't support folder creation from the UI. Use **Bookshelves** ins
 ## Done
 
 - [x] ~~Calibre-Web `metadata_dirtied` bug~~ — fixed: ran `CREATE TABLE` SQL
-- [x] ~~ai.peciulevicius.com 502~~ — resolved, Open WebUI running fine
 - [x] ~~Radarr Docker volumes~~ — compose already has `/media` mount, just needs UI root folder config (moved to item 1)
 - [x] ~~Pi-hole 403 on root~~ — fixed: lighttpd redirect config mounted
 - [x] ~~Transmission credentials~~ — changed to `admin` / `REDACTED`
 - [x] ~~Homarr dashboard~~ — configured with all 23 services, sections, descriptions
 - [x] ~~Linkwarden bookmarks~~ — 621 bookmarks imported (23 services + browser bookmarks)
-- [x] ~~Uptime Kuma monitors~~ — all 23 services monitored
+- [x] ~~Uptime Kuma monitors~~ — all 21 services monitored
+- [x] ~~Ollama + Open WebUI~~ — removed (not enough RAM, using Claude instead)
 - [x] ~~Audiobookshelf subdomain~~ — fixed: books → listen
 
 ---

@@ -1,6 +1,6 @@
 # Self-Hosted Services
 
-Run your own cloud on a Mac mini (or any Docker host). 24 services covering photos, passwords, files, documents, media, and more.
+Run your own cloud on a Mac mini (or any Docker host). 23 services covering photos, passwords, files, documents, media, and more.
 
 ## Service Overview
 
@@ -13,7 +13,6 @@ Run your own cloud on a Mac mini (or any Docker host). 24 services covering phot
 | [Nextcloud](#nextcloud) | cloud.peciulevicius.com | 8080 | Google Drive |
 | [Uptime Kuma](#uptime-kuma) | status.peciulevicius.com | 3001 | StatusCake |
 | [FreshRSS](#freshrss) | rss.peciulevicius.com | 8082 | Feedly |
-| [Ollama + Open WebUI](#ollama) | ai.peciulevicius.com | 3030 | OpenAI API |
 | [Syncthing](#syncthing) | Tailscale only | 8384 | Dropbox |
 | [Portainer](#portainer) | Tailscale only | 9000 | Docker Desktop |
 | [Watchtower](#watchtower) | — | — | Manual updates |
@@ -193,8 +192,6 @@ docker compose up -d
 | Immich | http://localhost:2283 | HTTP |
 | Vaultwarden | http://localhost:8001 | HTTP |
 | Nextcloud | http://localhost:8080 | HTTP |
-| Ollama | http://localhost:11434 | HTTP |
-| Open WebUI | http://localhost:3030 | HTTP |
 | Paperless | http://localhost:8000 | HTTP |
 | Syncthing | http://localhost:8384 | HTTP |
 
@@ -279,27 +276,6 @@ docker compose up -d
 cd ~/services/freshrss
 docker compose up -d
 # Open: http://localhost:8082
-```
-
----
-
-### Ollama + Open WebUI
-
-**What:** Run AI models locally. Open WebUI gives you a ChatGPT-like interface. Models stored on T7 SSD.
-
-**Why:** Private AI chat — no data sent to OpenAI/Anthropic. Good for experimenting with open-source models.
-
-**How to use:**
-1. Open http://localhost:3030, create admin account
-2. Chat like ChatGPT — select model from dropdown (llama3.2:3b is pre-installed)
-3. **Pull more models:** `docker exec ollama ollama pull mistral` or use the UI
-4. See [NOTES.md](NOTES.md) for Obsidian integration
-
-```bash
-cd ~/services/ollama
-docker compose up -d
-docker exec ollama ollama pull llama3.2:3b
-# Open WebUI: http://localhost:3030
 ```
 
 ---
@@ -583,7 +559,6 @@ Every service is accessible three ways: localhost (on the Mac mini), Tailscale (
 | Vaultwarden | 8001 | http://100.81.171.49:8001 | https://vault.peciulevicius.com |
 | Immich (photos) | 2283 | http://100.81.171.49:2283 | https://photos.peciulevicius.com |
 | Nextcloud | 8080 | http://100.81.171.49:8080 | https://cloud.peciulevicius.com |
-| Open WebUI (AI) | 3030 | http://100.81.171.49:3030 | https://ai.peciulevicius.com |
 | Paperless-ngx | 8000 | http://100.81.171.49:8000 | https://papers.peciulevicius.com |
 | FreshRSS | 8082 | http://100.81.171.49:8082 | https://rss.peciulevicius.com |
 | Uptime Kuma | 3001 | http://100.81.171.49:3001 | https://status.peciulevicius.com |
@@ -616,8 +591,6 @@ Every service is accessible three ways: localhost (on the Mac mini), Tailscale (
 |---------|------|-----------|
 | Syncthing | 8384 | http://100.81.171.49:8384 |
 | Portainer | 9000 | http://100.81.171.49:9000 |
-| Ollama API | 11434 | http://100.81.171.49:11434 |
-
 **Mobile apps (use Tailscale URLs to bypass Cloudflare Access gate):**
 
 | App | Server URL |
@@ -664,7 +637,7 @@ Add DNS records so `*.peciulevicius.com` resolves to the Mac mini on the local n
 1. Open Pi-hole admin: http://localhost:8053/admin
 2. Go to Local DNS → DNS Records
 3. Add an entry for each subdomain pointing to the Mac mini's local IP:
-   - `home`, `vault`, `photos`, `cloud`, `ai`, `papers`, `rss`, `status`, `books`
+   - `home`, `vault`, `photos`, `cloud`, `papers`, `rss`, `status`, `books`
    - `pihole`, `pdf`, `tools`, `links`, `recipes`, `listen`
    - `watch`, `sonarr`, `radarr`, `prowlarr`, `downloads`
    - All as `<subdomain>.peciulevicius.com` → Mac mini local IP

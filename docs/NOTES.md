@@ -125,14 +125,3 @@ Using Wispr Flow (installed via the macOS installer):
 2. Dictate into an Obsidian note
 3. Use Claude to clean up and categorise
 
-## Ollama Integration
-
-With Ollama running locally, use the Obsidian plugin **Smart Connections** or **BMO Chatbot** to chat with your vault using a local model. No data leaves your machine.
-
-```bash
-# Start Ollama
-cd ~/services/ollama
-docker compose up -d
-
-# In Obsidian: install Smart Connections → set model to Ollama → llama3.2:3b
-```

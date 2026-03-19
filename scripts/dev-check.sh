@@ -173,21 +173,6 @@ check_command optional code "VS Code" "brew install --cask visual-studio-code" "
 
 print_header "Local AI Tools (Optional)"
 
-if command -v ollama >/dev/null 2>&1; then
-    record_result optional true "Ollama" "Installed" ""
-else
-    record_result optional false "Ollama" "Not installed (optional)" "brew install ollama"
-fi
-
-if command -v ollama >/dev/null 2>&1; then
-    if pgrep -x ollama >/dev/null 2>&1; then
-        echo -e "${GREEN}✓${NC} Ollama service: Running"
-    else
-        echo -e "${YELLOW}⚠${NC} Ollama service: Installed but not running"
-        echo -e "${CYAN}  └─${NC} Start with: brew services start ollama"
-    fi
-fi
-
 if command -v llama-cli >/dev/null 2>&1; then
     record_result optional true "llama.cpp" "llama-cli available" ""
 else
@@ -359,7 +344,7 @@ check_command optional rclone "rclone" "brew install rclone"
 
 if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
     DOCKER_DIR="$HOME/docker"
-    SERVICES=(immich vaultwarden nextcloud uptime-kuma freshrss ollama syncthing portainer watchtower homarr paperless-ngx calibre-web)
+    SERVICES=(immich vaultwarden nextcloud uptime-kuma freshrss syncthing portainer watchtower homarr paperless-ngx calibre-web)
 
     if [[ -d "$DOCKER_DIR" ]]; then
         staged_count=0

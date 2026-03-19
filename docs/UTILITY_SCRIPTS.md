@@ -55,7 +55,6 @@ services/
 ├── nextcloud/                    # Google Drive replacement
 ├── uptime-kuma/                  # Uptime monitoring dashboard
 ├── freshrss/                     # RSS reader
-├── ollama/                       # Local LLM inference
 ├── syncthing/                    # File sync (Dropbox replacement)
 ├── portainer/                    # Docker management UI
 ├── watchtower/                   # Automatic Docker image updates
@@ -234,7 +233,6 @@ Stages Docker Compose stacks and `.env` templates to `~/docker/<service>/`.
 | nextcloud | 8080 | Google Drive |
 | uptime-kuma | 3001 | StatusCake |
 | freshrss | 8082 | Feedly |
-| ollama | 11434 | OpenAI API |
 | syncthing | 8384 | Dropbox |
 | portainer | 9000 | Docker UI |
 | watchtower | — | Manual updates |

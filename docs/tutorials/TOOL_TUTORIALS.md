@@ -21,7 +21,6 @@ Note: YouTube links below are search links so you can pick recent tutorials.
 | `pnpm` | Fast package manager for Node projects | https://pnpm.io/ | https://www.youtube.com/results?search_query=pnpm+tutorial |
 | `starship` | Fast shell prompt | https://starship.rs/ | https://www.youtube.com/results?search_query=starship+prompt+tutorial |
 | VS Code (`code`) | Editor + terminal CLI launcher | https://code.visualstudio.com/docs | https://www.youtube.com/results?search_query=vscode+tutorial |
-| Ollama | Local model manager and inference server | https://ollama.com/ | https://www.youtube.com/results?search_query=ollama+tutorial |
 | llama.cpp (`llama-cli`) | Local inference and benchmarking | https://github.com/ggml-org/llama.cpp | https://www.youtube.com/results?search_query=llama.cpp+tutorial |
 | Docker | Containers for local dev services | https://docs.docker.com/ | https://www.youtube.com/results?search_query=docker+tutorial |
 | Wispr Flow | Voice dictation / speech-to-text workflow | https://wisprflow.ai/ | https://www.youtube.com/results?search_query=wispr+flow+tutorial |

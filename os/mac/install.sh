@@ -36,11 +36,6 @@ CORE_FORMULAS=(
   syncthing   # Peer-to-peer file sync (Obsidian vault across devices)
 )
 
-# Optional local AI tools.
-AI_FORMULAS=(
-  ollama      # Local model manager/server
-  llama.cpp   # Local inference and benchmarking CLI
-)
 
 # Core apps you asked for.
 CORE_CASKS=(
@@ -324,10 +319,6 @@ run_interactive() {
 
   if confirm "Install core apps (browsers, editors, business + utility apps)?" true; then
     install_cask_list "Core Apps" "${CORE_CASKS[@]}"
-  fi
-
-  if confirm "Install local AI tools (Ollama + llama.cpp)?" true; then
-    install_formula_list "Local AI Tools" "${AI_FORMULAS[@]}"
   fi
 
   if confirm "Install extra optional apps (iTerm2, Raycast)?" false; then

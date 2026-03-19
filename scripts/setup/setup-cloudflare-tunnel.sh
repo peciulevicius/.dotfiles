@@ -81,7 +81,6 @@ declare -A SERVICES=(
     ["vault"]=8001      # Vaultwarden
     ["photos"]=2283     # Immich
     ["cloud"]=8080      # Nextcloud
-    ["ai"]=3030         # Open WebUI
     ["papers"]=8000     # Paperless-ngx
     ["rss"]=8082        # FreshRSS
     ["status"]=3001     # Uptime Kuma
@@ -110,7 +109,7 @@ credentials-file: ${CREDS_FILE}
 ingress:
 EOF
 
-for sub in home vault photos cloud ai papers rss status books pihole pdf tools links recipes watch sonarr radarr prowlarr downloads listen; do
+for sub in home vault photos cloud papers rss status books pihole pdf tools links recipes watch sonarr radarr prowlarr downloads listen; do
     port="${SERVICES[$sub]}"
     echo "  - hostname: ${sub}.${DOMAIN}" >> "$CONFIG_FILE"
     echo "    service: http://localhost:${port}" >> "$CONFIG_FILE"
@@ -122,7 +121,7 @@ print_success "Config written"
 
 # --- 7. Create DNS records ---
 print_info "Creating DNS records..."
-for sub in home vault photos cloud ai papers rss status books pihole pdf tools links recipes watch sonarr radarr prowlarr downloads listen; do
+for sub in home vault photos cloud papers rss status books pihole pdf tools links recipes watch sonarr radarr prowlarr downloads listen; do
     OUTPUT=$(cloudflared tunnel route dns "$TUNNEL_NAME" "${sub}.${DOMAIN}" 2>&1)
     if echo "$OUTPUT" | grep -q "Added CNAME"; then
         print_success "${sub}.${DOMAIN}"
@@ -175,7 +174,6 @@ printf "  %-16s → %s\n" "Dashboard"      "https://home.${DOMAIN}"
 printf "  %-16s → %s\n" "Vaultwarden"    "https://vault.${DOMAIN}"
 printf "  %-16s → %s\n" "Immich"         "https://photos.${DOMAIN}"
 printf "  %-16s → %s\n" "Nextcloud"      "https://cloud.${DOMAIN}"
-printf "  %-16s → %s\n" "Open WebUI"     "https://ai.${DOMAIN}"
 printf "  %-16s → %s\n" "Paperless"      "https://papers.${DOMAIN}"
 printf "  %-16s → %s\n" "FreshRSS"       "https://rss.${DOMAIN}"
 printf "  %-16s → %s\n" "Uptime Kuma"    "https://status.${DOMAIN}"
