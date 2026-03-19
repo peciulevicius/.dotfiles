@@ -1,8 +1,10 @@
 ---
 name: database-admin
-description: Supabase/PostgreSQL specialist — schema design, complex queries, query optimization, indexes, RLS policies, migrations, edge functions. Use for complex DB questions, slow queries, schema design decisions, or anything Supabase-specific.
-model: sonnet
+description: Use proactively for complex SQL queries, schema design, Supabase RLS policies, migrations, and query optimization.
 color: green
+skills:
+  - supabase
+  - sql
 ---
 
 # Database Admin Agent

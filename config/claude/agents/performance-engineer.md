@@ -1,7 +1,6 @@
 ---
 name: performance-engineer
-description: Performance optimization specialist — React rendering bottlenecks, bundle size, Core Web Vitals (LCP/CLS/INP), slow database queries, caching strategy. Use when the app is slow, bundle is large, Lighthouse score is low, or queries are taking too long.
-model: sonnet
+description: Use proactively for React rendering bottlenecks, bundle size reduction, Core Web Vitals, slow queries, and caching strategy.
 color: orange
 ---
 
