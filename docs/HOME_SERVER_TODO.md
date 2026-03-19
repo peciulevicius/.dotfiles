@@ -46,21 +46,12 @@ Calibre-Web doesn't support folder creation from the UI. Use **Bookshelves** ins
 
 ### 5. Verify B2 cloud backup
 
-**Status:** Nightly cron at 5am backs up `~/services` configs + Obsidian vault → Backblaze B2. Was broken because cron didn't have `/opt/homebrew/bin` in PATH — fixed by adding `PATH=` line to crontab.
-
-**What's backed up:**
-- `~/services/*` configs (excludes `.env` files, `library/`, `data/postgres/` — large/sensitive data)
-- `~/obsidian-vault` (excludes `.obsidian/workspace*`, plugins, `.DS_Store`)
-
-**What's NOT backed up:**
-- Immich photos (separate backup: T7 → T5 at 3am, not to B2 — too large)
-- Database dumps (separate cron at 4am Sunday → local only)
-- `.env` files (contain passwords — not sent to B2)
+**Status:** Nightly cron at 5am backs up `~/services` configs + Obsidian vault → Backblaze B2.
 
 - [x] Fixed cron PATH — added `/opt/homebrew/bin` to crontab
-- [ ] Verify first real backup completes: check `~/logs/rclone-backup.log` tomorrow after 5am
+- [ ] Verify first real backup completes: check `~/logs/rclone-backup.log` after 5am
 - [ ] Verify data in B2: `rclone ls b2:peciulevicius-services-backup/ | head -20`
-- [ ] Consider: should database dumps also go to B2? (add to rclone-backup.sh)
+- [ ] Consider: should database dumps also go to B2?
 - [ ] Consider: should `.env` files be backed up (encrypted) to B2?
 
 ### 6. FreshRSS — add feeds
@@ -68,32 +59,22 @@ Calibre-Web doesn't support folder creation from the UI. Use **Bookshelves** ins
 - [ ] Open http://localhost:8082, create account if needed
 - [ ] Import OPML file or manually add RSS feeds
 
-### 7. Mealie — first-time setup
+### 7. Linkwarden — phone setup
 
-- [ ] Open http://localhost:9925, create admin account
-- [ ] Default credentials: `changeme@email.com` / `MyPassword` — change immediately
-
-### 8. Linkwarden — first-time setup
-
-- [ ] Open http://localhost:3005 — account created
-- [ ] Install browser extension: Chrome ✅, Brave ⚠️ (disable Shields for links.peciulevicius.com)
 - [ ] Add to phone home screen as PWA: https://links.peciulevicius.com
 
-### 9. Pi-hole local DNS
+### 8. Pi-hole local DNS
 
 **Goal:** Access `*.peciulevicius.com` on local WiFi without going through Cloudflare.
 
 - [ ] In Pi-hole admin (http://localhost:8053/admin) → Local DNS → DNS Records
-- [ ] Add for each subdomain: `home.peciulevicius.com` → `192.168.x.x` (Mac mini local IP)
-- [ ] Repeat for: `vault`, `photos`, `cloud`, `papers`, `rss`, `status`, `books`, `pihole`, `pdf`, `tools`, `listen`, `links`, `recipes`, `watch`, `sonarr`, `radarr`, `prowlarr`, `downloads`
+- [ ] Add for each subdomain → Mac mini local IP
 - [ ] Set router DNS to Mac mini IP (primary) + `1.1.1.1` (fallback)
-- [ ] Test: on a WiFi device, `nslookup home.peciulevicius.com` should return Mac mini local IP
+- [ ] Test: `nslookup home.peciulevicius.com` should return Mac mini local IP
 
-### 10. VPN for torrents (gluetun + Mullvad or Proton VPN)
+### 9. VPN for torrents (gluetun + Mullvad or Proton VPN)
 
-**Goal:** Route Transmission traffic through a VPN so ISP can't see torrent activity. Not urgent — no active downloads planned for ~1 month.
-
-**How it works:** gluetun container runs VPN tunnel, Transmission uses `network_mode: service:gluetun` so all its traffic exits through the VPN. If VPN drops, Transmission loses internet (built-in kill switch).
+**Goal:** Route Transmission traffic through a VPN so ISP can't see torrent activity. Not urgent — no downloads planned for ~1 month.
 
 **Provider options (pick one):**
 - [ ] **Mullvad** — €5/mo, best privacy, no email needed, cancel anytime
@@ -110,6 +91,8 @@ Calibre-Web doesn't support folder creation from the UI. Use **Bookshelves** ins
 
 - [x] ~~Media stack setup~~ — Sonarr/Radarr/Prowlarr/Transmission/Jellyfin fully connected, remote path mapping fixed, Narcos S1-S3 downloaded and playing
 - [x] ~~Cloudflare DNS cleanup~~ — deleted stale CNAMEs: `sync`, `portainer`, `ai`
+- [x] ~~Mealie~~ — setup complete
+- [x] ~~Linkwarden~~ — setup complete, browser extensions installed (Chrome ✅, Brave ⚠️ disable Shields)
 - [x] ~~Calibre-Web `metadata_dirtied` bug~~ — fixed: ran `CREATE TABLE` SQL
 - [x] ~~Radarr Docker volumes~~ — compose already has `/media` mount
 - [x] ~~Pi-hole 403 on root~~ — fixed: lighttpd redirect config mounted
