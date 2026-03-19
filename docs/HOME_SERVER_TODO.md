@@ -1,151 +1,147 @@
 # Home Server — TODO
 
-## 1. Fix Radarr Docker volumes
+## Active
 
-**Problem:** Radarr is browsing the container's internal filesystem, not the Mac mini's disk.
+### 1. Media stack setup (Sonarr/Radarr/Prowlarr → Transmission → Jellyfin)
 
-- [ ] Open `docker-compose.yml` for Radarr
-- [ ] Add volume mounts:
-  ```yaml
-  volumes:
-    - /path/on/macmini/config:/config
-    - /path/on/macmini/movies:/movies
-    - /path/on/macmini/downloads:/downloads
-  ```
-- [ ] Do the same for the download client (qBittorrent/SABnzbd/etc.) — it needs the same `/downloads` path mapped
-- [ ] Restart: `docker compose down && docker compose up -d`
-- [ ] In Radarr → Settings → Media Management → Root Folders → add `/movies`
-- [ ] In Radarr → Settings → Download Clients → verify remote path mappings
+**Status:** Containers running, volumes mounted at `/Volumes/T7/media/{downloads,movies,tv}`. Needs UI configuration.
 
----
+- [ ] **Prowlarr** → Add indexers (torrent sites): Settings → Indexers → Add
+- [ ] **Prowlarr** → Connect to Sonarr + Radarr: Settings → Apps → Add Application
+- [ ] **Sonarr** → Add root folder `/media/tv`: Settings → Media Management → Root Folders
+- [ ] **Sonarr** → Add Transmission as download client: Settings → Download Clients → Add → Transmission (`transmission:9091`, user: `admin`, pass: `REDACTED`)
+- [ ] **Radarr** → Add root folder `/media/movies`: Settings → Media Management → Root Folders
+- [ ] **Radarr** → Add Transmission as download client (same as Sonarr)
+- [ ] **Jellyfin** → Add libraries: Dashboard → Libraries → Add Media Library → Movies (`/media/movies`), TV Shows (`/media/tv`)
+- [ ] Test: add a movie in Radarr → verify it downloads via Transmission → appears in Jellyfin
 
-## 2. Convert Audible AAX → MP3 → Audiobookshelf
+### 2. Ollama — Out of Memory
 
-**Goal:** Strip Audible DRM from AAX files and convert to MP3 (or M4B), then add to Audiobookshelf.
+**Status:** `llama3.2:3b` needs 3.4GB but only ~1.6GB free. Docker Desktop has 7.6GB of 16GB system RAM; 31 containers use ~6GB.
 
-### Steps
+**Options (pick one):**
+- [ ] Increase Docker Desktop memory to 12GB: Docker Desktop → Settings → Resources → Memory → 12GB → restart
+- [ ] Or use a smaller model: `docker exec ollama ollama pull tinyllama` (1.1GB) and remove llama3.2
+- [ ] Or stop Ollama + Open WebUI if you mainly use Claude now (saves ~500MB idle RAM)
 
-- [ ] Get your Audible activation bytes (one-time):
+### 3. Pi-hole local DNS
+
+**Goal:** Access `*.peciulevicius.com` on local WiFi without going through Cloudflare.
+
+- [ ] In Pi-hole admin (http://localhost:8053/admin) → Local DNS → DNS Records
+- [ ] Add for each subdomain: `home.peciulevicius.com` → `192.168.x.x` (Mac mini local IP)
+- [ ] Repeat for: `vault`, `photos`, `cloud`, `ai`, `papers`, `rss`, `status`, `books`, `pihole`, `pdf`, `tools`, `listen`, `links`, `recipes`, `watch`, `sonarr`, `radarr`, `prowlarr`, `downloads`
+- [ ] Set router DNS to Mac mini IP (primary) + `1.1.1.1` (fallback)
+- [ ] Test: on a WiFi device, `nslookup home.peciulevicius.com` should return Mac mini local IP
+
+### 4. Convert Audible AAX → Audiobookshelf
+
+**Goal:** Strip DRM from Audible AAX files, convert to M4B, add to Audiobookshelf.
+
+- [ ] Install `audible-cli`: `pip install audible-cli`
+- [ ] Get activation bytes: `audible activation-bytes`
+- [ ] Convert AAX → M4B (keeps chapters):
   ```bash
-  # Install audible-activator or use RCX (GUI) to extract your bytes
-  # Or: pip install audible-cli
-  audible activation-bytes
-  ```
-- [ ] Convert AAX → M4B or MP3 using `ffmpeg`:
-  ```bash
-  # M4B (recommended — keeps chapters)
   ffmpeg -activation_bytes YOUR_BYTES -i book.aax -c copy book.m4b
-
-  # MP3 (no chapters)
-  ffmpeg -activation_bytes YOUR_BYTES -i book.aax -c:a libmp3lame -q:a 4 book.mp3
   ```
-- [ ] Alternative: use **AAXtoMP3** script (handles batch conversion):
+- [ ] Or batch convert with [AAXtoMP3](https://github.com/KrumpetPirate/AAXtoMP3):
   ```bash
-  # https://github.com/KrumpetPirate/AAXtoMP3
   ./AAXtoMP3 --authcode YOUR_BYTES *.aax
   ```
-- [ ] Place converted files in Audiobookshelf's watched library folder
-- [ ] In Audiobookshelf → scan library
+- [ ] Place converted files in `~/services/audiobookshelf/data/audiobooks/`
+- [ ] In Audiobookshelf → Libraries → scan
 
-### Docker option (fully automated)
-- [ ] Look into `openaudible` or `audiobookshelf` with built-in Audible import support
+### 5. DeDRM Kindle books → Calibre-Web
 
----
+**Goal:** Remove DRM from Kindle ebooks, add to Calibre-Web.
 
-## 3. DeDRM Calibre library → Calibre-Web
+- [ ] Download [DeDRM_tools](https://github.com/noDRM/DeDRM_tools/releases)
+- [ ] In Calibre desktop → Preferences → Plugins → Load plugin → `DeDRM_plugin.zip`
+- [ ] Configure: Settings → DeDRM → eInk Kindle ebooks → add serial number
+- [ ] Re-import DRM books to Calibre — DeDRM runs automatically
+- [ ] Convert to EPUB: right-click → Convert → EPUB
+- [ ] Books appear in Calibre-Web automatically (shared library folder)
 
-**Goal:** Remove DRM from Kindle/Adobe ebooks in Calibre so they can be uploaded to Calibre-Web in open formats (EPUB, MOBI, PDF).
+### 6. Calibre-Web — organising books
 
-### Setup DeDRM in Calibre (desktop)
+Calibre-Web doesn't support folder creation from the UI. Use **Bookshelves** instead:
+- [ ] Admin → Edit Shelves → create shelves (e.g. "Fiction", "Tech", "Papers")
+- [ ] Add books to shelves
+- [ ] Or manage folder structure in Calibre desktop (mirrored to Calibre-Web)
+- [ ] Alternative: consider **Kavita** if folder/series support is needed
 
-- [ ] Download **DeDRM_tools** from: https://github.com/noDRM/DeDRM_tools/releases
-- [ ] In Calibre → Preferences → Plugins → Load plugin from file → select `DeDRM_plugin.zip`
-- [ ] Restart Calibre
-- [ ] Configure plugin:
-  - **Kindle:** add your Kindle serial number (Settings → DeDRM → eInk Kindle ebooks)
-  - **Adobe:** add your Adobe ID credentials (Settings → DeDRM → Adobe Digital Editions)
-- [ ] Re-add your DRM books to Calibre — DeDRM runs automatically on import
-- [ ] Convert to EPUB if needed: right-click book → Convert → EPUB
+### 7. Uptime Kuma notifications
 
-### Upload to Calibre-Web
+- [ ] Open http://localhost:3001 → Settings → Notifications
+- [ ] Add Telegram, Discord, or email notification channel
+- [ ] Test notification with a "Test" button
 
-- [ ] Calibre-Web should point to your Calibre library folder (via Docker volume)
-- [ ] Books added/converted in Calibre desktop appear automatically in Calibre-Web
-- [ ] Or manually upload EPUB files via Calibre-Web UI → Upload
+### 8. Cloudflare DNS cleanup
 
-### Notes
-- DeDRM only works on books you legitimately own
-- Keep original DRM files as backup before removing DRM
-- Calibre-Web needs read access to the Calibre library path
+- [ ] Delete stale CNAME records in Cloudflare dashboard:
+  - `sync.peciulevicius.com` (Syncthing — Tailscale only now)
+  - `portainer.peciulevicius.com` (Portainer — Tailscale only now)
 
----
+### 9. Verify B2 cloud backup
 
-## 4. Calibre-Web bugs
+**Status:** Nightly cron at 5am backs up `~/services` configs + Obsidian vault → Backblaze B2. Was broken because cron didn't have `/opt/homebrew/bin` in PATH — fixed by adding `PATH=` line to crontab.
 
-### `no such table: metadata_dirtied` on book upload / metadata update
+**What's backed up:**
+- `~/services/*` configs (excludes `.env` files, `library/`, `data/postgres/` — large/sensitive data)
+- `~/obsidian-vault` (excludes `.obsidian/workspace*`, plugins, `.DS_Store`)
 
-- [ ] This is a known SQLite schema migration bug in Calibre-Web
-- [ ] Fix: exec into the container and run the migration manually:
-  ```bash
-  docker exec -it calibre-web sqlite3 /books/metadata.db \
-    "CREATE TABLE IF NOT EXISTS metadata_dirtied (id INTEGER PRIMARY KEY, book INTEGER NOT NULL, UNIQUE(book));"
-  ```
-- [ ] Or: stop the container, delete `/config/app.db` (Calibre-Web's own DB, not the library), restart — it will rebuild
-- [ ] If persists: upgrade Calibre-Web image to latest (`docker compose pull && docker compose up -d`)
+**What's NOT backed up:**
+- Immich photos (separate backup: T7 → T5 at 3am, not to B2 — too large)
+- Database dumps (separate cron at 4am Sunday → local only)
+- `.env` files (contain passwords — not sent to B2)
 
-### Can't add folders in Calibre-Web (Papers / collections)
+- [x] Fixed cron PATH — added `/opt/homebrew/bin` to crontab
+- [ ] Verify first real backup completes: check `~/logs/rclone-backup.log` tomorrow after 5am
+- [ ] Verify data in B2: `rclone ls b2:peciulevicius-services-backup/ | head -20`
+- [ ] Consider: should database dumps also go to B2? (add to rclone-backup.sh)
+- [ ] Consider: should `.env` files be backed up (encrypted) to B2?
 
-- [ ] Calibre-Web does not support folder creation from the UI — folders = Calibre "shelves" or "virtual libraries"
-- [ ] To organise by folder/collection use **Custom Columns** or **Bookshelves** in Calibre-Web:
-  - Admin → Edit Shelves → create a shelf → add books to it
-- [ ] Or manage folder structure in Calibre desktop (Calibre-Web mirrors it automatically)
-- [ ] Alternative: switch to **Kavita** which has native folder/series support
+### 10. FreshRSS — add feeds
 
----
+- [ ] Open http://localhost:8082, create account if needed
+- [ ] Import OPML file or manually add RSS feeds
 
-## 5. ai.peciulevicius.com — 502 Bad Gateway
+### 11. Mealie — first-time setup
 
-**Problem:** Reverse proxy returning 502 on ai.peciulevicius.com (and possibly other services).
+- [ ] Open http://localhost:9925, create admin account
+- [ ] Default credentials: `changeme@email.com` / `MyPassword` — change immediately
 
-- [ ] SSH into Mac mini: `ssh macmini`
-- [ ] Check if the Open WebUI container is running: `docker ps | grep webui`
-- [ ] If container is down: `docker compose up -d` in the open-webui directory
-- [ ] Check reverse proxy (Caddy/Nginx/Traefik) logs for upstream errors:
-  ```bash
-  docker logs caddy --tail 50   # or nginx/traefik
-  ```
-- [ ] Check which other services are returning 502 — likely the reverse proxy container itself crashed or has a bad config
-- [ ] Restart the proxy: `docker compose restart caddy` (or nginx/traefik)
-- [ ] If the proxy config was recently changed, validate it before restarting
+### 12. Linkwarden — first-time setup
+
+- [ ] Open http://localhost:3005 — account created
+- [ ] Install browser extension: Chrome ✅, Brave ⚠️ (disable Shields for links.peciulevicius.com)
+- [ ] Add to phone home screen as PWA: https://links.peciulevicius.com
 
 ---
 
-## 6. ai.peciulevicius.com — Ollama 500 Internal Server Error
+## Done
 
-**Problem:** Open WebUI connects but Ollama returns `500: Internal Server Error` at `http://ollama:11434/api/chat` when a prompt is submitted.
-
-**Likely causes:** Ollama container crashed, ran out of VRAM/RAM, or model is corrupted/missing.
-
-- [ ] SSH into Mac mini and check Ollama container: `docker ps | grep ollama`
-- [ ] Check Ollama logs: `docker logs ollama --tail 100`
-- [ ] If OOM (out of memory): check `docker stats` — Ollama may need more RAM allocated
-- [ ] Try pulling the model again inside the container:
-  ```bash
-  docker exec -it ollama ollama pull <model-name>
-  docker exec -it ollama ollama list   # confirm it's there
-  ```
-- [ ] Restart Ollama container: `docker compose restart ollama`
-- [ ] In Open WebUI → Settings → Connections → verify Ollama URL is `http://ollama:11434` (not localhost)
-- [ ] If Mac mini has no GPU, ensure you're running a model that fits in CPU RAM (7B ≈ 5-8GB)
-- [ ] Note: if you're now using Claude instead of local AI, consider whether Ollama is worth keeping running
+- [x] ~~Calibre-Web `metadata_dirtied` bug~~ — fixed: ran `CREATE TABLE` SQL
+- [x] ~~ai.peciulevicius.com 502~~ — resolved, Open WebUI running fine
+- [x] ~~Radarr Docker volumes~~ — compose already has `/media` mount, just needs UI root folder config (moved to item 1)
+- [x] ~~Pi-hole 403 on root~~ — fixed: lighttpd redirect config mounted
+- [x] ~~Transmission credentials~~ — changed to `admin` / `REDACTED`
+- [x] ~~Homarr dashboard~~ — configured with all 23 services, sections, descriptions
+- [x] ~~Linkwarden bookmarks~~ — 621 bookmarks imported (23 services + browser bookmarks)
+- [x] ~~Uptime Kuma monitors~~ — all 23 services monitored
+- [x] ~~Audiobookshelf subdomain~~ — fixed: books → listen
 
 ---
 
 ## Quick reference
 
-| Service | Container path | Mac mini path (example) |
+| Service | Container path | Mac mini path |
 |---|---|---|
-| Radarr movies | `/movies` | `/Volumes/Media/Movies` |
-| Downloads | `/downloads` | `/Volumes/Media/Downloads` |
-| Audiobookshelf | `/audiobooks` | `/Volumes/Media/Audiobooks` |
-| Calibre library | `/books` | `/Volumes/Media/Books` |
+| Radarr/Sonarr media | `/media` | `/Volumes/T7/media` |
+| Radarr movies | `/media/movies` | `/Volumes/T7/media/movies` |
+| Sonarr TV | `/media/tv` | `/Volumes/T7/media/tv` |
+| Transmission downloads | `/downloads` | `/Volumes/T7/media/downloads` |
+| Audiobookshelf | `/audiobooks` | `~/services/audiobookshelf/data/audiobooks` |
+| Calibre library | `/books` | `~/services/calibre-web/data/books` |
+| Immich photos | `/usr/src/app/upload` | `/Volumes/T7/immich/upload` |
+| Immich DB | `/var/lib/postgresql/data` | `/Volumes/T7/immich/postgres` |
