@@ -4,26 +4,31 @@
 
 ### 1. Media stack setup (Sonarr/Radarr/Prowlarr → Transmission → Jellyfin)
 
-**Status:** Containers running, volumes mounted at `/Volumes/T7/media/{downloads,movies,tv}`. Needs UI configuration.
+**Status:** Containers running, volumes mounted at `/Volumes/T7/media/{downloads,movies,tv}`. Narcos S1 downloading via Sonarr → Transmission.
 
-- [ ] **Prowlarr** → Add indexers (torrent sites): Settings → Indexers → Add
-- [ ] **Prowlarr** → Connect to Sonarr + Radarr: Settings → Apps → Add Application
-- [ ] **Sonarr** → Add root folder `/media/tv`: Settings → Media Management → Root Folders
-- [ ] **Sonarr** → Add Transmission as download client: Settings → Download Clients → Add → Transmission (`transmission:9091`, user: `admin`, pass: `REDACTED`)
-- [ ] **Radarr** → Add root folder `/media/movies`: Settings → Media Management → Root Folders
-- [ ] **Radarr** → Add Transmission as download client (same as Sonarr)
+- [x] **Prowlarr** → Add indexers (YTS, Pirate Bay, LimeTorrents, Knaben added)
+- [x] **Prowlarr** → Connect to Sonarr + Radarr via API
+- [x] **Sonarr** → Add root folder `/media/tv`
+- [x] **Sonarr** → Add Transmission as download client
+- [x] **Radarr** → Add root folder `/media/movies`
+- [x] **Radarr** → Add Transmission as download client
 - [ ] **Jellyfin** → Add libraries: Dashboard → Libraries → Add Media Library → Movies (`/media/movies`), TV Shows (`/media/tv`)
-- [ ] Test: add a movie in Radarr → verify it downloads via Transmission → appears in Jellyfin
+- [ ] Test: Narcos finishes downloading → Sonarr moves to `/media/tv/` → appears in Jellyfin
 
-### 2. Pi-hole local DNS
+### 2. VPN for torrents (gluetun + Mullvad or Proton VPN)
 
-**Goal:** Access `*.peciulevicius.com` on local WiFi without going through Cloudflare.
+**Goal:** Route Transmission traffic through a VPN so ISP can't see torrent activity. Not urgent — no active downloads planned for ~1 month.
 
-- [ ] In Pi-hole admin (http://localhost:8053/admin) → Local DNS → DNS Records
-- [ ] Add for each subdomain: `home.peciulevicius.com` → `192.168.x.x` (Mac mini local IP)
-- [ ] Repeat for: `vault`, `photos`, `cloud`, `papers`, `rss`, `status`, `books`, `pihole`, `pdf`, `tools`, `listen`, `links`, `recipes`, `watch`, `sonarr`, `radarr`, `prowlarr`, `downloads`
-- [ ] Set router DNS to Mac mini IP (primary) + `1.1.1.1` (fallback)
-- [ ] Test: on a WiFi device, `nslookup home.peciulevicius.com` should return Mac mini local IP
+**How it works:** gluetun container runs VPN tunnel, Transmission uses `network_mode: service:gluetun` so all its traffic exits through the VPN. If VPN drops, Transmission loses internet (built-in kill switch).
+
+**Provider options (pick one):**
+- [ ] **Mullvad** — €5/mo, best privacy, no email needed, cancel anytime
+- [ ] **Proton VPN** — free tier works but slower, no port forwarding
+
+**Setup (after choosing provider):**
+- [ ] Create `services/gluetun/docker-compose.yml` with VPN credentials
+- [ ] Update Transmission compose to use `network_mode: service:gluetun`
+- [ ] Test: `docker exec transmission curl ifconfig.me` should show VPN IP, not home IP
 
 ### 3. Convert Audible AAX → Audiobookshelf
 
@@ -108,6 +113,16 @@ Calibre-Web doesn't support folder creation from the UI. Use **Bookshelves** ins
 - [ ] Open http://localhost:3005 — account created
 - [ ] Install browser extension: Chrome ✅, Brave ⚠️ (disable Shields for links.peciulevicius.com)
 - [ ] Add to phone home screen as PWA: https://links.peciulevicius.com
+
+### 12. Pi-hole local DNS
+
+**Goal:** Access `*.peciulevicius.com` on local WiFi without going through Cloudflare.
+
+- [ ] In Pi-hole admin (http://localhost:8053/admin) → Local DNS → DNS Records
+- [ ] Add for each subdomain: `home.peciulevicius.com` → `192.168.x.x` (Mac mini local IP)
+- [ ] Repeat for: `vault`, `photos`, `cloud`, `papers`, `rss`, `status`, `books`, `pihole`, `pdf`, `tools`, `listen`, `links`, `recipes`, `watch`, `sonarr`, `radarr`, `prowlarr`, `downloads`
+- [ ] Set router DNS to Mac mini IP (primary) + `1.1.1.1` (fallback)
+- [ ] Test: on a WiFi device, `nslookup home.peciulevicius.com` should return Mac mini local IP
 
 ---
 
