@@ -1,5 +1,9 @@
+# ccmpiled stuff
 config/nvim/plugin/packer_compiled.lua
 site/
+
+# claude settings
+.claude/settings.local.json
 
 # Self-hosted services — never commit secrets or data
 services/**/.env
