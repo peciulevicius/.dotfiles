@@ -75,7 +75,8 @@ if [[ ! -f "$CREDS_FILE" ]]; then
 fi
 
 # --- 5. Service subdomain mapping ---
-# NOTE: Syncthing and Portainer are NOT exposed via tunnel (Tailscale-only access)
+# NOTE: Syncthing is Tailscale-only (no public tunnel)
+# NOTE: Sonarr/Radarr/Prowlarr/Transmission are Tailscale-only (media management, set-and-forget)
 declare -A SERVICES=(
     ["home"]=7575       # Homarr dashboard
     ["vault"]=8001      # Vaultwarden
@@ -91,11 +92,8 @@ declare -A SERVICES=(
     ["links"]=3005      # Linkwarden
     ["recipes"]=9925    # Mealie
     ["watch"]=8096      # Jellyfin
-    ["sonarr"]=8989     # Sonarr
-    ["radarr"]=7878     # Radarr
-    ["prowlarr"]=9696   # Prowlarr
-    ["downloads"]=9091  # Transmission
     ["listen"]=13378    # Audiobookshelf
+    ["portainer"]=9000  # Portainer
 )
 
 # --- 6. Write config ---
@@ -109,7 +107,7 @@ credentials-file: ${CREDS_FILE}
 ingress:
 EOF
 
-for sub in home vault photos cloud papers rss status books pihole pdf tools links recipes watch sonarr radarr prowlarr downloads listen; do
+for sub in home vault photos cloud papers rss status books pihole pdf tools links recipes watch listen portainer; do
     port="${SERVICES[$sub]}"
     echo "  - hostname: ${sub}.${DOMAIN}" >> "$CONFIG_FILE"
     echo "    service: http://localhost:${port}" >> "$CONFIG_FILE"
@@ -121,7 +119,7 @@ print_success "Config written"
 
 # --- 7. Create DNS records ---
 print_info "Creating DNS records..."
-for sub in home vault photos cloud papers rss status books pihole pdf tools links recipes watch sonarr radarr prowlarr downloads listen; do
+for sub in home vault photos cloud papers rss status books pihole pdf tools links recipes watch listen portainer; do
     OUTPUT=$(cloudflared tunnel route dns "$TUNNEL_NAME" "${sub}.${DOMAIN}" 2>&1)
     if echo "$OUTPUT" | grep -q "Added CNAME"; then
         print_success "${sub}.${DOMAIN}"
@@ -184,15 +182,15 @@ printf "  %-16s → %s\n" "IT-Tools"       "https://tools.${DOMAIN}"
 printf "  %-16s → %s\n" "Linkwarden"     "https://links.${DOMAIN}"
 printf "  %-16s → %s\n" "Mealie"         "https://recipes.${DOMAIN}"
 printf "  %-16s → %s\n" "Jellyfin"       "https://watch.${DOMAIN}"
-printf "  %-16s → %s\n" "Sonarr"         "https://sonarr.${DOMAIN}"
-printf "  %-16s → %s\n" "Radarr"         "https://radarr.${DOMAIN}"
-printf "  %-16s → %s\n" "Prowlarr"       "https://prowlarr.${DOMAIN}"
-printf "  %-16s → %s\n" "Transmission"   "https://downloads.${DOMAIN}"
 printf "  %-16s → %s\n" "Audiobookshelf" "https://listen.${DOMAIN}"
+printf "  %-16s → %s\n" "Portainer"      "https://portainer.${DOMAIN}"
 echo ""
-echo "  Tailscale-only (not exposed via tunnel):"
+echo "  Tailscale-only (not in tunnel — access via Tailscale IP):"
+printf "  %-16s → %s\n" "Sonarr"         "http://<tailscale-ip>:8989"
+printf "  %-16s → %s\n" "Radarr"         "http://<tailscale-ip>:7878"
+printf "  %-16s → %s\n" "Prowlarr"       "http://<tailscale-ip>:9696"
+printf "  %-16s → %s\n" "Transmission"   "http://<tailscale-ip>:9091"
 printf "  %-16s → %s\n" "Syncthing"      "http://<tailscale-ip>:8384"
-printf "  %-16s → %s\n" "Portainer"      "http://<tailscale-ip>:9000"
 echo ""
 print_info "Bitwarden app server URL: https://vault.${DOMAIN}"
 echo ""
