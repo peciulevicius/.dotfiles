@@ -149,6 +149,38 @@ Paperless-NGX doesn't support traditional folders — it uses **tags**, **docume
 
 ---
 
+## Drive Layout (reference)
+
+Two Samsung SSDs permanently connected to the Mac Mini:
+
+| Drive | Size | Role | Mount path |
+|-------|------|------|-----------|
+| **T7** | 1TB | Primary data | `/Volumes/T7/` |
+| **T5** | 500GB | Local backup + Time Machine | `/Volumes/T5/` (or similar) |
+
+**What lives where:**
+
+| Data | Drive | Path |
+|------|-------|------|
+| Immich photos | T7 | `/Volumes/T7/immich/upload` |
+| Immich DB | T7 | `/Volumes/T7/immich/postgres` |
+| Media (movies, TV, downloads) | T7 | `/Volumes/T7/media/` |
+| Calibre books | T7 | `/Volumes/T7/calibre-books` |
+| Time Machine (MacBook + Mac Mini) | T7 | APFS `TimeMachine` volume |
+| Local photo backup (rsync from T7) | T5 | nightly copy |
+
+**Cloud backup (rclone → Backblaze B2):**
+- Docker service configs → `b2-backup:peciulevicius-services-backup/services`
+- Obsidian vault → `b2-backup:peciulevicius-services-backup/obsidian-vault`
+- Immich photos → `b2-backup:peciulevicius-services-backup/immich-photos`
+- Runs nightly at 5am via cron: `~/.dotfiles/services/rclone/rclone-backup.sh`
+
+**If T7 dies:** photos are on T5 (local) + B2 (cloud). Reinstall services from dotfiles, restore data from B2.
+**If T5 dies:** replace it, rsync from T7 again.
+**If Mac Mini dies:** all data is safe on T7 + B2. Reinstall macOS, clone dotfiles, restore.
+
+---
+
 ## Quick reference
 
 | Service | Container path | Mac mini path |
