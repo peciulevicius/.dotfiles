@@ -337,7 +337,7 @@ docker compose up -d
 **Why:** Manage your ebook collection. Send books to Kindle, read in browser, organize by author/tag.
 
 **How to use:**
-1. Open http://localhost:8083 (admin / admin123 — change immediately)
+1. Open http://localhost:8083 (default admin / admin123 — change immediately on first login)
 2. Upload books via the web UI (Admin → Add books)
 3. **Kindle:** Settings → enable "Send to Kindle" with your Kindle email
 4. **Mobile/e-reader:** connect via OPDS at `http://100.81.171.49:8083/opds`

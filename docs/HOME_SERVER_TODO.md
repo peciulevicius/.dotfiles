@@ -138,7 +138,7 @@ Paperless-NGX doesn't support traditional folders — it uses **tags**, **docume
 - [x] ~~Calibre-Web `metadata_dirtied` bug~~ — fixed: ran `CREATE TABLE` SQL
 - [x] ~~Radarr Docker volumes~~ — compose already has `/media` mount
 - [x] ~~Pi-hole 403 on root~~ — fixed: lighttpd redirect config mounted
-- [x] ~~Transmission credentials~~ — changed to `admin` / `REDACTED`
+- [x] ~~Transmission credentials~~ — changed from defaults (see .env on Mac Mini)
 - [x] ~~Homarr dashboard~~ — configured with all services, organized into categories (Main, Media, Utilities, System, Direct Access)
 - [x] ~~Linkwarden bookmarks~~ — 621 bookmarks imported (services + browser bookmarks)
 - [x] ~~Uptime Kuma monitors~~ — all services monitored
