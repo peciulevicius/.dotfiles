@@ -84,7 +84,11 @@ Paperless-NGX doesn't support traditional folders — it uses **tags**, **docume
 - [ ] Set router DNS to Mac mini IP (primary) + `1.1.1.1` (fallback)
 - [ ] Test: `nslookup home.peciulevicius.com` should return Mac mini local IP
 
-### 10. VPN for torrents (gluetun + Mullvad or Proton VPN)
+### 10. Delete stale Cloudflare DNS CNAMEs
+
+- [ ] Delete CNAMEs in Cloudflare dashboard: `sonarr`, `radarr`, `prowlarr`, `downloads` (no longer in tunnel)
+
+### 11. VPN for torrents (gluetun + Mullvad or Proton VPN)
 
 **Goal:** Route Transmission traffic through a VPN so ISP can't see torrent activity. Not urgent — no downloads planned for ~1 month.
 
@@ -104,6 +108,7 @@ Paperless-NGX doesn't support traditional folders — it uses **tags**, **docume
 - [x] ~~Media stack setup~~ — Sonarr/Radarr/Prowlarr/Transmission/Jellyfin fully connected, remote path mapping fixed, Narcos S1-S3 downloaded and playing
 - [x] ~~Cloudflare DNS cleanup~~ — deleted stale CNAMEs: `sync`, `portainer`, `ai`
 - [x] ~~Cloudflare Access~~ — removed `*.peciulevicius.com` Zero Trust gate; was breaking all native apps (Bitwarden, Immich, etc.). Each service has its own login screen — Access wasn't needed.
+- [x] ~~Tunnel security split~~ — moved Sonarr/Radarr/Prowlarr/Transmission to Tailscale-only, added Portainer to public tunnel
 - [x] ~~Mealie~~ — setup complete
 - [x] ~~Linkwarden~~ — setup complete, browser extensions installed (Chrome ✅, Brave ⚠️ disable Shields)
 - [x] ~~Calibre-Web `metadata_dirtied` bug~~ — fixed: ran `CREATE TABLE` SQL
