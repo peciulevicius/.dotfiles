@@ -35,7 +35,7 @@ Immich database backup — add to crontab:
 docker exec immich_postgres pg_dumpall -U immich > ~/backups/immich-db-$(date +%Y%m%d).sql
 ```
 
-See [BACKUPS.md](../../docs/BACKUPS.md) for full 3-2-1 strategy.
+See [HOME_SERVER.md](../../docs/HOME_SERVER.md) for full 3-2-1 strategy.
 
 ## Notes
 

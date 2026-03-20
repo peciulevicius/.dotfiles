@@ -13,7 +13,7 @@ New to this repo? Follow this order.
     cd ~/.dotfiles && ./install.sh
     ```
 
-    Full guide: [macOS Setup](./MAC_SETUP.md)
+    Full guide: [HOW_TO_INSTALL.md](./HOW_TO_INSTALL.md)
 
 === "Linux (Arch / Ubuntu / Debian)"
 
@@ -81,8 +81,6 @@ Full guide: [Claude Code Guide](./CLAUDE_CODE_GUIDE.md)
 ## 3) Learn the Tools
 
 - [Modern CLI Tools](./MODERN_CLI_TOOLS.md) — bat, eza, fzf, zoxide, ripgrep, and more
-- [Beginner Tool Setup Guide](./BEGINNER_TOOL_SETUP_GUIDE.md) — step-by-step for each tool
-- [Tmux Guide](./TMUX_GUIDE.md) — terminal multiplexer
 - [Tool Tutorials](./tutorials/TOOL_TUTORIALS.md) — official docs and video links
 
 ---

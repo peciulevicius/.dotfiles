@@ -39,36 +39,24 @@ markdown_extensions:
 nav:
   - Start Here: START_HERE.md
 
-  - Mac:
-      - macOS Setup: MAC_SETUP.md
+  - Setup:
+      - How to Install: HOW_TO_INSTALL.md
       - Mac mini Setup: HOME_SERVER.md
-      - Wallpapers: WALLPAPERS.md
 
   - Claude Code:
       - Claude Code Guide: CLAUDE_CODE_GUIDE.md
-      - Business Stack: BUSINESS_STACK_GUIDE.md
 
   - Tools:
       - Modern CLI Tools: MODERN_CLI_TOOLS.md
-      - Beginner Setup Guide: BEGINNER_TOOL_SETUP_GUIDE.md
-      - Tmux: TMUX_GUIDE.md
       - Utility Scripts: UTILITY_SCRIPTS.md
       - Tutorials: tutorials/TOOL_TUTORIALS.md
 
-  - Installation:
-      - How to Install: HOW_TO_INSTALL.md
-      - Arch Linux: ARCH_INSTALLER_FLOW.md
-
   - Self-Hosted:
       - Services Overview: SERVICES.md
-      - Backup Strategy: BACKUPS.md
-      - Notes & Obsidian: NOTES.md
-      - Books & Reading: BOOKS.md
-      - Degoogle Guide: DEGOOGLE.md
+      - Notes & Obsidian: guides/NOTES.md
+      - Books & Reading: guides/BOOKS.md
+      - Degoogle Guide: guides/DEGOOGLE.md
 
   - Reference:
       - Config Guide: CONFIG_GUIDE.md
       - Symlinks: SYMLINKS.md
-      - Tool Coverage Matrix: TOOL_COVERAGE_MATRIX.md
-      - Docs Site Setup: SETUP_DOCS_SITE.md
-      - FAQ: FAQ.md

@@ -203,7 +203,7 @@ VAULT_PATH=/Volumes/SSD/notes ~/.dotfiles/scripts/setup/setup-obsidian.sh
 └── 📦 Archive/          # Dead ideas, old notes
 ```
 
-See [NOTES.md](./NOTES.md) for the full Obsidian + Syncthing workflow.
+See [guides/NOTES.md](./guides/NOTES.md) for the full Obsidian + Syncthing workflow.
 
 ---
 
@@ -276,7 +276,7 @@ crontab -e
 0 3 * * * ~/.dotfiles/services/rclone/rclone-backup.sh >> ~/logs/rclone-cron.log 2>&1
 ```
 
-See [BACKUPS.md](./BACKUPS.md) for full strategy.
+See [HOME_SERVER.md](./HOME_SERVER.md) for full strategy.
 
 ---
 

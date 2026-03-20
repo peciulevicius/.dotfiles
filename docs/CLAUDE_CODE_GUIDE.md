@@ -531,6 +531,5 @@ config/claude/
 
 ### Related docs
 
-- `docs/BUSINESS_STACK_GUIDE.md` — full product stack reference
 - [Claude Code docs](https://code.claude.com/docs)
 - [skills.sh marketplace](https://skills.sh)

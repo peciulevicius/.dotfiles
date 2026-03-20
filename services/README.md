@@ -61,5 +61,5 @@ Then edit the `.env` files in `~/services/<service>/` before running `docker com
 
 Full guides in `docs/`:
 - [SERVICES.md](../docs/SERVICES.md) — Setup walkthrough
-- [BACKUPS.md](../docs/BACKUPS.md) — Backup strategy
-- [DEGOOGLE.md](../docs/DEGOOGLE.md) — Privacy migration checklist
+- [HOME_SERVER.md](../docs/HOME_SERVER.md) — Backup strategy
+- [DEGOOGLE.md](../docs/guides/DEGOOGLE.md) — Privacy migration checklist

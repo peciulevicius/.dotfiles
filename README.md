@@ -234,13 +234,10 @@ All documentation is in the `docs/` folder:
 - **[START_HERE.md](docs/START_HERE.md)** — Where to begin (all platforms)
 - **[HOW_TO_INSTALL.md](docs/HOW_TO_INSTALL.md)** — Complete installation guide
 - **[CLAUDE_CODE_GUIDE.md](docs/CLAUDE_CODE_GUIDE.md)** — Claude Code agents, skills, rules setup
-- **[MAC_SETUP.md](docs/MAC_SETUP.md)** — macOS-specific setup and tools
 - **[MODERN_CLI_TOOLS.md](docs/MODERN_CLI_TOOLS.md)** — bat, eza, fzf, zoxide, and more
 - **[CONFIG_GUIDE.md](docs/CONFIG_GUIDE.md)** — Configuration details
 - **[UTILITY_SCRIPTS.md](docs/UTILITY_SCRIPTS.md)** — Scripts documentation
-- **[FAQ.md](docs/FAQ.md)** — Frequently asked questions
 - **[SYMLINKS.md](docs/SYMLINKS.md)** — How symlinks work in this repo
-- **[ARCH_INSTALLER_FLOW.md](docs/ARCH_INSTALLER_FLOW.md)** — Arch Linux setup walkthrough
 
 ## 🔧 Customization
 

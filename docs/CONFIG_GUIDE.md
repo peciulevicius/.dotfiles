@@ -646,7 +646,7 @@ sudo pacman -S starship
    tmux source-file ~/.tmux.conf
    ```
 
-3. **Check key bindings**: See [TMUX_GUIDE.md](./TMUX_GUIDE.md) for all shortcuts
+3. **Check key bindings**: run `tmux list-keys` for all shortcuts
 
 ---
 

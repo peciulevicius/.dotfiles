@@ -460,7 +460,6 @@ cp ~/.dotfiles/config/zsh/.zshrc ~/.zshrc
 
 ## 📚 See Also
 
-- [FAQ.md](./FAQ.md) - Common questions about installation and safety
 - [HOW_TO_INSTALL.md](./HOW_TO_INSTALL.md) - Installation guide
 - [CONFIG_GUIDE.md](./CONFIG_GUIDE.md) - What each config file does
 

@@ -1,7 +1,7 @@
 # How to Install - Complete Step-by-Step Guide
 
 > Important: macOS install flow has been simplified.
-> Use [MAC_SETUP.md](./MAC_SETUP.md) and `os/mac/install.sh` as the source of truth.
+> Use `os/mac/install.sh` as the source of truth.
 
 This is the **complete guide** for setting up your development environment on any machine.
 

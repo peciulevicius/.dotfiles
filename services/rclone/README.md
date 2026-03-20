@@ -43,4 +43,4 @@ crontab -e
 - `library/` (Immich photos — back up separately or via rclone sync from your photo source)
 - `data/postgres/` (use `pg_dump` for database backups instead)
 
-See [docs/BACKUPS.md](../../docs/BACKUPS.md) for full backup strategy.
+See [docs/HOME_SERVER.md](../../docs/HOME_SERVER.md) for full backup strategy.
