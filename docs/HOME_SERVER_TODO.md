@@ -54,7 +54,45 @@ Paperless-NGX doesn't support traditional folders — it uses **tags**, **docume
 - [ ] Assign types/correspondents/tags to uploaded documents
 - [ ] Use **Saved Views** (left sidebar) to create folder-like filtered views
 
-### 6. FreshRSS — add feeds
+### 6. Linkwarden → Karakeep migration
+
+**Goal:** Replace Linkwarden with Karakeep (formerly Hoarder) for AI-powered bookmarking with auto-tagging, smart lists, and native mobile apps.
+
+**Why Karakeep over Linkwarden:** AI auto-tagging, smart lists, saves notes/images/PDFs (not just links), Meilisearch full-text search, native iOS/Android apps, 2x the GitHub stars and momentum.
+
+- [ ] Export all 621 bookmarks from Linkwarden (HTML export)
+- [ ] Set up Karakeep docker-compose (web + Chrome + Meilisearch containers)
+- [ ] Configure AI tagging (OpenAI API key or local Ollama)
+- [ ] Import bookmarks from HTML export
+- [ ] Install browser extension + mobile app
+- [ ] Verify all bookmarks imported correctly
+- [ ] Update Glance dashboard (swap Linkwarden for Karakeep)
+- [ ] Update Cloudflare Tunnel (if exposing publicly)
+- [ ] Update Uptime Kuma monitors
+- [ ] Stop and remove Linkwarden containers
+- [ ] Update setup-services.sh
+
+### 7. Configure new services
+
+- [ ] **Jellyseerr** (http://localhost:5055)
+  - Sign in with Jellyfin account
+  - Settings → Sonarr: host `sonarr`, port `8989`, API key from Sonarr Settings → General
+  - Settings → Radarr: host `radarr`, port `7878`, API key from Radarr Settings → General
+
+- [ ] **Bazarr** (http://localhost:6767)
+  - Settings → Sonarr: host `localhost`, port `8989`, API key from Sonarr Settings → General → API Key
+  - Settings → Radarr: host `localhost`, port `7878`, API key from Radarr Settings → General → API Key
+  - Settings → Providers → Add provider: **OpenSubtitles.com** (free account at opensubtitles.com)
+  - Settings → Languages → Add profile: set English + Lithuanian as preferred
+  - Apply profile to all series and movies
+
+- [ ] **Grafana** (http://localhost:3000)
+  - Login: admin / changeme → change password immediately
+  - Connections → Add data source → Prometheus → URL: `http://prometheus:9090` → Save & Test
+  - Dashboards → Import → ID `1860` → Load → select Prometheus source → Import
+  - You now have full CPU/RAM/disk/network history graphs
+
+### 8. FreshRSS — add feeds
 
 - [ ] Open http://localhost:8082, create account if needed
 - [ ] Import OPML file or manually add RSS feeds
@@ -87,7 +125,13 @@ Paperless-NGX doesn't support traditional folders — it uses **tags**, **docume
 
 - [x] ~~Media stack setup~~ — Sonarr/Radarr/Prowlarr/Transmission/Jellyfin fully connected, remote path mapping fixed, Narcos S1-S3 downloaded and playing
 - [x] ~~Cloudflare DNS cleanup~~ — deleted stale CNAMEs: `sync`, `portainer`, `ai`, `sonarr`, `radarr`, `prowlarr`, `downloads`
-- [x] ~~Cloudflare Access~~ — removed `*.peciulevicius.com` Zero Trust gate; was breaking all native apps (Bitwarden, Immich, etc.). Each service has its own login screen — Access wasn't needed.
+- [x] ~~Cloudflare Access (wildcard)~~ — removed `*.peciulevicius.com` Zero Trust gate; was breaking all native apps (Bitwarden, Immich, etc.). Each service has its own login screen — Access wasn't needed.
+- [x] ~~Cloudflare Access (Glance only)~~ — added Access policy on `home.peciulevicius.com` only. GitHub SSO (primary) + email OTP (fallback). 1-month session. Other services unaffected.
+- [x] ~~Homarr → Glance migration~~ — replaced Homarr with Glance (YAML config, responsive). Two pages: Home (dashboard + monitors + bookmarks) and Feed (HN, Reddit, RSS, markets).
+- [x] ~~Jellyseerr~~ — media request/discovery UI for Jellyfin (Tailscale-only, port 5055)
+- [x] ~~Bazarr~~ — automated subtitle management for Sonarr/Radarr (Tailscale-only, port 6767)
+- [x] ~~Grafana + Prometheus~~ — monitoring stack with Node Exporter (Tailscale-only, ports 3000/9090/9100)
+- [x] ~~Homarr cleanup~~ — removed containers, images, Docker network, updated setup script
 - [x] ~~Tunnel security split~~ — moved Sonarr/Radarr/Prowlarr/Transmission to Tailscale-only, added Portainer to public tunnel
 - [x] ~~Mealie~~ — setup complete
 - [x] ~~Linkwarden~~ — setup complete, browser extensions installed (Chrome ✅, Brave ⚠️ disable Shields), phone PWA added

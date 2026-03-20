@@ -1,0 +1,48 @@
+# Grafana + Prometheus — monitoring & visualization stack
+# Grafana: https://grafana.com/docs/
+# Prometheus: https://prometheus.io/docs/
+
+name: grafana
+
+services:
+  grafana:
+    container_name: grafana
+    image: grafana/grafana:11.6.0
+    restart: unless-stopped
+    ports:
+      - "${GRAFANA_PORT:-3000}:3000"
+    volumes:
+      - ./data/grafana:/var/lib/grafana
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-changeme}
+      TZ: ${TZ:-Europe/Vilnius}
+
+  prometheus:
+    container_name: prometheus
+    image: prom/prometheus:v3.2.1
+    restart: unless-stopped
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./data/prometheus:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.retention.time=30d'
+
+  node-exporter:
+    container_name: node-exporter
+    image: prom/node-exporter:v1.9.0
+    restart: unless-stopped
+    ports:
+      - "${NODE_EXPORTER_PORT:-9100}:9100"
+    pid: host
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--path.rootfs=/rootfs'

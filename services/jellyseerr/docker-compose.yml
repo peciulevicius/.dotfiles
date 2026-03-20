@@ -1,0 +1,20 @@
+# Jellyseerr — media request & discovery UI for Jellyfin
+# Docs: https://github.com/Fallenbagel/jellyseerr
+
+name: jellyseerr
+
+services:
+  jellyseerr:
+    container_name: jellyseerr
+    image: fallenbagel/jellyseerr:2.5.0
+    restart: unless-stopped
+    ports:
+      - "${JELLYSEERR_PORT:-5055}:5055"
+    volumes:
+      - ./data/config:/app/config
+    environment:
+      TZ: ${TZ:-Europe/Vilnius}
+
+networks:
+  default:
+    name: media

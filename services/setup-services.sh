@@ -23,7 +23,7 @@ SERVICES=(
   syncthing
   portainer
   watchtower
-  homarr
+  glance
   paperless-ngx
   calibre-web
   rclone
@@ -36,6 +36,9 @@ SERVICES=(
   jellyfin
   sonarr-radarr
   transmission
+  jellyseerr
+  bazarr
+  grafana
 )
 
 SERVICE_PORTS=(
@@ -47,7 +50,7 @@ SERVICE_PORTS=(
   "syncthing:8384"
   "portainer:9000"
   "watchtower:—"
-  "homarr:7575"
+  "glance:7575"
   "paperless-ngx:8000"
   "calibre-web:8083"
   "rclone:—"
@@ -60,6 +63,9 @@ SERVICE_PORTS=(
   "jellyfin:8096"
   "sonarr-radarr:8989,7878,9696"
   "transmission:9091"
+  "jellyseerr:5055"
+  "bazarr:6767"
+  "grafana:3000,9090,9100"
 )
 
 log_ok()   { echo -e "${GREEN}✓${NC} $1"; }

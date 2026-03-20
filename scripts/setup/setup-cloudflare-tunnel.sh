@@ -78,7 +78,7 @@ fi
 # NOTE: Syncthing is Tailscale-only (no public tunnel)
 # NOTE: Sonarr/Radarr/Prowlarr/Transmission are Tailscale-only (media management, set-and-forget)
 declare -A SERVICES=(
-    ["home"]=7575       # Homarr dashboard
+    ["home"]=7575       # Glance dashboard
     ["vault"]=8001      # Vaultwarden
     ["photos"]=2283     # Immich
     ["cloud"]=8080      # Nextcloud

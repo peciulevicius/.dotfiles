@@ -1,0 +1,12 @@
+services:
+  glance:
+    container_name: glance
+    image: glanceapp/glance
+    restart: unless-stopped
+    volumes:
+      - ./glance.yml:/app/config/glance.yml
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    ports:
+      - ${GLANCE_PORT:-7575}:8080
+    env_file:
+      - .env

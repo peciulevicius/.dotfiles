@@ -1,6 +1,6 @@
 # Self-Hosted Services
 
-Run your own cloud on a Mac mini (or any Docker host). 23 services covering photos, passwords, files, documents, media, and more.
+Run your own cloud on a Mac mini (or any Docker host). 26 services covering photos, passwords, files, documents, media, monitoring, and more.
 
 ## Service Overview
 
@@ -16,7 +16,7 @@ Run your own cloud on a Mac mini (or any Docker host). 23 services covering phot
 | [Syncthing](#syncthing) | Tailscale only | 8384 | Dropbox |
 | [Portainer](#portainer) | Tailscale only | 9000 | Docker Desktop |
 | [Watchtower](#watchtower) | — | — | Manual updates |
-| [Homarr](#homarr) | home.peciulevicius.com | 7575 | Start page |
+| [Glance](#glance) | home.peciulevicius.com | 7575 | Start page |
 | [Paperless-ngx](#paperless-ngx) | papers.peciulevicius.com | 8000 | Paper filing |
 | [Calibre-Web](#calibre-web) | books.peciulevicius.com | 8083 | Kindle Cloud |
 | [Rclone](#rclone) | — | — | Cloud backup |
@@ -37,10 +37,20 @@ Run your own cloud on a Mac mini (or any Docker host). 23 services covering phot
 | Service | URL | Port | Purpose |
 |---------|-----|------|---------|
 | [Jellyfin](#jellyfin) | watch.peciulevicius.com | 8096 | Media server (Plex alternative) |
-| [Sonarr](#sonarr--radarr--prowlarr) | sonarr.peciulevicius.com | 8989 | TV show management |
-| [Radarr](#sonarr--radarr--prowlarr) | radarr.peciulevicius.com | 7878 | Movie management |
-| [Prowlarr](#sonarr--radarr--prowlarr) | prowlarr.peciulevicius.com | 9696 | Indexer manager |
-| [Transmission](#transmission) | downloads.peciulevicius.com | 9091 | BitTorrent client |
+| [Jellyseerr](#jellyseerr) | Tailscale only | 5055 | Media request & discovery UI |
+| [Sonarr](#sonarr--radarr--prowlarr) | Tailscale only | 8989 | TV show management |
+| [Radarr](#sonarr--radarr--prowlarr) | Tailscale only | 7878 | Movie management |
+| [Prowlarr](#sonarr--radarr--prowlarr) | Tailscale only | 9696 | Indexer manager |
+| [Bazarr](#bazarr) | Tailscale only | 6767 | Automated subtitle management |
+| [Transmission](#transmission) | Tailscale only | 9091 | BitTorrent client |
+
+### Monitoring
+
+| Service | URL | Port | Purpose |
+|---------|-----|------|---------|
+| [Grafana](#grafana--prometheus) | Tailscale only | 3000 | Monitoring dashboards |
+| [Prometheus](#grafana--prometheus) | Tailscale only | 9090 | Metrics collection |
+| [Node Exporter](#grafana--prometheus) | — | 9100 | System metrics (CPU, RAM, disk) |
 
 ## Prerequisites
 
@@ -300,19 +310,20 @@ docker compose up -d
 
 ---
 
-### Homarr
+### Glance
 
-**What:** Dashboard/start page — one page with links to all your services.
+**What:** Dashboard/start page with YAML config. Two pages: Home (service monitors, bookmarks, server stats) and Feed (Hacker News, Reddit, markets).
 
-**Why:** Instead of remembering ports, bookmark one page with all your service links.
+**Why:** Responsive by default, no layout drift across screen sizes. Config is version-controlled in dotfiles.
 
 **How to use:**
-1. Open http://localhost:7575
-2. Add tiles for each service with their URLs and icons
-3. Set as your browser homepage on the Mac mini
+1. Open http://localhost:7575 — protected by Cloudflare Access (GitHub SSO)
+2. Home page: service status, bookmarks, server stats, weather
+3. Feed page: Hacker News, Reddit (tech, business, ideas), stock/crypto markets
+4. Edit config: `~/.dotfiles/services/glance/glance.yml`
 
 ```bash
-cd ~/services/homarr
+cd ~/services/glance
 docker compose up -d
 # Open: http://localhost:7575
 ```
@@ -531,6 +542,65 @@ docker compose up -d
 
 ---
 
+### Jellyseerr
+
+**What:** Media request and discovery UI for Jellyfin. Browse movies/TV shows in a Netflix-like interface, click "Request", and it sends to Sonarr/Radarr automatically.
+
+**Why:** Way easier than searching in Sonarr/Radarr directly. Browse trending, filter by genre, see what's available.
+
+**How to use:**
+1. Open http://localhost:5055, sign in with your Jellyfin account
+2. Connect to Sonarr and Radarr in settings (use container names + API keys)
+3. Browse and request content — it flows through the full pipeline automatically
+
+```bash
+cd ~/services/jellyseerr
+docker compose up -d
+# Open: http://localhost:5055
+```
+
+---
+
+### Bazarr
+
+**What:** Automated subtitle management. Connects to Sonarr/Radarr, checks your library, and auto-downloads subtitles from OpenSubtitles and other providers.
+
+**Why:** Some downloads don't include subtitles. Bazarr fills the gaps — especially useful for Lithuanian or non-English subtitles.
+
+**How to use:**
+1. Open http://localhost:6767, configure providers (OpenSubtitles, Subscene, etc.)
+2. Connect to Sonarr and Radarr (Settings → use localhost + API keys)
+3. Set preferred subtitle languages
+4. Bazarr auto-downloads missing subtitles for your entire library
+
+```bash
+cd ~/services/bazarr
+docker compose up -d
+# Open: http://localhost:6767
+```
+
+---
+
+### Grafana + Prometheus
+
+**What:** Monitoring and visualization stack. Prometheus collects metrics (CPU, RAM, disk, network), Grafana displays them in dashboards. Node Exporter provides the system metrics.
+
+**Why:** Glance shows current stats, but Grafana shows history — see trends over time, set alerts, catch issues before they become problems.
+
+**How to use:**
+1. Open Grafana at http://localhost:3000 (admin / password from .env)
+2. Add Prometheus as a data source: `http://prometheus:9090`
+3. Import a Node Exporter dashboard (ID: `1860` from grafana.com/dashboards)
+4. You now have CPU, RAM, disk, and network graphs over time
+
+```bash
+cd ~/services/grafana
+docker compose up -d
+# Open: http://localhost:3000
+```
+
+---
+
 ## Remote Access (Cloudflare Tunnel)
 
 All services are accessible via HTTPS through a Cloudflare Tunnel. This provides real TLS certificates, no port forwarding, and works from anywhere.
@@ -555,7 +625,7 @@ Every service is accessible three ways: localhost (on the Mac mini), Tailscale (
 
 | Service | Port | Tailscale | Public |
 |---------|------|-----------|--------|
-| Homarr (dashboard) | 7575 | http://100.81.171.49:7575 | https://home.peciulevicius.com |
+| Glance (dashboard) | 7575 | http://100.81.171.49:7575 | https://home.peciulevicius.com |
 | Vaultwarden | 8001 | http://100.81.171.49:8001 | https://vault.peciulevicius.com |
 | Immich (photos) | 2283 | http://100.81.171.49:2283 | https://photos.peciulevicius.com |
 | Nextcloud | 8080 | http://100.81.171.49:8080 | https://cloud.peciulevicius.com |
@@ -580,10 +650,6 @@ Every service is accessible three ways: localhost (on the Mac mini), Tailscale (
 | Service | Port | Tailscale | Public |
 |---------|------|-----------|--------|
 | Jellyfin | 8096 | http://100.81.171.49:8096 | https://watch.peciulevicius.com |
-| Sonarr | 8989 | http://100.81.171.49:8989 | https://sonarr.peciulevicius.com |
-| Radarr | 7878 | http://100.81.171.49:7878 | https://radarr.peciulevicius.com |
-| Prowlarr | 9696 | http://100.81.171.49:9696 | https://prowlarr.peciulevicius.com |
-| Transmission | 9091 | http://100.81.171.49:9091 | https://downloads.peciulevicius.com |
 
 **Tailscale-only (no public URL):**
 
@@ -591,6 +657,14 @@ Every service is accessible three ways: localhost (on the Mac mini), Tailscale (
 |---------|------|-----------|
 | Syncthing | 8384 | http://100.81.171.49:8384 |
 | Portainer | 9000 | http://100.81.171.49:9000 |
+| Jellyseerr | 5055 | http://100.81.171.49:5055 |
+| Sonarr | 8989 | http://100.81.171.49:8989 |
+| Radarr | 7878 | http://100.81.171.49:7878 |
+| Prowlarr | 9696 | http://100.81.171.49:9696 |
+| Bazarr | 6767 | http://100.81.171.49:6767 |
+| Transmission | 9091 | http://100.81.171.49:9091 |
+| Grafana | 3000 | http://100.81.171.49:3000 |
+| Prometheus | 9090 | http://100.81.171.49:9090 |
 **Mobile apps (use Tailscale URLs to bypass Cloudflare Access gate):**
 
 | App | Server URL |
@@ -604,27 +678,24 @@ All localhost URLs follow the pattern `http://localhost:<port>`.
 
 ### Security — Cloudflare Access (Zero Trust)
 
-All services behind the Cloudflare Tunnel are protected by a [Cloudflare Access](https://developers.cloudflare.com/cloudflare-one/applications/) policy. This adds an email-based authentication gate in front of every service — users must verify their email before seeing any login page.
+Cloudflare Access protects `home.peciulevicius.com` (Glance dashboard) only. Other services have their own login screens — a previous wildcard `*.peciulevicius.com` policy was removed because it broke native apps (Bitwarden, Immich, etc.).
 
-**Setup:**
-1. Go to [Cloudflare Zero Trust dashboard](https://one.dash.cloudflare.com/) → Access → Applications
-2. Create a **Self-hosted application**:
-   - Application domain: `*.peciulevicius.com`
-   - Session duration: 24 hours (or your preference)
-3. Create a **policy**:
-   - Policy name: `Email allowlist`
-   - Action: Allow
-   - Include rule: Emails — add your email address(es)
-4. Save — all `*.peciulevicius.com` subdomains now require email verification before loading
+**Current setup:**
+- **Application:** `home.peciulevicius.com` only (self-hosted, 1-week session)
+- **Policy 1 (primary):** GitHub SSO — one-click login, restricted to your email
+- **Policy 2 (fallback):** Email OTP — if GitHub is down, verify via email code
 
-**Why Syncthing and Portainer are Tailscale-only:**
-- **Syncthing** uses its own device authentication and has a sensitive admin UI — no reason to expose it publicly
-- **Portainer** has full Docker control — too dangerous to put on the public internet even behind Cloudflare Access
+**Why only Glance is protected:**
+- Glance is browser-only, so Access works fine
+- Other services have native apps that can't handle the Access login flow
+- Each service has its own auth (Vaultwarden, Immich, etc.)
 
-**What this means for daily use:**
-- First visit to any service: Cloudflare asks for your email, sends a code, you verify once
-- After that, you're authenticated for 24 hours across all subdomains
-- No one else can even see the login pages without passing the email check
+**Why media/monitoring services are Tailscale-only:**
+- **Sonarr/Radarr/Prowlarr/Transmission** — media management, set-and-forget
+- **Jellyseerr/Bazarr** — media automation
+- **Grafana/Prometheus** — internal monitoring
+- **Syncthing** — uses its own device auth
+- **Portainer** — full Docker control, too dangerous to expose publicly
 
 ## Post-Deploy Setup
 
@@ -657,6 +728,8 @@ This enables network-wide ad blocking and local DNS resolution for all devices o
 3. **Radarr** (http://localhost:7878) → Settings → Download Clients → add Transmission (`localhost:9091`)
 4. **Sonarr/Radarr** → Settings → General → copy API key, then in Prowlarr → Settings → Apps → add Sonarr + Radarr
 5. **Jellyfin** (http://localhost:8096) → add libraries: Movies (`/media/movies`), TV Shows (`/media/tv`)
+6. **Jellyseerr** (http://localhost:5055) → sign in with Jellyfin → connect Sonarr + Radarr (use API keys)
+7. **Bazarr** (http://localhost:6767) → connect Sonarr + Radarr → add subtitle providers (OpenSubtitles) → set preferred languages
 
 ## Backup Strategy
 

@@ -1,0 +1,242 @@
+pages:
+  - name: Home
+    columns:
+      - size: small
+        widgets:
+          - type: server-stats
+
+          - type: dns-stats
+            service: pihole
+            url: http://host.docker.internal:8053
+
+          - type: repository
+            repository: peciulevicius/.dotfiles
+            token: ${GITHUB_TOKEN}
+
+          - type: calendar
+
+      - size: full
+        widgets:
+          - type: monitor
+            title: Services
+            sites:
+              - title: Vaultwarden
+                url: https://vault.peciulevicius.com
+                icon: si:bitwarden
+              - title: Nextcloud
+                url: https://cloud.peciulevicius.com
+                icon: si:nextcloud
+              - title: Immich
+                url: https://photos.peciulevicius.com
+                icon: si:immich
+              - title: Paperless-ngx
+                url: https://papers.peciulevicius.com
+                icon: si:paperlessngx
+              - title: Jellyfin
+                url: https://watch.peciulevicius.com
+                icon: si:jellyfin
+              - title: Audiobookshelf
+                url: https://listen.peciulevicius.com
+                icon: si:audiobookshelf
+              - title: Calibre-Web
+                url: https://books.peciulevicius.com
+                icon: si:calibreweb
+              - title: Linkwarden
+                url: https://links.peciulevicius.com
+                icon: si:linkfire
+              - title: FreshRSS
+                url: https://rss.peciulevicius.com
+                icon: si:rss
+              - title: Mealie
+                url: https://recipes.peciulevicius.com
+                icon: si:mealie
+              - title: Stirling PDF
+                url: https://pdf.peciulevicius.com
+                icon: si:files
+              - title: IT-Tools
+                url: https://tools.peciulevicius.com
+                icon: si:hackthebox
+              - title: Pi-hole
+                url: https://pihole.peciulevicius.com
+                icon: si:pihole
+              - title: Portainer
+                url: https://portainer.peciulevicius.com
+                icon: si:portainer
+              - title: Uptime Kuma
+                url: https://status.peciulevicius.com
+                icon: si:uptimekuma
+              - title: Jellyseerr
+                url: http://host.docker.internal:5055
+                icon: si:jellyfin
+              - title: Bazarr
+                url: http://host.docker.internal:6767
+                icon: si:opensubtitles
+              - title: Grafana
+                url: http://host.docker.internal:3000
+                icon: si:grafana
+              - title: Prometheus
+                url: http://host.docker.internal:9090
+                icon: si:prometheus
+
+          - type: bookmarks
+            groups:
+              - title: Main
+                links:
+                  - title: Vaultwarden
+                    url: https://vault.peciulevicius.com
+                    icon: si:bitwarden
+                  - title: Nextcloud
+                    url: https://cloud.peciulevicius.com
+                    icon: si:nextcloud
+                  - title: Immich
+                    url: https://photos.peciulevicius.com
+                    icon: si:immich
+                  - title: Paperless-ngx
+                    url: https://papers.peciulevicius.com
+                    icon: si:paperlessngx
+
+              - title: Media
+                links:
+                  - title: Jellyfin
+                    url: https://watch.peciulevicius.com
+                    icon: si:jellyfin
+                  - title: Audiobookshelf
+                    url: https://listen.peciulevicius.com
+                    icon: si:audiobookshelf
+                  - title: Calibre-Web
+                    url: https://books.peciulevicius.com
+                    icon: si:calibreweb
+
+              - title: Utilities
+                links:
+                  - title: Linkwarden
+                    url: https://links.peciulevicius.com
+                    icon: si:linkfire
+                  - title: FreshRSS
+                    url: https://rss.peciulevicius.com
+                    icon: si:rss
+                  - title: Mealie
+                    url: https://recipes.peciulevicius.com
+                    icon: si:mealie
+                  - title: Stirling PDF
+                    url: https://pdf.peciulevicius.com
+                    icon: si:files
+                  - title: IT-Tools
+                    url: https://tools.peciulevicius.com
+                    icon: si:hackthebox
+                  - title: Pi-hole
+                    url: https://pihole.peciulevicius.com
+                    icon: si:pihole
+
+              - title: System
+                links:
+                  - title: Portainer
+                    url: https://portainer.peciulevicius.com
+                    icon: si:portainer
+                  - title: Uptime Kuma
+                    url: https://status.peciulevicius.com
+                    icon: si:uptimekuma
+
+              - title: Tailscale Only
+                links:
+                  - title: Sonarr
+                    url: http://100.81.171.49:8989
+                    icon: si:sonarr
+                  - title: Radarr
+                    url: http://100.81.171.49:7878
+                    icon: si:radarr
+                  - title: Prowlarr
+                    url: http://100.81.171.49:9696
+                    icon: https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/prowlarr.svg
+                  - title: Transmission
+                    url: http://100.81.171.49:9091
+                    icon: si:transmission
+                  - title: Syncthing
+                    url: http://100.81.171.49:8384
+                    icon: si:syncthing
+                  - title: Jellyseerr
+                    url: http://100.81.171.49:5055
+                    icon: si:jellyfin
+                  - title: Bazarr
+                    url: http://100.81.171.49:6767
+                    icon: si:opensubtitles
+                  - title: Grafana
+                    url: http://100.81.171.49:3000
+                    icon: si:grafana
+
+          - type: docker-containers
+
+      - size: small
+        widgets:
+          - type: weather
+            location: Vilnius, Lithuania
+            units: metric
+
+          - type: clock
+
+  - name: Feed
+    columns:
+      - size: small
+        widgets:
+          - type: releases
+            title: GitHub Releases
+            repositories:
+              - immich-app/immich
+              - glanceapp/glance
+              - dani-garcia/vaultwarden
+              - jellyfin/jellyfin
+              - linkwarden/linkwarden
+            token: ${GITHUB_TOKEN}
+
+          - type: markets
+            markets:
+              - symbol: BTC-EUR
+                name: Bitcoin
+              - symbol: ETH-EUR
+                name: Ethereum
+              - symbol: VUAA.DE
+                name: VUAA
+              - symbol: VWCE.DE
+                name: VWCE
+              - symbol: AAPL
+                name: Apple
+              - symbol: GOOGL
+                name: Google
+              - symbol: AMZN
+                name: Amazon
+              - symbol: MSFT
+                name: Microsoft
+              - symbol: NVDA
+                name: Nvidia
+              - symbol: MSTR
+                name: MicroStrategy
+
+      - size: full
+        widgets:
+          - type: hacker-news
+            limit: 15
+            collapse-after: 5
+
+          - type: reddit
+            title: Pain Points & Ideas
+            subreddit: SomebodyMakeThis+AppIdeas+smallbusiness+Lightbulb
+            limit: 15
+            collapse-after: 5
+
+          - type: reddit
+            title: Tech
+            subreddit: selfhosted+homelab+linux+programming+technology+webdev+typescript
+            limit: 15
+            collapse-after: 5
+
+          - type: reddit
+            title: Business
+            subreddit: SaaS+startups+Entrepreneur+indiehackers
+            limit: 15
+            collapse-after: 5
+
+          - type: reddit
+            title: Lithuanian
+            subreddit: lietuva+6nuliai
+            limit: 15
+            collapse-after: 5
