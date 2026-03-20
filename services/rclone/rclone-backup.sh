@@ -95,3 +95,24 @@ if [[ -d "$OBSIDIAN_DIR" ]]; then
 else
   log_warn "Obsidian vault not found at $OBSIDIAN_DIR — skipping"
 fi
+
+# Backup 3: Immich photos & videos
+IMMICH_DIR="${IMMICH_DIR:-/Volumes/T7/immich/upload}"
+IMMICH_DEST="${IMMICH_DEST:-${RCLONE_REMOTE}:peciulevicius-services-backup/immich-photos}"
+
+if [[ -d "$IMMICH_DIR" ]]; then
+  log_info "Backing up $IMMICH_DIR → $IMMICH_DEST"
+  IMMICH_CMD=(rclone sync "$IMMICH_DIR" "$IMMICH_DEST")
+  IMMICH_CMD+=(--exclude ".DS_Store")
+  IMMICH_CMD+=($RCLONE_FLAGS)
+  [[ "$DRY_RUN" == "true" ]] && IMMICH_CMD+=(--dry-run)
+
+  if "${IMMICH_CMD[@]}" 2>&1 | tee -a "$LOG_FILE"; then
+    log_ok "Immich photos backup complete"
+  else
+    log_err "Immich photos backup failed — check $LOG_FILE"
+    exit 1
+  fi
+else
+  log_warn "Immich upload dir not found at $IMMICH_DIR — skipping"
+fi

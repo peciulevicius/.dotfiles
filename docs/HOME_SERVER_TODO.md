@@ -41,21 +41,10 @@ Calibre-Web doesn't support folder creation from the UI. Use **Bookshelves** ins
 ### 4. Uptime Kuma notifications
 
 - [ ] Open http://localhost:3001 → Settings → Notifications
-- [ ] Add Telegram, Discord, or email notification channel
+- [ ] Add email notification channel
 - [ ] Test notification with a "Test" button
 
-### 5. Verify B2 cloud backup
-
-**Status:** Nightly cron at 5am backs up `~/services` configs + Obsidian vault → Backblaze B2.
-
-- [x] Fixed cron PATH — added `/opt/homebrew/bin` to crontab
-- [x] Verified backup runs: confirmed 2026-03-20 — services + obsidian-vault both uploaded
-- [ ] Verify data in B2: `rclone ls b2:peciulevicius-services-backup/ | head -20`
-- [ ] Add Immich photos to B2 backup (`/Volumes/T7/immich/upload` — currently NOT backed up)
-- [ ] Consider: should database dumps also go to B2?
-- [ ] Consider: should `.env` files be backed up (encrypted) to B2?
-
-### 6. Paperless-NGX — organise documents into folders
+### 5. Paperless-NGX — organise documents
 
 Paperless-NGX doesn't support traditional folders — it uses **tags**, **document types**, and **correspondents** instead.
 
@@ -64,18 +53,13 @@ Paperless-NGX doesn't support traditional folders — it uses **tags**, **docume
 - [ ] Create tags: e.g. "Tax 2024", "Important", "Archive"
 - [ ] Assign types/correspondents/tags to uploaded documents
 - [ ] Use **Saved Views** (left sidebar) to create folder-like filtered views
-- [ ] Alternative: **Kavita** or another tool if folder-based browsing is a hard requirement
 
-### 7. FreshRSS — add feeds
+### 6. FreshRSS — add feeds
 
 - [ ] Open http://localhost:8082, create account if needed
 - [ ] Import OPML file or manually add RSS feeds
 
-### 8. Linkwarden — phone setup
-
-- [ ] Add to phone home screen as PWA: https://links.peciulevicius.com
-
-### 9. Pi-hole local DNS
+### 7. Pi-hole local DNS (later)
 
 **Goal:** Access `*.peciulevicius.com` on local WiFi without going through Cloudflare.
 
@@ -84,11 +68,7 @@ Paperless-NGX doesn't support traditional folders — it uses **tags**, **docume
 - [ ] Set router DNS to Mac mini IP (primary) + `1.1.1.1` (fallback)
 - [ ] Test: `nslookup home.peciulevicius.com` should return Mac mini local IP
 
-### 10. Delete stale Cloudflare DNS CNAMEs
-
-- [ ] Delete CNAMEs in Cloudflare dashboard: `sonarr`, `radarr`, `prowlarr`, `downloads` (no longer in tunnel)
-
-### 11. VPN for torrents (gluetun + Mullvad or Proton VPN)
+### 8. VPN for torrents (later)
 
 **Goal:** Route Transmission traffic through a VPN so ISP can't see torrent activity. Not urgent — no downloads planned for ~1 month.
 
@@ -106,20 +86,22 @@ Paperless-NGX doesn't support traditional folders — it uses **tags**, **docume
 ## Done
 
 - [x] ~~Media stack setup~~ — Sonarr/Radarr/Prowlarr/Transmission/Jellyfin fully connected, remote path mapping fixed, Narcos S1-S3 downloaded and playing
-- [x] ~~Cloudflare DNS cleanup~~ — deleted stale CNAMEs: `sync`, `portainer`, `ai`
+- [x] ~~Cloudflare DNS cleanup~~ — deleted stale CNAMEs: `sync`, `portainer`, `ai`, `sonarr`, `radarr`, `prowlarr`, `downloads`
 - [x] ~~Cloudflare Access~~ — removed `*.peciulevicius.com` Zero Trust gate; was breaking all native apps (Bitwarden, Immich, etc.). Each service has its own login screen — Access wasn't needed.
 - [x] ~~Tunnel security split~~ — moved Sonarr/Radarr/Prowlarr/Transmission to Tailscale-only, added Portainer to public tunnel
 - [x] ~~Mealie~~ — setup complete
-- [x] ~~Linkwarden~~ — setup complete, browser extensions installed (Chrome ✅, Brave ⚠️ disable Shields)
+- [x] ~~Linkwarden~~ — setup complete, browser extensions installed (Chrome ✅, Brave ⚠️ disable Shields), phone PWA added
 - [x] ~~Calibre-Web `metadata_dirtied` bug~~ — fixed: ran `CREATE TABLE` SQL
 - [x] ~~Radarr Docker volumes~~ — compose already has `/media` mount
 - [x] ~~Pi-hole 403 on root~~ — fixed: lighttpd redirect config mounted
 - [x] ~~Transmission credentials~~ — changed to `admin` / `REDACTED`
-- [x] ~~Homarr dashboard~~ — configured with all services, sections, descriptions
+- [x] ~~Homarr dashboard~~ — configured with all services, organized into categories (Main, Media, Utilities, System, Direct Access)
 - [x] ~~Linkwarden bookmarks~~ — 621 bookmarks imported (services + browser bookmarks)
-- [x] ~~Uptime Kuma monitors~~ — all 21 services monitored
+- [x] ~~Uptime Kuma monitors~~ — all services monitored
 - [x] ~~Ollama + Open WebUI~~ — removed (not enough RAM, using Claude instead)
 - [x] ~~Audiobookshelf subdomain~~ — fixed: books → listen
+- [x] ~~B2 cloud backup~~ — nightly cron at 5am, services + obsidian-vault + Immich photos all backed up
+- [x] ~~Immich photos B2 backup~~ — added `/Volumes/T7/immich/upload` to rclone-backup.sh
 
 ---
 
