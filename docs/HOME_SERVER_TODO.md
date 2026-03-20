@@ -49,21 +49,33 @@ Calibre-Web doesn't support folder creation from the UI. Use **Bookshelves** ins
 **Status:** Nightly cron at 5am backs up `~/services` configs + Obsidian vault → Backblaze B2.
 
 - [x] Fixed cron PATH — added `/opt/homebrew/bin` to crontab
-- [ ] Verify first real backup completes: check `~/logs/rclone-backup.log` after 5am
+- [x] Verified backup runs: confirmed 2026-03-20 — services + obsidian-vault both uploaded
 - [ ] Verify data in B2: `rclone ls b2:peciulevicius-services-backup/ | head -20`
+- [ ] Add Immich photos to B2 backup (`/Volumes/T7/immich/upload` — currently NOT backed up)
 - [ ] Consider: should database dumps also go to B2?
 - [ ] Consider: should `.env` files be backed up (encrypted) to B2?
 
-### 6. FreshRSS — add feeds
+### 6. Paperless-NGX — organise documents into folders
+
+Paperless-NGX doesn't support traditional folders — it uses **tags**, **document types**, and **correspondents** instead.
+
+- [ ] Create document types: e.g. "Invoice", "Contract", "Receipt", "Statement"
+- [ ] Create correspondents: e.g. "Bank", "Employer", "Government"
+- [ ] Create tags: e.g. "Tax 2024", "Important", "Archive"
+- [ ] Assign types/correspondents/tags to uploaded documents
+- [ ] Use **Saved Views** (left sidebar) to create folder-like filtered views
+- [ ] Alternative: **Kavita** or another tool if folder-based browsing is a hard requirement
+
+### 7. FreshRSS — add feeds
 
 - [ ] Open http://localhost:8082, create account if needed
 - [ ] Import OPML file or manually add RSS feeds
 
-### 7. Linkwarden — phone setup
+### 8. Linkwarden — phone setup
 
 - [ ] Add to phone home screen as PWA: https://links.peciulevicius.com
 
-### 8. Pi-hole local DNS
+### 9. Pi-hole local DNS
 
 **Goal:** Access `*.peciulevicius.com` on local WiFi without going through Cloudflare.
 
@@ -72,7 +84,7 @@ Calibre-Web doesn't support folder creation from the UI. Use **Bookshelves** ins
 - [ ] Set router DNS to Mac mini IP (primary) + `1.1.1.1` (fallback)
 - [ ] Test: `nslookup home.peciulevicius.com` should return Mac mini local IP
 
-### 9. VPN for torrents (gluetun + Mullvad or Proton VPN)
+### 10. VPN for torrents (gluetun + Mullvad or Proton VPN)
 
 **Goal:** Route Transmission traffic through a VPN so ISP can't see torrent activity. Not urgent — no downloads planned for ~1 month.
 

@@ -30,7 +30,7 @@ Replace Google services with self-hosted or privacy-respecting alternatives.
 - [ ] Switch browser to Firefox or Brave
 - [ ] Enable Firefox Sync instead of Chrome Sync
 - [ ] Install Bitwarden extension, import passwords from Google Password Manager
-- [ ] Switch to Vaultwarden as Bitwarden server (see [SERVICES.md](SERVICES.md))
+- [ ] Switch to Vaultwarden as Bitwarden server (see [SERVICES.md](../SERVICES.md))
 - [ ] Switch Maps to Apple Maps (iPhone) or OsmAnd (Android)
 - [ ] Remove Google from 2FA — move TOTP codes to Bitwarden or Raivo
 
