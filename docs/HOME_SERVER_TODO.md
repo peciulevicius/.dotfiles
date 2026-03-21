@@ -106,6 +106,29 @@ Paperless-NGX doesn't support traditional folders — it uses **tags**, **docume
 - [ ] Set router DNS to Mac mini IP (primary) + `1.1.1.1` (fallback)
 - [ ] Test: `nslookup home.peciulevicius.com` should return Mac mini local IP
 
+### 9. Replace external SSDs with proper NAS storage (later)
+
+**Goal:** Eliminate T7/T5 external SSDs — move to network-attached storage that's more reliable, expandable, and not physically dependent on being plugged into the Mac Mini.
+
+**Options researched:**
+
+| Option | Cost | Pros | Cons |
+|--------|------|------|------|
+| **Synology DS423+** + 2x 4TB WD Red | ~€540 | Best UX, stable DSM, 2.5GbE, runs Docker itself, RAID 1 | Expensive upfront |
+| **Mini PC + TrueNAS SCALE** (e.g. Beelink N100) + drives | ~€300-400 | ZFS, free software, very flexible, also runs Docker | More DIY, more maintenance |
+| **Thunderbolt DAS** (e.g. OWC ThunderBay) + drives | ~€350-500 | Fastest (Thunderbolt), simple | Tied to Mac Mini physically, no NAS features |
+
+**Recommendation when ready:** Synology DS423+ with 2x 4TB WD Red Plus in RAID 1 (~€540 total). Keeps Mac Mini as pure compute, Synology as pure storage. 2.5GbE is fast enough for all services.
+
+**Migration plan (when buying):**
+- [ ] Buy NAS + drives, set up with RAID 1
+- [ ] Mount NAS on Mac Mini via SMB/NFS
+- [ ] rsync all T7 data to NAS (`immich/`, `media/`, `calibre-books/`)
+- [ ] Update all Docker Compose volume paths to NAS mount
+- [ ] Restart all services, verify everything works
+- [ ] Update rclone backup script to back up from NAS instead of T7
+- [ ] Repurpose T7 as Time Machine backup drive, T5 as offsite backup
+
 ### 8. VPN for torrents (later)
 
 **Goal:** Route Transmission traffic through a VPN so ISP can't see torrent activity. Not urgent — no downloads planned for ~1 month.
