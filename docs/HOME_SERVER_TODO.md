@@ -97,7 +97,7 @@ Paperless-NGX doesn't support traditional folders — it uses **tags**, **docume
 - [ ] Open http://localhost:8082, create account if needed
 - [ ] Import OPML file or manually add RSS feeds
 
-### 7. Pi-hole local DNS (later)
+### 9. Pi-hole local DNS (later)
 
 **Goal:** Access `*.peciulevicius.com` on local WiFi without going through Cloudflare.
 
@@ -106,7 +106,7 @@ Paperless-NGX doesn't support traditional folders — it uses **tags**, **docume
 - [ ] Set router DNS to Mac mini IP (primary) + `1.1.1.1` (fallback)
 - [ ] Test: `nslookup home.peciulevicius.com` should return Mac mini local IP
 
-### 9. Replace external SSDs with proper NAS storage (later)
+### 10. Replace external SSDs with proper NAS storage (later)
 
 **Goal:** Eliminate T7/T5 external SSDs — move to network-attached storage that's more reliable, expandable, and not physically dependent on being plugged into the Mac Mini.
 
@@ -129,7 +129,7 @@ Paperless-NGX doesn't support traditional folders — it uses **tags**, **docume
 - [ ] Update rclone backup script to back up from NAS instead of T7
 - [ ] Repurpose T7 as Time Machine backup drive, T5 as offsite backup
 
-### 8. VPN for torrents (later)
+### 11. VPN for torrents (later)
 
 **Goal:** Route Transmission traffic through a VPN so ISP can't see torrent activity. Not urgent — no downloads planned for ~1 month.
 
@@ -141,6 +141,72 @@ Paperless-NGX doesn't support traditional folders — it uses **tags**, **docume
 - [ ] Create `services/gluetun/docker-compose.yml` with VPN credentials
 - [ ] Update Transmission compose to use `network_mode: service:gluetun`
 - [ ] Test: `docker exec transmission curl ifconfig.me` should show VPN IP, not home IP
+
+### 12. Show Mac host stats in monitoring (alongside Docker VM stats)
+
+**Problem:** Glance/Grafana currently shows Docker Linux VM memory (~7.8GB), not the actual Mac mini's 16GB RAM, real CPU, thermals, or disk health.
+
+**Solution:** Run node-exporter natively on macOS (outside Docker), scrape it with Prometheus, show it in Glance/Grafana.
+
+- [ ] Install node-exporter on macOS host (via Homebrew):
+  ```bash
+  brew install node_exporter
+  brew services start node_exporter
+  # Now running at http://localhost:9100/metrics
+  ```
+- [ ] Add host scrape target to Prometheus config (`prometheus.yml`):
+  ```yaml
+  scrape_configs:
+    - job_name: 'mac-host'
+      static_configs:
+        - targets: ['host.docker.internal:9100']
+          labels:
+            instance: 'mac-mini-host'
+    - job_name: 'docker-vm'
+      static_configs:
+        - targets: ['node-exporter:9100']
+          labels:
+            instance: 'docker-vm'
+  ```
+- [ ] Restart Prometheus container to pick up config change
+- [ ] In Grafana → import dashboard ID `1860` again, select `mac-mini-host` instance → real Mac RAM/CPU/disk
+- [ ] Import Grafana dashboard ID `893` (Docker containers) — shows per-container RAM so you know which is the culprit next time memory spikes
+- [ ] In Glance, add a second `system-monitor` widget pointing to host metrics — shows both VM and Mac side by side
+
+**What you'll be able to monitor:**
+
+| Metric | Docker VM | Mac Host |
+|--------|-----------|----------|
+| RAM | ✅ (7.8GB view) | ✅ (full 16GB) |
+| CPU | ✅ | ✅ (all cores) |
+| Disk | partial | ✅ (T7, T5, internal) |
+| Swap | ✅ (1GB VM swap) | ✅ (real macOS swap) |
+| Thermals | ❌ | ✅ (with extra tool) |
+| Network | ✅ | ✅ |
+
+- [ ] **Bonus — Mac thermals:** install [mac-metrics-exporter](https://github.com/antoniopataro/mac-metrics-exporter) for CPU die temp, fan speed, power draw. Useful for checking the Mini isn't overheating headless.
+
+### 13. Uptime Kuma — B2 backup heartbeat
+
+**Goal:** Alert if nightly rclone backup silently fails while away.
+
+- [ ] In Uptime Kuma → Add Monitor → type: Push → copy the heartbeat URL
+- [ ] Add to end of `~/.dotfiles/services/rclone/rclone-backup.sh`:
+  ```bash
+  curl -s "https://uptime.peciulevicius.com/api/push/YOUR_HEARTBEAT_KEY" > /dev/null
+  ```
+- [ ] Test by running the backup script manually — Kuma should show green
+
+### 14. Docker VM resource limits (later)
+
+**Goal:** Give Docker more headroom for the full stack.
+
+Current: ~7.8GB RAM / 1GB swap (Docker Desktop default)
+Recommended: 10GB RAM / 2GB swap
+
+- [ ] Docker Desktop → Settings → Resources → increase RAM to 10GB, swap to 2GB
+- [ ] Restart Docker, verify containers come back up
+- [ ] Check Glance — RAM pressure should be gone even with full stack running
 
 ---
 
@@ -169,6 +235,24 @@ Paperless-NGX doesn't support traditional folders — it uses **tags**, **docume
 - [x] ~~Audiobookshelf subdomain~~ — fixed: books → listen
 - [x] ~~B2 cloud backup~~ — nightly cron at 5am, services + obsidian-vault + Immich photos all backed up
 - [x] ~~Immich photos B2 backup~~ — added `/Volumes/T7/immich/upload` to rclone-backup.sh
+
+---
+
+## RAM Baseline Reference
+
+Healthy Docker VM state (7.8GB allocated):
+
+| State | RAM | Swap |
+|-------|-----|------|
+| Minimal (travel) | ~4.2GB / 7.8GB | ~200-400MB |
+| Full stack (home) | ~6-7GB / 7.8GB | <500MB |
+| Overloaded (before trim) | 6.3GB / 7.8GB | 1GB (maxed) |
+
+**If swap hits 900MB+:** something is leaking or too many containers running.
+First suspects: `immich_machine_learning`, `grafana`+`prometheus`, `nextcloud`.
+
+**Containers safe to stop while traveling:**
+`nextcloud`, `nextcloud_db`, `pihole`, `bazarr`, `sonarr`, `radarr`, `prowlarr`, `transmission`, `jellyseerr`, `immich_machine_learning`, `mealie`
 
 ---
 
