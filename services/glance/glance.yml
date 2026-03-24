@@ -8,6 +8,7 @@ pages:
           - type: dns-stats
             service: pihole
             url: http://host.docker.internal:8053
+            api-key: ${PIHOLE_API_KEY}
 
           - type: repository
             repository: peciulevicius/.dotfiles
@@ -239,4 +240,127 @@ pages:
             title: Lithuanian
             subreddit: lietuva+6nuliai
             limit: 15
+            collapse-after: 5
+
+  - name: Media
+    columns:
+      - size: small
+        widgets:
+          - type: bookmarks
+            groups:
+              - title: Watch
+                links:
+                  - title: Jellyfin
+                    url: https://watch.peciulevicius.com
+                    icon: si:jellyfin
+                  - title: Jellyseerr
+                    url: http://100.81.171.49:5055
+                    icon: si:jellyfin
+              - title: Manage
+                links:
+                  - title: Sonarr
+                    url: http://100.81.171.49:8989
+                    icon: si:sonarr
+                  - title: Radarr
+                    url: http://100.81.171.49:7878
+                    icon: si:radarr
+                  - title: Prowlarr
+                    url: http://100.81.171.49:9696
+                    icon: https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/prowlarr.svg
+                  - title: Bazarr
+                    url: http://100.81.171.49:6767
+                    icon: si:opensubtitles
+                  - title: Transmission
+                    url: http://100.81.171.49:9091
+                    icon: si:transmission
+              - title: Books & Audio
+                links:
+                  - title: Audiobookshelf
+                    url: https://listen.peciulevicius.com
+                    icon: si:audiobookshelf
+                  - title: Calibre-Web
+                    url: https://books.peciulevicius.com
+                    icon: si:calibreweb
+
+          - type: releases
+            title: Media App Updates
+            repositories:
+              - jellyfin/jellyfin
+              - Sonarr/Sonarr
+              - Radarr/Radarr
+              - morpheus65535/bazarr
+              - fallenbagel/jellyseerr
+            token: ${GITHUB_TOKEN}
+
+      - size: full
+        widgets:
+          - type: reddit
+            title: What to Watch
+            subreddit: NetflixBestOf+Documentaries+MovieSuggestions+television+movies
+            limit: 15
+            collapse-after: 5
+
+          - type: reddit
+            title: Piracy & Self-Hosted Media
+            subreddit: Piracy+selfhosted+PleX+jellyfin
+            limit: 10
+            collapse-after: 5
+
+  - name: Finance
+    columns:
+      - size: small
+        widgets:
+          - type: markets
+            title: Portfolio
+            markets:
+              - symbol: BTC-EUR
+                name: Bitcoin
+              - symbol: ETH-EUR
+                name: Ethereum
+              - symbol: VUAA.DE
+                name: VUAA (S&P 500)
+              - symbol: VWCE.DE
+                name: VWCE (All World)
+              - symbol: AAPL
+                name: Apple
+              - symbol: GOOGL
+                name: Google
+              - symbol: AMZN
+                name: Amazon
+              - symbol: MSFT
+                name: Microsoft
+              - symbol: NVDA
+                name: Nvidia
+              - symbol: MSTR
+                name: MicroStrategy
+
+          - type: bookmarks
+            groups:
+              - title: Finance Tools
+                links:
+                  - title: Actual Budget
+                    url: http://100.81.171.49:5006
+                    icon: si:cashapp
+                  - title: Revolut
+                    url: https://app.revolut.com
+                    icon: si:revolut
+                  - title: Wise
+                    url: https://wise.com
+                    icon: si:wise
+                  - title: CoinGecko
+                    url: https://coingecko.com
+                    icon: si:coingecko
+
+      - size: full
+        widgets:
+          - type: reddit
+            title: Personal Finance
+            subreddit: eupersonalfinance+financialindependence+Fire+investing
+            limit: 15
+            collapse-after: 5
+
+          - type: reddit
+            title: Lithuanian
+            subreddit: lietuva+6nuliai
+            limit: 10
             collapse-after: 5

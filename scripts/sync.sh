@@ -75,10 +75,14 @@ if [ -z "$REMOTE" ]; then
     exit 1
 fi
 
+BASE=$(git merge-base @ @{u} 2>/dev/null || echo "")
+DIVERGED=false
+
 if [ "$LOCAL" = "$REMOTE" ]; then
     print_success "Already up to date"
     PULL_NEEDED=false
-else
+elif [ -n "$BASE" ] && [ "$LOCAL" = "$BASE" ]; then
+    # Local is behind — normal fast-forward pull
     print_info "Updates available"
     PULL_NEEDED=true
 
@@ -93,6 +97,25 @@ else
         echo "Cancelled."
         exit 0
     fi
+else
+    # Histories have diverged (likely a force-push from another machine)
+    DIVERGED=true
+    print_warning "Local and remote histories have diverged (remote was likely force-pushed)"
+    echo ""
+    echo "Remote is ahead with different history. Options:"
+    echo "  1) Reset to remote (safe if this machine has no unique commits)"
+    echo "  2) Cancel and resolve manually"
+    echo ""
+    read -p "Reset local to match remote? (y/n) " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        echo "Cancelled. To resolve manually: git fetch && git reset --hard origin/main"
+        exit 0
+    fi
+    echo "Resetting to origin/main..."
+    git reset --hard origin/main
+    print_success "Reset to remote state"
+    PULL_NEEDED=false
 fi
 
 # ═══════════════════════════════════════════════════════
@@ -122,6 +145,7 @@ CONFIG_FILES=(
     # Starship config accessed via STARSHIP_CONFIG env var, no symlink needed
     "config/idea/.ideavimrc:.ideavimrc"
     "config/tmux/.tmux.conf:.tmux.conf"
+    "config/nvim:.config/nvim"
     "config/ssh/config:.ssh/config"
     "config/curl/.curlrc:.curlrc"
     "config/.editorconfig:.editorconfig"

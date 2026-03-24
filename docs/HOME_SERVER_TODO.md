@@ -72,7 +72,50 @@ Paperless-NGX doesn't support traditional folders — it uses **tags**, **docume
 - [ ] Stop and remove Linkwarden containers
 - [ ] Update setup-services.sh
 
-### 7. Configure new services
+### 7. Set up Obsidian vault sync via Syncthing
+
+**Goal:** Real-time vault sync across Mac mini, MacBook, and phone — replacing the nightly B2 backup (one-way) as the primary sync mechanism.
+
+Syncthing is already running on all three devices. Just needs the vault folder configured.
+
+- [ ] On Mac mini Syncthing (http://localhost:8384):
+  - Add Folder → select Obsidian vault path (e.g. `~/Documents/MyVault`)
+  - Get the Folder ID shown
+  - Share with MacBook and iPhone device IDs (visible in Remote Devices on each device)
+- [ ] On MacBook: accept folder share invitation from Mac mini
+- [ ] On iPhone (Syncthing app): accept folder share invitation
+- [ ] Test: edit a note on phone → verify it appears on MacBook within seconds
+
+### 8. NordPass → Vaultwarden migration
+
+**Goal:** Move all passwords from NordPass into self-hosted Vaultwarden. Review and clean up stale entries during migration.
+
+- [ ] In NordPass: Settings → Export → download CSV (`nordpass_export.csv`)
+- [ ] Run conversion script (outputs `bitwarden_import.json`):
+  ```bash
+  bash ~/.dotfiles/scripts/nordpass-to-bitwarden.sh nordpass_export.csv
+  ```
+- [ ] Review `bitwarden_import.json` — delete stale/duplicate entries before import
+- [ ] In Vaultwarden: Admin → Import Data → format: Bitwarden JSON → upload `bitwarden_import.json`
+- [ ] Verify all logins imported correctly
+- [ ] Install Bitwarden browser extension + mobile app, connect to `vault.peciulevicius.com`
+- [ ] Test: log in to a few sites using Vaultwarden autofill
+- [ ] Cancel NordPass subscription after verified working
+
+**Note:** The NordPass CSV has columns: `name,url,username,password,note,cardholdername,cardnumber,cvc,expirydate,ziporpostalcode,folder,type`
+
+### 9. Set up Actual Budget (finance tracking)
+
+**Goal:** Self-hosted personal finance tracker. Zero-based budgeting, bank CSV import.
+
+- [ ] `docker compose up -d` in `~/services/actual-budget/`
+- [ ] Open http://localhost:5006 → create budget
+- [ ] Export transactions from your bank as CSV
+- [ ] Import: Settings → Import transactions → select CSV
+- [ ] Configure budget categories
+- [ ] Add Cloudflare Tunnel if you want remote access (optional — finance data, so Tailscale-only is safer)
+
+### 10. Configure new services
 
 - [ ] **Jellyseerr** (http://localhost:5055)
   - Sign in with Jellyfin account
@@ -92,12 +135,17 @@ Paperless-NGX doesn't support traditional folders — it uses **tags**, **docume
   - Dashboards → Import → ID `1860` → Load → select Prometheus source → Import
   - You now have full CPU/RAM/disk/network history graphs
 
-### 8. FreshRSS — add feeds
+### 11. FreshRSS — add feeds
 
 - [ ] Open http://localhost:8082, create account if needed
 - [ ] Import OPML file or manually add RSS feeds
 
-### 9. Pi-hole local DNS (later)
+### 12. Pi-hole local DNS (later)
+
+**Note:** After pulling latest dotfiles and restarting Glance, add `PIHOLE_API_KEY` to `~/services/glance/.env`:
+1. Pi-hole admin → Settings → API/Web interface → Show API token
+2. Copy the token → add `PIHOLE_API_KEY=<token>` to `~/services/glance/.env`
+3. `docker compose restart` in `~/services/glance/`
 
 **Goal:** Access `*.peciulevicius.com` on local WiFi without going through Cloudflare.
 
@@ -106,7 +154,7 @@ Paperless-NGX doesn't support traditional folders — it uses **tags**, **docume
 - [ ] Set router DNS to Mac mini IP (primary) + `1.1.1.1` (fallback)
 - [ ] Test: `nslookup home.peciulevicius.com` should return Mac mini local IP
 
-### 10. Replace external SSDs with proper NAS storage (later)
+### 13. Replace external SSDs with proper NAS storage (later)
 
 **Goal:** Eliminate T7/T5 external SSDs — move to network-attached storage that's more reliable, expandable, and not physically dependent on being plugged into the Mac Mini.
 
@@ -129,7 +177,7 @@ Paperless-NGX doesn't support traditional folders — it uses **tags**, **docume
 - [ ] Update rclone backup script to back up from NAS instead of T7
 - [ ] Repurpose T7 as Time Machine backup drive, T5 as offsite backup
 
-### 11. VPN for torrents (later)
+### 14. VPN for torrents (later)
 
 **Goal:** Route Transmission traffic through a VPN so ISP can't see torrent activity. Not urgent — no downloads planned for ~1 month.
 
@@ -142,7 +190,7 @@ Paperless-NGX doesn't support traditional folders — it uses **tags**, **docume
 - [ ] Update Transmission compose to use `network_mode: service:gluetun`
 - [ ] Test: `docker exec transmission curl ifconfig.me` should show VPN IP, not home IP
 
-### 12. Show Mac host stats in monitoring (alongside Docker VM stats)
+### 15. Show Mac host stats in monitoring (alongside Docker VM stats)
 
 **Problem:** Glance/Grafana currently shows Docker Linux VM memory (~7.8GB), not the actual Mac mini's 16GB RAM, real CPU, thermals, or disk health.
 
@@ -186,7 +234,7 @@ Paperless-NGX doesn't support traditional folders — it uses **tags**, **docume
 
 - [ ] **Bonus — Mac thermals:** install [mac-metrics-exporter](https://github.com/antoniopataro/mac-metrics-exporter) for CPU die temp, fan speed, power draw. Useful for checking the Mini isn't overheating headless.
 
-### 13. Uptime Kuma — B2 backup heartbeat
+### 16. Uptime Kuma — B2 backup heartbeat
 
 **Goal:** Alert if nightly rclone backup silently fails while away.
 
@@ -197,7 +245,7 @@ Paperless-NGX doesn't support traditional folders — it uses **tags**, **docume
   ```
 - [ ] Test by running the backup script manually — Kuma should show green
 
-### 14. Docker VM resource limits (later)
+### 17. Docker VM resource limits (later)
 
 **Goal:** Give Docker more headroom for the full stack.
 

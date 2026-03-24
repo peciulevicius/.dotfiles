@@ -67,8 +67,16 @@ setopt HIST_REDUCE_BLANKS       # Remove superfluous blanks
 # ----------------------------------------------------------------------------
 # Environment Variables
 # ----------------------------------------------------------------------------
-export EDITOR='vim'
-export VISUAL='vim'
+# Prefer nvim if installed, fall back to vim
+if command -v nvim &> /dev/null; then
+  export EDITOR='nvim'
+  export VISUAL='nvim'
+  alias vim='nvim'
+  alias vi='nvim'
+else
+  export EDITOR='vim'
+  export VISUAL='vim'
+fi
 export LANG='en_US.UTF-8'
 export LC_ALL='en_US.UTF-8'
 
@@ -105,11 +113,55 @@ alias gl='git lg'               # Pretty log
 alias gundo='git undo'          # Undo last commit
 
 # ----------------------------------------------------------------------------
+# Modern CLI Tools (bat, eza, fd, fzf, zoxide)
+# ----------------------------------------------------------------------------
+
+# bat → better cat (syntax highlighting, line numbers, git integration)
+if command -v bat &> /dev/null; then
+  alias cat='bat --paging=never'
+  alias catp='bat'  # paged version
+  export MANPAGER="sh -c 'col -bx | bat -l man -p'"
+fi
+
+# eza → better ls (colors, icons, git status)
+if command -v eza &> /dev/null; then
+  alias ls='eza --group-directories-first'
+  alias ll='eza -la --group-directories-first --git'
+  alias la='eza -a --group-directories-first'
+  alias lt='eza -la --tree --level=2 --group-directories-first'
+  alias l='eza -l --group-directories-first'
+else
+  alias ll='ls -lah'
+  alias la='ls -A'
+  alias l='ls -CF'
+fi
+
+# fd → better find
+if command -v fd &> /dev/null; then
+  alias find='fd'
+fi
+
+# fzf → fuzzy finder (Ctrl+R history, Ctrl+T files, Alt+C cd)
+if command -v fzf &> /dev/null; then
+  source <(fzf --zsh 2>/dev/null) || eval "$(fzf --zsh 2>/dev/null)" || true
+  export FZF_DEFAULT_OPTS='--height 40% --layout=reverse --border'
+  # Use fd for fzf if available (respects .gitignore)
+  if command -v fd &> /dev/null; then
+    export FZF_DEFAULT_COMMAND='fd --type f --hidden --follow --exclude .git'
+    export FZF_CTRL_T_COMMAND="$FZF_DEFAULT_COMMAND"
+    export FZF_ALT_C_COMMAND='fd --type d --hidden --follow --exclude .git'
+  fi
+fi
+
+# zoxide → smarter cd (learns your most-used directories)
+if command -v zoxide &> /dev/null; then
+  eval "$(zoxide init zsh)"
+  alias cd='z'
+fi
+
+# ----------------------------------------------------------------------------
 # Common Aliases
 # ----------------------------------------------------------------------------
-alias ll='ls -lah'
-alias la='ls -A'
-alias l='ls -CF'
 alias ..='cd ..'
 alias ...='cd ../..'
 alias ....='cd ../../..'

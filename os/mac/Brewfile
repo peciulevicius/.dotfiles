@@ -1,0 +1,53 @@
+# Homebrew Bundle — declarative package management
+# Install: brew bundle --file=os/mac/Brewfile
+# Check:   brew bundle check --file=os/mac/Brewfile
+
+# ── Core CLI Tools ──────────────────────────────────────────────────────────
+
+brew "git"            # Version control
+brew "gh"             # GitHub CLI
+brew "wget"           # File downloads
+brew "bat"            # Better cat
+brew "eza"            # Better ls
+brew "ripgrep"        # Fast grep (rg)
+brew "fd"             # Fast find
+brew "fzf"            # Fuzzy finder
+brew "zoxide"         # Smart cd
+brew "tlrc"           # tldr pages
+brew "httpie"         # HTTP client
+brew "jq"             # JSON processor
+brew "git-delta"      # Better git diff
+brew "nvm"            # Node version manager
+brew "pnpm"           # Fast package manager
+brew "starship"       # Prompt
+brew "neovim"         # Terminal editor
+brew "rclone"         # Cloud backup
+brew "cloudflared"    # Cloudflare Tunnel
+brew "syncthing"      # File sync
+
+# ── Apps ────────────────────────────────────────────────────────────────────
+
+cask "google-chrome"
+cask "brave-browser"
+cask "visual-studio-code"
+cask "docker"
+cask "tailscale"
+cask "claude"
+cask "bitwarden"
+cask "jetbrains-toolbox"
+cask "discord"
+cask "figma"
+cask "wispr-flow"
+cask "darktable"
+cask "calibre"
+cask "obsidian"
+cask "logi-options+"
+cask "yt-music"
+cask "the-unarchiver"
+cask "tg-pro"
+
+# ── Optional (uncomment what you want) ──────────────────────────────────────
+
+# cask "iterm2"
+# cask "raycast"
+# cask "orbstack"       # Lighter Docker Desktop alternative

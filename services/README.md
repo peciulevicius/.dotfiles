@@ -21,7 +21,7 @@ Docker Compose stacks for running your own cloud on a Mac mini (or any Docker ho
 | Calibre-Web | 8083 | Ebook library server |
 | Rclone | — | Cloud backup (B2/S3) |
 
-### Utilities (6)
+### Utilities (8)
 
 | Service | Port | Purpose |
 |---------|------|---------|
@@ -31,6 +31,8 @@ Docker Compose stacks for running your own cloud on a Mac mini (or any Docker ho
 | Audiobookshelf | 13378 | Audiobook and podcast server |
 | Linkwarden | 3005 | Bookmark manager with archiving |
 | Mealie | 9925 | Recipe manager and meal planner |
+| Actual Budget | 5006 | Personal finance manager |
+| Karakeep | 3005 | AI bookmark manager (Linkwarden replacement) |
 
 ### Media (5)
 

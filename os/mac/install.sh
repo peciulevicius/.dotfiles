@@ -31,6 +31,7 @@ CORE_FORMULAS=(
   nvm         # Node version manager
   pnpm        # Fast Node package manager
   starship    # Prompt
+  neovim      # Terminal editor (minimal config in config/nvim/)
   rclone      # Cloud backup (B2/S3 sync)
   cloudflared # Cloudflare Tunnel (HTTPS for self-hosted services)
   syncthing   # Peer-to-peer file sync (Obsidian vault across devices)
