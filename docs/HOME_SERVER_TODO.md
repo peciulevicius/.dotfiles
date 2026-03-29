@@ -2,6 +2,30 @@
 
 ## Active
 
+### 0. Restart stopped services
+
+Many services are currently stopped (likely after a Docker restart or reboot). Bring them back up:
+
+```bash
+for svc in sonarr-radarr transmission pihole nextcloud paperless-ngx calibre-web mealie it-tools stirling-pdf jellyseerr bazarr; do
+  cd ~/services/$svc && docker compose up -d
+done
+```
+
+- [ ] sonarr-radarr (Sonarr/Radarr/Prowlarr)
+- [ ] transmission
+- [ ] pihole
+- [ ] nextcloud
+- [ ] paperless-ngx
+- [ ] calibre-web
+- [ ] mealie
+- [ ] it-tools
+- [ ] stirling-pdf
+- [ ] jellyseerr
+- [ ] bazarr
+
+**Tip:** Add a startup script or Docker restart policy check — all services should have `restart: unless-stopped` so they auto-recover. If they're not restarting, check `docker compose ps` to see if they exited with errors.
+
 ### 1. Convert Audible AAX → Audiobookshelf
 
 **Goal:** Strip DRM from Audible AAX files, convert to M4B, add to Audiobookshelf.
@@ -60,17 +84,25 @@ Paperless-NGX doesn't support traditional folders — it uses **tags**, **docume
 
 **Why Karakeep over Linkwarden:** AI auto-tagging, smart lists, saves notes/images/PDFs (not just links), Meilisearch full-text search, native iOS/Android apps, 2x the GitHub stars and momentum.
 
-- [ ] Export all 621 bookmarks from Linkwarden (HTML export)
-- [ ] Set up Karakeep docker-compose (web + Chrome + Meilisearch containers)
-- [ ] Configure AI tagging (OpenAI API key or local Ollama)
-- [ ] Import bookmarks from HTML export
+- [x] Staged to `~/services/karakeep/` and added to setup-services.sh (port 3006)
+- [x] Added to Glance dashboard (Tailscale bookmarks, port 3006)
+- [ ] Generate secrets and start:
+  ```bash
+  # Generate two secrets
+  openssl rand -base64 36  # → NEXTAUTH_SECRET
+  openssl rand -base64 36  # → MEILI_MASTER_KEY
+  # Edit ~/services/karakeep/.env with those values
+  cd ~/services/karakeep && docker compose up -d
+  ```
+- [ ] Export all 621 bookmarks from Linkwarden (Settings → Export → HTML)
+- [ ] Import bookmarks from HTML export (Karakeep → Settings → Import)
+- [ ] Configure AI tagging (optional — add `OPENAI_API_KEY` to .env or set up Ollama)
 - [ ] Install browser extension + mobile app
 - [ ] Verify all bookmarks imported correctly
-- [ ] Update Glance dashboard (swap Linkwarden for Karakeep)
-- [ ] Update Cloudflare Tunnel (if exposing publicly)
+- [ ] Update Cloudflare Tunnel: change `links.peciulevicius.com` from Linkwarden (3005) → Karakeep (3006)
 - [ ] Update Uptime Kuma monitors
-- [ ] Stop and remove Linkwarden containers
-- [ ] Update setup-services.sh
+- [ ] Stop and remove Linkwarden containers: `cd ~/services/linkwarden && docker compose down`
+- [ ] Update Glance dashboard: swap Linkwarden for Karakeep in monitors and bookmarks
 
 ### 7. Set up Obsidian vault sync via Syncthing
 
@@ -108,32 +140,33 @@ Syncthing is already running on all three devices. Just needs the vault folder c
 
 **Goal:** Self-hosted personal finance tracker. Zero-based budgeting, bank CSV import.
 
+- [x] Staged to `~/services/actual-budget/` and added to setup-services.sh
+- [x] Added to Glance dashboard (Finance page + Tailscale bookmarks)
 - [ ] `docker compose up -d` in `~/services/actual-budget/`
-- [ ] Open http://localhost:5006 → create budget
+- [ ] Open http://100.81.171.49:5006 → create budget
 - [ ] Export transactions from your bank as CSV
 - [ ] Import: Settings → Import transactions → select CSV
 - [ ] Configure budget categories
-- [ ] Add Cloudflare Tunnel if you want remote access (optional — finance data, so Tailscale-only is safer)
+- [ ] Tailscale-only is fine — no need to expose finance data publicly
 
 ### 10. Configure new services
 
-- [ ] **Jellyseerr** (http://localhost:5055)
+- [ ] **Jellyseerr** (http://100.81.171.49:5055) — deploy first: `cd ~/services/jellyseerr && docker compose up -d`
   - Sign in with Jellyfin account
   - Settings → Sonarr: host `sonarr`, port `8989`, API key from Sonarr Settings → General
   - Settings → Radarr: host `radarr`, port `7878`, API key from Radarr Settings → General
 
-- [ ] **Bazarr** (http://localhost:6767)
+- [ ] **Bazarr** (http://100.81.171.49:6767) — deploy first: `cd ~/services/bazarr && docker compose up -d`
   - Settings → Sonarr: host `localhost`, port `8989`, API key from Sonarr Settings → General → API Key
   - Settings → Radarr: host `localhost`, port `7878`, API key from Radarr Settings → General → API Key
   - Settings → Providers → Add provider: **OpenSubtitles.com** (free account at opensubtitles.com)
   - Settings → Languages → Add profile: set English + Lithuanian as preferred
   - Apply profile to all series and movies
 
-- [ ] **Grafana** (http://localhost:3000)
-  - Login: admin / changeme → change password immediately
-  - Connections → Add data source → Prometheus → URL: `http://prometheus:9090` → Save & Test
-  - Dashboards → Import → ID `1860` → Load → select Prometheus source → Import
-  - You now have full CPU/RAM/disk/network history graphs
+- [x] **Grafana** (http://100.81.171.49:3000) — running
+  - [ ] Login: admin / admin → change password
+  - [ ] Connections → Add data source → Prometheus → URL: `http://prometheus:9090` → Save & Test
+  - [ ] Dashboards → Import → ID `1860` → Load → select Prometheus source → Import
 
 ### 11. FreshRSS — add feeds
 
@@ -264,7 +297,10 @@ Recommended: 10GB RAM / 2GB swap
 - [x] ~~Cloudflare DNS cleanup~~ — deleted stale CNAMEs: `sync`, `portainer`, `ai`, `sonarr`, `radarr`, `prowlarr`, `downloads`
 - [x] ~~Cloudflare Access (wildcard)~~ — removed `*.peciulevicius.com` Zero Trust gate; was breaking all native apps (Bitwarden, Immich, etc.). Each service has its own login screen — Access wasn't needed.
 - [x] ~~Cloudflare Access (Glance only)~~ — added Access policy on `home.peciulevicius.com` only. GitHub SSO (primary) + email OTP (fallback). 1-month session. Other services unaffected.
-- [x] ~~Homarr → Glance migration~~ — replaced Homarr with Glance (YAML config, responsive). Two pages: Home (dashboard + monitors + bookmarks) and Feed (HN, Reddit, RSS, markets).
+- [x] ~~Homarr → Glance migration~~ — replaced Homarr with Glance (YAML config, responsive). Four pages: Home, Feed, Media, Finance.
+- [x] ~~Glance internal links~~ — fixed `host.docker.internal` → Tailscale IP (`100.81.171.49`) so all links work from any device (phone, laptop, etc.)
+- [x] ~~Actual Budget~~ — staged, added to Glance Finance page (deploy: `cd ~/services/actual-budget && docker compose up -d`)
+- [x] ~~Karakeep~~ — staged at port 3006, added to Glance (needs secrets + deploy before use)
 - [x] ~~Jellyseerr~~ — media request/discovery UI for Jellyfin (Tailscale-only, port 5055)
 - [x] ~~Bazarr~~ — automated subtitle management for Sonarr/Radarr (Tailscale-only, port 6767)
 - [x] ~~Grafana + Prometheus~~ — monitoring stack with Node Exporter (Tailscale-only, ports 3000/9090/9100)

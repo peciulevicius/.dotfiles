@@ -67,17 +67,20 @@ pages:
                 url: https://status.peciulevicius.com
                 icon: si:uptimekuma
               - title: Jellyseerr
-                url: http://host.docker.internal:5055
+                url: http://100.81.171.49:5055
                 icon: si:jellyfin
               - title: Bazarr
-                url: http://host.docker.internal:6767
+                url: http://100.81.171.49:6767
                 icon: si:opensubtitles
               - title: Grafana
-                url: http://host.docker.internal:3000
+                url: http://100.81.171.49:3000
                 icon: si:grafana
               - title: Prometheus
-                url: http://host.docker.internal:9090
+                url: http://100.81.171.49:9090
                 icon: si:prometheus
+              - title: Actual Budget
+                url: http://100.81.171.49:5006
+                icon: si:cashapp
 
           - type: bookmarks
             groups:
@@ -164,6 +167,12 @@ pages:
                   - title: Grafana
                     url: http://100.81.171.49:3000
                     icon: si:grafana
+                  - title: Actual Budget
+                    url: http://100.81.171.49:5006
+                    icon: si:cashapp
+                  - title: Karakeep
+                    url: http://100.81.171.49:3006
+                    icon: si:raindrop
 
           - type: docker-containers
 
