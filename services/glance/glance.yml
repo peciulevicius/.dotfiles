@@ -8,7 +8,7 @@ pages:
           - type: dns-stats
             service: pihole
             url: http://host.docker.internal:8053
-            api-key: ${PIHOLE_API_KEY}
+            token: ${PIHOLE_API_KEY}
 
           - type: repository
             repository: peciulevicius/.dotfiles
@@ -71,17 +71,13 @@ pages:
                 icon: si:jellyfin
               - title: Bazarr
                 url: http://100.81.171.49:6767
-                icon: si:opensubtitles
+                icon: di:bazarr
               - title: Grafana
                 url: http://100.81.171.49:3000
                 icon: si:grafana
               - title: Prometheus
                 url: http://100.81.171.49:9090
                 icon: si:prometheus
-              - title: Actual Budget
-                url: http://100.81.171.49:5006
-                icon: si:cashapp
-
           - type: bookmarks
             groups:
               - title: Main
@@ -151,7 +147,7 @@ pages:
                     icon: si:radarr
                   - title: Prowlarr
                     url: http://100.81.171.49:9696
-                    icon: https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/prowlarr.svg
+                    icon: di:prowlarr
                   - title: Transmission
                     url: http://100.81.171.49:9091
                     icon: si:transmission
@@ -163,16 +159,13 @@ pages:
                     icon: si:jellyfin
                   - title: Bazarr
                     url: http://100.81.171.49:6767
-                    icon: si:opensubtitles
+                    icon: di:bazarr
                   - title: Grafana
                     url: http://100.81.171.49:3000
                     icon: si:grafana
-                  - title: Actual Budget
-                    url: http://100.81.171.49:5006
-                    icon: si:cashapp
                   - title: Karakeep
                     url: http://100.81.171.49:3006
-                    icon: si:raindrop
+                    icon: di:karakeep
 
           - type: docker-containers
 
@@ -188,6 +181,9 @@ pages:
     columns:
       - size: small
         widgets:
+          - type: search
+            search-engine: duckduckgo
+
           - type: releases
             title: GitHub Releases
             repositories:
@@ -198,38 +194,11 @@ pages:
               - linkwarden/linkwarden
             token: ${GITHUB_TOKEN}
 
-          - type: markets
-            markets:
-              - symbol: BTC-EUR
-                name: Bitcoin
-              - symbol: ETH-EUR
-                name: Ethereum
-              - symbol: VUAA.DE
-                name: VUAA
-              - symbol: VWCE.DE
-                name: VWCE
-              - symbol: AAPL
-                name: Apple
-              - symbol: GOOGL
-                name: Google
-              - symbol: AMZN
-                name: Amazon
-              - symbol: MSFT
-                name: Microsoft
-              - symbol: NVDA
-                name: Nvidia
-              - symbol: MSTR
-                name: MicroStrategy
+          - type: lobsters
 
       - size: full
         widgets:
           - type: hacker-news
-            limit: 15
-            collapse-after: 5
-
-          - type: reddit
-            title: Pain Points & Ideas
-            subreddit: SomebodyMakeThis+AppIdeas+smallbusiness+Lightbulb
             limit: 15
             collapse-after: 5
 
@@ -250,6 +219,22 @@ pages:
             subreddit: lietuva+6nuliai
             limit: 15
             collapse-after: 5
+
+      - size: small
+        widgets:
+          - type: rss
+            title: Blogs & Essays
+            limit: 15
+            collapse-after: 5
+            feeds:
+              - url: https://www.saastr.com/feed/
+                title: SaaStr
+              - url: https://hnrss.org/show
+                title: Show HN
+              - url: https://feeds.feedburner.com/TheBlogOfAuthor
+                title: Seth Godin
+              - url: https://world.hey.com/dhh/feed.atom
+                title: DHH
 
   - name: Media
     columns:
@@ -275,10 +260,10 @@ pages:
                     icon: si:radarr
                   - title: Prowlarr
                     url: http://100.81.171.49:9696
-                    icon: https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/prowlarr.svg
+                    icon: di:prowlarr
                   - title: Bazarr
                     url: http://100.81.171.49:6767
-                    icon: si:opensubtitles
+                    icon: di:bazarr
                   - title: Transmission
                     url: http://100.81.171.49:9091
                     icon: si:transmission
@@ -343,33 +328,10 @@ pages:
               - symbol: MSTR
                 name: MicroStrategy
 
-          - type: bookmarks
-            groups:
-              - title: Finance Tools
-                links:
-                  - title: Actual Budget
-                    url: http://100.81.171.49:5006
-                    icon: si:cashapp
-                  - title: Revolut
-                    url: https://app.revolut.com
-                    icon: si:revolut
-                  - title: Wise
-                    url: https://wise.com
-                    icon: si:wise
-                  - title: CoinGecko
-                    url: https://coingecko.com
-                    icon: si:coingecko
-
       - size: full
         widgets:
           - type: reddit
             title: Personal Finance
             subreddit: eupersonalfinance+financialindependence+Fire+investing
             limit: 15
-            collapse-after: 5
-
-          - type: reddit
-            title: Lithuanian
-            subreddit: lietuva+6nuliai
-            limit: 10
             collapse-after: 5

@@ -39,7 +39,6 @@ SERVICES=(
   jellyseerr
   bazarr
   grafana
-  actual-budget
   karakeep
 )
 
@@ -68,7 +67,6 @@ SERVICE_PORTS=(
   "jellyseerr:5055"
   "bazarr:6767"
   "grafana:3000,9090,9100"
-  "actual-budget:5006"
   "karakeep:3006"
 )
 

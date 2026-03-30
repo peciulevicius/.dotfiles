@@ -2,31 +2,19 @@
 
 ## Active
 
-### 0. Restart stopped services
+### 1. NordPass → Vaultwarden migration (expires ~April 2026)
 
-Many services are currently stopped (likely after a Docker restart or reboot). Bring them back up:
+**Goal:** Move all passwords from NordPass into self-hosted Vaultwarden. Review and clean up stale entries during migration.
 
-```bash
-for svc in sonarr-radarr transmission pihole nextcloud paperless-ngx calibre-web mealie it-tools stirling-pdf jellyseerr bazarr; do
-  cd ~/services/$svc && docker compose up -d
-done
-```
+- [x] Export NordPass CSV (208 items: 204 logins, 2 cards, 1 identity, 1 secure note)
+- [x] Import into Vaultwarden via native NordPass CSV importer (faster than JSON conversion)
+- [ ] Spot-check logins in vault — verify daily-use sites work
+- [ ] Install Bitwarden browser extension → connect to `vault.peciulevicius.com`
+- [ ] Install Bitwarden mobile app → same server URL
+- [ ] Use both alongside NordPass for ~1 week
+- [ ] Cancel NordPass subscription after verified working
 
-- [ ] sonarr-radarr (Sonarr/Radarr/Prowlarr)
-- [ ] transmission
-- [ ] pihole
-- [ ] nextcloud
-- [ ] paperless-ngx
-- [ ] calibre-web
-- [ ] mealie
-- [ ] it-tools
-- [ ] stirling-pdf
-- [ ] jellyseerr
-- [ ] bazarr
-
-**Tip:** Add a startup script or Docker restart policy check — all services should have `restart: unless-stopped` so they auto-recover. If they're not restarting, check `docker compose ps` to see if they exited with errors.
-
-### 1. Convert Audible AAX → Audiobookshelf
+### 2. Convert Audible AAX → Audiobookshelf
 
 **Goal:** Strip DRM from Audible AAX files, convert to M4B, add to Audiobookshelf.
 
@@ -43,7 +31,7 @@ done
 - [ ] Place converted files in `~/services/audiobookshelf/data/audiobooks/`
 - [ ] In Audiobookshelf → Libraries → scan
 
-### 2. DeDRM Kindle books → Calibre-Web
+### 3. DeDRM Kindle books → Calibre-Web
 
 **Goal:** Remove DRM from Kindle ebooks, add to Calibre-Web.
 
@@ -54,7 +42,7 @@ done
 - [ ] Convert to EPUB: right-click → Convert → EPUB
 - [ ] Books appear in Calibre-Web automatically (shared library folder)
 
-### 3. Calibre-Web — organising books
+### 4. Calibre-Web — organising books
 
 Calibre-Web doesn't support folder creation from the UI. Use **Bookshelves** instead:
 - [ ] Admin → Edit Shelves → create shelves (e.g. "Fiction", "Tech", "Papers")
@@ -62,13 +50,13 @@ Calibre-Web doesn't support folder creation from the UI. Use **Bookshelves** ins
 - [ ] Or manage folder structure in Calibre desktop (mirrored to Calibre-Web)
 - [ ] Alternative: consider **Kavita** if folder/series support is needed
 
-### 4. Uptime Kuma notifications
+### 5. Uptime Kuma notifications
 
 - [ ] Open http://localhost:3001 → Settings → Notifications
 - [ ] Add email notification channel
 - [ ] Test notification with a "Test" button
 
-### 5. Paperless-NGX — organise documents
+### 6. Paperless-NGX — organise documents
 
 Paperless-NGX doesn't support traditional folders — it uses **tags**, **document types**, and **correspondents** instead.
 
@@ -78,7 +66,7 @@ Paperless-NGX doesn't support traditional folders — it uses **tags**, **docume
 - [ ] Assign types/correspondents/tags to uploaded documents
 - [ ] Use **Saved Views** (left sidebar) to create folder-like filtered views
 
-### 6. Linkwarden → Karakeep migration
+### 7. Linkwarden → Karakeep migration
 
 **Goal:** Replace Linkwarden with Karakeep (formerly Hoarder) for AI-powered bookmarking with auto-tagging, smart lists, and native mobile apps.
 
@@ -104,7 +92,7 @@ Paperless-NGX doesn't support traditional folders — it uses **tags**, **docume
 - [ ] Stop and remove Linkwarden containers: `cd ~/services/linkwarden && docker compose down`
 - [ ] Update Glance dashboard: swap Linkwarden for Karakeep in monitors and bookmarks
 
-### 7. Set up Obsidian vault sync via Syncthing
+### 8. Set up Obsidian vault sync via Syncthing
 
 **Goal:** Real-time vault sync across Mac mini, MacBook, and phone — replacing the nightly B2 backup (one-way) as the primary sync mechanism.
 
@@ -118,38 +106,8 @@ Syncthing is already running on all three devices. Just needs the vault folder c
 - [ ] On iPhone (Syncthing app): accept folder share invitation
 - [ ] Test: edit a note on phone → verify it appears on MacBook within seconds
 
-### 8. NordPass → Vaultwarden migration
 
-**Goal:** Move all passwords from NordPass into self-hosted Vaultwarden. Review and clean up stale entries during migration.
-
-- [ ] In NordPass: Settings → Export → download CSV (`nordpass_export.csv`)
-- [ ] Run conversion script (outputs `bitwarden_import.json`):
-  ```bash
-  bash ~/.dotfiles/scripts/nordpass-to-bitwarden.sh nordpass_export.csv
-  ```
-- [ ] Review `bitwarden_import.json` — delete stale/duplicate entries before import
-- [ ] In Vaultwarden: Admin → Import Data → format: Bitwarden JSON → upload `bitwarden_import.json`
-- [ ] Verify all logins imported correctly
-- [ ] Install Bitwarden browser extension + mobile app, connect to `vault.peciulevicius.com`
-- [ ] Test: log in to a few sites using Vaultwarden autofill
-- [ ] Cancel NordPass subscription after verified working
-
-**Note:** The NordPass CSV has columns: `name,url,username,password,note,cardholdername,cardnumber,cvc,expirydate,ziporpostalcode,folder,type`
-
-### 9. Set up Actual Budget (finance tracking)
-
-**Goal:** Self-hosted personal finance tracker. Zero-based budgeting, bank CSV import.
-
-- [x] Staged to `~/services/actual-budget/` and added to setup-services.sh
-- [x] Added to Glance dashboard (Finance page + Tailscale bookmarks)
-- [ ] `docker compose up -d` in `~/services/actual-budget/`
-- [ ] Open http://100.81.171.49:5006 → create budget
-- [ ] Export transactions from your bank as CSV
-- [ ] Import: Settings → Import transactions → select CSV
-- [ ] Configure budget categories
-- [ ] Tailscale-only is fine — no need to expose finance data publicly
-
-### 10. Configure new services
+### 9. Configure new services (Jellyseerr, Bazarr, Grafana)
 
 - [ ] **Jellyseerr** (http://100.81.171.49:5055) — deploy first: `cd ~/services/jellyseerr && docker compose up -d`
   - Sign in with Jellyfin account
@@ -168,17 +126,14 @@ Syncthing is already running on all three devices. Just needs the vault folder c
   - [ ] Connections → Add data source → Prometheus → URL: `http://prometheus:9090` → Save & Test
   - [ ] Dashboards → Import → ID `1860` → Load → select Prometheus source → Import
 
-### 11. FreshRSS — add feeds
+### 10. FreshRSS — add feeds
 
 - [ ] Open http://localhost:8082, create account if needed
 - [ ] Import OPML file or manually add RSS feeds
 
-### 12. Pi-hole local DNS (later)
+### 11. Pi-hole local DNS (later)
 
-**Note:** After pulling latest dotfiles and restarting Glance, add `PIHOLE_API_KEY` to `~/services/glance/.env`:
-1. Pi-hole admin → Settings → API/Web interface → Show API token
-2. Copy the token → add `PIHOLE_API_KEY=<token>` to `~/services/glance/.env`
-3. `docker compose restart` in `~/services/glance/`
+**Note:** PIHOLE_API_KEY is now configured in `~/services/glance/.env` — DNS stats widget is working.
 
 **Goal:** Access `*.peciulevicius.com` on local WiFi without going through Cloudflare.
 
@@ -187,7 +142,7 @@ Syncthing is already running on all three devices. Just needs the vault folder c
 - [ ] Set router DNS to Mac mini IP (primary) + `1.1.1.1` (fallback)
 - [ ] Test: `nslookup home.peciulevicius.com` should return Mac mini local IP
 
-### 13. Replace external SSDs with proper NAS storage (later)
+### 12. Replace external SSDs with proper NAS storage (later)
 
 **Goal:** Eliminate T7/T5 external SSDs — move to network-attached storage that's more reliable, expandable, and not physically dependent on being plugged into the Mac Mini.
 
@@ -210,7 +165,7 @@ Syncthing is already running on all three devices. Just needs the vault folder c
 - [ ] Update rclone backup script to back up from NAS instead of T7
 - [ ] Repurpose T7 as Time Machine backup drive, T5 as offsite backup
 
-### 14. VPN for torrents (later)
+### 13. VPN for torrents (later)
 
 **Goal:** Route Transmission traffic through a VPN so ISP can't see torrent activity. Not urgent — no downloads planned for ~1 month.
 
@@ -223,7 +178,7 @@ Syncthing is already running on all three devices. Just needs the vault folder c
 - [ ] Update Transmission compose to use `network_mode: service:gluetun`
 - [ ] Test: `docker exec transmission curl ifconfig.me` should show VPN IP, not home IP
 
-### 15. Show Mac host stats in monitoring (alongside Docker VM stats)
+### 14. Show Mac host stats in monitoring (alongside Docker VM stats)
 
 **Problem:** Glance/Grafana currently shows Docker Linux VM memory (~7.8GB), not the actual Mac mini's 16GB RAM, real CPU, thermals, or disk health.
 
@@ -267,7 +222,7 @@ Syncthing is already running on all three devices. Just needs the vault folder c
 
 - [ ] **Bonus — Mac thermals:** install [mac-metrics-exporter](https://github.com/antoniopataro/mac-metrics-exporter) for CPU die temp, fan speed, power draw. Useful for checking the Mini isn't overheating headless.
 
-### 16. Uptime Kuma — B2 backup heartbeat
+### 15. Uptime Kuma — B2 backup heartbeat
 
 **Goal:** Alert if nightly rclone backup silently fails while away.
 
@@ -278,7 +233,7 @@ Syncthing is already running on all three devices. Just needs the vault folder c
   ```
 - [ ] Test by running the backup script manually — Kuma should show green
 
-### 17. Docker VM resource limits (later)
+### 16. Docker VM resource limits (later)
 
 **Goal:** Give Docker more headroom for the full stack.
 
@@ -299,11 +254,12 @@ Recommended: 10GB RAM / 2GB swap
 - [x] ~~Cloudflare Access (Glance only)~~ — added Access policy on `home.peciulevicius.com` only. GitHub SSO (primary) + email OTP (fallback). 1-month session. Other services unaffected.
 - [x] ~~Homarr → Glance migration~~ — replaced Homarr with Glance (YAML config, responsive). Four pages: Home, Feed, Media, Finance.
 - [x] ~~Glance internal links~~ — fixed `host.docker.internal` → Tailscale IP (`100.81.171.49`) so all links work from any device (phone, laptop, etc.)
-- [x] ~~Actual Budget~~ — staged, added to Glance Finance page (deploy: `cd ~/services/actual-budget && docker compose up -d`)
+- [x] ~~Actual Budget~~ — removed (using Wallet by Budget Bakers instead — bank sync support for Lithuanian banks). Container stopped, removed from Glance/tunnel/setup-services.
 - [x] ~~Karakeep~~ — staged at port 3006, added to Glance (needs secrets + deploy before use)
 - [x] ~~Jellyseerr~~ — media request/discovery UI for Jellyfin (Tailscale-only, port 5055)
 - [x] ~~Bazarr~~ — automated subtitle management for Sonarr/Radarr (Tailscale-only, port 6767)
 - [x] ~~Grafana + Prometheus~~ — monitoring stack with Node Exporter (Tailscale-only, ports 3000/9090/9100)
+- [x] ~~Restart stopped services~~ — all 33 containers confirmed running (all have `restart: unless-stopped`)
 - [x] ~~Homarr cleanup~~ — removed containers, images, Docker network, updated setup script
 - [x] ~~Tunnel security split~~ — moved Sonarr/Radarr/Prowlarr/Transmission to Tailscale-only, added Portainer to public tunnel
 - [x] ~~Mealie~~ — setup complete
