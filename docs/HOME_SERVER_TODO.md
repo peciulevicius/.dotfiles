@@ -35,12 +35,31 @@
 
 **Goal:** Remove DRM from Kindle ebooks, add to Calibre-Web.
 
-- [ ] Download [DeDRM_tools](https://github.com/noDRM/DeDRM_tools/releases)
-- [ ] In Calibre desktop → Preferences → Plugins → Load plugin → `DeDRM_plugin.zip`
-- [ ] Configure: Settings → DeDRM → eInk Kindle ebooks → add serial number
-- [ ] Re-import DRM books to Calibre — DeDRM runs automatically
-- [ ] Convert to EPUB: right-click → Convert → EPUB
-- [ ] Books appear in Calibre-Web automatically (shared library folder)
+**Done so far:**
+- [x] Download [DeDRM_tools](https://github.com/noDRM/DeDRM_tools/releases) (v10.0.3)
+- [x] Install DeDRM + Obok plugins in Calibre desktop (MacBook Air)
+- [x] Configure: DeDRM → eInk Kindle → added both serials (Scribe + Paperwhite)
+- [x] DeDRM'd 5 sideloaded/DRM-free books → converted to EPUB → in `/Users/peciulevicius/BOOKS/Calibre/`
+  - Project Hail Mary (Andy Weir) — original cover set
+  - Man's Search for Meaning (Viktor E. Frankl)
+  - The Culture Code (Daniel Coyle)
+  - Kaip pildyti 2026m. VMI deklaraciją? (sesinuliai.lt)
+  - Social Styles and Versatility report
+- [x] Copied full Kindle Paperwhite `/mnt/us/documents/` via SSH (KOReader) → `/Users/peciulevicius/BOOKS/kindle-paperwhite-full/`
+
+**Blocked — Amazon KFX DRM:**
+- Serial-based decryption fails on all Amazon-purchased KFX books (newer Paperwhite firmware changed key derivation)
+- DeDRM 10.0.3 doesn't support the new Kindle Mac app (Lassen) DRM either
+- Amazon removed "Download & transfer via USB" from their website (Feb 2025)
+
+**Remaining steps — use Kindle for PC 2.4.0 in a Windows VM:**
+- [ ] Install [UTM](https://mac.getutm.app/) (free VM for Mac)
+- [ ] Install Windows 11 ARM (free evaluation from Microsoft)
+- [ ] Install Kindle for PC 2.4.0 (old version, archive.org) — block auto-updates
+- [ ] Sign in to Amazon, download all books — old DRM format, DeDRM can crack
+- [ ] Import into Calibre on Mac → DeDRM strips DRM → convert to EPUB
+- [ ] rsync clean library to Mac mini: `rsync -avz ~/BOOKS/Calibre/ macmini:~/services/calibre-web/data/books/`
+- [ ] Scan in Calibre-Web
 
 ### 4. Calibre-Web — organising books
 
