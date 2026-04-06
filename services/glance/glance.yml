@@ -42,9 +42,9 @@ pages:
               - title: Calibre-Web
                 url: https://books.peciulevicius.com
                 icon: si:calibreweb
-              - title: Linkwarden
+              - title: Karakeep
                 url: https://links.peciulevicius.com
-                icon: si:linkfire
+                icon: si:bookstack
               - title: FreshRSS
                 url: https://rss.peciulevicius.com
                 icon: si:rss
@@ -109,9 +109,9 @@ pages:
 
               - title: Utilities
                 links:
-                  - title: Linkwarden
+                  - title: Karakeep
                     url: https://links.peciulevicius.com
-                    icon: si:linkfire
+                    icon: si:bookstack
                   - title: FreshRSS
                     url: https://rss.peciulevicius.com
                     icon: si:rss
@@ -191,7 +191,7 @@ pages:
               - glanceapp/glance
               - dani-garcia/vaultwarden
               - jellyfin/jellyfin
-              - linkwarden/linkwarden
+              - karakeep/karakeep
             token: ${GITHUB_TOKEN}
 
           - type: lobsters

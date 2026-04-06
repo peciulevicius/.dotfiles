@@ -89,7 +89,7 @@ declare -A SERVICES=(
     ["pihole"]=8053     # Pi-hole admin
     ["pdf"]=8084        # Stirling PDF
     ["tools"]=8085      # IT-Tools
-    ["links"]=3005      # Linkwarden
+    ["links"]=3006      # Karakeep
     ["recipes"]=9925    # Mealie
     ["watch"]=8096      # Jellyfin
     ["listen"]=13378    # Audiobookshelf
@@ -179,7 +179,7 @@ printf "  %-16s → %s\n" "Calibre-Web"    "https://books.${DOMAIN}"
 printf "  %-16s → %s\n" "Pi-hole"        "https://pihole.${DOMAIN}"
 printf "  %-16s → %s\n" "Stirling PDF"   "https://pdf.${DOMAIN}"
 printf "  %-16s → %s\n" "IT-Tools"       "https://tools.${DOMAIN}"
-printf "  %-16s → %s\n" "Linkwarden"     "https://links.${DOMAIN}"
+printf "  %-16s → %s\n" "Karakeep"       "https://links.${DOMAIN}"
 printf "  %-16s → %s\n" "Mealie"         "https://recipes.${DOMAIN}"
 printf "  %-16s → %s\n" "Jellyfin"       "https://watch.${DOMAIN}"
 printf "  %-16s → %s\n" "Audiobookshelf" "https://listen.${DOMAIN}"

@@ -3,7 +3,7 @@
 # Usage: ./rclone-backup.sh [--dry-run]
 # Set up rclone remote first: rclone config
 
-set -e
+set -o pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ENV_FILE="$SCRIPT_DIR/.env"
@@ -33,6 +33,8 @@ RCLONE_REMOTE="${RCLONE_REMOTE:-b2-backup}"
 DOCKER_DIR="${DOCKER_DIR:-$HOME/services}"
 BACKUP_DEST="${BACKUP_DEST:-${RCLONE_REMOTE}:peciulevicius-services-backup/services}"
 RCLONE_FLAGS="${RCLONE_FLAGS:---transfers=4 --checkers=8 --fast-list --stats=60s}"
+
+ERRORS=0
 
 mkdir -p "$LOG_DIR"
 
@@ -67,6 +69,11 @@ SYNC_CMD+=(--exclude "**/jellyfin/data/**")
 SYNC_CMD+=(--exclude "**/sonarr-radarr/data/**")
 SYNC_CMD+=(--exclude "**/syncthing/data/**")
 SYNC_CMD+=(--exclude "**/actual-budget/**")
+SYNC_CMD+=(--exclude "**/audiobookshelf/data/audiobooks/**")
+SYNC_CMD+=(--exclude "**/linkwarden/**")
+SYNC_CMD+=(--exclude "**/nextcloud/data/**")
+SYNC_CMD+=(--exclude "**/karakeep/data/**")
+SYNC_CMD+=(--exclude "**/karakeep/meilisearch/**")
 SYNC_CMD+=($RCLONE_FLAGS)
 [[ "$DRY_RUN" == "true" ]] && SYNC_CMD+=(--dry-run)
 
@@ -74,7 +81,7 @@ if "${SYNC_CMD[@]}" 2>&1 | tee -a "$LOG_FILE"; then
   log_ok "Services backup complete"
 else
   log_err "Services backup failed — check $LOG_FILE"
-  exit 1
+  ((ERRORS++))
 fi
 
 # Backup 2: Obsidian vault
@@ -95,29 +102,18 @@ if [[ -d "$OBSIDIAN_DIR" ]]; then
     log_ok "Obsidian vault backup complete"
   else
     log_err "Obsidian vault backup failed — check $LOG_FILE"
-    exit 1
+    ((ERRORS++))
   fi
 else
   log_warn "Obsidian vault not found at $OBSIDIAN_DIR — skipping"
 fi
 
-# Backup 3: Immich photos & videos
-IMMICH_DIR="${IMMICH_DIR:-/Volumes/T7/immich/upload}"
-IMMICH_DEST="${IMMICH_DEST:-${RCLONE_REMOTE}:peciulevicius-services-backup/immich-photos}"
+# Immich photos backup disabled — rely on T5 local backup instead
+# To re-enable, uncomment and set IMMICH_DIR / IMMICH_DEST
+# IMMICH_DIR="${IMMICH_DIR:-/Volumes/T7/immich/upload}"
+# IMMICH_DEST="${IMMICH_DEST:-${RCLONE_REMOTE}:peciulevicius-services-backup/immich-photos}"
 
-if [[ -d "$IMMICH_DIR" ]]; then
-  log_info "Backing up $IMMICH_DIR → $IMMICH_DEST"
-  IMMICH_CMD=(rclone sync "$IMMICH_DIR" "$IMMICH_DEST")
-  IMMICH_CMD+=(--exclude ".DS_Store")
-  IMMICH_CMD+=($RCLONE_FLAGS)
-  [[ "$DRY_RUN" == "true" ]] && IMMICH_CMD+=(--dry-run)
-
-  if "${IMMICH_CMD[@]}" 2>&1 | tee -a "$LOG_FILE"; then
-    log_ok "Immich photos backup complete"
-  else
-    log_err "Immich photos backup failed — check $LOG_FILE"
-    exit 1
-  fi
-else
-  log_warn "Immich upload dir not found at $IMMICH_DIR — skipping"
+if [[ $ERRORS -gt 0 ]]; then
+  log_err "Backup finished with $ERRORS error(s)"
+  exit 1
 fi
