@@ -69,11 +69,10 @@ Calibre-Web doesn't support folder creation from the UI. Use **Bookshelves** ins
 - [ ] Or manage folder structure in Calibre desktop (mirrored to Calibre-Web)
 - [ ] Alternative: consider **Kavita** if folder/series support is needed
 
-### 5. Radarr/Sonarr — enable auto-cleanup of completed downloads
+### 5. ~~Radarr/Sonarr — enable auto-cleanup of completed downloads~~ ✓
 
-- [ ] Radarr (http://100.81.171.49:7878) → Settings → Media Management → enable **"Remove Completed Downloads"**
-- [ ] Sonarr (http://100.81.171.49:8989) → Settings → Media Management → enable **"Remove Completed Downloads"**
-- [ ] This prevents `downloads/complete/` from filling up the disk again
+- [x] Radarr: `removeCompletedDownloads` + `removeFailedDownloads` enabled via API
+- [x] Sonarr: same — completed downloads will auto-clean from Transmission
 
 ### 6. ~~Remove Ollama/Open WebUI containers~~ ✓
 
