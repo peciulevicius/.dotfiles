@@ -3,9 +3,16 @@
 # Mac mini management script.
 #
 # Usage:
-#   scripts/mac-mini.sh sleep off      # server mode: disable sleep (run on first boot)
-#   scripts/mac-mini.sh sleep on       # normal mode: re-enable sleep
-#   scripts/mac-mini.sh immich-setup   # one-time Immich setup (run after drives are ready)
+#   scripts/mac-mini.sh sleep off        # server mode: disable sleep (run on first boot)
+#   scripts/mac-mini.sh sleep on         # normal mode: re-enable sleep
+#   scripts/mac-mini.sh services up      # start all Docker services
+#   scripts/mac-mini.sh services down    # stop all Docker services
+#   scripts/mac-mini.sh services restart # restart all Docker services
+#   scripts/mac-mini.sh services status  # show running services
+#   scripts/mac-mini.sh cleanup          # free disk space (downloads, Docker cache)
+#   scripts/mac-mini.sh disk             # show disk usage summary
+#   scripts/mac-mini.sh ssh on           # enable remote login (SSH)
+#   scripts/mac-mini.sh immich-setup     # one-time Immich setup (run after drives are ready)
 
 set -uo pipefail
 
@@ -17,6 +24,8 @@ NC='\033[0m'
 
 DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 LOCAL_CONFIG="$HOME/.config/dotfiles/mac-mini.conf"
+SERVICES_DIR="$HOME/services"
+MEDIA_DIR="/Volumes/T7/media"
 
 log_ok()     { echo -e "${GREEN}✓${NC} $1"; }
 log_warn()   { echo -e "${YELLOW}⚠${NC} $1"; }
@@ -45,6 +54,155 @@ cmd_sleep_on() {
   log_header "Normal Mode — Re-enabling Sleep"
   sudo pmset -a sleep 1
   log_ok "Normal sleep restored"
+}
+
+# -------------------------------------------------------
+# services up|down|restart|status — manage all Docker services
+# -------------------------------------------------------
+cmd_services() {
+  local action="${1:-}"
+
+  if [[ ! -d "$SERVICES_DIR" ]]; then
+    log_error "Services directory not found: $SERVICES_DIR"
+    exit 1
+  fi
+
+  local failed=0
+  local succeeded=0
+
+  case "$action" in
+    up|down|restart)
+      log_header "Services ${action}"
+      for dir in "$SERVICES_DIR"/*/; do
+        local svc
+        svc="$(basename "$dir")"
+        if [[ -f "$dir/docker-compose.yml" ]]; then
+          echo -n "  $svc... "
+          if docker compose -f "$dir/docker-compose.yml" "$action" -d 2>/dev/null; then
+            echo -e "${GREEN}ok${NC}"
+            ((succeeded++))
+          else
+            echo -e "${RED}failed${NC}"
+            ((failed++))
+          fi
+        fi
+      done
+      echo ""
+      log_ok "$succeeded services processed"
+      [[ $failed -gt 0 ]] && log_warn "$failed services failed"
+      ;;
+    status)
+      log_header "Services Status"
+      docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}" | head -50
+      echo ""
+      echo "Stopped containers:"
+      docker ps -a --filter "status=exited" --format "  {{.Names}} ({{.Status}})" 2>/dev/null || echo "  none"
+      ;;
+    *)
+      echo "Usage: mac-mini.sh services up|down|restart|status"
+      exit 1
+      ;;
+  esac
+}
+
+# -------------------------------------------------------
+# cleanup — free disk space
+# -------------------------------------------------------
+cmd_cleanup() {
+  log_header "Disk Cleanup"
+
+  # Show current disk usage
+  echo "Current disk usage:"
+  df -h /Volumes/T7 2>/dev/null || log_warn "/Volumes/T7 not mounted"
+  echo ""
+
+  # Completed downloads
+  local downloads_dir="$MEDIA_DIR/downloads/complete"
+  if [[ -d "$downloads_dir" ]]; then
+    local dl_size
+    dl_size="$(du -sh "$downloads_dir" 2>/dev/null | cut -f1)"
+    echo -e "Completed downloads: ${YELLOW}$dl_size${NC} in $downloads_dir"
+
+    if [[ "$dl_size" != "0B" && "$dl_size" != "0" ]]; then
+      read -r -p "Delete completed downloads? (y/N) " confirm
+      if [[ "$confirm" =~ ^[Yy]$ ]]; then
+        rm -rf "${downloads_dir:?}"/*
+        log_ok "Completed downloads cleared"
+      fi
+    fi
+  fi
+
+  # Docker cleanup
+  echo ""
+  echo "Docker disk usage:"
+  docker system df 2>/dev/null
+  echo ""
+  read -r -p "Prune unused Docker images/containers/cache? (y/N) " confirm
+  if [[ "$confirm" =~ ^[Yy]$ ]]; then
+    docker system prune -a -f
+    log_ok "Docker pruned"
+  fi
+
+  # Ollama models
+  if [[ -d "/Volumes/T7/ollama-models" ]]; then
+    local ollama_size
+    ollama_size="$(du -sh /Volumes/T7/ollama-models 2>/dev/null | cut -f1)"
+    echo ""
+    echo -e "Ollama models: ${YELLOW}$ollama_size${NC}"
+    read -r -p "Delete ollama models? (y/N) " confirm
+    if [[ "$confirm" =~ ^[Yy]$ ]]; then
+      rm -rf /Volumes/T7/ollama-models
+      log_ok "Ollama models removed"
+    fi
+  fi
+
+  echo ""
+  echo "After cleanup:"
+  df -h /Volumes/T7 2>/dev/null || true
+}
+
+# -------------------------------------------------------
+# disk — show disk usage summary
+# -------------------------------------------------------
+cmd_disk() {
+  log_header "Disk Usage"
+
+  echo "Volumes:"
+  df -h / /Volumes/T7 2>/dev/null || df -h /
+  echo ""
+
+  if [[ -d "/Volumes/T7" ]]; then
+    echo "Top-level usage on T7:"
+    du -sh /Volumes/T7/*/ 2>/dev/null | sort -rh | head -10
+    echo ""
+    echo "Media breakdown:"
+    du -sh "$MEDIA_DIR"/*/ 2>/dev/null | sort -rh
+    echo ""
+    echo "Docker:"
+    docker system df 2>/dev/null || true
+  fi
+}
+
+# -------------------------------------------------------
+# ssh on — enable remote login
+# -------------------------------------------------------
+cmd_ssh() {
+  case "${1:-}" in
+    on)
+      log_header "Enabling SSH (Remote Login)"
+      sudo systemsetup -setremotelogin on
+      log_ok "SSH enabled — connect via: ssh macmini"
+      ;;
+    off)
+      log_header "Disabling SSH (Remote Login)"
+      sudo systemsetup -setremotelogin off
+      log_ok "SSH disabled"
+      ;;
+    *)
+      echo "Usage: mac-mini.sh ssh on|off"
+      exit 1
+      ;;
+  esac
 }
 
 # -------------------------------------------------------
@@ -118,9 +276,13 @@ usage() {
   echo "Usage: scripts/mac-mini.sh <command>"
   echo ""
   echo "Commands:"
-  echo "  sleep off      Disable sleep — server/always-on mode"
-  echo "  sleep on       Re-enable normal sleep"
-  echo "  immich-setup   One-time Immich setup (run after drives are connected)"
+  echo "  services up|down|restart|status   Manage all Docker services"
+  echo "  cleanup                           Free disk space (downloads, Docker, ollama)"
+  echo "  disk                              Show disk usage summary"
+  echo "  ssh on|off                        Enable/disable remote login (SSH)"
+  echo "  sleep off                         Disable sleep — server/always-on mode"
+  echo "  sleep on                          Re-enable normal sleep"
+  echo "  immich-setup                      One-time Immich setup"
   echo ""
 }
 
@@ -128,6 +290,10 @@ usage() {
 # Main
 # -------------------------------------------------------
 case "${1:-}" in
+  services) cmd_services "${2:-}" ;;
+  cleanup)  cmd_cleanup ;;
+  disk)     cmd_disk ;;
+  ssh)      cmd_ssh "${2:-}" ;;
   sleep)
     case "${2:-}" in
       on)  cmd_sleep_on ;;
