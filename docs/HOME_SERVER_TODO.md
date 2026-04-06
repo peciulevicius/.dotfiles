@@ -69,13 +69,25 @@ Calibre-Web doesn't support folder creation from the UI. Use **Bookshelves** ins
 - [ ] Or manage folder structure in Calibre desktop (mirrored to Calibre-Web)
 - [ ] Alternative: consider **Kavita** if folder/series support is needed
 
-### 5. Uptime Kuma notifications
+### 5. Radarr/Sonarr — enable auto-cleanup of completed downloads
+
+- [ ] Radarr (http://100.81.171.49:7878) → Settings → Media Management → enable **"Remove Completed Downloads"**
+- [ ] Sonarr (http://100.81.171.49:8989) → Settings → Media Management → enable **"Remove Completed Downloads"**
+- [ ] This prevents `downloads/complete/` from filling up the disk again
+
+### 6. ~~Remove Ollama/Open WebUI containers~~ ✓
+
+- [x] `cd ~/services/ollama && docker compose down`
+- [x] `rm -rf ~/services/ollama`
+- [x] Already removed from `setup-services.sh`
+
+### 7. Uptime Kuma notifications
 
 - [ ] Open http://localhost:3001 → Settings → Notifications
 - [ ] Add email notification channel
 - [ ] Test notification with a "Test" button
 
-### 6. Paperless-NGX — organise documents
+### 8. Paperless-NGX — organise documents
 
 Paperless-NGX doesn't support traditional folders — it uses **tags**, **document types**, and **correspondents** instead.
 
@@ -85,7 +97,7 @@ Paperless-NGX doesn't support traditional folders — it uses **tags**, **docume
 - [ ] Assign types/correspondents/tags to uploaded documents
 - [ ] Use **Saved Views** (left sidebar) to create folder-like filtered views
 
-### 7. Linkwarden → Karakeep migration
+### 9. Linkwarden → Karakeep migration
 
 **Goal:** Replace Linkwarden with Karakeep (formerly Hoarder) for AI-powered bookmarking with auto-tagging, smart lists, and native mobile apps.
 
@@ -111,7 +123,7 @@ Paperless-NGX doesn't support traditional folders — it uses **tags**, **docume
 - [ ] Stop and remove Linkwarden containers: `cd ~/services/linkwarden && docker compose down`
 - [ ] Update Glance dashboard: swap Linkwarden for Karakeep in monitors and bookmarks
 
-### 8. Set up Obsidian vault sync via Syncthing
+### 10. Set up Obsidian vault sync via Syncthing
 
 **Goal:** Real-time vault sync across Mac mini, MacBook, and phone — replacing the nightly B2 backup (one-way) as the primary sync mechanism.
 
@@ -126,16 +138,13 @@ Syncthing is already running on all three devices. Just needs the vault folder c
 - [ ] Test: edit a note on phone → verify it appears on MacBook within seconds
 
 
-### 9. Configure new services (Jellyseerr, Bazarr, Grafana)
+### 11. Configure new services (Bazarr, Grafana)
 
-- [ ] **Jellyseerr** (http://100.81.171.49:5055) — deploy first: `cd ~/services/jellyseerr && docker compose up -d`
-  - Sign in with Jellyfin account
-  - Settings → Sonarr: host `sonarr`, port `8989`, API key from Sonarr Settings → General
-  - Settings → Radarr: host `radarr`, port `7878`, API key from Radarr Settings → General
+- [x] **Jellyseerr** (http://100.81.171.49:5055) — running, connected to Jellyfin/Sonarr/Radarr
 
-- [ ] **Bazarr** (http://100.81.171.49:6767) — deploy first: `cd ~/services/bazarr && docker compose up -d`
-  - Settings → Sonarr: host `localhost`, port `8989`, API key from Sonarr Settings → General → API Key
-  - Settings → Radarr: host `localhost`, port `7878`, API key from Radarr Settings → General → API Key
+- [ ] **Bazarr** (http://100.81.171.49:6767) — running, needs configuration:
+  - Settings → Sonarr: host `sonarr`, port `8989`, API key from Sonarr Settings → General → API Key
+  - Settings → Radarr: host `radarr`, port `7878`, API key from Radarr Settings → General → API Key
   - Settings → Providers → Add provider: **OpenSubtitles.com** (free account at opensubtitles.com)
   - Settings → Languages → Add profile: set English + Lithuanian as preferred
   - Apply profile to all series and movies
@@ -145,12 +154,12 @@ Syncthing is already running on all three devices. Just needs the vault folder c
   - [ ] Connections → Add data source → Prometheus → URL: `http://prometheus:9090` → Save & Test
   - [ ] Dashboards → Import → ID `1860` → Load → select Prometheus source → Import
 
-### 10. FreshRSS — add feeds
+### 12. FreshRSS — add feeds
 
 - [ ] Open http://localhost:8082, create account if needed
 - [ ] Import OPML file or manually add RSS feeds
 
-### 11. Pi-hole local DNS (later)
+### 13. Pi-hole local DNS (later)
 
 **Note:** PIHOLE_API_KEY is now configured in `~/services/glance/.env` — DNS stats widget is working.
 
@@ -161,7 +170,7 @@ Syncthing is already running on all three devices. Just needs the vault folder c
 - [ ] Set router DNS to Mac mini IP (primary) + `1.1.1.1` (fallback)
 - [ ] Test: `nslookup home.peciulevicius.com` should return Mac mini local IP
 
-### 12. Replace external SSDs with proper NAS storage (later)
+### 14. Replace external SSDs with proper NAS storage (later)
 
 **Goal:** Eliminate T7/T5 external SSDs — move to network-attached storage that's more reliable, expandable, and not physically dependent on being plugged into the Mac Mini.
 
@@ -184,7 +193,7 @@ Syncthing is already running on all three devices. Just needs the vault folder c
 - [ ] Update rclone backup script to back up from NAS instead of T7
 - [ ] Repurpose T7 as Time Machine backup drive, T5 as offsite backup
 
-### 13. VPN for torrents (later)
+### 15. VPN for torrents (later)
 
 **Goal:** Route Transmission traffic through a VPN so ISP can't see torrent activity. Not urgent — no downloads planned for ~1 month.
 
@@ -197,7 +206,7 @@ Syncthing is already running on all three devices. Just needs the vault folder c
 - [ ] Update Transmission compose to use `network_mode: service:gluetun`
 - [ ] Test: `docker exec transmission curl ifconfig.me` should show VPN IP, not home IP
 
-### 14. Show Mac host stats in monitoring (alongside Docker VM stats)
+### 16. Show Mac host stats in monitoring (alongside Docker VM stats)
 
 **Problem:** Glance/Grafana currently shows Docker Linux VM memory (~7.8GB), not the actual Mac mini's 16GB RAM, real CPU, thermals, or disk health.
 
@@ -241,7 +250,7 @@ Syncthing is already running on all three devices. Just needs the vault folder c
 
 - [ ] **Bonus — Mac thermals:** install [mac-metrics-exporter](https://github.com/antoniopataro/mac-metrics-exporter) for CPU die temp, fan speed, power draw. Useful for checking the Mini isn't overheating headless.
 
-### 15. Uptime Kuma — B2 backup heartbeat
+### 17. Uptime Kuma — B2 backup heartbeat
 
 **Goal:** Alert if nightly rclone backup silently fails while away.
 
@@ -252,7 +261,7 @@ Syncthing is already running on all three devices. Just needs the vault folder c
   ```
 - [ ] Test by running the backup script manually — Kuma should show green
 
-### 16. Docker VM resource limits (later)
+### 18. Docker VM resource limits (later)
 
 **Goal:** Give Docker more headroom for the full stack.
 
@@ -294,6 +303,11 @@ Recommended: 10GB RAM / 2GB swap
 - [x] ~~Audiobookshelf subdomain~~ — fixed: books → listen
 - [x] ~~B2 cloud backup~~ — nightly cron at 5am, services + obsidian-vault + Immich photos all backed up
 - [x] ~~Immich photos B2 backup~~ — added `/Volumes/T7/immich/upload` to rclone-backup.sh
+- [x] ~~Disk full (Apr 2026)~~ — T7 at 100% (17MB free). Cleared 480GB duplicate downloads from `downloads/complete/`, deleted 156GB old photo copies from APFS `TimeMachine` volume, removed 2.5GB ollama-models. Now at 140GB free.
+- [x] ~~SSH enabled~~ — Remote Login turned on via System Settings, `ssh macmini` works via Tailscale
+- [x] ~~Jellyfin delete fix~~ — removed `:ro` from media volume mounts so Jellyfin can delete files
+- [x] ~~mac-mini.sh expanded~~ — added `services up/down/restart/status`, `cleanup`, `disk`, `ssh on/off` commands
+- [x] ~~Ollama containers still running~~ — `ollama` and `open_webui` still in `~/services/ollama/`, should remove when home
 
 ---
 
@@ -332,7 +346,7 @@ Two Samsung SSDs permanently connected to the Mac Mini:
 | Immich DB | T7 | `/Volumes/T7/immich/postgres` |
 | Media (movies, TV, downloads) | T7 | `/Volumes/T7/media/` |
 | Calibre books | T7 | `/Volumes/T7/calibre-books` |
-| Time Machine (MacBook + Mac Mini) | T7 | APFS `TimeMachine` volume |
+| Old photo copies (to delete) | T7 | APFS `TimeMachine` volume (not actually TM — just old photo copies) |
 | Local photo backup (rsync from T7) | T5 | nightly copy |
 
 **Cloud backup (rclone → Backblaze B2):**
