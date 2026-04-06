@@ -8,10 +8,7 @@
 
 - [x] Export NordPass CSV (208 items: 204 logins, 2 cards, 1 identity, 1 secure note)
 - [x] Import into Vaultwarden via native NordPass CSV importer (faster than JSON conversion)
-- [ ] Spot-check logins in vault — verify daily-use sites work
-- [ ] Install Bitwarden browser extension → connect to `vault.peciulevicius.com`
-- [ ] Install Bitwarden mobile app → same server URL
-- [ ] Use both alongside NordPass for ~1 week
+- [x] Passwords moved to Bitwarden/Vaultwarden (Apr 2026)
 - [ ] Cancel NordPass subscription after verified working
 
 ### 2. Convert Audible AAX → Audiobookshelf
