@@ -13,8 +13,8 @@ services:
     volumes:
       - ./data/config:/config
       - ./data/cache:/cache
-      - ${MEDIA_DIR:-/Volumes/T7/media}/movies:/media/movies:ro
-      - ${MEDIA_DIR:-/Volumes/T7/media}/tv:/media/tv:ro
+      - ${MEDIA_DIR:-/Volumes/T7/media}/movies:/media/movies
+      - ${MEDIA_DIR:-/Volumes/T7/media}/tv:/media/tv
     environment:
       TZ: ${TZ:-Europe/Vilnius}
 
