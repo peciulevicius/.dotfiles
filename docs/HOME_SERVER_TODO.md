@@ -2,19 +2,7 @@
 
 ## Active
 
-### 1. Passkey migration (NordPass → Bitwarden)
-
-Passkeys can't be exported — each must be re-registered with Bitwarden as the authenticator.
-
-**Services to migrate:** Amazon, Binance, GitHub, Google, PSN
-
-- [x] Amazon
-- [x] Binance
-- [x] GitHub
-- [x] Google
-- [x] PSN
-
-### 2. Convert Audible AAX → Audiobookshelf
+### 1. Convert Audible AAX → Audiobookshelf
 
 **Goal:** Strip DRM from Audible AAX files, convert to M4B, add to Audiobookshelf.
 
@@ -31,7 +19,7 @@ Passkeys can't be exported — each must be re-registered with Bitwarden as the 
 - [ ] Place converted files in `~/services/audiobookshelf/data/audiobooks/`
 - [ ] In Audiobookshelf → Libraries → scan
 
-### 3. DeDRM Kindle books → Calibre-Web
+### 2. DeDRM Kindle books → Calibre-Web
 
 **Goal:** Remove DRM from Kindle ebooks, add to Calibre-Web.
 
@@ -61,7 +49,7 @@ Passkeys can't be exported — each must be re-registered with Bitwarden as the 
 - [ ] rsync clean library to Mac mini: `rsync -avz ~/BOOKS/Calibre/ macmini:~/services/calibre-web/data/books/`
 - [ ] Scan in Calibre-Web
 
-### 4. Calibre-Web — organising books
+### 3. Calibre-Web — organising books
 
 Calibre-Web doesn't support folder creation from the UI. Use **Bookshelves** instead:
 - [ ] Admin → Edit Shelves → create shelves (e.g. "Fiction", "Tech", "Papers")
@@ -69,13 +57,13 @@ Calibre-Web doesn't support folder creation from the UI. Use **Bookshelves** ins
 - [ ] Or manage folder structure in Calibre desktop (mirrored to Calibre-Web)
 - [ ] Alternative: consider **Kavita** if folder/series support is needed
 
-### 5. Uptime Kuma notifications
+### 4. Uptime Kuma notifications
 
 - [ ] Open http://localhost:3001 → Settings → Notifications
 - [ ] Add email notification channel
 - [ ] Test notification with a "Test" button
 
-### 6. Paperless-NGX — organise documents
+### 5. Paperless-NGX — organise documents
 
 Paperless-NGX doesn't support traditional folders — it uses **tags**, **document types**, and **correspondents** instead.
 
@@ -85,26 +73,12 @@ Paperless-NGX doesn't support traditional folders — it uses **tags**, **docume
 - [ ] Assign types/correspondents/tags to uploaded documents
 - [ ] Use **Saved Views** (left sidebar) to create folder-like filtered views
 
-### 7. Linkwarden → Karakeep migration
+### 6. Linkwarden — browser extension + import
 
-**Goal:** Replace Linkwarden with Karakeep (formerly Hoarder) for AI-powered bookmarking with auto-tagging, smart lists, and native mobile apps.
+- [ ] Install Linkwarden browser extension
+- [ ] Import bookmarks from Chrome/Brave
 
-**Why Karakeep over Linkwarden:** AI auto-tagging, smart lists, saves notes/images/PDFs (not just links), Meilisearch full-text search, native iOS/Android apps, 2x the GitHub stars and momentum.
-
-- [x] Staged to `~/services/karakeep/` and added to setup-services.sh (port 3006)
-- [x] Added to Glance dashboard (Tailscale bookmarks, port 3006)
-- [x] Generated secrets + started containers (Apr 2026)
-- [x] Imported bookmarks from Linkwarden HTML export
-- [x] Updated Cloudflare Tunnel: `links.peciulevicius.com` → Karakeep (3006)
-- [x] Stopped and removed Linkwarden containers
-- [x] Updated Glance dashboard: swapped Linkwarden for Karakeep
-- [ ] Configure AI tagging (optional — add `OPENAI_API_KEY` to .env)
-- [ ] Install browser extension + mobile app
-- [ ] Verify all bookmarks imported correctly
-- [ ] Update Uptime Kuma monitors
-- [ ] Delete Linkwarden data: `rm -rf ~/services/linkwarden`
-
-### 8. Set up Obsidian vault sync via Syncthing
+### 7. Set up Obsidian vault sync via Syncthing
 
 **Goal:** Real-time vault sync across Mac mini, MacBook, and phone — replacing the nightly B2 backup (one-way) as the primary sync mechanism.
 
@@ -119,28 +93,18 @@ Syncthing is already running on all three devices. Just needs the vault folder c
 - [ ] Test: edit a note on phone → verify it appears on MacBook within seconds
 
 
-### 9. Configure new services (Bazarr, Grafana)
+### 8. Bazarr — subtitle provider
 
-- [x] **Jellyseerr** (http://100.81.171.49:5055) — running, connected to Jellyfin/Sonarr/Radarr
+- [ ] Settings → Providers → Add provider: **OpenSubtitles.com** (free account at opensubtitles.com)
+- [ ] Settings → Languages → Add profile: set English + Lithuanian as preferred
+- [ ] Apply profile to all series and movies
 
-- [ ] **Bazarr** (http://100.81.171.49:6767) — running, needs configuration:
-  - Settings → Sonarr: host `sonarr`, port `8989`, API key from Sonarr Settings → General → API Key
-  - Settings → Radarr: host `radarr`, port `7878`, API key from Radarr Settings → General → API Key
-  - Settings → Providers → Add provider: **OpenSubtitles.com** (free account at opensubtitles.com)
-  - Settings → Languages → Add profile: set English + Lithuanian as preferred
-  - Apply profile to all series and movies
-
-- [x] **Grafana** (http://100.81.171.49:3000) — running
-  - [ ] Login: admin / admin → change password
-  - [ ] Connections → Add data source → Prometheus → URL: `http://prometheus:9090` → Save & Test
-  - [ ] Dashboards → Import → ID `1860` → Load → select Prometheus source → Import
-
-### 10. FreshRSS — add feeds
+### 9. FreshRSS — add feeds
 
 - [ ] Open http://localhost:8082, create account if needed
 - [ ] Import OPML file or manually add RSS feeds
 
-### 11. Pi-hole local DNS (later)
+### 10. Pi-hole local DNS (later)
 
 **Note:** PIHOLE_API_KEY is now configured in `~/services/glance/.env` — DNS stats widget is working.
 
@@ -151,7 +115,7 @@ Syncthing is already running on all three devices. Just needs the vault folder c
 - [ ] Set router DNS to Mac mini IP (primary) + `1.1.1.1` (fallback)
 - [ ] Test: `nslookup home.peciulevicius.com` should return Mac mini local IP
 
-### 12. Replace external SSDs with proper NAS storage (later)
+### 11. Replace external SSDs with proper NAS storage (later)
 
 **Goal:** Eliminate T7/T5 external SSDs — move to network-attached storage that's more reliable, expandable, and not physically dependent on being plugged into the Mac Mini.
 
@@ -174,7 +138,7 @@ Syncthing is already running on all three devices. Just needs the vault folder c
 - [ ] Update rclone backup script to back up from NAS instead of T7
 - [ ] Repurpose T7 as Time Machine backup drive, T5 as offsite backup
 
-### 13. VPN for torrents (later)
+### 12. VPN for torrents (later)
 
 **Goal:** Route Transmission traffic through a VPN so ISP can't see torrent activity. Not urgent — no downloads planned for ~1 month.
 
@@ -187,7 +151,7 @@ Syncthing is already running on all three devices. Just needs the vault folder c
 - [ ] Update Transmission compose to use `network_mode: service:gluetun`
 - [ ] Test: `docker exec transmission curl ifconfig.me` should show VPN IP, not home IP
 
-### 14. Show Mac host stats in monitoring (alongside Docker VM stats)
+### 13. Show Mac host stats in monitoring (alongside Docker VM stats)
 
 **Problem:** Glance/Grafana currently shows Docker Linux VM memory (~7.8GB), not the actual Mac mini's 16GB RAM, real CPU, thermals, or disk health.
 
@@ -231,7 +195,7 @@ Syncthing is already running on all three devices. Just needs the vault folder c
 
 - [ ] **Bonus — Mac thermals:** install [mac-metrics-exporter](https://github.com/antoniopataro/mac-metrics-exporter) for CPU die temp, fan speed, power draw. Useful for checking the Mini isn't overheating headless.
 
-### 15. Uptime Kuma — B2 backup heartbeat
+### 14. Uptime Kuma — B2 backup heartbeat
 
 **Goal:** Alert if nightly rclone backup silently fails while away.
 
@@ -242,7 +206,7 @@ Syncthing is already running on all three devices. Just needs the vault folder c
   ```
 - [ ] Test by running the backup script manually — Kuma should show green
 
-### 16. Migrate backups from B2 to Cloudflare R2 (later)
+### 15. Migrate backups from B2 to Cloudflare R2 (later)
 
 **Goal:** Replace Backblaze B2 with Cloudflare R2 for cloud backups. R2 has 10GB free, no egress fees, already using Cloudflare.
 
@@ -257,7 +221,7 @@ Syncthing is already running on all three devices. Just needs the vault folder c
 - [ ] Test: `bash ~/.dotfiles/services/rclone/rclone-backup.sh --dry-run`
 - [ ] Delete B2 bucket after verifying R2 works
 
-### 17. Docker VM resource limits (later)
+### 16. Docker VM resource limits (later)
 
 **Goal:** Give Docker more headroom for the full stack.
 
@@ -279,8 +243,11 @@ Recommended: 10GB RAM / 2GB swap
 - [x] ~~Homarr → Glance migration~~ — replaced Homarr with Glance (YAML config, responsive). Four pages: Home, Feed, Media, Finance.
 - [x] ~~Glance internal links~~ — fixed `host.docker.internal` → Tailscale IP (`100.81.171.49`) so all links work from any device (phone, laptop, etc.)
 - [x] ~~Actual Budget~~ — removed (using Wallet by Budget Bakers instead — bank sync support for Lithuanian banks). Container stopped, removed from Glance/tunnel/setup-services.
-- [x] ~~Karakeep~~ — running on port 3006, bookmarks imported from Linkwarden, `links.peciulevicius.com` updated
-- [x] ~~Linkwarden~~ — containers stopped and removed, replaced by Karakeep
+- [x] ~~Passkey migration~~ — all 5 services (Amazon, Binance, GitHub, Google, PSN) re-registered with Bitwarden
+- [x] ~~Karakeep~~ — tried as Linkwarden replacement, reverted back to Linkwarden (simpler UI). Karakeep stopped, data kept at `~/services/karakeep/`
+- [x] ~~Linkwarden~~ — restored as primary bookmark manager on port 3005, `links.peciulevicius.com`
+- [x] ~~Grafana + Prometheus configured~~ — datasource connected, dashboards imported, password set
+- [x] ~~Bazarr connected~~ — Sonarr/Radarr API keys configured, subtitle provider still needed
 - [x] ~~B2 backup cleanup (Apr 2026)~~ — deleted Immich photos (7GB), Linkwarden (644MB), Audiobookshelf (890MB) from B2. Down from 9.7GB to 1.2GB. Immich backup disabled (using T5 local). Script fixed: `pipefail` + error counter.
 - [x] ~~Cloudflared plist fix~~ — brew service was missing `tunnel run` args, created proper `com.cloudflare.cloudflared.plist` launch agent
 - [x] ~~NordPass cancelled~~ — subscription ended, passwords in Vaultwarden

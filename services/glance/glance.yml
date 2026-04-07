@@ -42,7 +42,7 @@ pages:
               - title: Calibre-Web
                 url: https://books.peciulevicius.com
                 icon: si:calibreweb
-              - title: Karakeep
+              - title: Linkwarden
                 url: https://links.peciulevicius.com
                 icon: si:bookstack
               - title: FreshRSS
