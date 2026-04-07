@@ -9,10 +9,10 @@ Passkeys can't be exported — each must be re-registered with Bitwarden as the 
 **Services to migrate:** Amazon, Binance, GitHub, Google, PSN
 
 - [x] Amazon
-- [ ] Binance
-- [ ] GitHub
-- [ ] Google
-- [ ] PSN
+- [x] Binance
+- [x] GitHub
+- [x] Google
+- [x] PSN
 
 ### 2. Convert Audible AAX → Audiobookshelf
 
