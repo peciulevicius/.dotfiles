@@ -2,24 +2,7 @@
 
 ## Active
 
-### 1. Convert Audible AAX → Audiobookshelf
-
-**Goal:** Strip DRM from Audible AAX files, convert to M4B, add to Audiobookshelf.
-
-- [ ] Install `audible-cli`: `pip install audible-cli`
-- [ ] Get activation bytes: `audible activation-bytes`
-- [ ] Convert AAX → M4B (keeps chapters):
-  ```bash
-  ffmpeg -activation_bytes YOUR_BYTES -i book.aax -c copy book.m4b
-  ```
-- [ ] Or batch convert with [AAXtoMP3](https://github.com/KrumpetPirate/AAXtoMP3):
-  ```bash
-  ./AAXtoMP3 --authcode YOUR_BYTES *.aax
-  ```
-- [ ] Place converted files in `~/services/audiobookshelf/data/audiobooks/`
-- [ ] In Audiobookshelf → Libraries → scan
-
-### 2. DeDRM Kindle books → Calibre-Web
+### 1. DeDRM Kindle books → Calibre-Web
 
 **Goal:** Remove DRM from Kindle ebooks, add to Calibre-Web.
 
@@ -248,6 +231,7 @@ Recommended: 10GB RAM / 2GB swap
 - [x] ~~Linkwarden~~ — restored as primary bookmark manager on port 3005, `links.peciulevicius.com`
 - [x] ~~Grafana + Prometheus configured~~ — datasource connected, dashboards imported, password set
 - [x] ~~Bazarr connected~~ — Sonarr/Radarr API keys configured, subtitle provider still needed
+- [x] ~~Audible AAX → Audiobookshelf (Apr 2026)~~ — converted 28 AAX audiobooks to M4B via `scripts/convert-audiobooks.sh` (ffmpeg stream copy, chapters preserved). Synced to Mac mini Audiobookshelf.
 - [x] ~~B2 backup cleanup (Apr 2026)~~ — deleted Immich photos (7GB), Linkwarden (644MB), Audiobookshelf (890MB) from B2. Down from 9.7GB to 1.2GB. Immich backup disabled (using T5 local). Script fixed: `pipefail` + error counter.
 - [x] ~~Cloudflared plist fix~~ — brew service was missing `tunnel run` args, created proper `com.cloudflare.cloudflared.plist` launch agent
 - [x] ~~NordPass cancelled~~ — subscription ended, passwords in Vaultwarden
