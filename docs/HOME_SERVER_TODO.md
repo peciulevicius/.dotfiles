@@ -23,14 +23,23 @@
 - DeDRM 10.0.3 doesn't support the new Kindle Mac app (Lassen) DRM either
 - Amazon removed "Download & transfer via USB" from their website (Feb 2025)
 
-**Remaining steps — use Kindle for PC 2.4.0 in a Windows VM:**
-- [ ] Install [UTM](https://mac.getutm.app/) (free VM for Mac)
-- [ ] Install Windows 11 ARM (free evaluation from Microsoft)
-- [ ] Install Kindle for PC 2.4.0 (old version, archive.org) — block auto-updates
-- [ ] Sign in to Amazon, download all books — old DRM format, DeDRM can crack
-- [ ] Import into Calibre on Mac → DeDRM strips DRM → convert to EPUB
-- [ ] rsync clean library to Mac mini: `rsync -avz ~/BOOKS/Calibre/ macmini:~/services/calibre-web/data/books/`
-- [ ] Scan in Calibre-Web
+**Setup done (Apr 2026):**
+- [x] Install [UTM](https://mac.getutm.app/) + [CrystalFetch](https://apps.apple.com/app/crystalfetch/id6445889614) (VM + Windows ISO downloader)
+- [x] Download [Satsuoni DeDRM v10.0.18](https://github.com/Satsuoni/DeDRM_tools/releases/tag/v10.0.18) with KFXArchiver283.exe → `~/BOOKS/kindle-dedrm-tools/DeDRM_v10.0.18/`
+- [x] Download Kindle for PC 2.8.2 installer → `~/BOOKS/kindle-dedrm-tools/KindleForPC-installer-2.8.2.exe`
+
+**Remaining steps — Windows VM + Kindle for PC 2.8.2:**
+1. [ ] Open CrystalFetch → download Windows 11 ARM ISO
+2. [ ] Open UTM → Create VM → Virtualize → Windows → select ISO → 8GB RAM, 64GB disk
+3. [ ] Install Windows 11, then install SPICE Guest Tools from the UTM virtual drive
+4. [ ] Copy `KindleForPC-installer-2.8.2.exe` into the VM (drag & drop or shared folder)
+5. [ ] Install Kindle for PC → Tools → Options → General → uncheck auto-updates
+6. [ ] Sign in to Amazon, download all books
+7. [ ] Copy `DeDRM_v10.0.18/KFXArchiver283.exe` into the VM
+8. [ ] Run `KFXArchiver283.exe` in the Kindle app folder — creates DRM-free KFX-ZIP files
+9. [ ] Copy decrypted files back to Mac → import into Calibre → convert to EPUB
+10. [ ] rsync clean library to Mac mini: `rsync -avz ~/BOOKS/Calibre/ macmini:~/services/calibre-web/data/books/`
+11. [ ] Scan in Calibre-Web
 
 ### 3. Calibre-Web — organising books
 
