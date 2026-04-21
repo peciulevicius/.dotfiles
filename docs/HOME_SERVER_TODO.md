@@ -2,60 +2,20 @@
 
 ## Active
 
-### 1. DeDRM Kindle books → Calibre-Web
+### 1. Calibre-Web — organise bookshelves
 
-**Goal:** Remove DRM from Kindle ebooks, add to Calibre-Web.
-
-**Done so far:**
-- [x] Download [DeDRM_tools](https://github.com/noDRM/DeDRM_tools/releases) (v10.0.3)
-- [x] Install DeDRM + Obok plugins in Calibre desktop (MacBook Air)
-- [x] Configure: DeDRM → eInk Kindle → added both serials (Scribe + Paperwhite)
-- [x] DeDRM'd 5 sideloaded/DRM-free books → converted to EPUB → in `/Users/peciulevicius/BOOKS/Calibre/`
-  - Project Hail Mary (Andy Weir) — original cover set
-  - Man's Search for Meaning (Viktor E. Frankl)
-  - The Culture Code (Daniel Coyle)
-  - Kaip pildyti 2026m. VMI deklaraciją? (sesinuliai.lt)
-  - Social Styles and Versatility report
-- [x] Copied full Kindle Paperwhite `/mnt/us/documents/` via SSH (KOReader) → `/Users/peciulevicius/BOOKS/kindle-paperwhite-full/`
-
-**Blocked — Amazon KFX DRM:**
-- Serial-based decryption fails on all Amazon-purchased KFX books (newer Paperwhite firmware changed key derivation)
-- DeDRM 10.0.3 doesn't support the new Kindle Mac app (Lassen) DRM either
-- Amazon removed "Download & transfer via USB" from their website (Feb 2025)
-
-**Setup done (Apr 2026):**
-- [x] Install [UTM](https://mac.getutm.app/) + [CrystalFetch](https://apps.apple.com/app/crystalfetch/id6445889614) (VM + Windows ISO downloader)
-- [x] Download [Satsuoni DeDRM v10.0.18](https://github.com/Satsuoni/DeDRM_tools/releases/tag/v10.0.18) with KFXArchiver283.exe → `~/BOOKS/kindle-dedrm-tools/DeDRM_v10.0.18/`
-- [x] Download Kindle for PC 2.8.2 installer → `~/BOOKS/kindle-dedrm-tools/KindleForPC-installer-2.8.2.exe`
-
-**Remaining steps — Windows VM + Kindle for PC 2.8.2:**
-1. [ ] Open CrystalFetch → download Windows 11 ARM ISO
-2. [ ] Open UTM → Create VM → Virtualize → Windows → select ISO → 8GB RAM, 64GB disk
-3. [ ] Install Windows 11, then install SPICE Guest Tools from the UTM virtual drive
-4. [ ] Copy `KindleForPC-installer-2.8.2.exe` into the VM (drag & drop or shared folder)
-5. [ ] Install Kindle for PC → Tools → Options → General → uncheck auto-updates
-6. [ ] Sign in to Amazon, download all books
-7. [ ] Copy `DeDRM_v10.0.18/KFXArchiver283.exe` into the VM
-8. [ ] Run `KFXArchiver283.exe` in the Kindle app folder — creates DRM-free KFX-ZIP files
-9. [ ] Copy decrypted files back to Mac → import into Calibre → convert to EPUB
-10. [ ] rsync clean library to Mac mini: `rsync -avz ~/BOOKS/Calibre/ macmini:~/services/calibre-web/data/books/`
-11. [ ] Scan in Calibre-Web
-
-### 3. Calibre-Web — organising books
-
-Calibre-Web doesn't support folder creation from the UI. Use **Bookshelves** instead:
-- [ ] Admin → Edit Shelves → create shelves (e.g. "Fiction", "Tech", "Papers")
+Calibre-Web has 33 books synced. Use **Bookshelves** to organise:
+- [ ] Create shelves (e.g. "Fiction", "Self-Help", "Business", "Tech")
 - [ ] Add books to shelves
-- [ ] Or manage folder structure in Calibre desktop (mirrored to Calibre-Web)
-- [ ] Alternative: consider **Kavita** if folder/series support is needed
+- [ ] Configure "Send to Kindle" for Kindle Scribe
 
-### 4. Uptime Kuma notifications
+### 2. Uptime Kuma notifications
 
 - [ ] Open http://localhost:3001 → Settings → Notifications
 - [ ] Add email notification channel
 - [ ] Test notification with a "Test" button
 
-### 5. Paperless-NGX — organise documents
+### 3. Paperless-NGX — organise documents
 
 Paperless-NGX doesn't support traditional folders — it uses **tags**, **document types**, and **correspondents** instead.
 
@@ -65,12 +25,12 @@ Paperless-NGX doesn't support traditional folders — it uses **tags**, **docume
 - [ ] Assign types/correspondents/tags to uploaded documents
 - [ ] Use **Saved Views** (left sidebar) to create folder-like filtered views
 
-### 6. Linkwarden — browser extension + import
+### 4. Linkwarden — browser extension + import
 
 - [ ] Install Linkwarden browser extension
 - [ ] Import bookmarks from Chrome/Brave
 
-### 7. Set up Obsidian vault sync via Syncthing
+### 5. Set up Obsidian vault sync via Syncthing
 
 **Goal:** Real-time vault sync across Mac mini, MacBook, and phone — replacing the nightly B2 backup (one-way) as the primary sync mechanism.
 
@@ -240,6 +200,7 @@ Recommended: 10GB RAM / 2GB swap
 - [x] ~~Linkwarden~~ — restored as primary bookmark manager on port 3005, `links.peciulevicius.com`
 - [x] ~~Grafana + Prometheus configured~~ — datasource connected, dashboards imported, password set
 - [x] ~~Bazarr connected~~ — Sonarr/Radarr API keys configured, subtitle provider still needed
+- [x] ~~Kindle DeDRM → Calibre-Web (Apr 2026)~~ — decrypted 30 Kindle books via KFXArchiver283 (work laptop + Kindle for PC 2.8.2), converted to EPUB in Calibre, synced to Mac mini Calibre-Web. BOOKS folder cleaned (~22GB freed).
 - [x] ~~Audible AAX → Audiobookshelf (Apr 2026)~~ — converted 28 AAX audiobooks to M4B via `scripts/convert-audiobooks.sh` (ffmpeg stream copy, chapters preserved). Synced to Mac mini Audiobookshelf.
 - [x] ~~B2 backup cleanup (Apr 2026)~~ — deleted Immich photos (7GB), Linkwarden (644MB), Audiobookshelf (890MB) from B2. Down from 9.7GB to 1.2GB. Immich backup disabled (using T5 local). Script fixed: `pipefail` + error counter.
 - [x] ~~Cloudflared plist fix~~ — brew service was missing `tunnel run` args, created proper `com.cloudflare.cloudflared.plist` launch agent
