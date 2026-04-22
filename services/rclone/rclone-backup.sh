@@ -32,7 +32,7 @@ fi
 RCLONE_REMOTE="${RCLONE_REMOTE:-b2-backup}"
 DOCKER_DIR="${DOCKER_DIR:-$HOME/services}"
 BACKUP_DEST="${BACKUP_DEST:-${RCLONE_REMOTE}:peciulevicius-services-backup/services}"
-RCLONE_FLAGS="${RCLONE_FLAGS:---transfers=4 --checkers=8 --fast-list --stats=60s}"
+RCLONE_FLAGS="${RCLONE_FLAGS:---transfers=4 --checkers=8 --fast-list --stats=60s --delete-excluded}"
 
 ERRORS=0
 
