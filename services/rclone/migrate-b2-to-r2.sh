@@ -39,7 +39,7 @@ log_ok "rclone installed ($(rclone version | head -1))"
 B2_REMOTE=""
 for remote in $(rclone listremotes); do
   name="${remote%:}"
-  type=$(rclone config show "$name" 2>/dev/null | grep "^type" | awk '{print $3}')
+  type=$(rclone config show "$name" 2>/dev/null | grep "^type" | awk '{print $3}' || true)
   if [[ "$type" == "b2" ]]; then
     B2_REMOTE="$name"
     break
@@ -55,7 +55,7 @@ fi
 R2_REMOTE=""
 for remote in $(rclone listremotes); do
   name="${remote%:}"
-  provider=$(rclone config show "$name" 2>/dev/null | grep "^provider" | awk '{print $3}')
+  provider=$(rclone config show "$name" 2>/dev/null | grep "^provider" | awk '{print $3}' || true)
   if [[ "$provider" == "Cloudflare" ]]; then
     R2_REMOTE="$name"
     break
