@@ -1,7 +1,7 @@
 #!/bin/bash
-# Rclone cloud backup — backs up ~/services volumes to B2/S3
+# Rclone cloud backup — backs up ~/services configs and Obsidian vault to Cloudflare R2
 # Usage: ./rclone-backup.sh [--dry-run]
-# Set up rclone remote first: rclone config
+# Set up rclone remote first: rclone config (see README.md)
 
 set -o pipefail
 
