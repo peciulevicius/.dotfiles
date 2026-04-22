@@ -93,6 +93,9 @@ dump_postgres "immich_postgres" "postgres" "immich"
 # Paperless-ngx (PostgreSQL)
 dump_postgres "paperless_db" "paperless" "paperless"
 
+# Linkwarden (PostgreSQL)
+dump_postgres "linkwarden_db" "linkwarden" "linkwarden"
+
 # Nextcloud (MariaDB)
 dump_mysql "nextcloud_db" "nextcloud"
 
