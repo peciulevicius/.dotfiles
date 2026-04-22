@@ -216,11 +216,53 @@ pkm/
 ```
 
 **Steps:**
-- [ ] Create `pkm/` directory with script, config, requirements
-- [ ] Configure IMAP credentials in `config.py` (email, app password, IMAP server)
-- [ ] Test with a real Kindle Scribe export email
-- [ ] Set up as cron job or run manually after each Scribe export
+- [x] Create `pkm/` directory with `kindle_sync.py`, `config.py`, `requirements.txt`
+- [ ] Fill in `pkm/config.py` — set `VAULT_PATH` and `EMAIL_PASSWORD` (Gmail app password)
+- [ ] Test: send a notebook from Kindle Scribe → email → `python3 pkm/kindle_sync.py --dry-run`
+- [ ] Set up as cron or run manually after each Scribe export
 - [ ] Optional: weekly GitHub backup of vault (`obsidian-vault` private repo, cron: `git add . && git commit -m "backup $(date +%Y-%m-%d)" && git push`)
+
+### 18. De-Google — migrate off all Google services (later)
+
+**Goal:** Own all personal data. No Google Drive, Gmail, Calendar, Photos, or other Google services.
+
+**Why:** Data sovereignty — not dependent on a single corporation, easier to switch providers, data stays under your control.
+
+**Services to replace:**
+
+| Google service | Self-hosted replacement | Status |
+|---|---|---|
+| Gmail | Migadu / Fastmail / self-host with Stalwart Mail | Not started |
+| Google Drive | Nextcloud (already running) | Nextcloud ready, needs migration |
+| Google Calendar | Nextcloud Calendar (CalDAV) | Not started |
+| Google Contacts | Nextcloud Contacts (CardDAV) | Not started |
+| Google Photos | Immich (already running) | Immich ready, needs migration |
+| Google Docs | Nextcloud Office / OnlyOffice | Nextcloud ready |
+| YouTube | n/a (no full replacement) | — |
+
+**Migration order (recommended):**
+1. [ ] **Email first** — pick provider (Migadu ~€4/mo recommended: own domain, no Google dependency)
+  - Create account at Migadu with `peciulevicius.com` domain
+  - Add MX records in Cloudflare DNS
+  - Import Gmail archive (Google Takeout → IMAP import)
+  - Update all accounts (banking, work, services) to new address
+  - Update `pkm/config.py`: change `IMAP_SERVER` to new provider
+  - Keep Gmail forwarding for ~3 months, then delete
+2. [ ] **Calendar + Contacts** — enable Nextcloud Calendar + Contacts apps
+  - Add Nextcloud CalDAV to iPhone (Settings → Calendar → Add Account → Other)
+  - Add Nextcloud CardDAV to iPhone (Settings → Contacts → Add Account → Other)
+  - Import Google Calendar (export .ics → import to Nextcloud)
+  - Import Google Contacts (export .vcf → import to Nextcloud)
+3. [ ] **Drive** — redirect remaining Google Drive usage to Nextcloud
+  - Install Nextcloud desktop client on MacBook
+  - Move any files still in Google Drive → Nextcloud
+4. [ ] **Photos** — migrate Google Photos to Immich
+  - Google Takeout → download photos archive
+  - Import to Immich via bulk upload
+5. [ ] **Account cleanup** — after 3–6 months with no Google services
+  - Delete Google account (irreversible — confirm everything migrated first)
+
+**Note:** `pkm/kindle_sync.py` is already IMAP-based so switching email providers requires only changing `IMAP_SERVER` in `config.py`.
 
 ### 16. Docker VM resource limits (later)
 
