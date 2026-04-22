@@ -2,11 +2,10 @@
 
 ## Active
 
-### 1. Calibre-Web — organise bookshelves
+### 1. Calibre-Web — finish setup
 
-Calibre-Web has 33 books synced. Use **Bookshelves** to organise:
-- [ ] Create shelves (e.g. "Fiction", "Self-Help", "Business", "Tech")
-- [ ] Add books to shelves
+33 books synced. Remaining:
+- [ ] Create bookshelves (e.g. "Fiction", "Self-Help", "Business", "Tech") and assign books
 - [ ] Configure "Send to Kindle" for Kindle Scribe
 
 ### 2. Uptime Kuma notifications
@@ -32,17 +31,20 @@ Paperless-NGX doesn't support traditional folders — it uses **tags**, **docume
 
 ### 5. Set up Obsidian vault sync via Syncthing
 
-**Goal:** Real-time vault sync across Mac mini, MacBook, and phone — replacing the nightly B2 backup (one-way) as the primary sync mechanism.
+**Goal:** Real-time vault sync across all devices — replacing the nightly B2 backup (one-way) as the primary sync mechanism. Part of the broader notes system (see also #17 for Kindle automation).
 
-Syncthing is already running on all three devices. Just needs the vault folder configured.
+Vault structure and templates already exist — run `scripts/setup/setup-obsidian.sh` to scaffold. Full docs in `docs/guides/NOTES.md`.
+
+Syncthing is already running on Mac mini, MacBook, and iPhone. Just needs the vault folder configured.
 
 - [ ] On Mac mini Syncthing (http://localhost:8384):
-  - Add Folder → select Obsidian vault path (e.g. `~/Documents/MyVault`)
+  - Add Folder → select `~/obsidian-vault`
   - Get the Folder ID shown
   - Share with MacBook and iPhone device IDs (visible in Remote Devices on each device)
 - [ ] On MacBook: accept folder share invitation from Mac mini
-- [ ] On iPhone (Syncthing app): accept folder share invitation
+- [ ] On iPhone (Mobius Sync): accept folder share invitation
 - [ ] Test: edit a note on phone → verify it appears on MacBook within seconds
+- [ ] Windows work laptop (later): install Syncthing → add Mac mini as device → accept shared folder → vault syncs to work laptop too
 
 
 ### 8. Bazarr — subtitle provider
@@ -158,7 +160,9 @@ Syncthing is already running on all three devices. Just needs the vault folder c
   ```
 - [ ] Test by running the backup script manually — Kuma should show green
 
-### 15. Migrate backups from B2 to Cloudflare R2 (later)
+### 15. Migrate backups from B2 to Cloudflare R2
+
+**Note (2026-04-22):** B2 backup is currently broken — storage cap exceeded (403). Both services and obsidian-vault backups failing nightly. This needs to be done soon.
 
 **Goal:** Replace Backblaze B2 with Cloudflare R2 for cloud backups. R2 has 10GB free, no egress fees, already using Cloudflare.
 
@@ -172,6 +176,51 @@ Syncthing is already running on all three devices. Just needs the vault folder c
 - [ ] Update `BACKUP_DEST` to use new bucket name
 - [ ] Test: `bash ~/.dotfiles/services/rclone/rclone-backup.sh --dry-run`
 - [ ] Delete B2 bucket after verifying R2 works
+
+### 17. Kindle Scribe → Obsidian automation
+
+**Goal:** Automatically sync Kindle Scribe handwritten/typed notes to the Obsidian vault so notes taken on the Scribe appear on all synced devices (MacBook, Mac mini, iPhone, eventually Windows work laptop).
+
+**How it works:** Scribe exports a notebook as TXT via email (Share → Send to email). A script fetches those emails, extracts the text, and routes it to the correct vault folder based on the notebook name.
+
+**Existing infrastructure:**
+- Vault structure + templates: `scripts/setup/setup-obsidian.sh`
+- Routing rules documented: `docs/guides/NOTES.md` (Kindle Scribe → Obsidian Routing table)
+- Syncthing sync: TODO #7
+
+**To build — `pkm/kindle_sync.py` (IMAP-based, provider-agnostic):**
+
+1. Connect to email via IMAP (works with any provider — Gmail now, easy to switch later)
+2. Search for unread emails from `do-not-reply@amazon.com` with subject containing "from your Kindle"
+3. Parse email subject to extract notebook name
+4. Download TXT content from the download link in the email body
+5. Route to correct vault folder using keyword matching (same rules as `docs/guides/NOTES.md`)
+6. Save as `.md` with frontmatter:
+   ```yaml
+   ---
+   source: Kindle Scribe
+   exported: YYYY-MM-DD
+   notebook: [original notebook name]
+   ---
+   ```
+7. Filename: `YYYY-MM-DD_NotebookName.md` (append `_v2`, `_v3` if exists — never overwrite)
+8. Mark email as read after processing
+9. Optional: git commit + push to `obsidian-vault` private repo
+
+**Directory structure:**
+```
+pkm/
+├── kindle_sync.py       # main script
+├── config.py            # IMAP creds, vault path, routing rules, toggles
+└── requirements.txt     # imaplib is stdlib, requests for download link
+```
+
+**Steps:**
+- [ ] Create `pkm/` directory with script, config, requirements
+- [ ] Configure IMAP credentials in `config.py` (email, app password, IMAP server)
+- [ ] Test with a real Kindle Scribe export email
+- [ ] Set up as cron job or run manually after each Scribe export
+- [ ] Optional: weekly GitHub backup of vault (`obsidian-vault` private repo, cron: `git add . && git commit -m "backup $(date +%Y-%m-%d)" && git push`)
 
 ### 16. Docker VM resource limits (later)
 
@@ -188,6 +237,8 @@ Recommended: 10GB RAM / 2GB swap
 
 ## Done
 
+- [x] ~~DeDRM Kindle books → Calibre-Web (Apr 2026)~~ — ~30 books DRM-removed via Windows VM (UTM) + Kindle for PC 2.8.2 + KFXArchiver283, converted to EPUB, uploaded to Calibre-Web
+- [x] ~~Calibre-Web — organising books (Apr 2026)~~ — year-end books processed and organised
 - [x] ~~Media stack setup~~ — Sonarr/Radarr/Prowlarr/Transmission/Jellyfin fully connected, remote path mapping fixed, Narcos S1-S3 downloaded and playing
 - [x] ~~Cloudflare DNS cleanup~~ — deleted stale CNAMEs: `sync`, `portainer`, `ai`, `sonarr`, `radarr`, `prowlarr`, `downloads`
 - [x] ~~Cloudflare Access (wildcard)~~ — removed `*.peciulevicius.com` Zero Trust gate; was breaking all native apps (Bitwarden, Immich, etc.). Each service has its own login screen — Access wasn't needed.
