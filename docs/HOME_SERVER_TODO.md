@@ -264,6 +264,33 @@ pkm/
 
 **Note:** `pkm/kindle_sync.py` is already IMAP-based so switching email providers requires only changing `IMAP_SERVER` in `config.py`.
 
+### 19. T7 → T5 full backup (not just Immich)
+
+**Problem:** `backup-immich.sh` (cron 3am daily) only backs up Immich photos from T7 to T5. Media, Calibre books, and other T7 data are **not** covered. If T7 fails, only photos are recoverable from T5.
+
+**Additional problem:** T5 must be physically plugged in for backups to work. Currently no alert if it's missing — the script just silently fails.
+
+**What T7 currently holds:**
+| Path | Size (approx) | Backed up to T5? |
+|------|--------------|-----------------|
+| `/Volumes/T7/immich/` | ~100GB+ photos | ✅ (backup-immich.sh) |
+| `/Volumes/T7/media/` | large (movies/TV) | ❌ |
+| `/Volumes/T7/calibre-books/` | small (~5GB) | ❌ |
+| `/Volumes/T7/immich/postgres/` | DB files | ❌ (rsync skips open DB files) |
+
+**Plan:**
+- [ ] Plug in T5 and verify it mounts as `/Volumes/ImmichBackup` (or rename label to `T5Backup`)
+- [ ] Extend `backup-immich.sh` (or create new `backup-t7.sh`) to also rsync:
+  - `/Volumes/T7/calibre-books/` → `/Volumes/T5/calibre-books/`
+  - Skip `/Volumes/T7/media/` — too large for 500GB T5, keep media loss acceptable
+- [ ] Add T5 mount check at start of backup: if not mounted → send alert via Uptime Kuma heartbeat miss (TODO #2) + log error
+- [ ] Add Uptime Kuma push heartbeat to backup script (coordinate with TODO #14)
+- [ ] Test: unplug T5, run backup → should log error, not silently pass
+
+**Recovery posture after fix:**
+- If T7 fails: Immich photos + Calibre books on T5, services configs on R2 (cloud)
+- If T5 fails: replace it, rsync from T7 again
+
 ### 16. Docker VM resource limits (later)
 
 **Goal:** Give Docker more headroom for the full stack.
