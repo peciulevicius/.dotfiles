@@ -1,94 +1,117 @@
 ---
 name: develop
-description: Implement a GitHub Issue end-to-end — read the issue, plan, build, test, commit, open PR. Use when given a GitHub issue number, URL, or feature description.
+description: Implement a GitHub Issue end-to-end — read the issue, plan, build, self-review, test, commit, open PR. Use when given a GitHub issue number, URL, or feature description.
 ---
 
-Implement the task described in $ARGUMENTS end-to-end.
+Implement the task described in $ARGUMENTS end-to-end, without stopping for confirmation unless something is genuinely ambiguous.
 
 ## Step 1 — Read the task
 
 Determine the input type:
-- Issue number (e.g. `42`, `#42`) → run `gh issue view <number> --json title,body,labels,comments`
+- Issue number (`42`, `#42`) → `gh issue view <number> --json title,body,labels,comments,assignees`
 - GitHub URL → extract owner/repo/number, run the same command
-- Raw text / screenshot → treat as the requirement directly
+- Raw text or screenshot → treat it as the requirement directly
 
-If it's an issue, read the full JSON output: title, body, acceptance criteria, labels, linked issues, any comments with design decisions.
+Read everything: title, body, acceptance criteria, labels, comments (comments often have design decisions).
+
+If the repo has a GitHub Project board, move the issue to "In Progress":
+```bash
+gh issue edit <number> --add-label "in-progress" 2>/dev/null || true
+```
 
 ## Step 2 — Understand the codebase
 
-Before writing a single line:
-- Read CLAUDE.md for project conventions
-- Find the files most likely affected (`grep`, `glob` by feature area)
-- Read existing patterns in adjacent code — match them exactly
-- Check for existing utilities or components that can be reused
+Before writing any code:
+- Read CLAUDE.md for conventions, stack, and rules
+- Locate files most likely affected (grep for related function names, route paths, component names)
+- Read 2-3 adjacent files to understand existing patterns — match them exactly
+- Check `@/components/ui/` and `@/lib/` for reusable pieces
 
-## Step 3 — Plan (ask if anything is unclear)
+## Step 3 — Plan
 
-Draft a short implementation plan:
+State briefly:
 - Which files change and why
-- Any new files needed
-- Database migrations needed (new tables → RLS → types)
-- API routes needed
+- New files needed (if any)
+- DB migrations needed (new table → RLS policy → type generation)
+- New API routes needed
 - Tests to write
 
-If the requirements are ambiguous or the scope is large, **ask one focused question** before building. For clear issues, skip ahead.
+If requirements are ambiguous or scope is large, ask **one focused question** before building. For clear issues, proceed immediately.
 
 ## Step 4 — Implement
 
-Build the feature:
-- Follow the project stack (check CLAUDE.md — Next.js or SvelteKit, Supabase, Stripe, etc.)
+Build the feature following the project stack (Next.js or SvelteKit, Supabase, Stripe, Tailwind — check CLAUDE.md):
 - TypeScript strict mode, no `any`
-- Zod for all new API inputs
-- RLS on any new Supabase tables
-- shadcn/ui components for UI (check `@/components/ui/` first)
+- Zod on every new API boundary
+- RLS on every new Supabase table
+- shadcn/ui for new UI components (check existing ones first)
 - pnpm, never npm
 
-## Step 5 — Verify
+## Step 5 — Verify (fix failures before continuing)
 
-Run these in order, stop and fix any failure before continuing:
 ```bash
-pnpm typecheck 2>/dev/null || pnpm tsc --noEmit 2>/dev/null || echo "no typecheck script"
-pnpm lint 2>/dev/null || echo "no lint script"
+pnpm typecheck 2>/dev/null || pnpm tsc --noEmit 2>/dev/null || echo "no typecheck"
+pnpm lint 2>/dev/null || echo "no lint"
 pnpm test:run 2>/dev/null || echo "no tests"
-pnpm build 2>/dev/null || echo "skipping build"
 ```
 
-## Step 6 — Commit
+If typecheck or lint fails: fix it, don't skip it.
 
-Use `/commit` skill or:
+## Step 6 — Self-review
+
+Before committing, review your own diff critically:
+
+```bash
+git diff
+```
+
+Check for:
+- **Security:** any `userId` from request body? missing Zod validation? missing RLS? secrets in code?
+- **Correctness:** does every acceptance criterion actually work? any edge cases missed?
+- **TypeScript:** any `any`, non-null assertions without reason, missing error narrowing?
+- **Conventions:** matches existing patterns in the codebase? correct file naming? pnpm not npm?
+- **Scope creep:** did you change anything outside what the issue asked for?
+
+Fix any issues found before committing. If a security issue is found, fix it and note it in the PR.
+
+## Step 7 — Commit
+
+Stage only the files you changed (not `git add .`):
+
 ```bash
 git add <specific files>
-git commit -m "feat(scope): description
+git commit -m "feat(scope): short description
 
 Closes #<issue-number>"
 ```
 
-Conventional commit type based on what changed:
-- New feature → `feat`
-- Bug fix → `fix`
-- Refactor only → `refactor`
+Commit type: `feat` for new features, `fix` for bugs, `refactor` for restructuring.
 
-## Step 7 — Open PR
+## Step 8 — Open PR
 
 ```bash
 gh pr create \
-  --title "<same as commit subject>" \
-  --body "## What
-<1-2 sentence summary>
+  --title "<same as commit subject line>" \
+  --body "$(cat <<'EOF'
+## What
+<1-2 sentence summary of what changed>
 
 ## Why
-<context from the issue>
+<context from the issue — what problem this solves>
 
 ## Test plan
-- [ ] <what you manually verified>
-- [ ] <edge cases>
+- [ ] <what to manually verify>
+- [ ] <edge cases to check>
 
-Closes #<issue-number>"
+Closes #<issue-number>
+EOF
+)"
 ```
 
-## Output
+## Step 9 — Done
 
-When done, print:
-- Files changed (list)
+Print:
+- List of files changed
 - PR URL
-- Any follow-up items that were out of scope
+- Acceptance criteria status (✅ done / ⚠️ partial / ❌ out of scope)
+- Any follow-up issues worth creating
