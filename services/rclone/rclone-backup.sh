@@ -59,21 +59,29 @@ echo "$(date '+%Y-%m-%d %H:%M:%S') — rclone backup started" >> "$LOG_FILE"
 log_info "Backing up $DOCKER_DIR → $BACKUP_DEST"
 [[ "$DRY_RUN" == "true" ]] && log_warn "Dry run — no data will be transferred"
 
-# Backup 1: Docker service configs
+# Backup 1: Docker service configs — critical data only
+# T7/T5 hold media; cloud holds configs + irreplaceable data
 SYNC_CMD=(rclone sync "$DOCKER_DIR" "$BACKUP_DEST")
+# Secrets — never upload
 SYNC_CMD+=(--exclude "**/.env")
-SYNC_CMD+=(--exclude "**/library/**")
-SYNC_CMD+=(--exclude "**/data/postgres/**")
-SYNC_CMD+=(--exclude "**/data/prometheus/**")
-SYNC_CMD+=(--exclude "**/jellyfin/data/**")
-SYNC_CMD+=(--exclude "**/sonarr-radarr/data/**")
-SYNC_CMD+=(--exclude "**/syncthing/data/**")
-SYNC_CMD+=(--exclude "**/actual-budget/**")
-SYNC_CMD+=(--exclude "**/audiobookshelf/data/audiobooks/**")
-SYNC_CMD+=(--exclude "**/linkwarden/**")
-SYNC_CMD+=(--exclude "**/nextcloud/data/**")
-SYNC_CMD+=(--exclude "**/karakeep/data/**")
-SYNC_CMD+=(--exclude "**/karakeep/meilisearch/**")
+# Large media — on T7/T5
+SYNC_CMD+=(--exclude "audiobookshelf/data/audiobooks/**")
+SYNC_CMD+=(--exclude "audiobookshelf/data/metadata/**")
+SYNC_CMD+=(--exclude "audiobookshelf/data/podcasts/**")
+# Postgres data dirs — back up via pg_dump instead (backup-databases.sh)
+SYNC_CMD+=(--exclude "linkwarden/data/**")
+SYNC_CMD+=(--exclude "immich/data/**")
+# Large app installs — reinstallable, not user data
+SYNC_CMD+=(--exclude "nextcloud/data/**")
+SYNC_CMD+=(--exclude "sonarr-radarr/data/**")
+SYNC_CMD+=(--exclude "grafana/data/**")
+SYNC_CMD+=(--exclude "jellyfin/data/**")
+SYNC_CMD+=(--exclude "syncthing/data/**")
+SYNC_CMD+=(--exclude "pihole/data/**")
+SYNC_CMD+=(--exclude "uptime-kuma/data/**")
+# Stopped/removed services
+SYNC_CMD+=(--exclude "karakeep/**")
+SYNC_CMD+=(--exclude "actual-budget/**")
 SYNC_CMD+=($RCLONE_FLAGS)
 [[ "$DRY_RUN" == "true" ]] && SYNC_CMD+=(--dry-run)
 
@@ -108,10 +116,45 @@ else
   log_warn "Obsidian vault not found at $OBSIDIAN_DIR — skipping"
 fi
 
-# Immich photos backup disabled — rely on T5 local backup instead
-# To re-enable, uncomment and set IMMICH_DIR / IMMICH_DEST
-# IMMICH_DIR="${IMMICH_DIR:-/Volumes/T7/immich/upload}"
-# IMMICH_DEST="${IMMICH_DEST:-${RCLONE_REMOTE}:peciulevicius-services-backup/immich-photos}"
+# Backup 3: Database dumps (weekly pg_dump output)
+DB_DUMP_DIR="$HOME/backups"
+DB_DUMP_DEST="${RCLONE_REMOTE}:peciulevicius-backups/db-dumps"
+
+if [[ -d "$DB_DUMP_DIR" ]]; then
+  log_info "Backing up $DB_DUMP_DIR → $DB_DUMP_DEST"
+  DUMP_CMD=(rclone sync "$DB_DUMP_DIR" "$DB_DUMP_DEST")
+  DUMP_CMD+=($RCLONE_FLAGS)
+  [[ "$DRY_RUN" == "true" ]] && DUMP_CMD+=(--dry-run)
+
+  if "${DUMP_CMD[@]}" 2>&1 | tee -a "$LOG_FILE"; then
+    log_ok "DB dumps backup complete"
+  else
+    log_err "DB dumps backup failed — check $LOG_FILE"
+    ((ERRORS++))
+  fi
+else
+  log_warn "DB dump dir not found at $DB_DUMP_DIR — skipping"
+fi
+
+# Backup 4: Calibre books (EPUBs on T7 — small enough for cloud)
+CALIBRE_DIR="/Volumes/T7/calibre-books"
+CALIBRE_DEST="${RCLONE_REMOTE}:peciulevicius-backups/calibre-books"
+
+if [[ -d "$CALIBRE_DIR" ]]; then
+  log_info "Backing up $CALIBRE_DIR → $CALIBRE_DEST"
+  CALIBRE_CMD=(rclone sync "$CALIBRE_DIR" "$CALIBRE_DEST")
+  CALIBRE_CMD+=($RCLONE_FLAGS)
+  [[ "$DRY_RUN" == "true" ]] && CALIBRE_CMD+=(--dry-run)
+
+  if "${CALIBRE_CMD[@]}" 2>&1 | tee -a "$LOG_FILE"; then
+    log_ok "Calibre books backup complete"
+  else
+    log_err "Calibre books backup failed — check $LOG_FILE"
+    ((ERRORS++))
+  fi
+else
+  log_warn "Calibre books not mounted at $CALIBRE_DIR — skipping"
+fi
 
 if [[ $ERRORS -gt 0 ]]; then
   log_err "Backup finished with $ERRORS error(s)"
