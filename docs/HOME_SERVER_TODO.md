@@ -160,22 +160,9 @@ Syncthing is already running on Mac mini, MacBook, and iPhone. Just needs the va
   ```
 - [ ] Test by running the backup script manually — Kuma should show green
 
-### 15. Migrate backups from B2 to Cloudflare R2
+### 15. ~~Migrate backups from B2 to Cloudflare R2~~ ✅ Done (2026-04-22)
 
-**Note (2026-04-22):** B2 backup is currently broken — storage cap exceeded (403). Both services and obsidian-vault backups failing nightly. This needs to be done soon.
-
-**Goal:** Replace Backblaze B2 with Cloudflare R2 for cloud backups. R2 has 10GB free, no egress fees, already using Cloudflare.
-
-**Current B2 usage:** ~1.2GB (services configs + obsidian vault). Immich photos backup disabled — relying on T5 local backup.
-
-- [ ] Cloudflare dashboard → R2 → Create bucket (e.g. `peciulevicius-backups`)
-- [ ] Create R2 API token (Object Read & Write)
-- [ ] `rclone config` → add `r2` remote (type: s3, provider: Cloudflare, endpoint: `<account-id>.r2.cloudflarestorage.com`)
-- [ ] Migrate data: `rclone sync b2:peciulevicius-services-backup r2:peciulevicius-backups`
-- [ ] Update `~/.dotfiles/services/rclone/.env` and `~/services/rclone/.env`: change `RCLONE_REMOTE=b2` → `RCLONE_REMOTE=r2`
-- [ ] Update `BACKUP_DEST` to use new bucket name
-- [ ] Test: `bash ~/.dotfiles/services/rclone/rclone-backup.sh --dry-run`
-- [ ] Delete B2 bucket after verifying R2 works
+Migrated to Cloudflare R2. Nightly rclone backup running at 5am. R2 at ~1.3GB (critical-only: vaultwarden, paperless docs, obsidian vault, db dumps, calibre books). B2 bucket purged and can be deleted from Backblaze dashboard.
 
 ### 17. Kindle Scribe → Obsidian automation
 
