@@ -59,6 +59,17 @@
           }
         ]
       }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.dotfiles/config/claude/hooks/typecheck.sh"
+          }
+        ]
+      }
     ]
   }
 }
