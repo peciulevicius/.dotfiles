@@ -14,12 +14,45 @@ Determine the input type:
 
 Read everything: title, body, acceptance criteria, labels, comments (comments often have design decisions).
 
-If the repo has a GitHub Project board, move the issue to "In Progress":
+## Step 2 — Move to In Progress (REQUIRED)
+
+**Before doing anything else**, move the issue to "In Progress" on the project board.
+
 ```bash
-gh issue edit <number> --add-label "in-progress" 2>/dev/null || true
+# Get project and field IDs (run once, cache mentally)
+PROJECT_ID=$(gh project list --owner peciulevicius --format json | python3 -c "import json,sys; [print(p['id']) for p in json.load(sys.stdin)['projects'] if p['number']==15]")
+
+# Get Status field ID and option IDs
+gh project field-list 15 --format json | python3 -c "
+import json, sys
+for f in json.load(sys.stdin)['fields']:
+    if f['name'] == 'Status':
+        print('field:', f['id'])
+        for o in f.get('options',[]): print(o['name'], o['id'])
+"
+
+# Get item ID for this issue
+gh project item-list 15 --format json | python3 -c "
+import json, sys
+for i in json.load(sys.stdin)['items']:
+    if i['content'].get('number') == <ISSUE_NUMBER>:
+        print(i['id'])
+"
+
+# Move to In Progress (option id: 47fc9ee4)
+gh project item-edit \
+  --project-id "$PROJECT_ID" \
+  --id <ITEM_ID> \
+  --field-id PVTSSF_lAHOApFIks4BVahZzhQ2e7o \
+  --single-select-option-id 47fc9ee4
 ```
 
-## Step 2 — Understand the codebase
+Known project constants (peciulevicius/.dotfiles, project #15):
+- Project ID: `PVT_kwHOApFIks4BVahZ`
+- Status field ID: `PVTSSF_lAHOApFIks4BVahZzhQ2e7o`
+- Backlog: `f75ad846` | Ready: `61e4505c` | In progress: `47fc9ee4` | In review: `df73e18b` | Done: `98236657`
+
+## Step 3 — Understand the codebase
 
 Before writing any code:
 - Read CLAUDE.md for conventions, stack, and rules
@@ -27,7 +60,7 @@ Before writing any code:
 - Read 2-3 adjacent files to understand existing patterns — match them exactly
 - Check `@/components/ui/` and `@/lib/` for reusable pieces
 
-## Step 3 — Plan
+## Step 4 — Plan
 
 State briefly:
 - Which files change and why
@@ -38,7 +71,7 @@ State briefly:
 
 If requirements are ambiguous or scope is large, ask **one focused question** before building. For clear issues, proceed immediately.
 
-## Step 4 — Implement
+## Step 5 — Implement
 
 Build the feature following the project stack (Next.js or SvelteKit, Supabase, Stripe, Tailwind — check CLAUDE.md):
 - TypeScript strict mode, no `any`
@@ -47,7 +80,7 @@ Build the feature following the project stack (Next.js or SvelteKit, Supabase, S
 - shadcn/ui for new UI components (check existing ones first)
 - pnpm, never npm
 
-## Step 5 — Verify (fix failures before continuing)
+## Step 6 — Verify (fix failures before continuing)
 
 ```bash
 pnpm typecheck 2>/dev/null || pnpm tsc --noEmit 2>/dev/null || echo "no typecheck"
@@ -57,7 +90,7 @@ pnpm test:run 2>/dev/null || echo "no tests"
 
 If typecheck or lint fails: fix it, don't skip it.
 
-## Step 6 — Self-review
+## Step 7 — Self-review
 
 Before committing, review your own diff critically:
 
@@ -71,10 +104,17 @@ Check for:
 - **TypeScript:** any `any`, non-null assertions without reason, missing error narrowing?
 - **Conventions:** matches existing patterns in the codebase? correct file naming? pnpm not npm?
 - **Scope creep:** did you change anything outside what the issue asked for?
+- **Manual steps remaining:** if any ACs require human action (UI clicks, external service setup), do NOT close the issue — note them explicitly
 
 Fix any issues found before committing. If a security issue is found, fix it and note it in the PR.
 
-## Step 7 — Commit
+## Step 8 — Commit (feature branch, never main)
+
+Create a feature branch first:
+
+```bash
+git checkout -b feat/<short-description>   # or fix/ chore/ docs/
+```
 
 Stage only the files you changed (not `git add .`):
 
@@ -85,11 +125,13 @@ git commit -m "feat(scope): short description
 Closes #<issue-number>"
 ```
 
-Commit type: `feat` for new features, `fix` for bugs, `refactor` for restructuring.
+Only add `Closes #N` if ALL acceptance criteria are done — including any manual steps. If manual steps remain, omit `Closes` and note them in the PR body instead.
 
-## Step 8 — Open PR
+## Step 9 — Open PR (do NOT merge it)
 
 ```bash
+git push -u origin <branch>
+
 gh pr create \
   --title "<same as commit subject line>" \
   --body "$(cat <<'EOF'
@@ -97,21 +139,39 @@ gh pr create \
 <1-2 sentence summary of what changed>
 
 ## Why
-<context from the issue — what problem this solves>
+<context from the issue>
 
 ## Test plan
 - [ ] <what to manually verify>
 - [ ] <edge cases to check>
+
+## Manual steps remaining
+<list any steps that still require human action — UI config, external service setup, etc.>
+<if none, omit this section>
 
 Closes #<issue-number>
 EOF
 )"
 ```
 
-## Step 9 — Done
+**Never merge the PR yourself.** Leave it open for review.
+
+## Step 10 — Move to In Review
+
+After opening the PR, move the issue to "In Review" on the project board:
+
+```bash
+gh project item-edit \
+  --project-id PVT_kwHOApFIks4BVahZ \
+  --id <ITEM_ID> \
+  --field-id PVTSSF_lAHOApFIks4BVahZzhQ2e7o \
+  --single-select-option-id df73e18b
+```
+
+## Step 11 — Done
 
 Print:
 - List of files changed
 - PR URL
-- Acceptance criteria status (✅ done / ⚠️ partial / ❌ out of scope)
+- Acceptance criteria status (✅ done / ⚠️ needs manual action / ❌ out of scope)
 - Any follow-up issues worth creating
