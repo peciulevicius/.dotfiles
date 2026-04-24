@@ -1,0 +1,205 @@
+{
+  "title": "Mac Mini Host",
+  "uid": "mac-host",
+  "schemaVersion": 38,
+  "refresh": "30s",
+  "time": { "from": "now-3h", "to": "now" },
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "RAM Used",
+      "gridPos": { "x": 0, "y": 0, "w": 4, "h": 4 },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "area", "orientation": "auto" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "thresholds": { "mode": "absolute", "steps": [
+            { "color": "green", "value": null },
+            { "color": "yellow", "value": 12884901888 },
+            { "color": "red", "value": 15032385536 }
+          ]}
+        }
+      },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [{
+        "expr": "node_memory_total_bytes{job=\"mac-host\"} - node_memory_free_bytes{job=\"mac-host\"} - node_memory_inactive_bytes{job=\"mac-host\"}",
+        "legendFormat": "Used"
+      }]
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "RAM Total",
+      "gridPos": { "x": 4, "y": 0, "w": 4, "h": 4 },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "value", "graphMode": "none" },
+      "fieldConfig": { "defaults": { "unit": "bytes" } },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [{ "expr": "node_memory_total_bytes{job=\"mac-host\"}", "legendFormat": "Total" }]
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Swap Used",
+      "gridPos": { "x": 8, "y": 0, "w": 4, "h": 4 },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "area" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "thresholds": { "mode": "absolute", "steps": [
+            { "color": "green", "value": null },
+            { "color": "yellow", "value": 3221225472 },
+            { "color": "red", "value": 5368709120 }
+          ]}
+        }
+      },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [{ "expr": "node_memory_swap_used_bytes{job=\"mac-host\"}", "legendFormat": "Swap Used" }]
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Swap Total",
+      "gridPos": { "x": 12, "y": 0, "w": 4, "h": 4 },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "value", "graphMode": "none" },
+      "fieldConfig": { "defaults": { "unit": "bytes" } },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [{ "expr": "node_memory_swap_total_bytes{job=\"mac-host\"}", "legendFormat": "Swap Total" }]
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "CPU Usage",
+      "gridPos": { "x": 16, "y": 0, "w": 4, "h": 4 },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "area" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "thresholds": { "mode": "absolute", "steps": [
+            { "color": "green", "value": null },
+            { "color": "yellow", "value": 70 },
+            { "color": "red", "value": 90 }
+          ]}
+        }
+      },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [{
+        "expr": "100 - (avg by(instance) (rate(node_cpu_seconds_total{job=\"mac-host\",mode=\"idle\"}[2m])) * 100)",
+        "legendFormat": "CPU %"
+      }]
+    },
+    {
+      "id": 6,
+      "type": "stat",
+      "title": "Load Avg (1m)",
+      "gridPos": { "x": 20, "y": 0, "w": 4, "h": 4 },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background", "graphMode": "area" },
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": { "mode": "absolute", "steps": [
+            { "color": "green", "value": null },
+            { "color": "yellow", "value": 8 },
+            { "color": "red", "value": 14 }
+          ]}
+        }
+      },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [{ "expr": "node_load1{job=\"mac-host\"}", "legendFormat": "Load 1m" }]
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "RAM Over Time",
+      "gridPos": { "x": 0, "y": 4, "w": 12, "h": 8 },
+      "fieldConfig": { "defaults": { "unit": "bytes" } },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "node_memory_active_bytes{job=\"mac-host\"}", "legendFormat": "Active" },
+        { "expr": "node_memory_wired_bytes{job=\"mac-host\"}", "legendFormat": "Wired" },
+        { "expr": "node_memory_inactive_bytes{job=\"mac-host\"}", "legendFormat": "Inactive" },
+        { "expr": "node_memory_free_bytes{job=\"mac-host\"}", "legendFormat": "Free" },
+        { "expr": "node_memory_compressed_bytes{job=\"mac-host\"}", "legendFormat": "Compressed" }
+      ]
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "CPU Over Time",
+      "gridPos": { "x": 12, "y": 4, "w": 12, "h": 8 },
+      "fieldConfig": { "defaults": { "unit": "percent", "min": 0, "max": 100 } },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [{
+        "expr": "100 - (avg by(instance) (rate(node_cpu_seconds_total{job=\"mac-host\",mode=\"idle\"}[2m])) * 100)",
+        "legendFormat": "CPU %"
+      }]
+    },
+    {
+      "id": 9,
+      "type": "timeseries",
+      "title": "Swap Over Time",
+      "gridPos": { "x": 0, "y": 12, "w": 12, "h": 8 },
+      "fieldConfig": { "defaults": { "unit": "bytes" } },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "node_memory_swap_used_bytes{job=\"mac-host\"}", "legendFormat": "Used" },
+        { "expr": "node_memory_swap_total_bytes{job=\"mac-host\"}", "legendFormat": "Total" }
+      ]
+    },
+    {
+      "id": 10,
+      "type": "timeseries",
+      "title": "Disk I/O",
+      "gridPos": { "x": 12, "y": 12, "w": 12, "h": 8 },
+      "fieldConfig": { "defaults": { "unit": "Bps" } },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "rate(node_disk_read_bytes_total{job=\"mac-host\"}[2m])", "legendFormat": "Read {{device}}" },
+        { "expr": "rate(node_disk_written_bytes_total{job=\"mac-host\"}[2m])", "legendFormat": "Write {{device}}" }
+      ]
+    },
+    {
+      "id": 11,
+      "type": "stat",
+      "title": "Disk Used (root)",
+      "gridPos": { "x": 0, "y": 20, "w": 6, "h": 4 },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "background" },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "thresholds": { "mode": "absolute", "steps": [
+            { "color": "green", "value": null },
+            { "color": "yellow", "value": 0.75 },
+            { "color": "red", "value": 0.9 }
+          ]}
+        }
+      },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [{
+        "expr": "(node_filesystem_size_bytes{job=\"mac-host\",mountpoint=\"/\"} - node_filesystem_free_bytes{job=\"mac-host\",mountpoint=\"/\"}) / node_filesystem_size_bytes{job=\"mac-host\",mountpoint=\"/\"}",
+        "legendFormat": "Used %"
+      }]
+    },
+    {
+      "id": 12,
+      "type": "stat",
+      "title": "Disk Free (root)",
+      "gridPos": { "x": 6, "y": 20, "w": 6, "h": 4 },
+      "options": { "reduceOptions": { "calcs": ["lastNotNull"] }, "colorMode": "value" },
+      "fieldConfig": { "defaults": { "unit": "bytes" } },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [{ "expr": "node_filesystem_free_bytes{job=\"mac-host\",mountpoint=\"/\"}", "legendFormat": "Free" }]
+    },
+    {
+      "id": 13,
+      "type": "timeseries",
+      "title": "Network I/O",
+      "gridPos": { "x": 12, "y": 20, "w": 12, "h": 4 },
+      "fieldConfig": { "defaults": { "unit": "Bps" } },
+      "datasource": { "type": "prometheus", "uid": "prometheus" },
+      "targets": [
+        { "expr": "rate(node_network_receive_bytes_total{job=\"mac-host\",device!~\"lo.*|utun.*|awdl.*|llw.*|bridge.*|gif.*\"}[2m])", "legendFormat": "RX {{device}}" },
+        { "expr": "rate(node_network_transmit_bytes_total{job=\"mac-host\",device!~\"lo.*|utun.*|awdl.*|llw.*|bridge.*|gif.*\"}[2m])", "legendFormat": "TX {{device}}" }
+      ]
+    }
+  ]
+}
