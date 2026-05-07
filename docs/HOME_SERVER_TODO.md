@@ -105,49 +105,9 @@ Syncthing is already running on Mac mini, MacBook, and iPhone. Just needs the va
 - [ ] Update Transmission compose to use `network_mode: service:gluetun`
 - [ ] Test: `docker exec transmission curl ifconfig.me` should show VPN IP, not home IP
 
-### 13. Show Mac host stats in monitoring (alongside Docker VM stats)
+### ~~13. Show Mac host stats in monitoring~~ ✅ Done (2026-05-07)
 
-**Problem:** Glance/Grafana currently shows Docker Linux VM memory (~7.8GB), not the actual Mac mini's 16GB RAM, real CPU, thermals, or disk health.
-
-**Solution:** Run node-exporter natively on macOS (outside Docker), scrape it with Prometheus, show it in Glance/Grafana.
-
-- [ ] Install node-exporter on macOS host (via Homebrew):
-  ```bash
-  brew install node_exporter
-  brew services start node_exporter
-  # Now running at http://localhost:9100/metrics
-  ```
-- [ ] Add host scrape target to Prometheus config (`prometheus.yml`):
-  ```yaml
-  scrape_configs:
-    - job_name: 'mac-host'
-      static_configs:
-        - targets: ['host.docker.internal:9100']
-          labels:
-            instance: 'mac-mini-host'
-    - job_name: 'docker-vm'
-      static_configs:
-        - targets: ['node-exporter:9100']
-          labels:
-            instance: 'docker-vm'
-  ```
-- [ ] Restart Prometheus container to pick up config change
-- [ ] In Grafana → import dashboard ID `1860` again, select `mac-mini-host` instance → real Mac RAM/CPU/disk
-- [ ] Import Grafana dashboard ID `893` (Docker containers) — shows per-container RAM so you know which is the culprit next time memory spikes
-- [ ] In Glance, add a second `system-monitor` widget pointing to host metrics — shows both VM and Mac side by side
-
-**What you'll be able to monitor:**
-
-| Metric | Docker VM | Mac Host |
-|--------|-----------|----------|
-| RAM | ✅ (7.8GB view) | ✅ (full 16GB) |
-| CPU | ✅ | ✅ (all cores) |
-| Disk | partial | ✅ (T7, T5, internal) |
-| Swap | ✅ (1GB VM swap) | ✅ (real macOS swap) |
-| Thermals | ❌ | ✅ (with extra tool) |
-| Network | ✅ | ✅ |
-
-- [ ] **Bonus — Mac thermals:** install [mac-metrics-exporter](https://github.com/antoniopataro/mac-metrics-exporter) for CPU die temp, fan speed, power draw. Useful for checking the Mini isn't overheating headless.
+Homebrew node_exporter running at port 9100, scraped by Prometheus (`job="mac-host"`). Custom Grafana dashboard (`mac-host.json`) provisioned — shows real 16GB RAM, swap, CPU, disk, network. Glance `server-stats` widget updated to show actual host figures.
 
 ### 14. Uptime Kuma — B2 backup heartbeat
 
@@ -311,6 +271,7 @@ Recommended: 10GB RAM / 2GB swap
 - [x] ~~Audible AAX → Audiobookshelf (Apr 2026)~~ — converted 28 AAX audiobooks to M4B via `scripts/convert-audiobooks.sh` (ffmpeg stream copy, chapters preserved). Synced to Mac mini Audiobookshelf.
 - [x] ~~B2 backup cleanup (Apr 2026)~~ — deleted Immich photos (7GB), Linkwarden (644MB), Audiobookshelf (890MB) from B2. Down from 9.7GB to 1.2GB. Immich backup disabled (using T5 local). Script fixed: `pipefail` + error counter.
 - [x] ~~Cloudflared plist fix~~ — brew service was missing `tunnel run` args, created proper `com.cloudflare.cloudflared.plist` launch agent
+- [x] ~~Docker Desktop watchdog~~ — `scripts/utils/docker-watchdog.sh` + launchd agent runs every 5min; restarts Docker Desktop if containers lose internet (Docker proxy dies intermittently)
 - [x] ~~NordPass cancelled~~ — subscription ended, passwords in Vaultwarden
 - [x] ~~Jellyseerr~~ — media request/discovery UI for Jellyfin (Tailscale-only, port 5055)
 - [x] ~~Bazarr~~ — automated subtitle management for Sonarr/Radarr (Tailscale-only, port 6767)
@@ -380,11 +341,10 @@ Two Samsung SSDs permanently connected to the Mac Mini:
 | Old photo copies (to delete) | T7 | APFS `TimeMachine` volume (not actually TM — just old photo copies) |
 | Local photo backup (rsync from T7) | T5 | nightly copy |
 
-**Cloud backup (rclone → Backblaze B2):**
-- Docker service configs → `b2-backup:peciulevicius-services-backup/services`
-- Obsidian vault → `b2-backup:peciulevicius-services-backup/obsidian-vault`
-- Immich photos → `b2-backup:peciulevicius-services-backup/immich-photos`
+**Cloud backup (rclone → Cloudflare R2):**
+- Docker service configs, obsidian vault, Calibre books, DB dumps → R2 bucket `peciulevicius-services-backup`
 - Runs nightly at 5am via cron: `~/.dotfiles/services/rclone/rclone-backup.sh`
+- ~1.3GB total (critical-only; Immich photos excluded — T5 local backup instead)
 
 **If T7 dies:** photos are on T5 (local) + B2 (cloud). Reinstall services from dotfiles, restore data from B2.
 **If T5 dies:** replace it, rsync from T7 again.
