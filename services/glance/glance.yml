@@ -191,7 +191,7 @@ pages:
               - glanceapp/glance
               - dani-garcia/vaultwarden
               - jellyfin/jellyfin
-              - karakeep/karakeep
+              - hoarder-app/hoarder
             token: ${GITHUB_TOKEN}
 
           - type: lobsters
@@ -231,7 +231,7 @@ pages:
                 title: SaaStr
               - url: https://hnrss.org/show
                 title: Show HN
-              - url: https://feeds.feedburner.com/TheBlogOfAuthor
+              - url: https://seths.blog/feed/
                 title: Seth Godin
               - url: https://world.hey.com/dhh/feed.atom
                 title: DHH
