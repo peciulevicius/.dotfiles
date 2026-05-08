@@ -2,17 +2,17 @@
 """
 Kindle Scribe → Obsidian sync
 
-Fetches Kindle export emails via IMAP, extracts TXT content,
-routes it to the correct Obsidian vault folder, and saves as .md.
+Fetches Kindle export emails via IMAP, downloads the text content,
+and saves each notebook as a dated .md file in the Imports folder.
 
 Usage:
-    python3 kindle_sync.py           # process all unread export emails
+    python3 kindle_sync.py           # process new export emails
     python3 kindle_sync.py --dry-run # show what would happen, don't write files
 
 Setup:
     1. Fill in config.py (VAULT_PATH, EMAIL_ADDRESS, EMAIL_PASSWORD)
-    2. pip3 install -r requirements.txt
-    3. Run: python3 kindle_sync.py
+    2. Export from Scribe: Share → Searchable PDF (gives both PDF + text links)
+    3. Script runs hourly via cron, picks up the text file automatically
 """
 
 import email
@@ -20,7 +20,6 @@ import imaplib
 import os
 import re
 import sys
-import subprocess
 from datetime import date, datetime
 from email.header import decode_header
 from pathlib import Path
@@ -35,25 +34,16 @@ DRY_RUN = "--dry-run" in sys.argv
 KINDLE_SENDER = "do-not-reply@amazon.com"
 KINDLE_SUBJECT_MARKER = "from your Kindle"
 
-# Tracks which email UIDs have been processed so we don't reprocess
-# even if the email was already read in Gmail before the script ran.
-PROCESSED_IDS_FILE = Path(__file__).parent / ".processed_ids"
-
-# Amazon wraps the S3 download link inside a redirect URL:
-# https://www.amazon.com/gp/f.html?...&U=https%3A%2F%2Fkindle-content-requests-prod.s3...
 AMAZON_REDIRECT_RE = re.compile(
     r"https://www\.amazon\.com/gp/f\.html\?[^\s\"'<>]*kindle-content-requests[^\s\"'<>]*",
     re.IGNORECASE,
 )
 
+PROCESSED_IDS_FILE = Path(__file__).parent / ".processed_ids"
 
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
 
 def log(msg: str) -> None:
-    ts = datetime.now().strftime("%H:%M:%S")
-    print(f"[{ts}] {msg}")
+    print(f"[{datetime.now().strftime('%H:%M:%S')}] {msg}")
 
 
 def decode_str(value: str | bytes | None) -> str:
@@ -64,97 +54,17 @@ def decode_str(value: str | bytes | None) -> str:
     return value
 
 
-def decode_subject(raw_subject: str) -> str:
-    parts = decode_header(raw_subject)
-    decoded = []
-    for part, enc in parts:
-        if isinstance(part, bytes):
-            decoded.append(part.decode(enc or "utf-8", errors="replace"))
-        else:
-            decoded.append(part)
-    return "".join(decoded)
-
-
-def extract_notebook_name(subject: str) -> str:
-    """
-    Subject format: 'You sent a file "NOTEBOOK NAME" from your Kindle'
-    Returns the notebook name, or the full subject if pattern doesn't match.
-    """
-    m = re.search(r'"([^"]+)"', subject)
-    return m.group(1) if m else subject
-
-
-def route(notebook_name: str) -> str:
-    """
-    Returns the destination path (relative to VAULT_PATH) for this notebook.
-    Uses ROUTING_RULES from config — first keyword match wins.
-    """
-    lower = notebook_name.lower()
-    for keyword, dest in config.ROUTING_RULES.items():
-        if keyword in lower:
-            return dest
-    return config.FALLBACK_FOLDER
-
-
-def resolve_dest_path(notebook_name: str, today: str) -> str:
-    """
-    Turns a routing destination into a full absolute file path.
-    Folder destinations get a dated filename; .md destinations are used directly.
-    """
-    dest = route(notebook_name)
-    safe_name = re.sub(r'[\\/:*?"<>|]', "_", notebook_name)
-
-    if dest.endswith("/"):
-        filename = f"{today}_{safe_name}.md"
-        return os.path.join(config.VAULT_PATH, dest, filename)
-    else:
-        return os.path.join(config.VAULT_PATH, dest)
-
-
-def unique_path(path: str) -> str:
-    """Appends _v2, _v3, … until the path doesn't exist."""
-    if not os.path.exists(path):
-        return path
-    base, ext = os.path.splitext(path)
-    counter = 2
-    while True:
-        candidate = f"{base}_v{counter}{ext}"
-        if not os.path.exists(candidate):
-            return candidate
-        counter += 1
-
-
-def build_frontmatter(notebook_name: str, today: str) -> str:
-    return (
-        f"---\n"
-        f"source: Kindle Scribe\n"
-        f"exported: {today}\n"
-        f"notebook: {notebook_name}\n"
-        f"---\n\n"
+def decode_subject(raw: str) -> str:
+    parts = decode_header(raw)
+    return "".join(
+        p.decode(e or "utf-8", errors="replace") if isinstance(p, bytes) else p
+        for p, e in parts
     )
 
 
-def download_txt(url: str) -> str | None:
-    """Downloads the TXT export from Amazon. Returns content or None on failure."""
-    try:
-        r = requests.get(url, timeout=30)
-        r.raise_for_status()
-        return r.text
-    except requests.RequestException as e:
-        log(f"  Download failed: {e}")
-        # Retry once
-        try:
-            r = requests.get(url, timeout=30)
-            r.raise_for_status()
-            return r.text
-        except requests.RequestException:
-            return None
-
-
-def save_note(path: str, content: str) -> None:
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    with open(path, "a", encoding="utf-8") as f:
-        f.write(content)
+def extract_notebook_name(subject: str) -> str:
+    m = re.search(r'"([^"]+)"', subject)
+    return m.group(1) if m else subject
 
 
 def load_processed_ids() -> set[str]:
@@ -168,41 +78,30 @@ def mark_processed(uid: str) -> None:
         f.write(uid + "\n")
 
 
-def git_push() -> None:
-    if DRY_RUN:
-        log("  [dry-run] would git commit + push")
-        return
-    today = date.today().isoformat()
-    try:
-        subprocess.run(
-            ["git", "add", "."],
-            cwd=config.VAULT_PATH,
-            check=True,
-            capture_output=True,
-        )
-        subprocess.run(
-            ["git", "commit", "-m", f"kindle sync {today}"],
-            cwd=config.VAULT_PATH,
-            check=True,
-            capture_output=True,
-        )
-        subprocess.run(
-            ["git", "push"],
-            cwd=config.VAULT_PATH,
-            check=True,
-            capture_output=True,
-        )
-        log("  Git push done")
-    except subprocess.CalledProcessError as e:
-        log(f"  Git push failed: {e.stderr.decode().strip()}")
+def extract_s3_url(redirect_url: str) -> str:
+    parsed = urlparse(redirect_url)
+    params = parse_qs(parsed.query)
+    u = params.get("U", [])
+    return unquote(u[0]) if u else redirect_url
 
 
-# ---------------------------------------------------------------------------
-# Email parsing
-# ---------------------------------------------------------------------------
+def find_text_url(plain: str, html: str) -> str | None:
+    """
+    Finds the text file download URL from the email.
+    Searchable PDF export gives two links — prefers .txt over .pdf.
+    """
+    for text in (plain, html):
+        matches = AMAZON_REDIRECT_RE.findall(text)
+        if not matches:
+            continue
+        s3_urls = [extract_s3_url(m) for m in matches]
+        txt = [u for u in s3_urls if u.lower().endswith(".txt")]
+        if txt:
+            return txt[0]
+    return None
 
-def get_email_body_parts(msg: email.message.Message) -> tuple[str, str]:
-    """Returns (plain_text, html_text) from a message."""
+
+def get_body_parts(msg: email.message.Message) -> tuple[str, str]:
     plain, html = "", ""
     if msg.is_multipart():
         for part in msg.walk():
@@ -220,49 +119,47 @@ def get_email_body_parts(msg: email.message.Message) -> tuple[str, str]:
     return plain, html
 
 
-def extract_s3_url(redirect_url: str) -> str:
-    """Unwraps the Amazon redirect URL to get the real S3 download URL."""
-    parsed = urlparse(redirect_url)
-    params = parse_qs(parsed.query)
-    u_values = params.get("U", [])
-    if u_values:
-        return unquote(u_values[0])
-    return redirect_url
+def download_text(url: str) -> str | None:
+    try:
+        r = requests.get(url, timeout=30)
+        r.raise_for_status()
+        return r.text
+    except requests.RequestException as e:
+        log(f"  Download failed: {e}")
+        return None
 
 
-def find_download_url(plain: str, html: str) -> str | None:
-    """
-    Searches HTML for Amazon redirect URLs containing S3 download links.
-    Prefers .txt over .pdf when both are present (Searchable PDF export gives both).
-    """
-    for text in (plain, html):
-        matches = AMAZON_REDIRECT_RE.findall(text)
-        if not matches:
-            continue
-        s3_urls = [extract_s3_url(m) for m in matches]
-        # Prefer text file — it's what we need for Obsidian
-        txt_urls = [u for u in s3_urls if ".txt" in u.lower()]
-        if txt_urls:
-            return txt_urls[0]
-        # Fall back to first match (PDF) — will still be skipped later with a warning
-        return s3_urls[0]
-    return None
+def save_note(notebook_name: str, content: str, today: str) -> str:
+    imports_dir = os.path.join(config.VAULT_PATH, "📥 Imports")
+    os.makedirs(imports_dir, exist_ok=True)
 
+    safe_name = re.sub(r'[\\/:*?"<>|]', "_", notebook_name)
+    filename = f"{today}_{safe_name}.md"
+    path = os.path.join(imports_dir, filename)
 
-# ---------------------------------------------------------------------------
-# Main
-# ---------------------------------------------------------------------------
+    # Avoid overwriting — append _v2, _v3 if needed
+    if os.path.exists(path):
+        base = os.path.splitext(path)[0]
+        counter = 2
+        while os.path.exists(f"{base}_v{counter}.md"):
+            counter += 1
+        path = f"{base}_v{counter}.md"
+
+    frontmatter = f"---\nsource: Kindle Scribe\nexported: {today}\nnotebook: {notebook_name}\n---\n\n"
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(frontmatter + content.strip() + "\n")
+
+    return path
+
 
 def validate_config() -> list[str]:
     errors = []
-    if not config.VAULT_PATH:
-        errors.append("VAULT_PATH is not set in config.py")
-    elif not os.path.isdir(config.VAULT_PATH):
-        errors.append(f"VAULT_PATH does not exist: {config.VAULT_PATH}")
+    if not config.VAULT_PATH or not os.path.isdir(config.VAULT_PATH):
+        errors.append(f"VAULT_PATH invalid: {config.VAULT_PATH!r}")
     if not config.EMAIL_ADDRESS:
-        errors.append("EMAIL_ADDRESS is not set in config.py")
+        errors.append("EMAIL_ADDRESS not set")
     if not config.EMAIL_PASSWORD:
-        errors.append("EMAIL_PASSWORD is not set in config.py")
+        errors.append("EMAIL_PASSWORD not set")
     return errors
 
 
@@ -277,8 +174,8 @@ def main() -> None:
         sys.exit(1)
 
     today = date.today().isoformat()
-    saved = skipped_expired = error_count = 0
     processed_ids = load_processed_ids()
+    saved = skipped = errors_count = 0
 
     log(f"Connecting to {config.IMAP_SERVER}…")
     try:
@@ -289,89 +186,53 @@ def main() -> None:
         sys.exit(1)
 
     imap.select("INBOX")
-
-    # Search all matching emails (read or unread) — we track processed IDs locally
-    # so it works even if the email was opened in Gmail before the script ran.
-    _, data = imap.search(
-        None,
-        f'(FROM "{KINDLE_SENDER}" SUBJECT "{KINDLE_SUBJECT_MARKER}")',
-    )
+    _, data = imap.search(None, f'(FROM "{KINDLE_SENDER}" SUBJECT "{KINDLE_SUBJECT_MARKER}")')
     all_ids = data[0].split() if data[0] else []
     msg_ids = [mid for mid in all_ids if mid.decode() not in processed_ids]
 
     if not msg_ids:
-        log("No new Kindle export emails found.")
+        log("No new Kindle export emails.")
         imap.logout()
         return
 
-    log(f"Found {len(msg_ids)} new export email(s) to process.")
+    log(f"Found {len(msg_ids)} new export email(s).")
 
     for msg_id in msg_ids:
         _, raw = imap.fetch(msg_id, "(RFC822)")
         msg = email.message_from_bytes(raw[0][1])
-
-        subject = decode_subject(msg.get("Subject", ""))
-        notebook_name = extract_notebook_name(subject)
+        notebook_name = extract_notebook_name(decode_subject(msg.get("Subject", "")))
         log(f'Processing: "{notebook_name}"')
 
-        plain, html = get_email_body_parts(msg)
-        download_url = find_download_url(plain, html)
+        plain, html = get_body_parts(msg)
+        url = find_text_url(plain, html)
 
-        if not download_url:
-            log("  No download URL found — email may be expired, skipping.")
-            skipped_expired += 1
+        if not url:
+            log("  No text file link found — use 'Searchable PDF' export on Scribe (not plain PDF).")
+            skipped += 1
+            if not DRY_RUN:
+                mark_processed(msg_id.decode())
             continue
 
-        if download_url.lower().endswith(".pdf") or "searchable" in download_url.lower():
-            log("  Only a PDF link found — use 'Searchable PDF' export on Scribe to get a text file too, skipping.")
-            skipped_expired += 1
+        log("  Downloading…")
+        content = download_text(url)
+
+        if content is None:
+            log("  Download failed — link may have expired (valid 7 days).")
+            errors_count += 1
             continue
 
-        log(f"  Downloading from Amazon…")
-        txt_content = download_txt(download_url)
-
-        if txt_content is None:
-            log("  Download failed after retry — skipping.")
-            error_count += 1
-            continue
-
-        dest = route(notebook_name)
-        file_path = resolve_dest_path(notebook_name, today)
-
-        # For folder destinations: always a new dated file (unique path).
-        # For .md file destinations: append to the existing note.
-        is_folder_dest = dest.endswith("/")
-        if is_folder_dest:
-            file_path = unique_path(file_path)
-            note_content = build_frontmatter(notebook_name, today) + txt_content.strip() + "\n"
-            action = "create"
+        if DRY_RUN:
+            log(f"  → would save to 📥 Imports/{today}_{notebook_name}.md")
         else:
-            note_content = (
-                f"\n\n---\n\n"
-                + build_frontmatter(notebook_name, today)
-                + txt_content.strip()
-                + "\n"
-            )
-            action = "append"
-
-        log(f"  → {action} {os.path.relpath(file_path, config.VAULT_PATH)}")
-
-        if not DRY_RUN:
-            save_note(file_path, note_content)
+            path = save_note(notebook_name, content, today)
             mark_processed(msg_id.decode())
+            log(f"  → saved to {os.path.relpath(path, config.VAULT_PATH)}")
 
         saved += 1
 
     imap.logout()
-
-    if not DRY_RUN and config.GIT_AUTOPUSH and saved > 0:
-        log("Pushing vault to GitHub…")
-        git_push()
-
-    log(
-        f"\nDone — {saved} saved, {skipped_expired} skipped (expired link), {error_count} error(s)"
-    )
-    if error_count:
+    log(f"\nDone — {saved} saved, {skipped} skipped (no text link), {errors_count} error(s)")
+    if errors_count:
         sys.exit(1)
 
 
