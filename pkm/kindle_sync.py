@@ -137,15 +137,7 @@ def save_note(notebook_name: str, content: str, today: str) -> str:
     filename = f"{today}_{safe_name}.md"
     path = os.path.join(imports_dir, filename)
 
-    # Avoid overwriting — append _v2, _v3 if needed
-    if os.path.exists(path):
-        base = os.path.splitext(path)[0]
-        counter = 2
-        while os.path.exists(f"{base}_v{counter}.md"):
-            counter += 1
-        path = f"{base}_v{counter}.md"
-
-    frontmatter = f"---\nsource: Kindle Scribe\nexported: {today}\nnotebook: {notebook_name}\n---\n\n"
+    frontmatter = f"---\nsource: Kindle Scribe\nexported: {datetime.now().strftime('%Y-%m-%d %H:%M')}\nnotebook: {notebook_name}\n---\n\n"
     with open(path, "w", encoding="utf-8") as f:
         f.write(frontmatter + content.strip() + "\n")
 
@@ -173,7 +165,7 @@ def main() -> None:
             print(f"Config error: {e}")
         sys.exit(1)
 
-    today = date.today().isoformat()
+    today = datetime.now().strftime("%Y-%m-%d_%H-%M")
     processed_ids = load_processed_ids()
     saved = skipped = errors_count = 0
 
