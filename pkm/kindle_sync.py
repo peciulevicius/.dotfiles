@@ -85,20 +85,26 @@ def extract_s3_url(redirect_url: str) -> str:
     return unquote(u[0]) if u else redirect_url
 
 
-def find_text_url(plain: str, html: str) -> str | None:
+def find_download_urls(plain: str, html: str) -> dict[str, str]:
     """
-    Finds the text file download URL from the email.
-    Searchable PDF export gives two links — prefers .txt over .pdf.
+    Returns a dict of {extension: url} for all Kindle download links in the email.
+    Searchable PDF export gives two links: .pdf and .txt
     """
     for text in (plain, html):
         matches = AMAZON_REDIRECT_RE.findall(text)
         if not matches:
             continue
-        s3_urls = [extract_s3_url(m) for m in matches]
-        txt = [u for u in s3_urls if ".txt" in urlparse(u).path.lower()]
-        if txt:
-            return txt[0]
-    return None
+        urls = {}
+        for m in matches:
+            s3 = extract_s3_url(m)
+            path = urlparse(s3).path.lower()
+            if path.endswith(".txt"):
+                urls["txt"] = s3
+            elif path.endswith(".pdf"):
+                urls["pdf"] = s3
+        if urls:
+            return urls
+    return {}
 
 
 def get_body_parts(msg: email.message.Message) -> tuple[str, str]:
@@ -119,27 +125,42 @@ def get_body_parts(msg: email.message.Message) -> tuple[str, str]:
     return plain, html
 
 
-def download_text(url: str) -> str | None:
+def download_bytes(url: str) -> bytes | None:
     try:
         r = requests.get(url, timeout=30)
         r.raise_for_status()
-        return r.text
+        return r.content
     except requests.RequestException as e:
         log(f"  Download failed: {e}")
         return None
 
 
-def save_note(notebook_name: str, content: str, today: str) -> str:
+def save_note(notebook_name: str, txt_content: str, attachments: dict[str, str], today: str) -> str:
+    """
+    Saves the note .md and any attachments into 📥 Imports/.
+    attachments is {ext: local_filename} for files already saved to disk.
+    """
     imports_dir = os.path.join(config.VAULT_PATH, "📥 Imports")
     os.makedirs(imports_dir, exist_ok=True)
 
     safe_name = re.sub(r'[\\/:*?"<>|]', "_", notebook_name)
-    filename = f"{today}_{safe_name}.md"
-    path = os.path.join(imports_dir, filename)
+    path = os.path.join(imports_dir, f"{today}_{safe_name}.md")
 
-    frontmatter = f"---\nsource: Kindle Scribe\nexported: {datetime.now().strftime('%Y-%m-%d %H:%M')}\nnotebook: {notebook_name}\n---\n\n"
+    # Build attachment links for Obsidian (wiki-style embeds)
+    attachment_block = ""
+    if "pdf" in attachments:
+        attachment_block += f"\n![[{attachments['pdf']}]]\n"
+    if "txt" in attachments:
+        attachment_block += f"\n[[{attachments['txt']}]]\n"
+
+    frontmatter = (
+        f"---\nsource: Kindle Scribe\n"
+        f"exported: {datetime.now().strftime('%Y-%m-%d %H:%M')}\n"
+        f"notebook: {notebook_name}\n---\n\n"
+    )
+
     with open(path, "w", encoding="utf-8") as f:
-        f.write(frontmatter + content.strip() + "\n")
+        f.write(frontmatter + txt_content.strip() + "\n" + attachment_block)
 
     return path
 
@@ -196,29 +217,57 @@ def main() -> None:
         log(f'Processing: "{notebook_name}"')
 
         plain, html = get_body_parts(msg)
-        url = find_text_url(plain, html)
+        urls = find_download_urls(plain, html)
 
-        if not url:
-            log("  No text file link found — use 'Searchable PDF' export on Scribe (not plain PDF).")
+        if not urls:
+            log("  No download links found — email may be expired.")
+            skipped += 1
+            if not DRY_RUN:
+                mark_processed(msg_id.decode())
+            continue
+
+        if "txt" not in urls:
+            log("  Only PDF found — use 'Searchable PDF' export on Scribe to get text too.")
             skipped += 1
             if not DRY_RUN:
                 mark_processed(msg_id.decode())
             continue
 
         log("  Downloading…")
-        content = download_text(url)
-
-        if content is None:
+        txt_bytes = download_bytes(urls["txt"])
+        if txt_bytes is None:
             log("  Download failed — link may have expired (valid 7 days).")
             errors_count += 1
             continue
 
+        txt_content = txt_bytes.decode("utf-8", errors="replace")
+        safe_name = re.sub(r'[\\/:*?"<>|]', "_", notebook_name)
+        imports_dir = os.path.join(config.VAULT_PATH, "📥 Imports")
+        attachments: dict[str, str] = {}
+
         if DRY_RUN:
-            log(f"  → would save to 📥 Imports/{today}_{notebook_name}.md")
+            log(f"  → would save to 📥 Imports/{today}_{safe_name}.md + attachments")
         else:
-            path = save_note(notebook_name, content, today)
+            os.makedirs(imports_dir, exist_ok=True)
+
+            # Save TXT attachment
+            txt_filename = f"{today}_{safe_name}.txt"
+            with open(os.path.join(imports_dir, txt_filename), "wb") as f:
+                f.write(txt_bytes)
+            attachments["txt"] = txt_filename
+
+            # Save PDF attachment if available
+            if "pdf" in urls:
+                pdf_bytes = download_bytes(urls["pdf"])
+                if pdf_bytes:
+                    pdf_filename = f"{today}_{safe_name}.pdf"
+                    with open(os.path.join(imports_dir, pdf_filename), "wb") as f:
+                        f.write(pdf_bytes)
+                    attachments["pdf"] = pdf_filename
+
+            path = save_note(notebook_name, txt_content, attachments, today)
             mark_processed(msg_id.decode())
-            log(f"  → saved to {os.path.relpath(path, config.VAULT_PATH)}")
+            log(f"  → {os.path.relpath(path, config.VAULT_PATH)} + {list(attachments.values())}")
 
         saved += 1
 
