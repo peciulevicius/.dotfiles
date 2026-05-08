@@ -231,11 +231,21 @@ def extract_s3_url(redirect_url: str) -> str:
 
 
 def find_download_url(plain: str, html: str) -> str | None:
-    """Searches HTML for the Amazon redirect containing the S3 download URL."""
+    """
+    Searches HTML for Amazon redirect URLs containing S3 download links.
+    Prefers .txt over .pdf when both are present (Searchable PDF export gives both).
+    """
     for text in (plain, html):
-        m = AMAZON_REDIRECT_RE.search(text)
-        if m:
-            return extract_s3_url(m.group(0))
+        matches = AMAZON_REDIRECT_RE.findall(text)
+        if not matches:
+            continue
+        s3_urls = [extract_s3_url(m) for m in matches]
+        # Prefer text file — it's what we need for Obsidian
+        txt_urls = [u for u in s3_urls if ".txt" in u.lower()]
+        if txt_urls:
+            return txt_urls[0]
+        # Fall back to first match (PDF) — will still be skipped later with a warning
+        return s3_urls[0]
     return None
 
 
@@ -309,6 +319,11 @@ def main() -> None:
 
         if not download_url:
             log("  No download URL found — email may be expired, skipping.")
+            skipped_expired += 1
+            continue
+
+        if download_url.lower().endswith(".pdf") or "searchable" in download_url.lower():
+            log("  Only a PDF link found — use 'Searchable PDF' export on Scribe to get a text file too, skipping.")
             skipped_expired += 1
             continue
 
