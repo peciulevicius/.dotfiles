@@ -10,7 +10,7 @@ VAULT_PATH = ""  # e.g. "/Users/yourname/obsidian-vault"
 IMAP_SERVER = "imap.gmail.com"   # change to imap.fastmail.com etc. when switching
 IMAP_PORT = 993
 EMAIL_ADDRESS = "dziugaspeciulevicius@gmail.com"
-EMAIL_PASSWORD = ""  # app password (not your main account password)
+EMAIL_PASSWORD = ""  # Gmail app password (myaccount.google.com/apppasswords)
 
 # Optional features
 GIT_AUTOPUSH = False   # set True to git commit + push after every sync

@@ -17,5 +17,9 @@ services/**/library/
 # Obsidian vault has its own repo
 obsidian-vault/
 
+# PKM — config.py has credentials, track config.example.py only
+pkm/config.py
+pkm/.venv/
+
 # Backup logs
 logs/
