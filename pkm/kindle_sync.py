@@ -23,6 +23,7 @@ import sys
 import subprocess
 from datetime import date, datetime
 from email.header import decode_header
+from pathlib import Path
 
 import requests
 
@@ -32,6 +33,10 @@ DRY_RUN = "--dry-run" in sys.argv
 
 KINDLE_SENDER = "do-not-reply@amazon.com"
 KINDLE_SUBJECT_MARKER = "from your Kindle"
+
+# Tracks which email UIDs have been processed so we don't reprocess
+# even if the email was already read in Gmail before the script ran.
+PROCESSED_IDS_FILE = Path(__file__).parent / ".processed_ids"
 
 # Matches the "Download text file" link Amazon puts in the export email body.
 # The link is usually inside an <a> tag or a plain URL in the text part.
@@ -151,6 +156,17 @@ def save_note(path: str, content: str) -> None:
         f.write(content)
 
 
+def load_processed_ids() -> set[str]:
+    if not PROCESSED_IDS_FILE.exists():
+        return set()
+    return set(PROCESSED_IDS_FILE.read_text().splitlines())
+
+
+def mark_processed(uid: str) -> None:
+    with open(PROCESSED_IDS_FILE, "a") as f:
+        f.write(uid + "\n")
+
+
 def git_push() -> None:
     if DRY_RUN:
         log("  [dry-run] would git commit + push")
@@ -241,6 +257,7 @@ def main() -> None:
 
     today = date.today().isoformat()
     saved = skipped_expired = error_count = 0
+    processed_ids = load_processed_ids()
 
     log(f"Connecting to {config.IMAP_SERVER}…")
     try:
@@ -252,19 +269,21 @@ def main() -> None:
 
     imap.select("INBOX")
 
-    # Search for unread Kindle export emails
+    # Search all matching emails (read or unread) — we track processed IDs locally
+    # so it works even if the email was opened in Gmail before the script ran.
     _, data = imap.search(
         None,
-        f'(UNSEEN FROM "{KINDLE_SENDER}" SUBJECT "{KINDLE_SUBJECT_MARKER}")',
+        f'(FROM "{KINDLE_SENDER}" SUBJECT "{KINDLE_SUBJECT_MARKER}")',
     )
-    msg_ids = data[0].split() if data[0] else []
+    all_ids = data[0].split() if data[0] else []
+    msg_ids = [mid for mid in all_ids if mid.decode() not in processed_ids]
 
     if not msg_ids:
         log("No new Kindle export emails found.")
         imap.logout()
         return
 
-    log(f"Found {len(msg_ids)} export email(s) to process.")
+    log(f"Found {len(msg_ids)} new export email(s) to process.")
 
     for msg_id in msg_ids:
         _, raw = imap.fetch(msg_id, "(RFC822)")
@@ -313,8 +332,7 @@ def main() -> None:
 
         if not DRY_RUN:
             save_note(file_path, note_content)
-            # Mark email as read
-            imap.store(msg_id, "+FLAGS", "\\Seen")
+            mark_processed(msg_id.decode())
 
         saved += 1
 
