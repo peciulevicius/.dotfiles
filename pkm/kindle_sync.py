@@ -95,7 +95,7 @@ def find_text_url(plain: str, html: str) -> str | None:
         if not matches:
             continue
         s3_urls = [extract_s3_url(m) for m in matches]
-        txt = [u for u in s3_urls if u.lower().endswith(".txt")]
+        txt = [u for u in s3_urls if ".txt" in urlparse(u).path.lower()]
         if txt:
             return txt[0]
     return None
