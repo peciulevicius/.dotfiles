@@ -10,3 +10,59 @@ services:
       - ${GLANCE_PORT:-7575}:8080
     env_file:
       - .env
+    networks:
+      - default
+      - vaultwarden
+      - nextcloud
+      - immich_default
+      - paperless-ngx
+      - jellyfin
+      - audiobookshelf
+      - calibre-web
+      - linkwarden
+      - freshrss
+      - mealie
+      - stirling-pdf
+      - it-tools
+      - pihole
+      - portainer
+      - uptime-kuma
+      - media
+      - grafana_default
+
+networks:
+  default:
+  vaultwarden:
+    external: true
+  nextcloud:
+    external: true
+  immich_default:
+    external: true
+  paperless-ngx:
+    external: true
+  jellyfin:
+    external: true
+  audiobookshelf:
+    external: true
+  calibre-web:
+    external: true
+  linkwarden:
+    external: true
+  freshrss:
+    external: true
+  mealie:
+    external: true
+  stirling-pdf:
+    external: true
+  it-tools:
+    external: true
+  pihole:
+    external: true
+  portainer:
+    external: true
+  uptime-kuma:
+    external: true
+  media:
+    external: true
+  grafana_default:
+    external: true

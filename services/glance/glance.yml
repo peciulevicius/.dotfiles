@@ -23,60 +23,83 @@ pages:
             sites:
               - title: Vaultwarden
                 url: https://vault.peciulevicius.com
+                check-url: http://vaultwarden:80/
                 icon: si:bitwarden
               - title: Nextcloud
                 url: https://cloud.peciulevicius.com
+                check-url: http://nextcloud:80/
+                alt-status-codes:
+                  - 400
                 icon: si:nextcloud
               - title: Immich
                 url: https://photos.peciulevicius.com
+                check-url: http://immich_server:2283/api/server/ping
                 icon: si:immich
               - title: Paperless-ngx
                 url: https://papers.peciulevicius.com
+                check-url: http://paperless:8000/
                 icon: si:paperlessngx
               - title: Jellyfin
                 url: https://watch.peciulevicius.com
+                check-url: http://jellyfin:8096/health
                 icon: si:jellyfin
               - title: Audiobookshelf
                 url: https://listen.peciulevicius.com
+                check-url: http://audiobookshelf:80/
                 icon: si:audiobookshelf
               - title: Calibre-Web
                 url: https://books.peciulevicius.com
+                check-url: http://calibre_web:8083/
                 icon: si:calibreweb
               - title: Linkwarden
                 url: https://links.peciulevicius.com
+                check-url: http://linkwarden:3000/
                 icon: si:bookstack
               - title: FreshRSS
                 url: https://rss.peciulevicius.com
+                check-url: http://freshrss:80/
                 icon: si:rss
               - title: Mealie
                 url: https://recipes.peciulevicius.com
+                check-url: http://mealie:9000/
                 icon: si:mealie
               - title: Stirling PDF
                 url: https://pdf.peciulevicius.com
+                check-url: http://stirling_pdf:8080/
                 icon: si:files
               - title: IT-Tools
                 url: https://tools.peciulevicius.com
+                check-url: http://it_tools:80/
                 icon: si:hackthebox
               - title: Pi-hole
                 url: https://pihole.peciulevicius.com
+                check-url: http://pihole:80/
+                alt-status-codes:
+                  - 302
                 icon: si:pihole
               - title: Portainer
                 url: https://portainer.peciulevicius.com
+                check-url: http://portainer:9000/
                 icon: si:portainer
               - title: Uptime Kuma
                 url: https://status.peciulevicius.com
+                check-url: http://uptime_kuma:3001/
                 icon: si:uptimekuma
               - title: Jellyseerr
                 url: http://100.81.171.49:5055
+                check-url: http://jellyseerr:5055/
                 icon: si:jellyfin
               - title: Bazarr
                 url: http://100.81.171.49:6767
+                check-url: http://bazarr:6767/
                 icon: di:bazarr
               - title: Grafana
                 url: http://100.81.171.49:3000
+                check-url: http://grafana:3000/
                 icon: si:grafana
               - title: Prometheus
                 url: http://100.81.171.49:9090
+                check-url: http://prometheus:9090/
                 icon: si:prometheus
           - type: bookmarks
             groups:
