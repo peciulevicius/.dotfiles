@@ -24,6 +24,7 @@ import subprocess
 from datetime import date, datetime
 from email.header import decode_header
 from pathlib import Path
+from urllib.parse import urlparse, parse_qs, unquote
 
 import requests
 
@@ -38,10 +39,10 @@ KINDLE_SUBJECT_MARKER = "from your Kindle"
 # even if the email was already read in Gmail before the script ran.
 PROCESSED_IDS_FILE = Path(__file__).parent / ".processed_ids"
 
-# Matches the "Download text file" link Amazon puts in the export email body.
-# The link is usually inside an <a> tag or a plain URL in the text part.
-DOWNLOAD_URL_RE = re.compile(
-    r"https://[^\s\"'>]+/GenerateKindleNotebookExport[^\s\"'>]*",
+# Amazon wraps the S3 download link inside a redirect URL:
+# https://www.amazon.com/gp/f.html?...&U=https%3A%2F%2Fkindle-content-requests-prod.s3...
+AMAZON_REDIRECT_RE = re.compile(
+    r"https://www\.amazon\.com/gp/f\.html\?[^\s\"'<>]*kindle-content-requests[^\s\"'<>]*",
     re.IGNORECASE,
 )
 
@@ -219,12 +220,22 @@ def get_email_body_parts(msg: email.message.Message) -> tuple[str, str]:
     return plain, html
 
 
+def extract_s3_url(redirect_url: str) -> str:
+    """Unwraps the Amazon redirect URL to get the real S3 download URL."""
+    parsed = urlparse(redirect_url)
+    params = parse_qs(parsed.query)
+    u_values = params.get("U", [])
+    if u_values:
+        return unquote(u_values[0])
+    return redirect_url
+
+
 def find_download_url(plain: str, html: str) -> str | None:
-    """Searches both plain and HTML parts for the Kindle download URL."""
+    """Searches HTML for the Amazon redirect containing the S3 download URL."""
     for text in (plain, html):
-        m = DOWNLOAD_URL_RE.search(text)
+        m = AMAZON_REDIRECT_RE.search(text)
         if m:
-            return m.group(0)
+            return extract_s3_url(m.group(0))
     return None
 
 
