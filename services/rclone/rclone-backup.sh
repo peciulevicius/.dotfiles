@@ -156,7 +156,13 @@ else
   log_warn "Calibre books not mounted at $CALIBRE_DIR — skipping"
 fi
 
+HEARTBEAT_URL="https://status.peciulevicius.com/api/push/1xdUOQNbK4"
+
 if [[ $ERRORS -gt 0 ]]; then
   log_err "Backup finished with $ERRORS error(s)"
+  curl -fsS "${HEARTBEAT_URL}?status=down&msg=backup+failed+with+${ERRORS}+error(s)&ping=" > /dev/null 2>&1 || true
   exit 1
 fi
+
+log_ok "All backups complete"
+curl -fsS "${HEARTBEAT_URL}?status=up&msg=OK&ping=" > /dev/null 2>&1 || true
