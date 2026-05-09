@@ -55,10 +55,6 @@ pages:
                 url: https://links.peciulevicius.com
                 check-url: http://linkwarden:3000/
                 icon: si:bookstack
-              - title: FreshRSS
-                url: https://rss.peciulevicius.com
-                check-url: http://freshrss:80/
-                icon: si:rss
               - title: Mealie
                 url: https://recipes.peciulevicius.com
                 check-url: http://mealie:9000/
@@ -135,9 +131,6 @@ pages:
                   - title: Karakeep
                     url: https://links.peciulevicius.com
                     icon: si:bookstack
-                  - title: FreshRSS
-                    url: https://rss.peciulevicius.com
-                    icon: si:rss
                   - title: Mealie
                     url: https://recipes.peciulevicius.com
                     icon: si:mealie
