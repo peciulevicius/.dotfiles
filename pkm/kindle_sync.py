@@ -150,8 +150,6 @@ def save_note(notebook_name: str, txt_content: str, attachments: dict[str, str],
     attachment_block = ""
     if "pdf" in attachments:
         attachment_block += f"\n![[{attachments['pdf']}]]\n"
-    if "txt" in attachments:
-        attachment_block += f"\n[[{attachments['txt']}]]\n"
 
     frontmatter = (
         f"---\nsource: Kindle Scribe\n"
@@ -249,12 +247,6 @@ def main() -> None:
             log(f"  → would save to 📥 Imports/{today}_{safe_name}.md + attachments")
         else:
             os.makedirs(imports_dir, exist_ok=True)
-
-            # Save TXT attachment
-            txt_filename = f"{today}_{safe_name}.txt"
-            with open(os.path.join(imports_dir, txt_filename), "wb") as f:
-                f.write(txt_bytes)
-            attachments["txt"] = txt_filename
 
             # Save PDF attachment if available
             if "pdf" in urls:
