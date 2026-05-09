@@ -8,11 +8,9 @@
 - [ ] Create bookshelves (e.g. "Fiction", "Self-Help", "Business", "Tech") and assign books
 - [ ] Configure "Send to Kindle" for Kindle Scribe
 
-### 2. Uptime Kuma notifications
+### ~~2. Uptime Kuma notifications~~ ✅ Done (2026-05-09)
 
-- [ ] Open http://localhost:3001 → Settings → Notifications
-- [ ] Add email notification channel
-- [ ] Test notification with a "Test" button
+Gmail SMTP configured (smtp.gmail.com:465, app password). Email alerts working.
 
 ### 3. Paperless-NGX — organise documents
 
@@ -96,16 +94,9 @@ Paperless-NGX doesn't support traditional folders — it uses **tags**, **docume
 
 Homebrew node_exporter running at port 9100, scraped by Prometheus (`job="mac-host"`). Custom Grafana dashboard (`mac-host.json`) provisioned — shows real 16GB RAM, swap, CPU, disk, network. Glance `server-stats` widget updated to show actual host figures.
 
-### 14. Uptime Kuma — B2 backup heartbeat
+### ~~14. Uptime Kuma — rclone backup heartbeat~~ ✅ Done (2026-05-09)
 
-**Goal:** Alert if nightly rclone backup silently fails while away.
-
-- [ ] In Uptime Kuma → Add Monitor → type: Push → copy the heartbeat URL
-- [ ] Add to end of `~/.dotfiles/services/rclone/rclone-backup.sh`:
-  ```bash
-  curl -s "https://uptime.peciulevicius.com/api/push/YOUR_HEARTBEAT_KEY" > /dev/null
-  ```
-- [ ] Test by running the backup script manually — Kuma should show green
+Push monitor added in Uptime Kuma. Heartbeat URL wired into `rclone-backup.sh` — pings up on success, down on failure. R2 backup verified working across all 4 targets.
 
 ### 15. ~~Migrate backups from B2 to Cloudflare R2~~ ✅ Done (2026-04-22)
 
