@@ -29,22 +29,9 @@ Paperless-NGX doesn't support traditional folders — it uses **tags**, **docume
 - [ ] Install Linkwarden browser extension
 - [ ] Import bookmarks from Chrome/Brave
 
-### 5. Set up Obsidian vault sync via Syncthing
+### ~~5. Set up Obsidian vault sync via Syncthing~~ ✅ Done (2026-05-08)
 
-**Goal:** Real-time vault sync across all devices — replacing the nightly B2 backup (one-way) as the primary sync mechanism. Part of the broader notes system (see also #17 for Kindle automation).
-
-Vault structure and templates already exist — run `scripts/setup/setup-obsidian.sh` to scaffold. Full docs in `docs/guides/NOTES.md`.
-
-Syncthing is already running on Mac mini, MacBook, and iPhone. Just needs the vault folder configured.
-
-- [ ] On Mac mini Syncthing (http://localhost:8384):
-  - Add Folder → select `~/obsidian-vault`
-  - Get the Folder ID shown
-  - Share with MacBook and iPhone device IDs (visible in Remote Devices on each device)
-- [ ] On MacBook: accept folder share invitation from Mac mini
-- [ ] On iPhone (Mobius Sync): accept folder share invitation
-- [ ] Test: edit a note on phone → verify it appears on MacBook within seconds
-- [ ] Windows work laptop (later): install Syncthing → add Mac mini as device → accept shared folder → vault syncs to work laptop too
+`obsidian-vault` folder shared in Syncthing across Mac mini, MacBook, and iPhone. Real-time sync working.
 
 
 ### 8. Bazarr — subtitle provider
@@ -124,7 +111,7 @@ Homebrew node_exporter running at port 9100, scraped by Prometheus (`job="mac-ho
 
 Migrated to Cloudflare R2. Nightly rclone backup running at 5am. R2 at ~1.3GB (critical-only: vaultwarden, paperless docs, obsidian vault, db dumps, calibre books). B2 bucket purged and can be deleted from Backblaze dashboard.
 
-### 17. Kindle Scribe → Obsidian automation
+### ~~17. Kindle Scribe → Obsidian automation~~ ✅ Done (2026-05-08)
 
 **Goal:** Automatically sync Kindle Scribe handwritten/typed notes to the Obsidian vault so notes taken on the Scribe appear on all synced devices (MacBook, Mac mini, iPhone, eventually Windows work laptop).
 
@@ -162,12 +149,12 @@ pkm/
 └── requirements.txt     # imaplib is stdlib, requests for download link
 ```
 
-**Steps:**
-- [x] Create `pkm/` directory with `kindle_sync.py`, `config.py`, `requirements.txt`
-- [ ] Fill in `pkm/config.py` — set `VAULT_PATH` and `EMAIL_PASSWORD` (Gmail app password)
-- [ ] Test: send a notebook from Kindle Scribe → email → `python3 pkm/kindle_sync.py --dry-run`
-- [ ] Set up as cron or run manually after each Scribe export
-- [ ] Optional: weekly GitHub backup of vault (`obsidian-vault` private repo, cron: `git add . && git commit -m "backup $(date +%Y-%m-%d)" && git push`)
+~~Steps completed (2026-05-08):~~
+- Script at `pkm/kindle_sync.py` — IMAP-based, provider-agnostic
+- Exports as **Searchable PDF** from Scribe → email → script grabs `.txt` + `.pdf`
+- Saves to `📥 Imports/YYYY-MM-DD_HH-MM_name.md` + `.pdf` attachment
+- Hourly cron job running, logs to `~/logs/kindle-sync.log`
+- Gmail app password configured in `pkm/config.py` (gitignored)
 
 ### 18. De-Google — migrate off all Google services (later)
 
