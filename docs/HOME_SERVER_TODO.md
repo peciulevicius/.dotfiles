@@ -2,11 +2,9 @@
 
 ## Active
 
-### 1. Calibre-Web — finish setup
+### ~~1. Calibre-Web — finish setup~~ ✅ Done (2026-05-09)
 
-33 books synced. Remaining:
-- [ ] Create bookshelves (e.g. "Fiction", "Self-Help", "Business", "Tech") and assign books
-- [ ] Configure "Send to Kindle" for Kindle Scribe
+Bookshelves skipped (not needed). Send to Kindle configured via Gmail SMTP — `peciulevicius-scribe@kindle.com` approved and working.
 
 ### ~~2. Uptime Kuma notifications~~ ✅ Done (2026-05-09)
 
@@ -32,16 +30,9 @@ Paperless-NGX doesn't support traditional folders — it uses **tags**, **docume
 `obsidian-vault` folder shared in Syncthing across Mac mini, MacBook, and iPhone. Real-time sync working.
 
 
-### 8. Bazarr — subtitle provider
+### ~~8. Bazarr — subtitle provider~~ ✅ Done (2026-05-09)
 
-- [ ] Settings → Providers → Add provider: **OpenSubtitles.com** (free account at opensubtitles.com)
-- [ ] Settings → Languages → Add profile: set English + Lithuanian as preferred
-- [ ] Apply profile to all series and movies
-
-### 9. FreshRSS — add feeds
-
-- [ ] Open http://localhost:8082, create account if needed
-- [ ] Import OPML file or manually add RSS feeds
+OpenSubtitles.com configured, Default language profile set with English. Applied to all series and movies. 71 Wanted items queued — downloading automatically.
 
 ### 10. Pi-hole local DNS (later)
 
@@ -230,6 +221,8 @@ Recommended: 10GB RAM / 2GB swap
 ---
 
 ## Done
+
+- [x] ~~Books & audio automation (Jul 2026)~~ — LazyLibrarian fully configured: 4 Torznab indexers via Prowlarr (EBookBay, TPB, Knaben, TorrentDownload), Transmission download client, PostProcessor auto-moves EPUBs to Calibre and MP3s to Audiobookshelf. Click "Wanted" → fully hands-off. See `docs/guides/BOOKS.md` for setup notes and gotchas.
 
 - [x] ~~DeDRM Kindle books → Calibre-Web (Apr 2026)~~ — ~30 books DRM-removed via Windows VM (UTM) + Kindle for PC 2.8.2 + KFXArchiver283, converted to EPUB, uploaded to Calibre-Web
 - [x] ~~Calibre-Web — organising books (Apr 2026)~~ — year-end books processed and organised

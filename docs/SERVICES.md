@@ -43,6 +43,7 @@ Run your own cloud on a Mac mini (or any Docker host). 26 services covering phot
 | [Prowlarr](#sonarr--radarr--prowlarr) | Tailscale only | 9696 | Indexer manager |
 | [Bazarr](#bazarr) | Tailscale only | 6767 | Automated subtitle management |
 | [Transmission](#transmission) | Tailscale only | 9091 | BitTorrent client |
+| [LazyLibrarian](#lazylibrarian) | Tailscale only | 5299 | Ebook & audiobook automation |
 
 ### Monitoring
 
@@ -581,6 +582,28 @@ docker compose up -d
 
 ---
 
+### LazyLibrarian
+
+**What:** Automated ebook and audiobook acquisition. Search for an author or book, click "Wanted", and it searches Torznab indexers (via Prowlarr), downloads via Transmission, then PostProcessor moves EPUBs into Calibre and MP3s into Audiobookshelf.
+
+**Why:** Fully hands-off book pipeline — same as Sonarr/Radarr but for books and audiobooks.
+
+**How to use:**
+1. Open http://100.81.171.49:5299
+2. Search for an author → add them to your library
+3. Their books appear — click **Wanted** to trigger download
+4. Wait ~15 min — ebook appears in Calibre-Web, audiobook in Audiobookshelf automatically
+
+**See:** `docs/guides/BOOKS.md` for full setup guide and gotchas.
+
+```bash
+cd ~/services/lazylibrarian
+docker compose up -d
+# Open: http://100.81.171.49:5299
+```
+
+---
+
 ### Grafana + Prometheus
 
 **What:** Monitoring and visualization stack. Prometheus collects metrics (CPU, RAM, disk, network), Grafana displays them in dashboards. Node Exporter provides the system metrics.
@@ -665,6 +688,7 @@ Every service is accessible three ways: localhost (on the Mac mini), Tailscale (
 | Transmission | 9091 | http://100.81.171.49:9091 |
 | Grafana | 3000 | http://100.81.171.49:3000 |
 | Prometheus | 9090 | http://100.81.171.49:9090 |
+| LazyLibrarian | 5299 | http://100.81.171.49:5299 |
 **Mobile apps (use Tailscale URLs to bypass Cloudflare Access gate):**
 
 | App | Server URL |
