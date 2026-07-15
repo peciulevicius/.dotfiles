@@ -13,7 +13,7 @@ if [ -z "${IMMICH_VOLUME:-}" ]; then
 fi
 
 SRC="/Volumes/$IMMICH_VOLUME/immich"
-DST="/Volumes/ImmichBackup/immich"
+DST="/Volumes/Backup/immich"
 LOG_DIR="$HOME/logs"
 
 # Colors
@@ -33,8 +33,8 @@ if [ ! -d "$SRC" ]; then
 fi
 
 # Check destination is mounted
-if [ ! -d "/Volumes/ImmichBackup" ]; then
-    echo -e "${RED}ERROR: Backup drive not mounted at /Volumes/ImmichBackup${RESET}" >&2
+if [ ! -d "/Volumes/Backup" ]; then
+    echo -e "${RED}ERROR: Backup drive not mounted at /Volumes/Backup${RESET}" >&2
     exit 1
 fi
 

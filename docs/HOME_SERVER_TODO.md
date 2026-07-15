@@ -45,28 +45,36 @@ OpenSubtitles.com configured, Default language profile set with English. Applied
 - [ ] Set router DNS to Mac mini IP (primary) + `1.1.1.1` (fallback)
 - [ ] Test: `nslookup home.peciulevicius.com` should return Mac mini local IP
 
-### 11. Replace external SSDs with proper NAS storage (later)
+### 11. Replace external SSDs with proper NAS storage (deferred to ~2027)
 
-**Goal:** Eliminate T7/T5 external SSDs — move to network-attached storage that's more reliable, expandable, and not physically dependent on being plugged into the Mac Mini.
+**Why deferred (Jul 2026):** HDD prices are 46-60% above historical norms due to AI data-center demand driving a supply shortage expected to last through 2026-2027. Buying drives now would significantly overpay. Revisit when drives return to ~€80-100/TB.
 
-**Options researched:**
+**What to buy when ready:**
 
-| Option | Cost | Pros | Cons |
-|--------|------|------|------|
-| **Synology DS423+** + 2x 4TB WD Red | ~€540 | Best UX, stable DSM, 2.5GbE, runs Docker itself, RAID 1 | Expensive upfront |
-| **Mini PC + TrueNAS SCALE** (e.g. Beelink N100) + drives | ~€300-400 | ZFS, free software, very flexible, also runs Docker | More DIY, more maintenance |
-| **Thunderbolt DAS** (e.g. OWC ThunderBay) + drives | ~€350-500 | Fastest (Thunderbolt), simple | Tied to Mac Mini physically, no NAS features |
+| Item | Price found (Jul 2026) | Notes |
+|------|----------------------|-------|
+| **UGREEN NASync DXP2800** | €330 (Amazon sale) | Intel N100, 2.5GbE, 2× M.2 NVMe cache, 2-bay HDD. Better than DH4300 Plus (same price, weaker CPU) |
+| **2× 4TB Seagate IronWolf** | €413 bundle (kilobaitas.lt) | RAID 1 = 4TB usable, ~€100/TB — still inflated. Wait for sub-€80/TB |
+| **TP-Link TL-PA7017P KIT** (powerline) | ~€50 | NAS will be on first floor near router; powerline avoids running Ethernet upstairs |
+| **TP-Link TL-SG105 switch** (5-port) | €14.93 | For first-floor socket: NAS + any other wired devices share one powerline adapter |
+| **Total estimated** | **~€650-800** | Depends on drive prices at purchase time |
 
-**Recommendation when ready:** Synology DS423+ with 2x 4TB WD Red Plus in RAID 1 (~€540 total). Keeps Mac Mini as pure compute, Synology as pure storage. 2.5GbE is fast enough for all services.
+**NAS sits on first floor (near router), Mac Mini stays in room.** Mac Mini remains the compute/Docker layer; NAS is pure storage via SMB/NFS over powerline. WiFi on DXP2800 exists but powerline is more reliable.
+
+**M.2 NVMe slot notes:** DXP2800 has 2× M.2 slots for cache/fast storage (not required at first). Samsung 990 EVO Plus 2TB ≈ €289, Samsung 9100 PRO 1TB ≈ €194. Add later if needed.
+
+**Why not Synology:** DXP2800 is significantly cheaper for equivalent or better specs (N100 vs. J4125, 2.5GbE vs. 1GbE on DS223). UGOS Pro is newer but less mature than DSM — acceptable trade-off at this price.
 
 **Migration plan (when buying):**
 - [ ] Buy NAS + drives, set up with RAID 1
+- [ ] Set up powerline adapters: router socket (first floor) → room socket (upstairs)
+- [ ] Add 5-port switch at first-floor socket: NAS + powerline adapter share it
 - [ ] Mount NAS on Mac Mini via SMB/NFS
-- [ ] rsync all T7 data to NAS (`immich/`, `media/`, `calibre-books/`)
+- [ ] rsync all T7 data to NAS (`immich/`, `media/`, `calibre-books/`, `audiobooks/`)
 - [ ] Update all Docker Compose volume paths to NAS mount
 - [ ] Restart all services, verify everything works
 - [ ] Update rclone backup script to back up from NAS instead of T7
-- [ ] Repurpose T7 as Time Machine backup drive, T5 as offsite backup
+- [ ] Repurpose T7 as additional backup, T5 as offsite backup
 
 ### 12. VPN for torrents (later)
 
@@ -180,32 +188,26 @@ pkm/
 
 **Note:** `pkm/kindle_sync.py` is already IMAP-based so switching email providers requires only changing `IMAP_SERVER` in `config.py`.
 
-### 19. T7 → T5 full backup (not just Immich)
+### ~~19. T7 → T5 full backup~~ ✅ Done (2026-07-09)
 
-**Problem:** `backup-immich.sh` (cron 3am daily) only backs up Immich photos from T7 to T5. Media, Calibre books, and other T7 data are **not** covered. If T7 fails, only photos are recoverable from T5.
+**What was done:**
+- Renamed T5 volume from `ImmichBackup` → `Backup` (`diskutil rename`)
+- Created `scripts/backup/backup-t5.sh` — rsync T7 → T5 covering:
+  - `/Volumes/T7/immich/upload` → `/Volumes/Backup/immich/upload` (photos)
+  - `/Volumes/T7/audiobooks` → `/Volumes/Backup/audiobooks`
+  - `/Volumes/T7/calibre-books` → `/Volumes/Backup/calibre-books`
+  - Skips `/Volumes/T7/media/` — movies/TV too large for 500GB T5
+- Updated cron: 3am daily now runs `backup-t5.sh` (replaces `backup-immich.sh`)
+- Fixed `backup-immich.sh` path references from `/Volumes/ImmichBackup` → `/Volumes/Backup`
 
-**Additional problem:** T5 must be physically plugged in for backups to work. Currently no alert if it's missing — the script just silently fails.
+**Current recovery posture:**
+| If... | Photos | Audiobooks | Books | Services config |
+|-------|--------|------------|-------|----------------|
+| T7 fails | T5 ✅ | T5 ✅ | T5 ✅ + R2 ✅ | R2 ✅ |
+| T5 fails | R2 ✅ | ❌ re-download | R2 ✅ | R2 ✅ |
+| Both fail | ❌ | ❌ | R2 ✅ | R2 ✅ |
 
-**What T7 currently holds:**
-| Path | Size (approx) | Backed up to T5? |
-|------|--------------|-----------------|
-| `/Volumes/T7/immich/` | ~100GB+ photos | ✅ (backup-immich.sh) |
-| `/Volumes/T7/media/` | large (movies/TV) | ❌ |
-| `/Volumes/T7/calibre-books/` | small (~5GB) | ❌ |
-| `/Volumes/T7/immich/postgres/` | DB files | ❌ (rsync skips open DB files) |
-
-**Plan:**
-- [ ] Plug in T5 and verify it mounts as `/Volumes/ImmichBackup` (or rename label to `T5Backup`)
-- [ ] Extend `backup-immich.sh` (or create new `backup-t7.sh`) to also rsync:
-  - `/Volumes/T7/calibre-books/` → `/Volumes/T5/calibre-books/`
-  - Skip `/Volumes/T7/media/` — too large for 500GB T5, keep media loss acceptable
-- [ ] Add T5 mount check at start of backup: if not mounted → send alert via Uptime Kuma heartbeat miss (TODO #2) + log error
-- [ ] Add Uptime Kuma push heartbeat to backup script (coordinate with TODO #14)
-- [ ] Test: unplug T5, run backup → should log error, not silently pass
-
-**Recovery posture after fix:**
-- If T7 fails: Immich photos + Calibre books on T5, services configs on R2 (cloud)
-- If T5 fails: replace it, rsync from T7 again
+**Remaining:** T5 backup has no Uptime Kuma heartbeat — if T5 isn't plugged in, cron silently fails. Add a push monitor when convenient.
 
 ### 16. Docker VM resource limits (later)
 
@@ -294,12 +296,12 @@ First suspects: `immich_machine_learning`, `grafana`+`prometheus`, `nextcloud`.
 
 ## Drive Layout (reference)
 
-Two Samsung SSDs permanently connected to the Mac Mini:
+Two Samsung SSDs connected to the Mac Mini (T5 plugged in for backups, not permanently):
 
 | Drive | Size | Role | Mount path |
 |-------|------|------|-----------|
 | **T7** | 1TB | Primary data | `/Volumes/T7/` |
-| **T5** | 500GB | Local backup + Time Machine | `/Volumes/T5/` (or similar) |
+| **T5** | 500GB | Local backup | `/Volumes/Backup/` |
 
 **What lives where:**
 
@@ -308,18 +310,23 @@ Two Samsung SSDs permanently connected to the Mac Mini:
 | Immich photos | T7 | `/Volumes/T7/immich/upload` |
 | Immich DB | T7 | `/Volumes/T7/immich/postgres` |
 | Media (movies, TV, downloads) | T7 | `/Volumes/T7/media/` |
-| Calibre books | T7 | `/Volumes/T7/calibre-books` |
-| Old photo copies (to delete) | T7 | APFS `TimeMachine` volume (not actually TM — just old photo copies) |
-| Local photo backup (rsync from T7) | T5 | nightly copy |
+| Audiobooks | T7 | `/Volumes/T7/audiobooks/` (symlinked from `~/services/audiobookshelf/data/audiobooks`) |
+| Calibre books | T7 | `/Volumes/T7/calibre-books/` |
+| Docker data | Internal SSD | `~/Library/Containers/com.docker.docker` (51GB actual / 245GB sparse) |
 
-**Cloud backup (rclone → Cloudflare R2):**
-- Docker service configs, obsidian vault, Calibre books, DB dumps → R2 bucket `peciulevicius-services-backup`
-- Runs nightly at 5am via cron: `~/.dotfiles/services/rclone/rclone-backup.sh`
-- ~1.3GB total (critical-only; Immich photos excluded — T5 local backup instead)
+**Cloud backup (rclone → Cloudflare R2), nightly 5am:**
+- Docker service configs, obsidian vault, Calibre books, DB dumps → R2 `peciulevicius-backups`
+- Script: `~/.dotfiles/services/rclone/rclone-backup.sh`
+- ~1.3GB total (critical-only; photos/audiobooks excluded from R2)
 
-**If T7 dies:** photos are on T5 (local) + B2 (cloud). Reinstall services from dotfiles, restore data from B2.
+**Local backup (rsync T7 → T5 `/Volumes/Backup`), nightly 3am:**
+- `~/.dotfiles/scripts/backup/backup-t5.sh`
+- Covers: Immich photos, audiobooks, Calibre books
+- Skips: media (movies/TV — too large, acceptable loss)
+
+**If T7 dies:** photos + audiobooks + books on T5. Services configs on R2. Re-download media.
 **If T5 dies:** replace it, rsync from T7 again.
-**If Mac Mini dies:** all data is safe on T7 + B2. Reinstall macOS, clone dotfiles, restore.
+**If Mac Mini dies:** all data safe on T7. Reinstall macOS, clone dotfiles, restore from R2.
 
 ---
 
@@ -331,7 +338,7 @@ Two Samsung SSDs permanently connected to the Mac Mini:
 | Radarr movies | `/media/movies` | `/Volumes/T7/media/movies` |
 | Sonarr TV | `/media/tv` | `/Volumes/T7/media/tv` |
 | Transmission downloads | `/downloads` | `/Volumes/T7/media/downloads` |
-| Audiobookshelf | `/audiobooks` | `~/services/audiobookshelf/data/audiobooks` |
-| Calibre library | `/books` | `~/services/calibre-web/data/books` |
+| Audiobookshelf | `/audiobooks` | `/Volumes/T7/audiobooks` (symlink: `~/services/audiobookshelf/data/audiobooks`) |
+| Calibre library | `/books` | `/Volumes/T7/calibre-books` |
 | Immich photos | `/usr/src/app/upload` | `/Volumes/T7/immich/upload` |
 | Immich DB | `/var/lib/postgresql/data` | `/Volumes/T7/immich/postgres` |
