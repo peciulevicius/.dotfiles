@@ -409,25 +409,14 @@ install_apps() {
         fi
     fi
 
-    # NordPass
-    if ask_yes_no "Install NordPass?" "y"; then
+    # NordPass (free tier only — primary passwords are in Vaultwarden)
+    if ask_yes_no "Install NordPass? (free tier, optional)" "n"; then
         print_step "Installing NordPass..."
         wget -q https://downloads.npass.app/linux/NordPass-latest.deb
         sudo dpkg -i NordPass-latest.deb
         sudo apt install -f -y
         rm NordPass-latest.deb
         print_success "NordPass installed"
-    fi
-
-    # NordVPN
-    if ask_yes_no "Install NordVPN?" "y"; then
-        print_step "Installing NordVPN..."
-        wget -q https://repo.nordvpn.com/deb/nordvpn/debian/pool/main/nordvpn-release_1.0.0_all.deb
-        sudo dpkg -i nordvpn-release_1.0.0_all.deb
-        sudo apt update
-        sudo apt install -y nordvpn
-        rm nordvpn-release_1.0.0_all.deb
-        print_success "NordVPN installed"
     fi
 
     # Figma (via Snap or web)
@@ -567,7 +556,7 @@ print_summary() {
     echo "  2. Set terminal font to 'MesloLGS NF' for best experience"
     echo "  3. Customize Starship: edit ~/.dotfiles/config/starship/starship.toml"
     echo "  4. Open JetBrains Toolbox and install WebStorm"
-    echo "  5. Sign into your apps (Bitwarden, NordPass, etc.)"
+    echo "  5. Sign into Bitwarden (connect to Vaultwarden: https://vault.peciulevicius.com)"
     echo ""
     echo -e "${CYAN}Useful commands:${NC}"
     echo "  bat <file>          - View files with syntax highlighting"

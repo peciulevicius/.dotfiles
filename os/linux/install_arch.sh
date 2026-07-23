@@ -74,9 +74,7 @@ AUR_APPS=(
   claude-desktop-bin        # Claude Code (AI assistant)
 
   # Password Managers & Security
-  bitwarden-bin            # Password manager
-  nordpass-bin             # Password manager
-  nordvpn-bin              # VPN
+  bitwarden-bin            # Password manager (Vaultwarden self-hosted backend)
 
   # Design & Collaboration
   figma-linux
@@ -214,9 +212,7 @@ install_gui_applications() {
   echo "  • Google Chrome"
   echo "  • VS Code"
   echo "  • Claude Code (AI assistant)"
-  echo "  • Bitwarden (password manager)"
-  echo "  • NordPass (password manager)"
-  echo "  • NordVPN"
+  echo "  • Bitwarden (password manager — Vaultwarden backend)"
   echo "  • Figma"
   echo "  • Notion"
   echo ""
@@ -698,8 +694,7 @@ print_summary() {
   echo "    • Google Chrome"
   echo "    • VS Code"
   echo "    • Claude Code"
-  echo "    • Bitwarden + NordPass"
-  echo "    • NordVPN"
+  echo "    • Bitwarden"
   echo "    • Figma"
   echo "    • Notion"
   echo "  ✓ Dotfiles (.gitconfig, .zshrc, .ideavimrc, starship.toml)"
@@ -711,8 +706,7 @@ print_summary() {
   echo "  3. Customize Starship prompt: edit ~/.dotfiles/config/starship/starship.toml"
   echo "  4. Open JetBrains Toolbox and install WebStorm"
   echo "  5. In WebStorm: Install IdeaVim plugin (Settings → Plugins → IdeaVim)"
-  echo "  6. Sign into Bitwarden/NordPass"
-  echo "  7. Sign into NordVPN"
+  echo "  6. Sign into Bitwarden (connect to Vaultwarden: https://vault.peciulevicius.com)"
   echo "  8. Open Claude Code and sign in"
   echo ""
   echo "Useful commands:"

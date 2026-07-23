@@ -117,10 +117,8 @@ Enter choice (1 or 2, default=1):
    - Install JetBrains Toolbox
    - Use Toolbox to install WebStorm
 3. **Claude Code**: https://claude.ai/download
-4. **Bitwarden**: https://bitwarden.com/download/
-5. **NordPass**: https://nordpass.com/download/
-6. **NordVPN**: https://nordvpn.com/download/
-7. **Figma**: https://www.figma.com/downloads/
+4. **Bitwarden**: https://bitwarden.com/download/ (connects to Vaultwarden at vault.peciulevicius.com)
+5. **Figma**: https://www.figma.com/downloads/
 8. **Notion**: https://www.notion.so/desktop
 
 ### Step 6: Setup macOS Preferences (Optional)
@@ -151,8 +149,7 @@ vim ~/.dotfiles/config/starship/starship.toml
 Follow the wizard to customize your prompt.
 
 **Sign into apps:**
-- Bitwarden/NordPass
-- NordVPN
+- Bitwarden (server: https://vault.peciulevicius.com)
 - Claude Code
 - Notion
 - Figma
@@ -241,8 +238,6 @@ Install all GUI applications? (y/n)
 - VS Code
 - Claude Code (automated!)
 - Bitwarden
-- NordPass
-- NordVPN
 - Figma
 - Notion
 
@@ -315,9 +310,7 @@ vim ~/.dotfiles/config/starship/starship.toml
 5. Restart WebStorm
 
 **Sign into apps:**
-- Bitwarden
-- NordPass
-- NordVPN
+- Bitwarden (server: https://vault.peciulevicius.com)
 - Claude Code
 - Notion
 - Figma

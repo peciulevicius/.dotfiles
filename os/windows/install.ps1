@@ -68,7 +68,6 @@ function Install-Packages {
 
 function Install-Applications {
     $apps = @(
-        "NordPass.NordPass",
         "Spotify.Spotify",
         "Google.Chrome",
         "Notion.Notion",
@@ -77,9 +76,9 @@ function Install-Applications {
         "Postman.Postman",
         "Discord.Discord",
         "Figma.Figma",
-        "NordSecurity.NordVPN",
         "Notion.NotionCalendar",
-        "Doist.Todoist"
+        "Doist.Todoist",
+        "Bitwarden.Bitwarden"
     )
 
     Print-Section "Installing Applications"
