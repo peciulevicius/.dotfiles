@@ -227,16 +227,12 @@ pkm/
 - [ ] Sort/tag the unsorted iPhone folder before importing
 - [ ] Delete originals from T7 after confirming import (frees ~140GB)
 
-### 16. Docker VM resource limits (later)
+### ~~16. Docker VM resource limits~~ ✅ Done (2026-07-23)
 
-**Goal:** Give Docker more headroom for the full stack.
-
-Current: ~7.8GB RAM / 1GB swap (Docker Desktop default)
-Recommended: 10GB RAM / 2GB swap
-
-- [ ] Docker Desktop → Settings → Resources → increase RAM to 10GB, swap to 2GB
-- [ ] Restart Docker, verify containers come back up
-- [ ] Check Glance — RAM pressure should be gone even with full stack running
+Docker Desktop VM bumped from 7.8GB → 10GB RAM, swap 1GB → 2GB (via
+`settings-store.json`). Also enabled AutoStart so Docker launches on login
+after a reboot/power cut. All 40 containers verified back up, key services
+responding (photos/vault/home/watch/nas all 200).
 
 ---
 
