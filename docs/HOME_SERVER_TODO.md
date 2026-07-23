@@ -45,36 +45,41 @@ OpenSubtitles.com configured, Default language profile set with English. Applied
 - [ ] Set router DNS to Mac mini IP (primary) + `1.1.1.1` (fallback)
 - [ ] Test: `nslookup home.peciulevicius.com` should return Mac mini local IP
 
-### 11. Replace external SSDs with proper NAS storage (deferred to ~2027)
+### 11. Replace external SSDs with proper NAS storage
 
-**Why deferred (Jul 2026):** HDD prices are 46-60% above historical norms due to AI data-center demand driving a supply shortage expected to last through 2026-2027. Buying drives now would significantly overpay. Revisit when drives return to ~€80-100/TB.
+**Status (Jul 2026):** NAS arrived ✅ (UGREEN DH4300 Plus, SN H43001J61J30FAD0, warranty until 2028-07-23). Drives ordered — 3× IronWolf Pro 6TB recert (ST6000NE000) €230 each from [datablocks.dev](https://datablocks.dev), preorder arriving **~Jul 27–31**.
 
-**What to buy when ready:**
+**Done (pre-drives, Jul 22):**
+- [x] NAS on network at 192.168.1.73 via WiFi extender ethernet port (100Mbps — extender is the bottleneck, acceptable for now)
+- [x] `nas.peciulevicius.com` → UGOS Pro web UI, via existing cloudflared tunnel on Mac mini (ingress: `http://192.168.1.73:9999`). No Docker needed on NAS.
+- [x] UGREENlink remote access active (backup access: https://ug.link/dh4300plus-dp)
 
-| Item | Price found (Jul 2026) | Notes |
-|------|----------------------|-------|
-| **UGREEN NASync DXP2800** | €330 (Amazon sale) | Intel N100, 2.5GbE, 2× M.2 NVMe cache, 2-bay HDD. Better than DH4300 Plus (same price, weaker CPU) |
-| **2× 4TB Seagate IronWolf** | €413 bundle (kilobaitas.lt) | RAID 1 = 4TB usable, ~€100/TB — still inflated. Wait for sub-€80/TB |
-| **TP-Link TL-PA7017P KIT** (powerline) | ~€50 | NAS will be on first floor near router; powerline avoids running Ethernet upstairs |
-| **TP-Link TL-SG105 switch** (5-port) | €14.93 | For first-floor socket: NAS + any other wired devices share one powerline adapter |
-| **Total estimated** | **~€650-800** | Depends on drive prices at purchase time |
+**Still to do (pre-drives):**
+- [ ] **NEXT SESSION:** Reserve 192.168.1.73 for NAS in router DHCP settings — if IP changes, nas.peciulevicius.com breaks. Steps:
+  1. Open http://192.168.1.1 in browser, log in (admin password often on router sticker)
+  2. Find the DHCP section — usually under *LAN*, *Network*, or *Advanced → DHCP Server*. The feature is called **"Address Reservation"**, **"Static Lease"**, **"DHCP Binding"**, or **"Reserved IP"** depending on brand
+  3. Add entry: MAC `6c:1f:f7:a9:39:e9` → IP `192.168.1.73` (device may appear in a connected-clients list as DH4300PLUS-DP — can often click it and hit "reserve")
+  4. Save/apply. No NAS reboot needed — reservation kicks in at next DHCP renewal
+  5. Verify: NAS Control Panel → Network still shows 192.168.1.73
+- [ ] Enable SSH (Control Panel → Terminal; set "Shut down automatically" to never)
+- [ ] Enable "Auto power-on when power is supplied" + WOL (Hardware & Power → Power)
+- [ ] Set up 2FA on admin account (Security → Account security)
+- [ ] Enable DoS protection (Security → Security)
+- [ ] Change custom domain name from "localhost" to "nas" (Device Connection → LAN)
 
-**NAS sits on first floor (near router), Mac Mini stays in room.** Mac Mini remains the compute/Docker layer; NAS is pure storage via SMB/NFS over powerline. WiFi on DXP2800 exists but powerline is more reliable.
-
-**M.2 NVMe slot notes:** DXP2800 has 2× M.2 slots for cache/fast storage (not required at first). Samsung 990 EVO Plus 2TB ≈ €289, Samsung 9100 PRO 1TB ≈ €194. Add later if needed.
-
-**Why not Synology:** DXP2800 is significantly cheaper for equivalent or better specs (N100 vs. J4125, 2.5GbE vs. 1GbE on DS223). UGOS Pro is newer but less mature than DSM — acceptable trade-off at this price.
-
-**Migration plan (when buying):**
-- [ ] Buy NAS + drives, set up with RAID 1
-- [ ] Set up powerline adapters: router socket (first floor) → room socket (upstairs)
-- [ ] Add 5-port switch at first-floor socket: NAS + powerline adapter share it
-- [ ] Mount NAS on Mac Mini via SMB/NFS
-- [ ] rsync all T7 data to NAS (`immich/`, `media/`, `calibre-books/`, `audiobooks/`)
+**When drives arrive (~Jul 27–31):**
+- [ ] Insert 3 drives, create RAID 5 storage pool (3× 6TB = 12TB usable, 1-drive fault tolerance)
+- [ ] Enable SMB (File Service → SMB), create shares: `media/`, `immich/`, `audiobooks/`, `books/`
+- [ ] Mount NAS on Mac mini via SMB, verify transfer speed
+- [ ] rsync all T7 data to NAS (`immich/`, `media/`, `calibre-books/`, `audiobooks/`) — at 100Mbps ~800GB takes ~20h, run overnight or connect NAS temporarily via direct ethernet
 - [ ] Update all Docker Compose volume paths to NAS mount
 - [ ] Restart all services, verify everything works
 - [ ] Update rclone backup script to back up from NAS instead of T7
 - [ ] Repurpose T7 as additional backup, T5 as offsite backup
+- [ ] Verify drive sleep works (already configured: 20 min idle, wake on sign-in)
+- [ ] Optional: enable rsync service + Bonjour/Time Machine target (File Service)
+
+**Hardware reference:** 4-bay, RK3588C ARM 8-core, 8GB RAM (keep NAS storage-only — no heavy Docker workloads; compute stays on Mac mini), 2.5GbE port. Purchase total ~€1,060 (NAS €340 + drives €690 + switch/cables €30).
 
 ### 12. VPN for torrents (later)
 
@@ -208,6 +213,19 @@ pkm/
 | Both fail | ❌ | ❌ | R2 ✅ | R2 ✅ |
 
 **Remaining:** T5 backup has no Uptime Kuma heartbeat — if T5 isn't plugged in, cron silently fails. Add a push monitor when convenient.
+
+### 20. Import old photo archives into Immich
+
+~140GB of personal photos sitting on T7 outside of Immich, organised by year/trip:
+
+- `/Volumes/T7/2002` → `/Volumes/T7/2024` — ~130GB of photos going back years
+- `/Volumes/T7/from iphone (reikia surušiuoti)` — 9.2GB unsorted iPhone photos
+- Notable: `/Volumes/T7/2024` (99GB) contains Barcelona F1 + Zakopane trips with both iPhone and camera shots
+
+- [ ] Check if any of these are already in Immich (avoid duplicates)
+- [ ] Import via Immich CLI or bulk upload through the web UI
+- [ ] Sort/tag the unsorted iPhone folder before importing
+- [ ] Delete originals from T7 after confirming import (frees ~140GB)
 
 ### 16. Docker VM resource limits (later)
 
