@@ -28,6 +28,7 @@ services:
       - portainer
       - uptime-kuma
       - media
+      - lazylibrarian
       - grafana_default
 
 networks:
@@ -63,6 +64,8 @@ networks:
   uptime-kuma:
     external: true
   media:
+    external: true
+  lazylibrarian:
     external: true
   grafana_default:
     external: true

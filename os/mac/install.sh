@@ -65,6 +65,7 @@ OPTIONAL_CASKS=(
   iterm2    # Alternative terminal (skip if Terminal.app is enough)
   raycast   # Launcher (skip if Spotlight is enough)
   orbstack  # Lightweight Docker Desktop alternative (faster on Mac, same docker commands)
+  libation  # Audible audiobook downloader/decrypter → Audiobookshelf
 )
 
 # Optional cloud coding-agent apps/tools (off by default).

@@ -1,0 +1,41 @@
+# Readarr — book management automation (like Sonarr/Radarr for books)
+# Docs: https://readarr.com
+# Use Prowlarr (already in sonarr-radarr stack) for indexers.
+# Calibre integration: Settings → Media Management → Use Calibre
+#   Host: calibre   Port: 8081   Library: /books
+# Root folders in Readarr UI:
+#   /books       → ebooks → Calibre → Kindle
+#   /audiobooks  → audiobooks → Audiobookshelf
+
+name: readarr
+
+services:
+  readarr:
+    container_name: readarr
+    image: linuxserver/readarr:0.4.19-nightly
+    restart: unless-stopped
+    ports:
+      - "${READARR_PORT:-8787}:8787"
+    volumes:
+      - ./data:/config
+      - ${BOOKS_DIR:-/Volumes/T7/calibre-books}:/books
+      - ${AUDIOBOOKS_DIR:-./data/audiobooks}:/audiobooks
+    environment:
+      PUID: ${PUID:-1000}
+      PGID: ${PGID:-1000}
+      TZ: ${TZ:-Europe/Vilnius}
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+    networks:
+      - default
+      - calibre-web
+      - media
+
+networks:
+  default:
+    name: readarr
+  calibre-web:
+    external: true
+  media:
+    external: true

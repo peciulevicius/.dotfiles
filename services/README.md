@@ -34,13 +34,14 @@ Docker Compose stacks for running your own cloud on a Mac mini (or any Docker ho
 | Actual Budget | 5006 | Personal finance manager |
 | Karakeep | 3005 | AI bookmark manager (Linkwarden replacement) |
 
-### Media (5)
+### Media (6)
 
 | Service | Port | Purpose |
 |---------|------|---------|
 | Jellyfin | 8096 | Media server (movies, TV) |
 | Sonarr | 8989 | TV show management |
 | Radarr | 7878 | Movie management |
+| Readarr | 8787 | Book management (auto-import to Calibre) |
 | Prowlarr | 9696 | Indexer manager |
 | Transmission | 9091 | BitTorrent client |
 

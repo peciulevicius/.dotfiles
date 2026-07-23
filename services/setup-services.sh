@@ -25,6 +25,7 @@ SERVICES=(
   watchtower
   glance
   paperless-ngx
+  calibre
   calibre-web
   rclone
   pihole
@@ -35,6 +36,7 @@ SERVICES=(
   mealie
   jellyfin
   sonarr-radarr
+  lazylibrarian
   transmission
   jellyseerr
   bazarr
@@ -53,6 +55,7 @@ SERVICE_PORTS=(
   "watchtower:—"
   "glance:7575"
   "paperless-ngx:8000"
+  "calibre:8888"
   "calibre-web:8083"
   "rclone:—"
   "pihole:8053,53"
@@ -63,6 +66,7 @@ SERVICE_PORTS=(
   "mealie:9925"
   "jellyfin:8096"
   "sonarr-radarr:8989,7878,9696"
+  "lazylibrarian:5299"
   "transmission:9091"
   "jellyseerr:5055"
   "bazarr:6767"
@@ -120,6 +124,15 @@ stage_service() {
       log_info "$svc: .env already exists, not overwriting"
     fi
   fi
+
+  # Copy any extra shell scripts (e.g. custom-cont-init.d startup scripts)
+  for script in "$svc_dir"/*.sh; do
+    [[ -f "$script" ]] || continue
+    local dest_script="$dest_dir/$(basename "$script")"
+    cp "$script" "$dest_script"
+    chmod +x "$dest_script"
+    log_ok "$svc: copied $(basename "$script")"
+  done
 
   log_ok "$svc staged → $dest_dir"
 }

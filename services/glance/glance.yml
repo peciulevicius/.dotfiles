@@ -51,6 +51,10 @@ pages:
                 url: https://books.peciulevicius.com
                 check-url: http://calibre_web:8083/
                 icon: si:calibreweb
+              - title: LazyLibrarian
+                url: http://100.81.171.49:5299
+                check-url: http://lazylibrarian:5299/
+                icon: si:bookstack
               - title: Linkwarden
                 url: https://links.peciulevicius.com
                 check-url: http://linkwarden:3000/
@@ -283,6 +287,9 @@ pages:
                   - title: Transmission
                     url: http://100.81.171.49:9091
                     icon: si:transmission
+                  - title: LazyLibrarian
+                    url: http://100.81.171.49:5299
+                    icon: si:bookstack
               - title: Books & Audio
                 links:
                   - title: Audiobookshelf
@@ -291,6 +298,9 @@ pages:
                   - title: Calibre-Web
                     url: https://books.peciulevicius.com
                     icon: si:calibreweb
+                  - title: LazyLibrarian
+                    url: http://100.81.171.49:5299
+                    icon: si:bookstack
 
           - type: releases
             title: Media App Updates
