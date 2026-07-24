@@ -340,7 +340,7 @@ if [ -n "$usage_data" ] && echo "$usage_data" | jq -e . >/dev/null 2>&1; then
 
         extra_reset=$(date -v+1m -v1d +"%b %-d" | tr '[:upper:]' '[:lower:]')
 
-        col3_bar="${white}extra:${reset} ${extra_bar} ${cyan}\${extra_used}/\${extra_limit}${reset}"
+        col3_bar="${white}extra:${reset} ${extra_bar} ${cyan}\$${extra_used}/\$${extra_limit}${reset}"
         col3_reset="${white}resets ${extra_reset}${reset}"
     fi
 
