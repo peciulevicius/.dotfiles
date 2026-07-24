@@ -78,6 +78,7 @@ OpenSubtitles.com configured, Default language profile set with English. Applied
 - [ ] Repurpose T7 as additional backup, T5 as offsite backup
 - [ ] Verify drive sleep works (already configured: 20 min idle, wake on sign-in)
 - [ ] Optional: enable rsync service + Bonjour/Time Machine target (File Service)
+- [ ] Install Tailscale from App Center (needs storage pool), join tailnet — enables remote SMB/Finder mounting from MacBook when away from home (web UI already remote via nas.peciulevicius.com + UGREENlink)
 
 **Hardware reference:** 4-bay, RK3588C ARM 8-core, 8GB RAM (keep NAS storage-only — no heavy Docker workloads; compute stays on Mac mini), 2.5GbE port. Purchase total ~€1,060 (NAS €340 + drives €690 + switch/cables €30).
 
