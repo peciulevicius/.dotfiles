@@ -21,6 +21,7 @@ export PATH="/usr/local/bin:/opt/homebrew/bin:$PATH"
 
 LOG="/opt/homebrew/var/log/docker-watchdog.log"
 STRIKES_FILE="${TMPDIR:-/tmp}/docker-watchdog.strikes"
+NET_FAILS_FILE="${TMPDIR:-/tmp}/docker-watchdog.netfails"
 DOCKER_SOCK="$HOME/.docker/run/docker.sock"
 
 log() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" >> "$LOG"; }
@@ -64,23 +65,60 @@ fi
 
 rm -f "$STRIKES_FILE"
 
-# Engine is up — verify containers can reach the internet
-TEST_CONTAINER=$(docker ps --format "{{.Names}}" 2>/dev/null | head -1)
-if [[ -z "$TEST_CONTAINER" ]]; then
-    log "No running containers to test — skipping"
+# Engine is up — verify containers can reach the internet.
+# Not every image ships curl/wget (a missing binary looked like "no
+# internet" and caused a 40h restart loop, 2026-07-29). Probe several
+# containers, skip ones without a usable tool, and only conclude
+# "broken" from a test that actually ran. Plain-http endpoint because
+# busybox wget can't do TLS.
+NET_RESULT="untested"
+while IFS= read -r c; do
+    tool=$(docker exec "$c" sh -c 'command -v curl || command -v wget' 2>/dev/null | head -1)
+    case "$tool" in
+        */curl|curl)
+            if docker exec "$c" curl -s -o /dev/null --max-time 5 http://captive.apple.com &>/dev/null; then
+                NET_RESULT="ok"
+            else
+                NET_RESULT="broken (tested via $c/curl)"
+            fi
+            break ;;
+        */wget|wget)
+            if docker exec "$c" wget -q -O /dev/null -T 5 http://captive.apple.com &>/dev/null; then
+                NET_RESULT="ok"
+            else
+                NET_RESULT="broken (tested via $c/wget)"
+            fi
+            break ;;
+    esac
+done < <(docker ps --format "{{.Names}}" 2>/dev/null | head -8)
+
+case "$NET_RESULT" in
+    ok) rm -f "$NET_FAILS_FILE"; exit 0 ;;
+    untested) log "No container with curl/wget in first 8 — skipping net test"; exit 0 ;;
+esac
+
+# Cap consecutive net-triggered restarts: if 3 restarts haven't fixed
+# it, restarting isn't the cure — stop flapping and leave Docker up.
+net_fails=$(( $(cat "$NET_FAILS_FILE" 2>/dev/null || echo 0) + 1 ))
+echo "$net_fails" > "$NET_FAILS_FILE"
+if (( net_fails > 3 )); then
+    log "Container internet $NET_RESULT — restart cap reached ($net_fails), NOT restarting"
     exit 0
 fi
 
-if docker exec "$TEST_CONTAINER" wget -q -O /dev/null --timeout=5 https://1.1.1.1 &>/dev/null; then
-    exit 0
-fi
-
-log "Container internet broken (tested via $TEST_CONTAINER) — restarting Docker Desktop"
+log "Container internet $NET_RESULT — restarting Docker Desktop ($net_fails/3)"
 
 osascript -e 'tell application "Docker Desktop" to quit' 2>/dev/null || \
     osascript -e 'quit app "Docker"' 2>/dev/null || true
 
-sleep 5
+# Wait for the app to actually exit before relaunching — 'open -a'
+# during shutdown is a no-op and the relaunch never happened
+for _ in $(seq 1 12); do
+    pgrep -qf "Docker.app/Contents/MacOS/com.docker.backend" || break
+    sleep 5
+done
+pkill -9 -f "Docker.app/Contents" 2>/dev/null || true
+sleep 3
 open -a "Docker"
 
 log "Docker Desktop restart triggered"
