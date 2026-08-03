@@ -85,6 +85,12 @@ pages:
                 url: https://status.peciulevicius.com
                 check-url: http://uptime_kuma:3001/
                 icon: si:uptimekuma
+              - title: UGREEN NAS
+                url: https://nas.peciulevicius.com
+                check-url: http://192.168.1.73:9999/
+                alt-status-codes:
+                  - 307
+                icon: di:ugreen
               - title: Jellyseerr
                 url: http://100.81.171.49:5055
                 check-url: http://jellyseerr:5055/
