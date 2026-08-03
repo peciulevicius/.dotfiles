@@ -82,6 +82,17 @@ OpenSubtitles.com configured, Default language profile set with English. Applied
 
 **Hardware reference:** 4-bay, RK3588C ARM 8-core, 8GB RAM (keep NAS storage-only — no heavy Docker workloads; compute stays on Mac mini), 2.5GbE port. Purchase total ~€1,060 (NAS €340 + drives €690 + switch/cables €30).
 
+### 21. Rotate reused passwords (NAS accounts)
+
+Both NAS accounts (`Džiugas` admin + `macmini` SMB service account) currently
+use the same password as elsewhere. Rotate to unique generated passwords:
+- [ ] `Džiugas` (web UI admin) — generate in Bitwarden, update entry
+- [ ] `macmini` (SMB) — generate in Bitwarden; after changing on NAS, update
+  the saved credential in macOS Keychain on the Mac mini (Finder will prompt
+  on next mount; also remount the four shares)
+- [ ] While at it: audit other reused passwords flagged by Bitwarden's
+  Vault Health report
+
 ### 12. VPN for torrents (later)
 
 **Goal:** Route Transmission traffic through a VPN so ISP can't see torrent activity. Not urgent — no downloads planned for ~1 month.
