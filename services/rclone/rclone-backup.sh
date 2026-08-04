@@ -60,11 +60,11 @@ log_info "Backing up $DOCKER_DIR → $BACKUP_DEST"
 [[ "$DRY_RUN" == "true" ]] && log_warn "Dry run — no data will be transferred"
 
 # Backup 1: Docker service configs — critical data only
-# T7/T5 hold media; cloud holds configs + irreplaceable data
+# NAS (RAID 5) + T5 hold media; cloud holds configs + irreplaceable data
 SYNC_CMD=(rclone sync "$DOCKER_DIR" "$BACKUP_DEST")
 # Secrets — never upload
 SYNC_CMD+=(--exclude "**/.env")
-# Large media — on T7/T5
+# Large media — on NAS/T5
 SYNC_CMD+=(--exclude "audiobookshelf/data/audiobooks/**")
 SYNC_CMD+=(--exclude "audiobookshelf/data/metadata/**")
 SYNC_CMD+=(--exclude "audiobookshelf/data/podcasts/**")
@@ -136,8 +136,8 @@ else
   log_warn "DB dump dir not found at $DB_DUMP_DIR — skipping"
 fi
 
-# Backup 4: Calibre books (EPUBs on T7 — small enough for cloud)
-CALIBRE_DIR="/Volumes/T7/calibre-books"
+# Backup 4: Calibre books (EPUBs on NAS — small enough for cloud)
+CALIBRE_DIR="/Volumes/books"
 CALIBRE_DEST="${RCLONE_REMOTE}:peciulevicius-backups/calibre-books"
 
 if [[ -d "$CALIBRE_DIR" ]]; then

@@ -77,9 +77,11 @@ OpenSubtitles.com configured, Default language profile set with English. Applied
 - [x] Glance tile for NAS
 
 **Remaining follow-ups:**
-- [ ] Update rclone/T5 backup scripts to back up from NAS paths instead of T7
+- [x] ~~Update rclone/T5 backup scripts to NAS paths~~ (2026-08-04 — backup-t5.sh, backup-immich.sh, rclone-backup.sh all read from NAS mounts; T7 fully decoupled, safe to disconnect. Keep T7 data intact on the shelf ~2 weeks before wiping/repurposing)
+- [ ] Delete stale `immich/postgres` folder on NAS share (460MB dead copy — via Files app)
+- [ ] Verify first NAS-sourced backups: T5 cron (3am, needs T5 plugged) + rclone (5am)
 - [ ] Decide: delete stale `/Volumes/T7/docker/` (53G old Docker VM copy)
-- [ ] Repurpose T7 as backup target, T5 as offsite backup (keep T7 data as-is for ~2 weeks as fallback first)
+- [ ] T5 future plan: reload with full photo/video collection, store at parents' home as offsite family copy
 - [ ] Verify drive sleep works (configured: 20 min idle)
 - [ ] Optional: Bonjour + Time Machine target, NAS rsync service
 - [ ] Mac mini auto-login (System Settings → Users & Groups) — without it, after a power outage neither Docker, cloudflared, nor NAS mounts come up
