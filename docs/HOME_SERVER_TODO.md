@@ -67,18 +67,23 @@ OpenSubtitles.com configured, Default language profile set with English. Applied
 - [ ] Enable DoS protection (Security → Security)
 - [ ] Change custom domain name from "localhost" to "nas" (Device Connection → LAN)
 
-**When drives arrive (~Jul 27–31):**
-- [ ] Insert 3 drives, create RAID 5 storage pool (3× 6TB = 12TB usable, 1-drive fault tolerance)
-- [ ] Enable SMB (File Service → SMB), create shares: `media/`, `immich/`, `audiobooks/`, `books/`
-- [ ] Mount NAS on Mac mini via SMB, verify transfer speed
-- [ ] rsync all T7 data to NAS (`immich/`, `media/`, `calibre-books/`, `audiobooks/`) — at 100Mbps ~800GB takes ~20h, run overnight or connect NAS temporarily via direct ethernet
-- [ ] Update all Docker Compose volume paths to NAS mount
-- [ ] Restart all services, verify everything works
-- [ ] Update rclone backup script to back up from NAS instead of T7
-- [ ] Repurpose T7 as additional backup, T5 as offsite backup
-- [ ] Verify drive sleep works (already configured: 20 min idle, wake on sign-in)
-- [ ] Optional: enable rsync service + Bonjour/Time Machine target (File Service)
-- [ ] Install Tailscale from App Center (needs storage pool), join tailnet — enables remote SMB/Finder mounting from MacBook when away from home (web UI already remote via nas.peciulevicius.com + UGREENlink)
+**Migration done (2026-08-04)** ✅
+- [x] RAID 5 pool created (3× 6TB IronWolf Pro = ~11TiB usable), Btrfs
+- [x] SMB on; shares: `media`, `immich`, `audiobooks`, `books`, `unsorted`; service account `macmini` (ASCII name — `ž` in `Džiugas` breaks SMB auth)
+- [x] Tailscale via Docker container on NAS (`ugreen-nas`, 100.95.228.35) — remote SMB/Finder
+- [x] Full copy T7 → NAS (~680GB incl. 142G photo archives → `unsorted`), zero errors
+- [x] All services switched to NAS paths (`/Volumes/media` etc.); Immich Postgres moved to internal SSD (`~/services/immich/data/postgres`) — DBs must not live on SMB
+- [x] Reboot-proof mounts: `scripts/utils/mount-nas.sh` + `com.peciulevicius.mount-nas` LaunchAgent
+- [x] Glance tile for NAS
+
+**Remaining follow-ups:**
+- [ ] Update rclone/T5 backup scripts to back up from NAS paths instead of T7
+- [ ] Decide: delete stale `/Volumes/T7/docker/` (53G old Docker VM copy)
+- [ ] Repurpose T7 as backup target, T5 as offsite backup (keep T7 data as-is for ~2 weeks as fallback first)
+- [ ] Verify drive sleep works (configured: 20 min idle)
+- [ ] Optional: Bonjour + Time Machine target, NAS rsync service
+- [ ] Mac mini auto-login (System Settings → Users & Groups) — without it, after a power outage neither Docker, cloudflared, nor NAS mounts come up
+- [ ] Watch streaming: 4K high-bitrate files may exceed the extender's ~100Mbps ceiling — if Jellyfin buffers, wire the NAS/Mac path properly
 
 **Hardware reference:** 4-bay, RK3588C ARM 8-core, 8GB RAM (keep NAS storage-only — no heavy Docker workloads; compute stays on Mac mini), 2.5GbE port. Purchase total ~€1,060 (NAS €340 + drives €690 + switch/cables €30).
 

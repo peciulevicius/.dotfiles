@@ -18,7 +18,7 @@ services:
       - "${READARR_PORT:-8787}:8787"
     volumes:
       - ./data:/config
-      - ${BOOKS_DIR:-/Volumes/T7/calibre-books}:/books
+      - ${BOOKS_DIR:-/Volumes/books}:/books
       - ${AUDIOBOOKS_DIR:-./data/audiobooks}:/audiobooks
     environment:
       PUID: ${PUID:-1000}

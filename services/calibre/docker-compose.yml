@@ -17,7 +17,7 @@ services:
       - "${CALIBRE_PORT:-8888}:8080"   # KasmVNC web GUI (nginx inside uses 8080, not 3000)
     volumes:
       - ./data:/config
-      - ${BOOKS_DIR:-/Volumes/T7/calibre-books}:/books
+      - ${BOOKS_DIR:-/Volumes/books}:/books
       - ./start-content-server.sh:/custom-cont-init.d/99-content-server.sh:ro
     environment:
       PUID: ${PUID:-1000}
