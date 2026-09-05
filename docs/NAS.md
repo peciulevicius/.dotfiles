@@ -6,7 +6,7 @@ something breaks.
 ## The mental model
 
 ```
-UGREEN NAS (192.168.1.73, RAID 5, ~11TiB)
+UGREEN NAS (addressed as DH4300PLUS-DP.local — see "Addressing" below, RAID 5, ~11TiB)
   └── SMB shares: media, immich, audiobooks, books, unsorted
         └── mounted on Mac mini at /Volumes/<share>  (user: macmini)
               └── Docker containers bind-mount those paths (set in .env files)
@@ -15,6 +15,44 @@ UGREEN NAS (192.168.1.73, RAID 5, ~11TiB)
 The NAS **stores**, the Mac mini **computes**. No service runs on the NAS
 except Tailscale (Docker). Databases live on the Mac mini's internal SSD —
 never on SMB (they corrupt over network mounts).
+
+## Addressing — always use the mDNS name, never an IP
+
+The NAS is **not** on a DHCP reservation, and its IP has drifted three times
+(`.73` → `.106` → `.75` → `.73`). Each drift silently broke every NAS-backed
+service until someone was home to notice — the 2026-09-05 outage ran ~7 days.
+
+So everything now addresses the NAS by its Bonjour/mDNS name, which follows it
+to whatever IP it holds:
+
+```
+DH4300PLUS-DP.local
+```
+
+Verified to resolve from the host, from cloudflared, from inside Docker
+containers, and for SMB mounts (the login keychain matches on it fine).
+**Don't reintroduce a hard-coded IP** — that is what kept breaking. A router
+DHCP reservation is still worth doing as belt-and-braces (TODO #22), but is no
+longer load-bearing.
+
+Used in: `scripts/utils/mount-nas.sh`, `services/glance/glance.yml` (NAS tile),
+`~/.cloudflared/config.yml` (nas ingress). `mount-nas.sh` keeps a numeric
+fallback list purely for the case where mDNS itself is unavailable.
+
+## Self-healing
+
+Two launchd agents, both every 5 min:
+
+| Agent | Script | Covers |
+|---|---|---|
+| `com.peciulevicius.docker-watchdog` | `scripts/utils/docker-watchdog.sh` | Docker Desktop/engine down or hung |
+| `com.peciulevicius.nas-watchdog` | `scripts/utils/nas-watchdog.sh` | Shares unmounted → remount; NAS-backed containers exited → `compose up -d` |
+
+`nas-watchdog.sh` deliberately remounts **before** touching containers: start a
+container while its bind path is missing and Docker creates an empty directory
+on the internal SSD, so the service comes up pointing at nothing.
+
+Logs: `/opt/homebrew/var/log/{docker,nas}-watchdog.log`
 
 ## Where paths are configured
 
@@ -51,8 +89,9 @@ Work down this ladder — it's almost always #1:
 
 1. **Mount gone?** `ls /Volumes/media` — empty/missing → run
    `bash ~/.dotfiles/scripts/utils/mount-nas.sh`, check its log
-2. **NAS reachable?** `nc -z 192.168.1.73 445` — fails → NAS off/IP changed
-   (check router; reservation should pin 192.168.1.73) → check Glance tile
+2. **NAS reachable?** `nc -z DH4300PLUS-DP.local 445` — fails → NAS is off or
+   off the network (IP drift no longer matters, see Addressing above) →
+   check Glance tile / power
 3. **Wrong path in config?** `cat ~/services/<name>/.env` — compare with
    table above
 4. **Container started before mount existed?**
@@ -62,7 +101,7 @@ Work down this ladder — it's almost always #1:
 
 ## Putting your own files on the NAS
 
-From any Mac at home: Finder → Cmd+K → `smb://192.168.1.73` (away from
+From any Mac at home: Finder → Cmd+K → `smb://DH4300PLUS-DP.local` (away from
 home: same but via Tailscale, or use nas.peciulevicius.com → Files app in
 the browser, or UGREEN mobile apps). Then drag & drop like a normal disk.
 

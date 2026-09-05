@@ -87,7 +87,7 @@ pages:
                 icon: si:uptimekuma
               - title: UGREEN NAS
                 url: https://nas.peciulevicius.com
-                check-url: http://192.168.1.73:9999/
+                check-url: http://DH4300PLUS-DP.local:9999/
                 alt-status-codes:
                   - 307
                 icon: di:ugreen

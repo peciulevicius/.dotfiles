@@ -45,6 +45,73 @@ OpenSubtitles.com configured, Default language profile set with English. Applied
 - [ ] Set router DNS to Mac mini IP (primary) + `1.1.1.1` (fallback)
 - [ ] Test: `nslookup home.peciulevicius.com` should return Mac mini local IP
 
+### 22. Power-outage recovery — NOT fully automatic yet (found 2026-08-16)
+
+**Incident:** Power outage while user was out. Mac mini did not come back up on its own — required physically pressing the power button. Once manually powered on, 10+ service stacks were down/erroring (bad gateway on Immich, Jellyfin, Bazarr, etc.) and the NAS tile showed "Timed Out."
+
+**Root causes found and fixed this session:**
+- [x] NAS got a new DHCP IP again (`.73` → `.106` → **`.75`**, second time this has happened — no router reservation yet). Updated `mount-nas.sh`, `glance.yml`, `~/.cloudflared/config.yml` to `.75` and restarted affected services.
+- [x] Immich's `immich-server` image (pinned to rolling `release` tag) had auto-updated to v3.1.0 at some point (likely when the VM disk reset on 2026-08-09/10 wiped the local image cache and forced a fresh pull), which dropped support for the old `pgvecto-rs` Postgres extension. Migrated `immich-postgres` to the official bridge image `ghcr.io/immich-app/postgres:14-vectorchord0.3.0-pgvectors0.2.0` (Immich's documented upgrade path) — server auto-migrated the vector extension on restart, no data lost.
+- [x] `sonarr`, `radarr`, `calibre`, `transmission`, `readarr` containers were stuck in `Created` (never started) — leftover from the `rebuild-services.sh` run during last week's Docker VM reset. Started them.
+
+**Not fixed — needs your decision, can't be done remotely:**
+- [ ] **FileVault is ON**, and no macOS auto-login is configured. Result: after any power loss, even though `pmset autorestart` is correctly set to 1 (Mac *does* try to power back on), it stops at the FileVault unlock/login screen and NOTHING further happens automatically — no Docker, no NAS mounts, no cloudflared, no watchdog — until someone is physically there to log in. This is exactly why manual button-pressing was needed, and it will happen again on any future outage. Two ways to actually fix this:
+  1. Turn off FileVault, then enable auto-login (System Settings → Users & Groups → Login Options) — full auto-recovery, but the internal SSD is no longer encrypted at rest.
+  2. Keep FileVault, accept that a power outage while away means physical intervention is required to bring the Mac mini back — mitigate by leaving it on a battery backup (UPS) so brief outages never actually cut power.
+- [ ] **NAS "Auto power-on when power is supplied" was never confirmed enabled** (this is TODO #11's own pending item — see below, Hardware & Power settings on the NAS itself). Even if the Mac mini fully self-recovers, if the NAS doesn't power back on by itself, none of the NAS-dependent services come up. Can't check/set this remotely — needs the NAS admin web UI.
+- [ ] `mount-nas.sh` only runs once at login and gives up after 3 minutes if the NAS isn't reachable yet — a NAS doing a RAID5 array check after a hard power cut could plausibly take longer than that. Worth widening the timeout and/or adding a periodic retry so a late-booting NAS still gets mounted without a fresh login. (Proposed this session, held off — needs your go-ahead since it's a new persistent schedule.)
+
+**Bottom line for "will it work tomorrow if the power goes out": likely NOT fully** — the Mac mini needs a human to physically log in past FileVault, and the NAS's own auto-power-on is unverified. A UPS on both devices is the highest-leverage fix if going away for real chunks of time.
+
+### 23. NAS IP drift — root-caused and fixed (2026-09-05)
+
+**Incident:** All NAS-backed services (Immich, Jellyfin, Bazarr, Calibre, Sonarr/Radarr,
+Transmission, Readarr, LazyLibrarian, Audiobookshelf — 11 containers) had been down
+**~7 days**, exited 255. `nas.peciulevicius.com`, `photos`, `watch` etc. all failing.
+Nobody noticed because nothing alerts when the Mac mini's own monitoring is what's broken.
+
+**Cause:** NAS IP drifted a *third* time (`.75` → `.73`). The IP was hard-coded in three
+places, so every drift silently orphaned every NAS-backed service until someone was
+physically home.
+
+**Fixed — IP is no longer used anywhere:**
+- [x] Everything now addresses the NAS as **`DH4300PLUS-DP.local`** (Bonjour/mDNS), which
+  follows it to any IP. Verified working from the host, cloudflared, inside Docker
+  containers, and for SMB mounts (keychain matches on it — no re-auth needed).
+  Changed in `mount-nas.sh`, `services/glance/glance.yml`, `~/.cloudflared/config.yml`.
+- [x] `mount-nas.sh` rewritten: mDNS-first with numeric fallback, 10-min boot wait (was
+  3 — too short for a NAS doing a RAID5 check after a hard power cut), 30s timeout per
+  mount so a missing keychain entry can't wedge the agent on an invisible GUI prompt,
+  and a no-op fast path when everything is already mounted.
+- [x] **New `com.peciulevicius.nas-watchdog` agent** (`scripts/utils/nas-watchdog.sh`,
+  every 5 min): remounts dropped shares, then `compose up -d`s any NAS-backed container
+  that isn't running. Closes the gap that let this sit broken for a week —
+  `docker-watchdog.sh` only ever watched Docker itself, never the mounts or the
+  containers. Tested by stopping a container + unmounting a share: recovered in <1s.
+
+**Still open (belt-and-braces, no longer load-bearing):**
+- [ ] Router DHCP reservation on OpenWrt (`192.168.1.1`) — MAC `6c:1f:f7:a9:39:e9`.
+  Worth doing so the IP stops moving at all, but mDNS now absorbs the drift.
+
+### 24. Tailscale is LOGGED OUT on the Mac mini (found 2026-09-05) — remote access is dead
+
+`tailscale status` → `Logged out` / `BackendState: NeedsLogin`. Consequences:
+- Every Tailscale-only service is unreachable from outside the house: Sonarr, Radarr,
+  Prowlarr, Transmission, Syncthing, Jellyseerr, Bazarr, Grafana, Prometheus,
+  LazyLibrarian, Karakeep (all the `100.81.171.49:<port>` links in Glance).
+- No `ssh macmini` from away — so when something breaks while travelling there is
+  currently **no way to fix it remotely at all**. This is exactly the "I'm not home and
+  can't do anything" problem.
+- The NAS's own Tailscale node (`ugreen-nas`, was `100.95.228.35`) is also gone from the
+  tailnet.
+
+Fix needs an interactive browser login, so it has to be done at the machine:
+- [ ] `tailscale up` on the Mac mini, authenticate in the browser
+- [ ] Re-register the NAS's Tailscale container
+- [ ] Consider disabling key expiry on both nodes in the Tailscale admin console —
+  otherwise they log themselves out again every ~6 months and remote access dies
+  silently while away
+
 ### 11. Replace external SSDs with proper NAS storage
 
 **Status (Jul 2026):** NAS arrived ✅ (UGREEN DH4300 Plus, SN H43001J61J30FAD0, warranty until 2028-07-23). Drives ordered — 3× IronWolf Pro 6TB recert (ST6000NE000) €230 each from [datablocks.dev](https://datablocks.dev), preorder arriving **~Jul 27–31**.
