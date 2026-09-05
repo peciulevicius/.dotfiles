@@ -13,6 +13,12 @@ services:
       - "${IMMICH_PORT:-2283}:2283"
     volumes:
       - ${UPLOAD_LOCATION:-./library}:/usr/src/app/upload
+      # Thumbnails on the internal SSD, overlaying the NAS path above.
+      # Scrolling the timeline requests hundreds of these at once; served
+      # from spinning NAS disks that is audible seek noise and visibly
+      # laggy. Only ~1.5GB, and regenerable from the originals, so the
+      # SSD is the right home for them. Originals stay on the NAS.
+      - ${THUMBS_LOCATION:-./data/thumbs}:/usr/src/app/upload/thumbs
       - /etc/localtime:/etc/localtime:ro
     environment:
       IMMICH_HOST: 0.0.0.0
