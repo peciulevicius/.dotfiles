@@ -1,12 +1,12 @@
 # Sonarr + Radarr + Prowlarr
 
-Media automation stack. Prowlarr manages indexers, Sonarr handles TV shows, Radarr handles movies. All three share a `/media` volume on T7.
+Media automation stack. Prowlarr manages indexers, Sonarr handles TV shows, Radarr handles movies. All three share a `/media` volume on the NAS.
 
 ## Setup
 
 ```bash
 # Create media directories
-mkdir -p /Volumes/T7/media/{movies,tv,downloads}
+mkdir -p /Volumes/media/{movies,tv,downloads}
 
 cd ~/services/sonarr-radarr
 nano .env
@@ -30,7 +30,7 @@ docker compose up -d
 ## Volume Structure
 
 ```
-/Volumes/T7/media/
+/Volumes/media/
   downloads/    ← Transmission downloads here
   movies/       ← Radarr moves completed movies here
   tv/           ← Sonarr moves completed TV here

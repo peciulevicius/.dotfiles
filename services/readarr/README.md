@@ -56,6 +56,6 @@ Once books appear in Calibre-Web (books.peciulevicius.com):
 ## Flow
 
 ```
-Readarr (finds + downloads) → Calibre library (/Volumes/T7/calibre-books)
+Readarr (finds + downloads) → Calibre library (/Volumes/books)
   → Calibre-Web (books.peciulevicius.com) → Send to Kindle email
 ```

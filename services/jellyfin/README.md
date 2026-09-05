@@ -7,8 +7,8 @@ Reads from the shared `/media/movies/` and `/media/tv/` directories managed by R
 ## Setup
 
 ```bash
-# Create media directories on T7
-mkdir -p /Volumes/T7/media/{movies,tv,downloads}
+# Media lives on the NAS (mounted by scripts/utils/mount-nas.sh)
+mkdir -p /Volumes/media/{movies,tv,downloads}
 
 cd ~/services/jellyfin
 nano .env

@@ -328,14 +328,16 @@ pkm/
 - Updated cron: 3am daily now runs `backup-t5.sh` (replaces `backup-immich.sh`)
 - Fixed `backup-immich.sh` path references from `/Volumes/ImmichBackup` → `/Volumes/Backup`
 
-**Current recovery posture:**
+**Recovery posture as of 2026-09-05** (superseded by the NAS migration — kept for history;
+current posture is in the Drive Layout section below):
 | If... | Photos | Audiobooks | Books | Services config |
 |-------|--------|------------|-------|----------------|
-| T7 fails | T5 ✅ | T5 ✅ | T5 ✅ + R2 ✅ | R2 ✅ |
-| T5 fails | R2 ✅ | ❌ re-download | R2 ✅ | R2 ✅ |
-| Both fail | ❌ | ❌ | R2 ✅ | R2 ✅ |
+| NAS fails | T7 ✅ + T5 ✅ | T7 ✅ + T5 ✅ | T7 ✅ + T5 ✅ + R2 ✅ | R2 ✅ |
+| A drive fails | re-run `backup-external.sh` | same | same | R2 ✅ |
+| Fire/theft | ❌ everything is in one room | ❌ | R2 ✅ | R2 ✅ |
 
-**Remaining:** T5 backup has no Uptime Kuma heartbeat — if T5 isn't plugged in, cron silently fails. Add a push monitor when convenient.
+**The real remaining gap:** both external drives sit next to the NAS, so nothing survives
+fire, flood or theft. Moving T5 offsite is what makes this genuinely 3-2-1.
 
 ### 20. Import old photo archives into Immich
 
@@ -371,9 +373,9 @@ responding (photos/vault/home/watch/nas all 200).
 - [x] ~~Cloudflare Access (Glance only)~~ — added Access policy on `home.peciulevicius.com` only. GitHub SSO (primary) + email OTP (fallback). 1-month session. Other services unaffected.
 - [x] ~~Homarr → Glance migration~~ — replaced Homarr with Glance (YAML config, responsive). Four pages: Home, Feed, Media, Finance.
 - [x] ~~Glance internal links~~ — fixed `host.docker.internal` → Tailscale IP (`100.81.171.49`) so all links work from any device (phone, laptop, etc.)
-- [x] ~~Actual Budget~~ — removed (using Wallet by Budget Bakers instead — bank sync support for Lithuanian banks). Container stopped, removed from Glance/tunnel/setup-services.
+- [~] Actual Budget — was marked removed in favour of Wallet by Budget Bakers, but the `actual-budget` container is **still running** as of 2026-09-05. Either finish removing it or drop the strikethrough; right now the notes and reality disagree.
 - [x] ~~Passkey migration~~ — all 5 services (Amazon, Binance, GitHub, Google, PSN) re-registered with Bitwarden
-- [x] ~~Karakeep~~ — tried as Linkwarden replacement, reverted back to Linkwarden (simpler UI). Karakeep stopped, data kept at `~/services/karakeep/`
+- [~] Karakeep — tried as a Linkwarden replacement and reverted, but `karakeep`, `karakeep-chrome` and `karakeep-meilisearch` are **still running** as of 2026-09-05 (three containers' worth of RAM). Either stop them or drop the strikethrough.
 - [x] ~~Linkwarden~~ — restored as primary bookmark manager on port 3005, `links.peciulevicius.com`
 - [x] ~~Grafana + Prometheus configured~~ — datasource connected, dashboards imported, password set
 - [x] ~~Bazarr connected~~ — Sonarr/Radarr API keys configured, subtitle provider still needed
@@ -433,23 +435,30 @@ First suspects: `immich_machine_learning`, `grafana`+`prometheus`, `nextcloud`.
 
 ## Drive Layout (reference)
 
-Two Samsung SSDs connected to the Mac Mini (T5 plugged in for backups, not permanently):
+Since the 2026-08-04 migration the **NAS is primary**. The two Samsung SSDs are
+backup targets only, plugged in occasionally and synced by hand.
 
-| Drive | Size | Role | Mount path |
-|-------|------|------|-----------|
-| **T7** | 1TB | Primary data | `/Volumes/T7/` |
-| **T5** | 500GB | Local backup | `/Volumes/Backup/` |
+| Device | Size | Role | Mount path |
+|--------|------|------|-----------|
+| **UGREEN NAS** | ~11TiB usable (RAID 5) | Primary storage | `/Volumes/<share>` |
+| **T7** | 1TB | Manual backup | `/Volumes/T7/` |
+| **T5** | 500GB | Manual backup, destined offsite | `/Volumes/Backup/` |
 
 **What lives where:**
 
-| Data | Drive | Path |
+| Data | Where | Path |
 |------|-------|------|
-| Immich photos | T7 | `/Volumes/T7/immich/upload` |
-| Immich DB | T7 | `/Volumes/T7/immich/postgres` |
-| Media (movies, TV, downloads) | T7 | `/Volumes/T7/media/` |
-| Audiobooks | T7 | `/Volumes/T7/audiobooks/` (symlinked from `~/services/audiobookshelf/data/audiobooks`) |
-| Calibre books | T7 | `/Volumes/T7/calibre-books/` |
-| Docker data | Internal SSD | `~/Library/Containers/com.docker.docker` (51GB actual / 245GB sparse) |
+| Immich photos | NAS | `/Volumes/immich/upload` |
+| Immich database | Internal SSD | `~/services/immich/data/postgres` (never on SMB — DBs corrupt over network mounts) |
+| Immich thumbnails | Internal SSD | `~/services/immich/data/thumbs` (SSD for fast scrolling; regenerable) |
+| Media (movies, TV, downloads) | NAS | `/Volumes/media/` |
+| Audiobooks | NAS | `/Volumes/audiobooks/` |
+| Calibre books | NAS | `/Volumes/books/` |
+| Docker data | Internal SSD | `~/Library/Containers/com.docker.docker` |
+
+**Still on T7 and not yet in Immich:** the year folders (`2002`–`2024`, `Močiutė`,
+`from iphone`) — ~140GB of archives, see TODO #20. T5 holds copies of the same
+folders, so they are not single-copy, but **do not wipe T7 until they are imported**.
 
 **Cloud backup (rclone → Cloudflare R2), nightly 5am:**
 - Docker service configs, obsidian vault, Calibre books, DB dumps → R2 `peciulevicius-backups`
@@ -477,11 +486,14 @@ fire/flood/theft. Moving T5 offsite (the parents' house plan) is what makes this
 
 | Service | Container path | Mac mini path |
 |---|---|---|
-| Radarr/Sonarr media | `/media` | `/Volumes/T7/media` |
-| Radarr movies | `/media/movies` | `/Volumes/T7/media/movies` |
-| Sonarr TV | `/media/tv` | `/Volumes/T7/media/tv` |
-| Transmission downloads | `/downloads` | `/Volumes/T7/media/downloads` |
-| Audiobookshelf | `/audiobooks` | `/Volumes/T7/audiobooks` (symlink: `~/services/audiobookshelf/data/audiobooks`) |
-| Calibre library | `/books` | `/Volumes/T7/calibre-books` |
-| Immich photos | `/usr/src/app/upload` | `/Volumes/T7/immich/upload` |
-| Immich DB | `/var/lib/postgresql/data` | `/Volumes/T7/immich/postgres` |
+| Radarr/Sonarr media | `/media` | `/Volumes/media` |
+| Radarr movies | `/media/movies` | `/Volumes/media/movies` |
+| Sonarr TV | `/media/tv` | `/Volumes/media/tv` |
+| Transmission downloads | `/downloads` | `/Volumes/media/downloads` |
+| Audiobookshelf | `/audiobooks` | `/Volumes/audiobooks` |
+| Calibre library | `/books` | `/Volumes/books` |
+| Immich photos | `/usr/src/app/upload` | `/Volumes/immich/upload` |
+| Immich thumbnails | `/usr/src/app/upload/thumbs` | `~/services/immich/data/thumbs` (internal SSD) |
+| Immich DB | `/var/lib/postgresql/data` | `~/services/immich/data/postgres` (internal SSD) |
+
+All `/Volumes/<share>` paths are NAS SMB mounts — see `docs/NAS.md`.

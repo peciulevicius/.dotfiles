@@ -86,7 +86,7 @@ docker compose up -d
 
 ### Immich
 
-**What:** Google Photos replacement — auto-backup photos from your phone, face recognition, shared albums, map view. All photos stored on your T7 SSD.
+**What:** Google Photos replacement — auto-backup photos from your phone, face recognition, shared albums, map view. All photos stored on the NAS (`/Volumes/immich`).
 
 **Why:** Own your photos instead of paying Google/iCloud for storage. No compression, no AI training on your data.
 
@@ -342,7 +342,7 @@ docker compose up -d
 2. Upload books via the web UI (Admin → Add books)
 3. **Kindle:** Settings → enable "Send to Kindle" with your Kindle email
 4. **Mobile/e-reader:** connect via OPDS at `http://100.81.171.49:8083/opds`
-5. Books stored on T7 SSD at `/Volumes/T7/calibre-books`
+5. Books stored on the NAS at `/Volumes/books`
 
 ```bash
 cd ~/services/calibre-web
@@ -356,7 +356,7 @@ docker compose up -d
 
 **What:** Cloud backup script — syncs your `~/services/` data to Backblaze B2 (or any S3-compatible storage).
 
-**Why:** 3-2-1 backup: your data exists on Mac mini + T7 SSD + cloud. If the Mac mini dies, you can restore everything.
+**Why:** 3-2-1 backup: your data exists on the NAS + an external drive (T7/T5, backed up manually via `scripts/backup/backup-external.sh`) + Cloudflare R2. If the Mac mini dies, all data is still on the NAS.
 
 **How to use:**
 ```bash
@@ -498,7 +498,7 @@ docker compose up -d
 
 ```bash
 # Create media directories first
-mkdir -p /Volumes/T7/media/{movies,tv,downloads}
+mkdir -p /Volumes/media/{movies,tv,downloads}
 
 cd ~/services/jellyfin
 docker compose up -d

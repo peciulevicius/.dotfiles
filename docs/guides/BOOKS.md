@@ -127,9 +127,9 @@ This prevents spam files inside ebook torrents (e.g. `free audiobook version.txt
 These map to:
 | Container path | Mac mini path |
 |----------------|--------------|
-| `/books` | `/Volumes/T7/calibre-books` (shared with Calibre) |
+| `/books` | `/Volumes/books` (shared with Calibre) |
 | `/audiobooks` | `~/services/audiobookshelf/data/audiobooks/` |
-| `/downloads` | `/Volumes/T7/media/downloads` |
+| `/downloads` | `/Volumes/media/downloads` |
 
 ### 7. Add an author and search
 
@@ -181,8 +181,8 @@ sqlite3 ~/services/lazylibrarian/data/lazylibrarian.db \
 ### Manual Calibre import (if PostProcessor fails)
 Copy file to the shared `/books` volume then import via Calibre container:
 ```bash
-# Copy EPUB to /books volume (accessible as /Volumes/T7/calibre-books/)
-cp book.epub /Volumes/T7/calibre-books/
+# Copy EPUB to /books volume (accessible as /Volumes/books/)
+cp book.epub /Volumes/books/
 
 # Import via calibredb inside the calibre container
 docker exec calibre calibredb add /books/book.epub --with-library="http://localhost:8081"
@@ -192,9 +192,9 @@ docker exec calibre calibredb add /books/book.epub --with-library="http://localh
 
 | What | Container | Mac mini |
 |------|-----------|---------|
-| Ebooks | `/books` | `/Volumes/T7/calibre-books` |
+| Ebooks | `/books` | `/Volumes/books` |
 | Audiobooks | `/audiobooks` | `~/services/audiobookshelf/data/audiobooks` |
-| Downloads | `/downloads` | `/Volumes/T7/media/downloads` |
+| Downloads | `/downloads` | `/Volumes/media/downloads` |
 | LazyLibrarian config | `/config` | `~/services/lazylibrarian/data` |
 | SQLite database | `/config/lazylibrarian.db` | `~/services/lazylibrarian/data/lazylibrarian.db` |
 
