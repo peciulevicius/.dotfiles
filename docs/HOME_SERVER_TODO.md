@@ -136,8 +136,14 @@ Nothing alerts on this — it's the missing heartbeat noted in TODO #19.
   never be the nightly local target, so either accept "no local backup" or pick a new
   local target (the NAS itself is RAID5, not a backup — it doesn't protect against
   deletion or ransomware).
-- [ ] Add an Uptime Kuma push heartbeat to `backup-t5.sh` so whatever it ends up being
-  is actually monitored (TODO #19 leftover).
+- [x] ~~Nightly T5 cron removed (2026-09-05)~~ — `backup-t5.sh` and the deprecated
+  `backup-immich.sh` are deleted, replaced by `backup-external.sh <target>`, which is
+  run **manually** when a drive is plugged in. A nightly job made no sense for drives
+  that are not permanently connected; the old one had been failing every night since
+  early August.
+- [ ] External-drive backups are now manual, so nothing warns you when they go stale.
+  Either set a recurring reminder, or check the drive's newest file against the NAS
+  before assuming you have a current copy.
 
 **Current real posture:** R2 (configs, obsidian, DB dumps, Calibre books) is the only
 backup actually running. Photos/audiobooks/media exist **only** on the NAS's RAID 5 —
@@ -450,14 +456,20 @@ Two Samsung SSDs connected to the Mac Mini (T5 plugged in for backups, not perma
 - Script: `~/.dotfiles/services/rclone/rclone-backup.sh`
 - ~1.3GB total (critical-only; photos/audiobooks excluded from R2)
 
-**Local backup (rsync T7 → T5 `/Volumes/Backup`), nightly 3am:**
-- `~/.dotfiles/scripts/backup/backup-t5.sh`
-- Covers: Immich photos, audiobooks, Calibre books
-- Skips: media (movies/TV — too large, acceptable loss)
+**Local backup (rsync NAS → external drive), MANUAL — no cron:**
+- `~/.dotfiles/scripts/backup/backup-external.sh /Volumes/T7` (or `/Volumes/Backup` for T5)
+- Covers: Immich originals + transcoded video, **database dumps**, audiobooks, Calibre books
+- Skips: media (movies/TV — too large, re-downloadable), Immich thumbnails (regenerable)
+- Both drives verified 1:1 against the NAS on 2026-09-05
 
-**If T7 dies:** photos + audiobooks + books on T5. Services configs on R2. Re-download media.
-**If T5 dies:** replace it, rsync from T7 again.
-**If Mac Mini dies:** all data safe on T7. Reinstall macOS, clone dotfiles, restore from R2.
+**If the NAS dies:** photos + books + audiobooks + DB dumps on T7 and T5. Configs on R2.
+Re-download media.
+**If a drive dies:** re-run the script against a replacement.
+**If the Mac mini dies:** all data safe on the NAS. Reinstall macOS, clone dotfiles,
+restore configs from R2.
+
+**The gap:** T7 and T5 currently sit in the same room as the NAS, so nothing survives
+fire/flood/theft. Moving T5 offsite (the parents' house plan) is what makes this 3-2-1.
 
 ---
 

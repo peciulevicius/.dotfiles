@@ -410,11 +410,14 @@ immich upload --recursive /Volumes/Storage/
 
 ### Step 8 — Nightly photo backup
 
-This copies your Immich photos from the 1TB to the 500GB every night at 3am. If the 1TB ever fails, you have last night's photos on the 500GB.
-
-Test the backup script manually first:
+Photos now live on the NAS, and the external drives are only occasionally
+plugged in, so this is a **manual** copy rather than a nightly cron job. Run it
+whenever a drive is connected:
 ```bash
-~/.dotfiles/scripts/backup/backup-immich.sh
+# Preview first
+~/.dotfiles/scripts/backup/backup-external.sh /Volumes/T7 --dry-run
+# Then for real
+~/.dotfiles/scripts/backup/backup-external.sh /Volumes/T7
 ```
 
 If it runs without errors, schedule it:
@@ -422,10 +425,10 @@ If it runs without errors, schedule it:
 crontab -e
 ```
 
-Add this line (this is standard cron syntax — `0 3 * * *` means "at 3:00am every day"):
-```
-0 3 * * * ~/.dotfiles/scripts/backup/backup-immich.sh >> ~/logs/immich-backup.log 2>&1
-```
+There is deliberately **no cron entry for the external-drive backup** — the
+drives are not permanently connected, so a nightly job would fail every night
+(the old `backup-t5.sh` did exactly that for a month before being removed).
+Run it by hand when a drive is plugged in.
 
 Save and close. Check it ran the next morning:
 ```bash
@@ -476,8 +479,8 @@ ssh macmini echo "connected"
 # Immich web UI
 open http://<tailscale-ip>:2283
 
-# Backup script works
-~/.dotfiles/scripts/backup/backup-immich.sh
+# Backup script works (external drive must be plugged in)
+~/.dotfiles/scripts/backup/backup-external.sh /Volumes/T7 --dry-run
 ```
 
 ---
@@ -706,7 +709,6 @@ done
 # 6. Set up backups
 crontab -e
 # Add:
-# 0 3 * * * ~/.dotfiles/scripts/backup/backup-immich.sh >> ~/logs/immich-backup.log 2>&1
 # 0 4 * * 0 ~/.dotfiles/scripts/backup/backup-databases.sh >> ~/logs/db-backup.log 2>&1
 
 # 7. Set up Time Machine (see step 9 above)
@@ -732,8 +734,8 @@ cd ~/services/<service> && docker compose restart
 # Update a service
 cd ~/services/<service> && docker compose pull && docker compose up -d
 
-# Run photo backup manually
-~/.dotfiles/scripts/backup/backup-immich.sh
+# Run photo backup manually (to whichever drive is plugged in)
+~/.dotfiles/scripts/backup/backup-external.sh /Volumes/T7
 
 # Dump databases
 ~/.dotfiles/scripts/backup/backup-databases.sh

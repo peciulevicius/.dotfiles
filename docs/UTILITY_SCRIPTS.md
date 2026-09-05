@@ -10,7 +10,7 @@ This dotfiles repository includes several utility scripts to help maintain and m
 | `sync.sh` | Pulls dotfiles from git + re-symlinks configs (no package updates) | After pulling dotfiles |
 | `setup/setup-claude.sh` | Syncs Claude Code config (agents, skills, rules, commands) | After install / as needed |
 | `backup/backup-dotfiles.sh` | Backs up config files + package lists to a timestamped archive | Before major changes |
-| `backup/backup-immich.sh` | Rsync Immich photos T7 → T5 `ImmichBackup` (Mac mini only) | Nightly via cron |
+| `backup/backup-external.sh` | Rsync Immich photos + DB dumps + audiobooks/books from the NAS to an external drive (Mac mini only) | Manually, when a drive is plugged in |
 | `cleanup.sh` | Cleans caches and frees disk space | Monthly |
 | `dev-check.sh` | Checks all dev tools are installed and configured | After fresh install / troubleshooting |
 | `setup/setup-gpg.sh` | Sets up GPG commit signing | Once per machine |
@@ -36,7 +36,7 @@ scripts/
 ├── setup/setup-claude.sh     # Sync Claude Code config (agents, skills, rules, commands)
 ├── setup/setup-obsidian.sh   # Create Obsidian vault with PARA folder structure
 ├── backup/backup-dotfiles.sh # Back up config files + package lists to timestamped archive
-├── backup/backup-immich.sh   # Rsync Immich photos T7 → T5 ImmichBackup (Mac mini only)
+├── backup/backup-external.sh # Rsync NAS photos/DB/audiobooks/books to an external drive (Mac mini only)
 ├── cleanup.sh          # Clean caches and free disk space
 ├── dev-check.sh        # Check environment health
 ├── setup/setup-gpg.sh  # Set up GPG commit signing
@@ -730,32 +730,55 @@ Manages sleep settings and Immich setup on the Mac mini. Not relevant on MacBook
 
 1. Lists `/Volumes/` so you can see what your T7 drive is named in macOS
 2. Asks for the T7 volume name (e.g. `Samsung T7`, `T7 Touch` — whatever macOS calls it)
-3. Saves that name to `~/.config/dotfiles/mac-mini.conf` so `backup-immich.sh` can read it
+3. Saves that name to `~/.config/dotfiles/mac-mini.conf` (legacy — the current `backup-external.sh` takes its target as an argument instead)
 4. Creates `/Volumes/<T7>/immich/`, `~/services/immich/`, `~/logs/`
 5. Writes `~/services/immich/docker-compose.yml` from `config/immich/docker-compose.yml` with your volume name substituted in
 6. Copies `config/immich/.env.example` to `~/services/immich/.env`
 
 ---
 
-## 📸 backup-immich.sh — Immich Photo Backup
+## 📸 backup-external.sh — Backup to an External Drive
 
-Rsync copy of Immich photos from T7 (primary) to T5 `ImmichBackup` (backup). Reads the T7 volume name from `~/.config/dotfiles/mac-mini.conf` — run `mac-mini.sh setup` first.
+Rsync copy from the NAS to whichever external drive is plugged in. Takes the
+target as an argument, so the same script serves T7, T5, or any future drive.
+
+Covers Immich originals, Immich transcoded video, **database dumps**,
+audiobooks and Calibre books. Skips movies/TV (too large, re-downloadable) and
+Immich thumbnails (regenerable, and they live on the internal SSD now).
+
+The database dumps matter as much as the photos: Immich names originals by
+UUID, so without a matching dump a restore yields thousands of anonymous files
+with no albums, faces, dates or favourites.
 
 ### Usage
 
 ```bash
-# Run manually
-~/.dotfiles/scripts/backup/backup-immich.sh
+# Preview what would change — always worth doing first
+~/.dotfiles/scripts/backup/backup-external.sh /Volumes/T7 --dry-run
 
-# Schedule via cron (3am daily)
-crontab -e
-# Add: 0 3 * * * ~/.dotfiles/scripts/backup/backup-immich.sh >> ~/logs/immich-backup.log 2>&1
+# Run it
+~/.dotfiles/scripts/backup/backup-external.sh /Volumes/T7
+~/.dotfiles/scripts/backup/backup-external.sh /Volumes/Backup   # T5
 ```
+
+**Manual only — deliberately not on cron.** The drives are not permanently
+connected (T5 is meant to live offsite), so a nightly job would just fail every
+night. The predecessor `backup-t5.sh` did exactly that from Aug 2026 until it
+was removed.
+
+Two safety behaviours worth knowing:
+
+- If a NAS share is missing or empty the script **refuses to run**. Syncing
+  `--delete` from a share that failed to mount would otherwise wipe the backup
+  it is meant to protect.
+- Destination paths mirror the NAS layout (`…/immich/upload/upload`). Flattening
+  them makes rsync delete the existing backup and re-copy ~77GB over USB rather
+  than transferring only new files.
 
 ### Check the log
 
 ```bash
-cat ~/logs/immich-backup.log
+cat ~/logs/external-backup-*-$(date +%Y%m%d).log
 ```
 
 ---

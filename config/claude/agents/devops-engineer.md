@@ -139,8 +139,8 @@ brew services restart cloudflared
 # Weekly Sunday 4am — Postgres/MariaDB dumps
 ~/.dotfiles/scripts/backup/backup-databases.sh
 
-# Nightly 3am — Immich photos T7 → T5
-~/.dotfiles/scripts/backup/backup-immich.sh
+# Manual (no cron — drives are not always connected) — NAS → external drive
+~/.dotfiles/scripts/backup/backup-external.sh /Volumes/T7
 ```
 
 ## Security defaults

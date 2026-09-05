@@ -40,7 +40,7 @@ Use this when you just pulled changes and want configs to update — faster than
 scripts/setup/mac-mini.sh sleep off      ← run on first boot (disables sleep, enables auto-restart)
 scripts/setup/mac-mini.sh sleep on       ← re-enable normal sleep whenever needed
 scripts/setup/mac-mini.sh immich-setup   ← one-time Immich setup (run after drives are connected)
-scripts/backup/backup-immich.sh           ← manual photo backup (also runs nightly via cron)
+scripts/backup/backup-external.sh /Volumes/T7   ← manual photo backup to an external drive
 ```
 
 ### Docs site
@@ -59,7 +59,7 @@ scripts/docs.sh build         ← build static site (runs in CI)
 | `sync.sh` | Pulls dotfiles from git + re-symlinks configs (no package updates) | All machines, as needed |
 | `setup/setup-claude.sh` | Syncs Claude Code config (agents, skills, rules, commands) | All machines, after install |
 | `backup/backup-dotfiles.sh` | Backs up config files + package lists to a timestamped `.tar.gz` | All machines, as needed |
-| `backup/backup-immich.sh` | Rsync Immich photos from T7 → T5 `ImmichBackup` | Mac mini only |
+| `backup/backup-external.sh` | Rsync Immich photos + DB dumps + audiobooks/books from the NAS to an external drive (T7/T5). Takes the target as an argument. Manual only — no cron. | Mac mini only |
 | `cleanup.sh` | Cleans package caches, Docker, IDE caches, temp files | All machines, monthly |
 | `dev-check.sh` | Checks all dev tools are installed and configured | All machines |
 | `setup/setup-gpg.sh` | Sets up GPG key for signed commits | Once per machine |
@@ -75,14 +75,14 @@ scripts/docs.sh build         ← build static site (runs in CI)
 
 ---
 
-## backup-dotfiles.sh vs backup-immich.sh — what's the difference?
+## backup-dotfiles.sh vs backup-external.sh — what's the difference?
 
-| | `backup-dotfiles.sh` | `backup-immich.sh` |
+| | `backup-dotfiles.sh` | `backup-external.sh` |
 |--|--|--|
-| **What** | Config files, package lists, dotfiles | Immich photo library |
-| **Where to** | `~/dotfiles_backup_<timestamp>.tar.gz` | T5 `ImmichBackup` via rsync |
-| **When** | Manually, before major changes | Nightly at 3am via cron |
-| **Purpose** | Restore dev environment after wipe | Recover photos if T7 drive fails |
+| **What** | Config files, package lists, dotfiles | Immich photos + database dumps, audiobooks, books |
+| **Where to** | `~/dotfiles_backup_<timestamp>.tar.gz` | An external drive passed as an argument, via rsync |
+| **When** | Manually, before major changes | Manually, when the drive is plugged in |
+| **Purpose** | Restore dev environment after wipe | Recover photos if the NAS fails |
 
 ---
 

@@ -224,7 +224,7 @@ cmd_setup() {
     exit 1
   fi
 
-  # Save volume name so backup-immich.sh can read it without asking
+  # Save volume name (legacy — backup-external.sh takes its target as an argument)
   mkdir -p "$(dirname "$LOCAL_CONFIG")"
   cat > "$LOCAL_CONFIG" <<EOF
 # Mac mini local config — written by mac-mini.sh setup
