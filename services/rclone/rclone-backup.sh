@@ -113,7 +113,12 @@ if [[ -d "$OBSIDIAN_DIR" ]]; then
     ((ERRORS++))
   fi
 else
-  log_warn "Obsidian vault not found at $OBSIDIAN_DIR — skipping"
+  # Not a benign skip: this path is always expected to exist, so treat a
+  # missing source as a failure. Silently "succeeding" while skipping data
+  # is how Calibre books went unbacked-up for 7 days with a green heartbeat
+  # during the 2026-09-05 NAS outage.
+  log_err "Obsidian vault not found at $OBSIDIAN_DIR — NOT backed up"
+  ((ERRORS++))
 fi
 
 # Backup 3: Database dumps (weekly pg_dump output)
@@ -133,7 +138,8 @@ if [[ -d "$DB_DUMP_DIR" ]]; then
     ((ERRORS++))
   fi
 else
-  log_warn "DB dump dir not found at $DB_DUMP_DIR — skipping"
+  log_err "DB dump dir not found at $DB_DUMP_DIR — NOT backed up"
+  ((ERRORS++))
 fi
 
 # Backup 4: Calibre books (EPUBs on NAS — small enough for cloud)
@@ -153,7 +159,8 @@ if [[ -d "$CALIBRE_DIR" ]]; then
     ((ERRORS++))
   fi
 else
-  log_warn "Calibre books not mounted at $CALIBRE_DIR — skipping"
+  log_err "Calibre books not mounted at $CALIBRE_DIR — NOT backed up (NAS share missing)"
+  ((ERRORS++))
 fi
 
 HEARTBEAT_URL="https://status.peciulevicius.com/api/push/1xdUOQNbK4"

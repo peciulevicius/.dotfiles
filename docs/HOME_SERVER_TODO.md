@@ -105,12 +105,43 @@ physically home.
 - The NAS's own Tailscale node (`ugreen-nas`, was `100.95.228.35`) is also gone from the
   tailnet.
 
-Fix needs an interactive browser login, so it has to be done at the machine:
-- [ ] `tailscale up` on the Mac mini, authenticate in the browser
-- [ ] Re-register the NAS's Tailscale container
-- [ ] Consider disabling key expiry on both nodes in the Tailscale admin console —
-  otherwise they log themselves out again every ~6 months and remote access dies
-  silently while away
+**Resolved 2026-09-05** — user logged back in:
+- [x] Mac mini back on the tailnet as `100.81.171.49` (same IP as before, so every
+  Tailscale link in Glance still works). NAS node `ugreen-nas` (100.95.228.35) is back
+  too. All 10 Tailscale-only services verified responding.
+- [ ] **Still to do — disable key expiry** on `macmini` and `ugreen-nas` in the
+  Tailscale admin console (Machines → ⋯ → Disable key expiry). Current key expires
+  **2027-03-04**, and when it does, remote access dies silently exactly like this
+  time — most likely while away, which is when it's needed. This is the actual
+  permanent fix; logging back in is only a reset of the same 6-month timer.
+
+### 25. Backups were silently under-reporting (found + partly fixed 2026-09-05)
+
+Found while checking whether anything else broke during the 7-day NAS outage. Two
+separate ways backups looked healthy while not actually protecting the data:
+
+**a) rclone → R2 reported success while skipping missing sources — FIXED**
+A source directory that didn't exist was treated as a benign skip (`log_warn`, no
+error count), so the script still printed "All backups complete" and pinged the
+Uptime Kuma heartbeat as **up/OK**. During the outage `/Volumes/books` was unmounted,
+so Calibre books went unbacked-up for 7 days behind a green status page.
+- [x] Missing sources now count as errors → heartbeat goes **down** → Uptime Kuma
+  alerts. Verified: still all-green when the shares are mounted.
+
+**b) T5 local backup hasn't run since ~2026-08-06 — EXPECTED, but silent**
+T5 is unplugged (it's earmarked for the parents' offsite copy), so the 3am cron exits
+immediately each night. Log files since then are the 133–142 byte "not mounted" error.
+Nothing alerts on this — it's the missing heartbeat noted in TODO #19.
+- [ ] Decide what T5 is actually for now. Once it lives at the parents' house it can
+  never be the nightly local target, so either accept "no local backup" or pick a new
+  local target (the NAS itself is RAID5, not a backup — it doesn't protect against
+  deletion or ransomware).
+- [ ] Add an Uptime Kuma push heartbeat to `backup-t5.sh` so whatever it ends up being
+  is actually monitored (TODO #19 leftover).
+
+**Current real posture:** R2 (configs, obsidian, DB dumps, Calibre books) is the only
+backup actually running. Photos/audiobooks/media exist **only** on the NAS's RAID 5 —
+which survives a dead drive but not an accidental delete, a corrupted share, or theft.
 
 ### 11. Replace external SSDs with proper NAS storage
 
