@@ -383,6 +383,33 @@ See [HOME_SERVER.md](HOME_SERVER.md) for the full backup strategy.
 
 **Why:** Ads blocked network-wide (phones, smart TVs, everything). Local DNS fixes the "can't access home.peciulevicius.com on WiFi" issue.
 
+**What DNS blocking can and cannot do.** Pi-hole answers DNS queries, so it can
+only block things served from a domain it can refuse. That works well for
+trackers, telemetry, and most banner/web ads.
+
+It does **not** block:
+
+| | Why |
+|---|---|
+| **YouTube ads** | Ads come from `googlevideo.com` — the same domain as the video itself. Block it and video breaks. |
+| **Spotify ads** | Same CDN and domains as the music stream. |
+| **Twitch, most in-app video ads** | Served first-party alongside the content. |
+| **Anything hardcoding its own DNS** | Devices using DNS-over-HTTPS bypass Pi-hole entirely (Chrome and most smart TVs do this). |
+
+The fix for those is client-side, not network-side: uBlock Origin in the browser,
+a different mobile client, or paying for the ad-free tier. Anyone claiming
+"self-host Pi-hole/AdGuard to kill YouTube ads" is mistaken — no DNS blocker can,
+by design.
+
+**Pi-hole vs AdGuard Home:** roughly equivalent for blocking. AdGuard Home has
+built-in DNS-over-HTTPS/TLS and per-client rules without add-ons; Pi-hole has a
+larger ecosystem. Neither blocks YouTube. Not worth switching for ad coverage.
+
+**Current effectiveness here:** ~3.6% of queries blocked (12,812 queries / 459
+blocked on 2026-09-08), against ~80,000 blocklist domains. That is low mainly
+because the router still does not point at Pi-hole — only manually configured
+devices use it. See TODO "Pi-hole — finish the deployment".
+
 **How to use:**
 1. Open http://localhost:8053/admin, login with password from .env
 2. **Local DNS:** Settings → Local DNS → DNS Records → add all `*.peciulevicius.com` → Mac mini local IP

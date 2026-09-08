@@ -1,40 +1,121 @@
 # Home Server — TODO
 
-## Active
+Outstanding work only. Finished items live in
+[HOME_SERVER_CHANGELOG.md](HOME_SERVER_CHANGELOG.md).
 
-### ~~1. Calibre-Web — finish setup~~ ✅ Done (2026-05-09)
+Grouped by "what happens if I ignore this", not by number.
 
-Bookshelves skipped (not needed). Send to Kindle configured via Gmail SMTP — `peciulevicius-scribe@kindle.com` approved and working.
+---
 
-### ~~2. Uptime Kuma notifications~~ ✅ Done (2026-05-09)
+## Do these first — you lose data or access without them
 
-Gmail SMTP configured (smtp.gmail.com:465, app password). Email alerts working.
+### Disable Tailscale key expiry
 
-### 3. Paperless-NGX — organise documents
+Key expires **2027-03-04**. When it does, the Mac mini silently drops off the
+tailnet: no `ssh macmini` from away, and every Tailscale-only service
+(Sonarr, Radarr, Prowlarr, Transmission, Syncthing, Jellyseerr, Bazarr, Grafana,
+Prometheus, LazyLibrarian, Karakeep) becomes unreachable. This already happened
+once and was only noticed on 2026-09-05, during an outage, from home.
 
-Paperless-NGX doesn't support traditional folders — it uses **tags**, **document types**, and **correspondents** instead.
+- [ ] Tailscale admin console → Machines → `macmini` → ⋯ → **Disable key expiry**
+- [ ] Same for `ugreen-nas`
 
-- [ ] Create document types: e.g. "Invoice", "Contract", "Receipt", "Statement"
-- [ ] Create correspondents: e.g. "Bank", "Employer", "Government"
-- [ ] Create tags: e.g. "Tax 2024", "Important", "Archive"
-- [ ] Assign types/correspondents/tags to uploaded documents
-- [ ] Use **Saved Views** (left sidebar) to create folder-like filtered views
+Logging back in only resets the same six-month timer — disabling expiry is the
+actual fix.
 
-### 4. Linkwarden — browser extension + import
+### Get one copy of the photos out of the building
 
-- [ ] Install Linkwarden browser extension
-- [ ] Import bookmarks from Chrome/Brave
+Photos live on the NAS (RAID 5) plus T7 and T5 — but all three sit in the same
+room. RAID survives a dead drive; it does not survive fire, flood, or theft.
+R2 deliberately excludes photos (too large).
 
-### ~~5. Set up Obsidian vault sync via Syncthing~~ ✅ Done (2026-05-08)
+- [ ] Take T5 to the parents' house once it is loaded (it was verified 1:1 on
+      2026-09-05 — see the backup section below)
+- [ ] Only after that, consider dropping iCloud
 
-`obsidian-vault` folder shared in Syncthing across Mac mini, MacBook, and iPhone. Real-time sync working.
+### Power-outage recovery is still manual
 
+`pmset autorestart` is on, so the Mac mini *tries* to boot after a cut — but
+**FileVault is enabled with no auto-login**, so it stops at the unlock screen.
+Until someone types the password: no Docker, no NAS mounts, no cloudflared, no
+watchdogs. This is exactly what happened on 2026-08-16.
 
-### ~~8. Bazarr — subtitle provider~~ ✅ Done (2026-05-09)
+- [ ] Pick one:
+  1. **UPS** on the Mac mini + NAS — brief outages never cut power, so none of
+     the recovery chain is exercised. Keeps FileVault. ~€100–150.
+  2. Disable FileVault, enable auto-login — full unattended recovery, but the
+     internal SSD is no longer encrypted at rest.
+- [ ] Confirm the NAS's own "Auto power-on when power is supplied" is enabled
+      (NAS UI → Hardware & Power). Even a self-recovering Mac mini is useless if
+      the NAS stays off.
 
-OpenSubtitles.com configured, Default language profile set with English. Applied to all series and movies. 71 Wanted items queued — downloading automatically.
+### Rotate the reused NAS passwords
 
-### 10. Pi-hole local DNS (later)
+Both NAS accounts (`Džiugas` admin + `macmini` SMB service account) currently
+use the same password as elsewhere. Rotate to unique generated passwords:
+- [ ] `Džiugas` (web UI admin) — generate in Bitwarden, update entry
+- [ ] `macmini` (SMB) — generate in Bitwarden; after changing on NAS, update
+  the saved credential in macOS Keychain on the Mac mini (Finder will prompt
+  on next mount; also remount the four shares)
+- [ ] While at it: audit other reused passwords flagged by Bitwarden's
+  Vault Health report
+
+---
+
+## Worth doing soon
+
+### Regenerate missing Immich thumbnails
+
+87 assets show "error loading image" — all videos, thumbnails lost while Immich
+was crash-looping in early September. Originals are intact (verified on disk;
+0 assets flagged offline).
+
+- [ ] photos.peciulevicius.com → Administration → Jobs → **Generate Thumbnails →
+      Missing**
+
+### Reconcile services marked removed that are still running
+
+The changelog records both as removed; all four containers are up as of
+2026-09-05. Either stop them or correct the record.
+
+- [ ] `actual-budget` — replaced by Wallet by Budget Bakers, still running
+- [ ] `karakeep` + `karakeep-chrome` + `karakeep-meilisearch` — reverted to
+      Linkwarden, still running (three containers' worth of RAM)
+
+### External backups are manual now — nothing warns when they go stale
+
+The nightly cron was removed on 2026-09-05 (the drives are not permanently
+connected, so it failed every night). T5 had silently drifted seven weeks out of
+date before anyone noticed.
+
+- [ ] Set a recurring reminder, or check the drive's newest file against the NAS
+      before trusting it
+- [ ] Decide what T5 is *for* — once it lives offsite it can never be the
+      routine local target
+
+Run a backup with:
+`~/.dotfiles/scripts/backup/backup-external.sh /Volumes/T7 --dry-run` then without `--dry-run`.
+
+### Weekly database dumps have gaps
+
+`~/backups/` holds Aug 2, Aug 9, Aug 30 — **Aug 16 and Aug 23 are missing**.
+The Sunday 4am cron should have produced them; the Mac was likely asleep or the
+runs failed silently.
+
+- [ ] Check whether next Sunday's dump lands; if not, add a heartbeat
+
+### Router DHCP reservation for the NAS
+
+No longer load-bearing — everything addresses the NAS as `DH4300PLUS-DP.local`
+(mDNS) since 2026-09-05, which absorbs IP drift. Still worth pinning.
+
+- [ ] OpenWrt (`192.168.1.1`) → static lease, MAC `6c:1f:f7:a9:39:e9`
+
+---
+
+## Projects (no deadline)
+
+### Pi-hole — finish the deployment
 
 **Note:** PIHOLE_API_KEY is now configured in `~/services/glance/.env` — DNS stats widget is working.
 
@@ -45,111 +126,99 @@ OpenSubtitles.com configured, Default language profile set with English. Applied
 - [ ] Set router DNS to Mac mini IP (primary) + `1.1.1.1` (fallback)
 - [ ] Test: `nslookup home.peciulevicius.com` should return Mac mini local IP
 
-### 22. Power-outage recovery — NOT fully automatic yet (found 2026-08-16)
+**Reality check on what Pi-hole can do:** it blocks by domain, so it stops
+trackers, telemetry and most web/banner ads — but **not YouTube or Spotify ads**,
+which are served from the same domains as the content itself. See the ad-blocking
+notes in `docs/SERVICES.md`.
 
-**Incident:** Power outage while user was out. Mac mini did not come back up on its own — required physically pressing the power button. Once manually powered on, 10+ service stacks were down/erroring (bad gateway on Immich, Jellyfin, Bazarr, etc.) and the NAS tile showed "Timed Out."
+Currently only ~3.6% of queries are blocked (12,812 queries / 459 blocked), which
+is low because the router still does not point at Pi-hole — only manually
+configured devices use it.
 
-**Root causes found and fixed this session:**
-- [x] NAS got a new DHCP IP again (`.73` → `.106` → **`.75`**, second time this has happened — no router reservation yet). Updated `mount-nas.sh`, `glance.yml`, `~/.cloudflared/config.yml` to `.75` and restarted affected services.
-- [x] Immich's `immich-server` image (pinned to rolling `release` tag) had auto-updated to v3.1.0 at some point (likely when the VM disk reset on 2026-08-09/10 wiped the local image cache and forced a fresh pull), which dropped support for the old `pgvecto-rs` Postgres extension. Migrated `immich-postgres` to the official bridge image `ghcr.io/immich-app/postgres:14-vectorchord0.3.0-pgvectors0.2.0` (Immich's documented upgrade path) — server auto-migrated the vector extension on restart, no data lost.
-- [x] `sonarr`, `radarr`, `calibre`, `transmission`, `readarr` containers were stuck in `Created` (never started) — leftover from the `rebuild-services.sh` run during last week's Docker VM reset. Started them.
+### Import old photo archives into Immich
 
-**Not fixed — needs your decision, can't be done remotely:**
-- [ ] **FileVault is ON**, and no macOS auto-login is configured. Result: after any power loss, even though `pmset autorestart` is correctly set to 1 (Mac *does* try to power back on), it stops at the FileVault unlock/login screen and NOTHING further happens automatically — no Docker, no NAS mounts, no cloudflared, no watchdog — until someone is physically there to log in. This is exactly why manual button-pressing was needed, and it will happen again on any future outage. Two ways to actually fix this:
-  1. Turn off FileVault, then enable auto-login (System Settings → Users & Groups → Login Options) — full auto-recovery, but the internal SSD is no longer encrypted at rest.
-  2. Keep FileVault, accept that a power outage while away means physical intervention is required to bring the Mac mini back — mitigate by leaving it on a battery backup (UPS) so brief outages never actually cut power.
-- [ ] **NAS "Auto power-on when power is supplied" was never confirmed enabled** (this is TODO #11's own pending item — see below, Hardware & Power settings on the NAS itself). Even if the Mac mini fully self-recovers, if the NAS doesn't power back on by itself, none of the NAS-dependent services come up. Can't check/set this remotely — needs the NAS admin web UI.
-- [ ] `mount-nas.sh` only runs once at login and gives up after 3 minutes if the NAS isn't reachable yet — a NAS doing a RAID5 array check after a hard power cut could plausibly take longer than that. Worth widening the timeout and/or adding a periodic retry so a late-booting NAS still gets mounted without a fresh login. (Proposed this session, held off — needs your go-ahead since it's a new persistent schedule.)
+~140GB of personal photos sitting on T7 outside of Immich, organised by year/trip:
 
-**Bottom line for "will it work tomorrow if the power goes out": likely NOT fully** — the Mac mini needs a human to physically log in past FileVault, and the NAS's own auto-power-on is unverified. A UPS on both devices is the highest-leverage fix if going away for real chunks of time.
+- `/Volumes/T7/2002` → `/Volumes/T7/2024` — ~130GB of photos going back years
+- `/Volumes/T7/from iphone (reikia surušiuoti)` — 9.2GB unsorted iPhone photos
+- Notable: `/Volumes/T7/2024` (99GB) contains Barcelona F1 + Zakopane trips with both iPhone and camera shots
 
-### 23. NAS IP drift — root-caused and fixed (2026-09-05)
+- [ ] Check if any of these are already in Immich (avoid duplicates)
+- [ ] Import via Immich CLI or bulk upload through the web UI
+- [ ] Sort/tag the unsorted iPhone folder before importing
+- [ ] Delete originals from T7 after confirming import (frees ~140GB)
 
-**Incident:** All NAS-backed services (Immich, Jellyfin, Bazarr, Calibre, Sonarr/Radarr,
-Transmission, Readarr, LazyLibrarian, Audiobookshelf — 11 containers) had been down
-**~7 days**, exited 255. `nas.peciulevicius.com`, `photos`, `watch` etc. all failing.
-Nobody noticed because nothing alerts when the Mac mini's own monitoring is what's broken.
+### Paperless-NGX — organise documents
 
-**Cause:** NAS IP drifted a *third* time (`.75` → `.73`). The IP was hard-coded in three
-places, so every drift silently orphaned every NAS-backed service until someone was
-physically home.
+Paperless-NGX doesn't support traditional folders — it uses **tags**, **document types**, and **correspondents** instead.
 
-**Fixed — IP is no longer used anywhere:**
-- [x] Everything now addresses the NAS as **`DH4300PLUS-DP.local`** (Bonjour/mDNS), which
-  follows it to any IP. Verified working from the host, cloudflared, inside Docker
-  containers, and for SMB mounts (keychain matches on it — no re-auth needed).
-  Changed in `mount-nas.sh`, `services/glance/glance.yml`, `~/.cloudflared/config.yml`.
-- [x] `mount-nas.sh` rewritten: mDNS-first with numeric fallback, 10-min boot wait (was
-  3 — too short for a NAS doing a RAID5 check after a hard power cut), 30s timeout per
-  mount so a missing keychain entry can't wedge the agent on an invisible GUI prompt,
-  and a no-op fast path when everything is already mounted.
-- [x] **New `com.peciulevicius.nas-watchdog` agent** (`scripts/utils/nas-watchdog.sh`,
-  every 5 min): remounts dropped shares, then `compose up -d`s any NAS-backed container
-  that isn't running. Closes the gap that let this sit broken for a week —
-  `docker-watchdog.sh` only ever watched Docker itself, never the mounts or the
-  containers. Tested by stopping a container + unmounting a share: recovered in <1s.
+- [ ] Create document types: e.g. "Invoice", "Contract", "Receipt", "Statement"
+- [ ] Create correspondents: e.g. "Bank", "Employer", "Government"
+- [ ] Create tags: e.g. "Tax 2024", "Important", "Archive"
+- [ ] Assign types/correspondents/tags to uploaded documents
+- [ ] Use **Saved Views** (left sidebar) to create folder-like filtered views
 
-**Still open (belt-and-braces, no longer load-bearing):**
-- [ ] Router DHCP reservation on OpenWrt (`192.168.1.1`) — MAC `6c:1f:f7:a9:39:e9`.
-  Worth doing so the IP stops moving at all, but mDNS now absorbs the drift.
+### Linkwarden — browser extension + import
 
-### 24. Tailscale is LOGGED OUT on the Mac mini (found 2026-09-05) — remote access is dead
+- [ ] Install Linkwarden browser extension
+- [ ] Import bookmarks from Chrome/Brave
 
-`tailscale status` → `Logged out` / `BackendState: NeedsLogin`. Consequences:
-- Every Tailscale-only service is unreachable from outside the house: Sonarr, Radarr,
-  Prowlarr, Transmission, Syncthing, Jellyseerr, Bazarr, Grafana, Prometheus,
-  LazyLibrarian, Karakeep (all the `100.81.171.49:<port>` links in Glance).
-- No `ssh macmini` from away — so when something breaks while travelling there is
-  currently **no way to fix it remotely at all**. This is exactly the "I'm not home and
-  can't do anything" problem.
-- The NAS's own Tailscale node (`ugreen-nas`, was `100.95.228.35`) is also gone from the
-  tailnet.
+### VPN for torrents
 
-**Resolved 2026-09-05** — user logged back in:
-- [x] Mac mini back on the tailnet as `100.81.171.49` (same IP as before, so every
-  Tailscale link in Glance still works). NAS node `ugreen-nas` (100.95.228.35) is back
-  too. All 10 Tailscale-only services verified responding.
-- [ ] **Still to do — disable key expiry** on `macmini` and `ugreen-nas` in the
-  Tailscale admin console (Machines → ⋯ → Disable key expiry). Current key expires
-  **2027-03-04**, and when it does, remote access dies silently exactly like this
-  time — most likely while away, which is when it's needed. This is the actual
-  permanent fix; logging back in is only a reset of the same 6-month timer.
+**Goal:** Route Transmission traffic through a VPN so ISP can't see torrent activity. Not urgent — no downloads planned for ~1 month.
 
-### 25. Backups were silently under-reporting (found + partly fixed 2026-09-05)
+**Provider options (pick one):**
+- [ ] **Mullvad** — €5/mo, best privacy, no email needed, cancel anytime
+- [ ] **Proton VPN** — free tier works but slower, no port forwarding
 
-Found while checking whether anything else broke during the 7-day NAS outage. Two
-separate ways backups looked healthy while not actually protecting the data:
+**Setup (after choosing provider):**
+- [ ] Create `services/gluetun/docker-compose.yml` with VPN credentials
+- [ ] Update Transmission compose to use `network_mode: service:gluetun`
+- [ ] Test: `docker exec transmission curl ifconfig.me` should show VPN IP, not home IP
 
-**a) rclone → R2 reported success while skipping missing sources — FIXED**
-A source directory that didn't exist was treated as a benign skip (`log_warn`, no
-error count), so the script still printed "All backups complete" and pinged the
-Uptime Kuma heartbeat as **up/OK**. During the outage `/Volumes/books` was unmounted,
-so Calibre books went unbacked-up for 7 days behind a green status page.
-- [x] Missing sources now count as errors → heartbeat goes **down** → Uptime Kuma
-  alerts. Verified: still all-green when the shares are mounted.
+### De-Google — migrate off all Google services
 
-**b) T5 local backup hasn't run since ~2026-08-06 — EXPECTED, but silent**
-T5 is unplugged (it's earmarked for the parents' offsite copy), so the 3am cron exits
-immediately each night. Log files since then are the 133–142 byte "not mounted" error.
-Nothing alerts on this — it's the missing heartbeat noted in TODO #19.
-- [ ] Decide what T5 is actually for now. Once it lives at the parents' house it can
-  never be the nightly local target, so either accept "no local backup" or pick a new
-  local target (the NAS itself is RAID5, not a backup — it doesn't protect against
-  deletion or ransomware).
-- [x] ~~Nightly T5 cron removed (2026-09-05)~~ — `backup-t5.sh` and the deprecated
-  `backup-immich.sh` are deleted, replaced by `backup-external.sh <target>`, which is
-  run **manually** when a drive is plugged in. A nightly job made no sense for drives
-  that are not permanently connected; the old one had been failing every night since
-  early August.
-- [ ] External-drive backups are now manual, so nothing warns you when they go stale.
-  Either set a recurring reminder, or check the drive's newest file against the NAS
-  before assuming you have a current copy.
+**Goal:** Own all personal data. No Google Drive, Gmail, Calendar, Photos, or other Google services.
 
-**Current real posture:** R2 (configs, obsidian, DB dumps, Calibre books) is the only
-backup actually running. Photos/audiobooks/media exist **only** on the NAS's RAID 5 —
-which survives a dead drive but not an accidental delete, a corrupted share, or theft.
+**Why:** Data sovereignty — not dependent on a single corporation, easier to switch providers, data stays under your control.
 
-### 11. Replace external SSDs with proper NAS storage
+**Services to replace:**
+
+| Google service | Self-hosted replacement | Status |
+|---|---|---|
+| Gmail | Migadu / Fastmail / self-host with Stalwart Mail | Not started |
+| Google Drive | Nextcloud (already running) | Nextcloud ready, needs migration |
+| Google Calendar | Nextcloud Calendar (CalDAV) | Not started |
+| Google Contacts | Nextcloud Contacts (CardDAV) | Not started |
+| Google Photos | Immich (already running) | Immich ready, needs migration |
+| Google Docs | Nextcloud Office / OnlyOffice | Nextcloud ready |
+| YouTube | n/a (no full replacement) | — |
+
+**Migration order (recommended):**
+1. [ ] **Email first** — pick provider (Migadu ~€4/mo recommended: own domain, no Google dependency)
+  - Create account at Migadu with `peciulevicius.com` domain
+  - Add MX records in Cloudflare DNS
+  - Import Gmail archive (Google Takeout → IMAP import)
+  - Update all accounts (banking, work, services) to new address
+  - Update `pkm/config.py`: change `IMAP_SERVER` to new provider
+  - Keep Gmail forwarding for ~3 months, then delete
+2. [ ] **Calendar + Contacts** — enable Nextcloud Calendar + Contacts apps
+  - Add Nextcloud CalDAV to iPhone (Settings → Calendar → Add Account → Other)
+  - Add Nextcloud CardDAV to iPhone (Settings → Contacts → Add Account → Other)
+  - Import Google Calendar (export .ics → import to Nextcloud)
+  - Import Google Contacts (export .vcf → import to Nextcloud)
+3. [ ] **Drive** — redirect remaining Google Drive usage to Nextcloud
+  - Install Nextcloud desktop client on MacBook
+  - Move any files still in Google Drive → Nextcloud
+4. [ ] **Photos** — migrate Google Photos to Immich
+  - Google Takeout → download photos archive
+  - Import to Immich via bulk upload
+5. [ ] **Account cleanup** — after 3–6 months with no Google services
+  - Delete Google account (irreversible — confirm everything migrated first)
+
+**Note:** `pkm/kindle_sync.py` is already IMAP-based so switching email providers requires only changing `IMAP_SERVER` in `config.py`.
+
+### NAS — remaining follow-ups
 
 **Status (Jul 2026):** NAS arrived ✅ (UGREEN DH4300 Plus, SN H43001J61J30FAD0, warranty until 2028-07-23). Drives ordered — 3× IronWolf Pro 6TB recert (ST6000NE000) €230 each from [datablocks.dev](https://datablocks.dev), preorder arriving **~Jul 27–31**.
 
@@ -193,240 +262,34 @@ which survives a dead drive but not an accidental delete, a corrupted share, or 
 
 **Hardware reference:** 4-bay, RK3588C ARM 8-core, 8GB RAM (keep NAS storage-only — no heavy Docker workloads; compute stays on Mac mini), 2.5GbE port. Purchase total ~€1,060 (NAS €340 + drives €690 + switch/cables €30).
 
-### 21. Rotate reused passwords (NAS accounts)
+---
 
-Both NAS accounts (`Džiugas` admin + `macmini` SMB service account) currently
-use the same password as elsewhere. Rotate to unique generated passwords:
-- [ ] `Džiugas` (web UI admin) — generate in Bitwarden, update entry
-- [ ] `macmini` (SMB) — generate in Bitwarden; after changing on NAS, update
-  the saved credential in macOS Keychain on the Mac mini (Finder will prompt
-  on next mount; also remount the four shares)
-- [ ] While at it: audit other reused passwords flagged by Bitwarden's
-  Vault Health report
+## Reference
 
-### 12. VPN for torrents (later)
+### RAM baseline
 
-**Goal:** Route Transmission traffic through a VPN so ISP can't see torrent activity. Not urgent — no downloads planned for ~1 month.
+Mac mini M4, **16GB unified memory**. Docker VM ceiling is now **10GB** (raised
+from 7.8GB on 2026-07-23), but that is a *ceiling*, not a reservation — the VM
+allocates lazily.
 
-**Provider options (pick one):**
-- [ ] **Mullvad** — €5/mo, best privacy, no email needed, cancel anytime
-- [ ] **Proton VPN** — free tier works but slower, no port forwarding
+Measured 2026-09-08 with all 42 containers running:
 
-**Setup (after choosing provider):**
-- [ ] Create `services/gluetun/docker-compose.yml` with VPN credentials
-- [ ] Update Transmission compose to use `network_mode: service:gluetun`
-- [ ] Test: `docker exec transmission curl ifconfig.me` should show VPN IP, not home IP
-
-### ~~13. Show Mac host stats in monitoring~~ ✅ Done (2026-05-07)
-
-Homebrew node_exporter running at port 9100, scraped by Prometheus (`job="mac-host"`). Custom Grafana dashboard (`mac-host.json`) provisioned — shows real 16GB RAM, swap, CPU, disk, network. Glance `server-stats` widget updated to show actual host figures.
-
-### ~~14. Uptime Kuma — rclone backup heartbeat~~ ✅ Done (2026-05-09)
-
-Push monitor added in Uptime Kuma. Heartbeat URL wired into `rclone-backup.sh` — pings up on success, down on failure. R2 backup verified working across all 4 targets.
-
-### 15. ~~Migrate backups from B2 to Cloudflare R2~~ ✅ Done (2026-04-22)
-
-Migrated to Cloudflare R2. Nightly rclone backup running at 5am. R2 at ~1.3GB (critical-only: vaultwarden, paperless docs, obsidian vault, db dumps, calibre books). B2 bucket purged and can be deleted from Backblaze dashboard.
-
-### ~~17. Kindle Scribe → Obsidian automation~~ ✅ Done (2026-05-08)
-
-**Goal:** Automatically sync Kindle Scribe handwritten/typed notes to the Obsidian vault so notes taken on the Scribe appear on all synced devices (MacBook, Mac mini, iPhone, eventually Windows work laptop).
-
-**How it works:** Scribe exports a notebook as TXT via email (Share → Send to email). A script fetches those emails, extracts the text, and routes it to the correct vault folder based on the notebook name.
-
-**Existing infrastructure:**
-- Vault structure + templates: `scripts/setup/setup-obsidian.sh`
-- Routing rules documented: `docs/guides/NOTES.md` (Kindle Scribe → Obsidian Routing table)
-- Syncthing sync: TODO #7
-
-**To build — `pkm/kindle_sync.py` (IMAP-based, provider-agnostic):**
-
-1. Connect to email via IMAP (works with any provider — Gmail now, easy to switch later)
-2. Search for unread emails from `do-not-reply@amazon.com` with subject containing "from your Kindle"
-3. Parse email subject to extract notebook name
-4. Download TXT content from the download link in the email body
-5. Route to correct vault folder using keyword matching (same rules as `docs/guides/NOTES.md`)
-6. Save as `.md` with frontmatter:
-   ```yaml
-   ---
-   source: Kindle Scribe
-   exported: YYYY-MM-DD
-   notebook: [original notebook name]
-   ---
-   ```
-7. Filename: `YYYY-MM-DD_NotebookName.md` (append `_v2`, `_v3` if exists — never overwrite)
-8. Mark email as read after processing
-9. Optional: git commit + push to `obsidian-vault` private repo
-
-**Directory structure:**
-```
-pkm/
-├── kindle_sync.py       # main script
-├── config.py            # IMAP creds, vault path, routing rules, toggles
-└── requirements.txt     # imaplib is stdlib, requests for download link
-```
-
-~~Steps completed (2026-05-08):~~
-- Script at `pkm/kindle_sync.py` — IMAP-based, provider-agnostic
-- Exports as **Searchable PDF** from Scribe → email → script grabs `.txt` + `.pdf`
-- Saves to `📥 Imports/YYYY-MM-DD_HH-MM_name.md` + `.pdf` attachment
-- Hourly cron job running, logs to `~/logs/kindle-sync.log`
-- Gmail app password configured in `pkm/config.py` (gitignored)
-
-### 18. De-Google — migrate off all Google services (later)
-
-**Goal:** Own all personal data. No Google Drive, Gmail, Calendar, Photos, or other Google services.
-
-**Why:** Data sovereignty — not dependent on a single corporation, easier to switch providers, data stays under your control.
-
-**Services to replace:**
-
-| Google service | Self-hosted replacement | Status |
+| Metric | Value | Reading |
 |---|---|---|
-| Gmail | Migadu / Fastmail / self-host with Stalwart Mail | Not started |
-| Google Drive | Nextcloud (already running) | Nextcloud ready, needs migration |
-| Google Calendar | Nextcloud Calendar (CalDAV) | Not started |
-| Google Contacts | Nextcloud Contacts (CardDAV) | Not started |
-| Google Photos | Immich (already running) | Immich ready, needs migration |
-| Google Docs | Nextcloud Office / OnlyOffice | Nextcloud ready |
-| YouTube | n/a (no full replacement) | — |
+| Containers, total | 5.2 GiB of the VM's 9.7 GiB | comfortable |
+| Docker VM, host-resident | **2.06 GB** | the 10GB ceiling is not actually taken |
+| macOS memory free | 43% | healthy |
+| Swap used | ~2.5 GB of 3 GB, **slowly shrinking** | historical, not active pressure |
+| Compressor occupied | ~7.5 GB | macOS working, but coping |
 
-**Migration order (recommended):**
-1. [ ] **Email first** — pick provider (Migadu ~€4/mo recommended: own domain, no Google dependency)
-  - Create account at Migadu with `peciulevicius.com` domain
-  - Add MX records in Cloudflare DNS
-  - Import Gmail archive (Google Takeout → IMAP import)
-  - Update all accounts (banking, work, services) to new address
-  - Update `pkm/config.py`: change `IMAP_SERVER` to new provider
-  - Keep Gmail forwarding for ~3 months, then delete
-2. [ ] **Calendar + Contacts** — enable Nextcloud Calendar + Contacts apps
-  - Add Nextcloud CalDAV to iPhone (Settings → Calendar → Add Account → Other)
-  - Add Nextcloud CardDAV to iPhone (Settings → Contacts → Add Account → Other)
-  - Import Google Calendar (export .ics → import to Nextcloud)
-  - Import Google Contacts (export .vcf → import to Nextcloud)
-3. [ ] **Drive** — redirect remaining Google Drive usage to Nextcloud
-  - Install Nextcloud desktop client on MacBook
-  - Move any files still in Google Drive → Nextcloud
-4. [ ] **Photos** — migrate Google Photos to Immich
-  - Google Takeout → download photos archive
-  - Import to Immich via bulk upload
-5. [ ] **Account cleanup** — after 3–6 months with no Google services
-  - Delete Google account (irreversible — confirm everything migrated first)
+**How to read swap on macOS:** "Pages free" is always near zero by design — macOS
+uses spare RAM as cache, so a low free-page count is not a warning. Judge by
+*memory pressure percentage* and whether swap is **growing**. Stable or shrinking
+swap is fine, even at 2.5GB. Growing swap plus pressure under ~20% is the real
+alarm.
 
-**Note:** `pkm/kindle_sync.py` is already IMAP-based so switching email providers requires only changing `IMAP_SERVER` in `config.py`.
-
-### ~~19. T7 → T5 full backup~~ ✅ Done (2026-07-09)
-
-**What was done:**
-- Renamed T5 volume from `ImmichBackup` → `Backup` (`diskutil rename`)
-- Created `scripts/backup/backup-t5.sh` — rsync T7 → T5 covering:
-  - `/Volumes/T7/immich/upload` → `/Volumes/Backup/immich/upload` (photos)
-  - `/Volumes/T7/audiobooks` → `/Volumes/Backup/audiobooks`
-  - `/Volumes/T7/calibre-books` → `/Volumes/Backup/calibre-books`
-  - Skips `/Volumes/T7/media/` — movies/TV too large for 500GB T5
-- Updated cron: 3am daily now runs `backup-t5.sh` (replaces `backup-immich.sh`)
-- Fixed `backup-immich.sh` path references from `/Volumes/ImmichBackup` → `/Volumes/Backup`
-
-**Recovery posture as of 2026-09-05** (superseded by the NAS migration — kept for history;
-current posture is in the Drive Layout section below):
-| If... | Photos | Audiobooks | Books | Services config |
-|-------|--------|------------|-------|----------------|
-| NAS fails | T7 ✅ + T5 ✅ | T7 ✅ + T5 ✅ | T7 ✅ + T5 ✅ + R2 ✅ | R2 ✅ |
-| A drive fails | re-run `backup-external.sh` | same | same | R2 ✅ |
-| Fire/theft | ❌ everything is in one room | ❌ | R2 ✅ | R2 ✅ |
-
-**The real remaining gap:** both external drives sit next to the NAS, so nothing survives
-fire, flood or theft. Moving T5 offsite is what makes this genuinely 3-2-1.
-
-### 20. Import old photo archives into Immich
-
-~140GB of personal photos sitting on T7 outside of Immich, organised by year/trip:
-
-- `/Volumes/T7/2002` → `/Volumes/T7/2024` — ~130GB of photos going back years
-- `/Volumes/T7/from iphone (reikia surušiuoti)` — 9.2GB unsorted iPhone photos
-- Notable: `/Volumes/T7/2024` (99GB) contains Barcelona F1 + Zakopane trips with both iPhone and camera shots
-
-- [ ] Check if any of these are already in Immich (avoid duplicates)
-- [ ] Import via Immich CLI or bulk upload through the web UI
-- [ ] Sort/tag the unsorted iPhone folder before importing
-- [ ] Delete originals from T7 after confirming import (frees ~140GB)
-
-### ~~16. Docker VM resource limits~~ ✅ Done (2026-07-23)
-
-Docker Desktop VM bumped from 7.8GB → 10GB RAM, swap 1GB → 2GB (via
-`settings-store.json`). Also enabled AutoStart so Docker launches on login
-after a reboot/power cut. All 40 containers verified back up, key services
-responding (photos/vault/home/watch/nas all 200).
-
----
-
-## Done
-
-- [x] ~~Books & audio automation (Jul 2026)~~ — LazyLibrarian fully configured: 4 Torznab indexers via Prowlarr (EBookBay, TPB, Knaben, TorrentDownload), Transmission download client, PostProcessor auto-moves EPUBs to Calibre and MP3s to Audiobookshelf. Click "Wanted" → fully hands-off. See `docs/guides/BOOKS.md` for setup notes and gotchas.
-
-- [x] ~~DeDRM Kindle books → Calibre-Web (Apr 2026)~~ — ~30 books DRM-removed via Windows VM (UTM) + Kindle for PC 2.8.2 + KFXArchiver283, converted to EPUB, uploaded to Calibre-Web
-- [x] ~~Calibre-Web — organising books (Apr 2026)~~ — year-end books processed and organised
-- [x] ~~Media stack setup~~ — Sonarr/Radarr/Prowlarr/Transmission/Jellyfin fully connected, remote path mapping fixed, Narcos S1-S3 downloaded and playing
-- [x] ~~Cloudflare DNS cleanup~~ — deleted stale CNAMEs: `sync`, `portainer`, `ai`, `sonarr`, `radarr`, `prowlarr`, `downloads`
-- [x] ~~Cloudflare Access (wildcard)~~ — removed `*.peciulevicius.com` Zero Trust gate; was breaking all native apps (Bitwarden, Immich, etc.). Each service has its own login screen — Access wasn't needed.
-- [x] ~~Cloudflare Access (Glance only)~~ — added Access policy on `home.peciulevicius.com` only. GitHub SSO (primary) + email OTP (fallback). 1-month session. Other services unaffected.
-- [x] ~~Homarr → Glance migration~~ — replaced Homarr with Glance (YAML config, responsive). Four pages: Home, Feed, Media, Finance.
-- [x] ~~Glance internal links~~ — fixed `host.docker.internal` → Tailscale IP (`100.81.171.49`) so all links work from any device (phone, laptop, etc.)
-- [~] Actual Budget — was marked removed in favour of Wallet by Budget Bakers, but the `actual-budget` container is **still running** as of 2026-09-05. Either finish removing it or drop the strikethrough; right now the notes and reality disagree.
-- [x] ~~Passkey migration~~ — all 5 services (Amazon, Binance, GitHub, Google, PSN) re-registered with Bitwarden
-- [~] Karakeep — tried as a Linkwarden replacement and reverted, but `karakeep`, `karakeep-chrome` and `karakeep-meilisearch` are **still running** as of 2026-09-05 (three containers' worth of RAM). Either stop them or drop the strikethrough.
-- [x] ~~Linkwarden~~ — restored as primary bookmark manager on port 3005, `links.peciulevicius.com`
-- [x] ~~Grafana + Prometheus configured~~ — datasource connected, dashboards imported, password set
-- [x] ~~Bazarr connected~~ — Sonarr/Radarr API keys configured, subtitle provider still needed
-- [x] ~~Kindle DeDRM → Calibre-Web (Apr 2026)~~ — decrypted 30 Kindle books via KFXArchiver283 (work laptop + Kindle for PC 2.8.2), converted to EPUB in Calibre, synced to Mac mini Calibre-Web. BOOKS folder cleaned (~22GB freed).
-- [x] ~~Audible AAX → Audiobookshelf (Apr 2026)~~ — converted 28 AAX audiobooks to M4B via `scripts/convert-audiobooks.sh` (ffmpeg stream copy, chapters preserved). Synced to Mac mini Audiobookshelf.
-- [x] ~~B2 backup cleanup (Apr 2026)~~ — deleted Immich photos (7GB), Linkwarden (644MB), Audiobookshelf (890MB) from B2. Down from 9.7GB to 1.2GB. Immich backup disabled (using T5 local). Script fixed: `pipefail` + error counter.
-- [x] ~~Cloudflared plist fix~~ — brew service was missing `tunnel run` args, created proper `com.cloudflare.cloudflared.plist` launch agent
-- [x] ~~Docker Desktop watchdog~~ — `scripts/utils/docker-watchdog.sh` + launchd agent runs every 5min; restarts Docker Desktop if containers lose internet (Docker proxy dies intermittently)
-- [x] ~~NordPass cancelled~~ — subscription ended, passwords in Vaultwarden
-- [x] ~~Jellyseerr~~ — media request/discovery UI for Jellyfin (Tailscale-only, port 5055)
-- [x] ~~Bazarr~~ — automated subtitle management for Sonarr/Radarr (Tailscale-only, port 6767)
-- [x] ~~Grafana + Prometheus~~ — monitoring stack with Node Exporter (Tailscale-only, ports 3000/9090/9100)
-- [x] ~~Restart stopped services~~ — all 33 containers confirmed running (all have `restart: unless-stopped`)
-- [x] ~~Homarr cleanup~~ — removed containers, images, Docker network, updated setup script
-- [x] ~~Tunnel security split~~ — moved Sonarr/Radarr/Prowlarr/Transmission to Tailscale-only, added Portainer to public tunnel
-- [x] ~~Mealie~~ — setup complete
-- [x] ~~Linkwarden~~ — setup complete, browser extensions installed (Chrome ✅, Brave ⚠️ disable Shields), phone PWA added
-- [x] ~~Calibre-Web `metadata_dirtied` bug~~ — fixed: ran `CREATE TABLE` SQL
-- [x] ~~Radarr Docker volumes~~ — compose already has `/media` mount
-- [x] ~~Pi-hole 403 on root~~ — fixed: lighttpd redirect config mounted
-- [x] ~~Transmission credentials~~ — changed from defaults (see .env on Mac Mini)
-- [x] ~~Homarr dashboard~~ — configured with all services, organized into categories (Main, Media, Utilities, System, Direct Access)
-- [x] ~~Linkwarden bookmarks~~ — 621 bookmarks imported (services + browser bookmarks)
-- [x] ~~Uptime Kuma monitors~~ — all services monitored
-- [x] ~~Ollama + Open WebUI~~ — removed (not enough RAM, using Claude instead)
-- [x] ~~NordPass → Vaultwarden~~ — passwords migrated, subscription cancelled (Apr 2026)
-- [x] ~~Radarr/Sonarr auto-cleanup~~ — `removeCompletedDownloads` + `removeFailedDownloads` enabled via API
-- [x] ~~Ollama/Open WebUI containers~~ — stopped, removed from setup-services.sh
-- [x] ~~Audiobookshelf subdomain~~ — fixed: books → listen
-- [x] ~~B2 cloud backup~~ — nightly cron at 5am, services + obsidian-vault + Immich photos all backed up
-- [x] ~~Immich photos B2 backup~~ — added `/Volumes/T7/immich/upload` to rclone-backup.sh
-- [x] ~~Disk full (Apr 2026)~~ — T7 at 100% (17MB free). Cleared 480GB duplicate downloads from `downloads/complete/`, deleted 156GB old photo copies from APFS `TimeMachine` volume, removed 2.5GB ollama-models. Now at 140GB free.
-- [x] ~~SSH enabled~~ — Remote Login turned on via System Settings, `ssh macmini` works via Tailscale
-- [x] ~~Jellyfin delete fix~~ — removed `:ro` from media volume mounts so Jellyfin can delete files
-- [x] ~~mac-mini.sh expanded~~ — added `services up/down/restart/status`, `cleanup`, `disk`, `ssh on/off` commands
-- [x] ~~Ollama containers still running~~ — `ollama` and `open_webui` still in `~/services/ollama/`, should remove when home
-
----
-
-## RAM Baseline Reference
-
-Healthy Docker VM state (7.8GB allocated):
-
-| State | RAM | Swap |
-|-------|-----|------|
-| Minimal (travel) | ~4.2GB / 7.8GB | ~200-400MB |
-| Full stack (home) | ~6-7GB / 7.8GB | <500MB |
-| Overloaded (before trim) | 6.3GB / 7.8GB | 1GB (maxed) |
-
-**If swap hits 900MB+:** something is leaking or too many containers running.
-First suspects: `immich_machine_learning`, `grafana`+`prometheus`, `nextcloud`.
+Biggest single consumers: `immich_server` (~775MB), `paperless` (~374MB),
+`mealie` (~354MB), `calibre` (~315MB), `karakeep` (~273MB).
 
 **Containers safe to stop while traveling:**
 `nextcloud`, `nextcloud_db`, `pihole`, `bazarr`, `sonarr`, `radarr`, `prowlarr`, `transmission`, `jellyseerr`, `immich_machine_learning`, `mealie`
