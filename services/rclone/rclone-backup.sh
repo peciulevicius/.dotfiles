@@ -71,6 +71,10 @@ SYNC_CMD+=(--exclude "audiobookshelf/data/podcasts/**")
 # Postgres data dirs — back up via pg_dump instead (backup-databases.sh)
 SYNC_CMD+=(--exclude "linkwarden/data/**")
 SYNC_CMD+=(--exclude "immich/data/**")
+# CouchDB is a sync transport, not a source of truth — the vault itself is,
+# and it is backed up separately below. Syncing live .couch files would upload
+# an inconsistent snapshot for data that can simply be re-seeded from the vault.
+SYNC_CMD+=(--exclude "couchdb/data/**")
 # Large app installs — reinstallable, not user data
 SYNC_CMD+=(--exclude "nextcloud/data/**")
 SYNC_CMD+=(--exclude "sonarr-radarr/data/**")

@@ -35,18 +35,22 @@ what's left is below.
 from the staging registry; their data is untouched in `~/services/` and a
 `docker compose up -d` brings either back. Host went to ~38% free.
 
-**4. CouchDB + Obsidian LiveSync** — 🟡 half done. **CouchDB is up and healthy**
-on `localhost:5984` (`services/couchdb/`, single-node cluster initialised, CORS
-set for `app://obsidian.md`, anonymous access 401s). Vault snapshotted first to
-`~/backups/vault-snapshots/`. Still to do:
+**4. CouchDB + Obsidian LiveSync** — 🟡 server done, plugin left. **CouchDB is
+up and reachable** (`services/couchdb/`): single-node cluster initialised, CORS
+set for `app://obsidian.md`, `obsidian` database created, anonymous requests
+401. Vault snapshotted first to `~/backups/vault-snapshots/`. Reachable at
+**`https://couchdb.peciulevicius.com`** (tunnel), `http://100.81.171.49:5984`
+(tailnet) and `127.0.0.1:5984` locally.
 
-- [ ] Decide how mobile Obsidian reaches it — public hostname via the tunnel, or
-      Tailscale-only. **This needs a decision before the plugin can be set up**;
-      see `services/couchdb/README.md` for the Cloudflare Access caveat (an
-      interactive Access policy blocks the plugin, which can't log in — it needs
-      a service token, or Tailscale-only instead).
-- [ ] Install Self-hosted LiveSync on each device, E2E passphrase, ⚠️ first
-      device is the source of truth
+Deliberately **not** behind Cloudflare Access — an interactive Access policy
+blocks the plugin, which can't log in. CouchDB's own auth is the gate. See
+`services/couchdb/README.md` for the service-token route if that changes.
+
+- [ ] Install Self-hosted LiveSync on each device, turn on E2E encryption and
+      set the same passphrase everywhere
+- [ ] ⚠️ **Start on the Mac mini** (it holds the real vault) and let it upload
+      before connecting the iPhone — LiveSync asks which side wins, and
+      answering with an empty device wipes the vault
 
 **5. Odysseus** — ⏳ not started. [guides/SELF_HOSTED_AI.md](guides/SELF_HOSTED_AI.md).
 ⚠️ **Port 7000 is not free** — macOS AirPlay Receiver (ControlCenter) holds it.

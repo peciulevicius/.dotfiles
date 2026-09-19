@@ -38,33 +38,46 @@ curl -X POST http://127.0.0.1:5984/_cluster_setup \
 
 Verify: `curl -u "$COUCHDB_USER:$COUCHDB_PASSWORD" http://127.0.0.1:5984/_up`
 
-## Remote access
+## Remote access — both paths are live
 
-Mobile Obsidian **requires HTTPS** — plain HTTP will not connect. Add to
-`~/.cloudflared/config.yml`:
+| From | URL |
+|---|---|
+| Anywhere (HTTPS, via the tunnel) | `https://couchdb.peciulevicius.com` |
+| On the tailnet | `http://100.81.171.49:5984` |
+| On the Mac mini | `http://127.0.0.1:5984` |
 
-```yaml
-  - hostname: couchdb.peciulevicius.com
-    service: http://localhost:5984
-```
+Use the public HTTPS URL in the plugin — mobile Obsidian **requires HTTPS**, and
+it means sync works with Tailscale off. The tunnel ingress rule lives in
+`~/.cloudflared/config.yml`; the DNS record was created with
+`cloudflared tunnel route dns <tunnel-id> couchdb.peciulevicius.com`.
 
-then `cloudflared tunnel route dns <tunnel> couchdb.peciulevicius.com` and
-restart the tunnel.
+**This is a sync endpoint, not a notes site.** Opening the hostname in a browser
+gives CouchDB's API and Fauxton admin UI — not your notes. Obsidian is still the
+app on each device; the tunnel only carries the sync traffic.
 
-⚠️ **Cloudflare Access caveat:** an Access policy that challenges the browser
-will also block the Obsidian plugin, which cannot complete an interactive login.
-Either use an Access **service token** that the plugin sends as a header, or keep
-the database Tailscale-only and skip the public hostname. CouchDB is not exposed
-unauthenticated either way — `require_valid_user = true` is set in `local.ini`.
+⚠️ **Deliberately *not* behind Cloudflare Access.** An Access policy that
+challenges the browser also blocks the Obsidian plugin, which cannot complete an
+interactive login. The gate is CouchDB's own auth: `require_valid_user = true`
+plus a 32-character generated password, and anonymous requests get a 401 —
+verified from the public hostname. If you later want Access in front, it has to
+be a **service token** whose `CF-Access-Client-Id` / `CF-Access-Client-Secret`
+the plugin sends as custom headers.
 
 ## Connecting Obsidian
 
 1. Install **Self-hosted LiveSync** from Community Plugins on each device
-2. Server URI `https://couchdb.peciulevicius.com`, the username/password from `.env`,
-   database name e.g. `obsidian`
-3. Turn **End-to-End Encryption** on and set a passphrase — the same one everywhere
-4. ⚠️ On the **first** device, choose it as the source of truth and let it upload.
-   Only then connect the others. Getting this backwards can overwrite a vault.
+2. Server URI `https://couchdb.peciulevicius.com`, the username/password from
+   `~/services/couchdb/.env`, database `obsidian` (already created)
+3. Turn **End-to-End Encryption** on and set a passphrase — the same one
+   everywhere. Without it the server sees your notes in the clear.
+4. ⚠️ Start on the **Mac mini**, the device holding the real vault, and let it
+   finish uploading before connecting anything else. LiveSync asks which side is
+   the source of truth on first connect; answering with an empty device wipes
+   the vault. A snapshot is in `~/backups/vault-snapshots/` if that happens.
+
+**Syncthing stays as it is.** It handles the Mac mini ↔ MacBook leg fine.
+LiveSync exists for the iPhone, which Syncthing has never served well.
+Don't point both at the same vault on the same device.
 
 Back the vault up before the first connection:
 
