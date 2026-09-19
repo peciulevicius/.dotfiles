@@ -7,66 +7,60 @@ Grouped by "what happens if I ignore this", not by number.
 
 ---
 
-## ▶ Start here — next session on the Mac mini
+## ▶ Start here — what's next
 
-Worked through 2026-09-19 on the Mac mini. Steps 1, 3 and most of 4 are done —
-what's left is below.
+Last worked: **2026-09-19** on the Mac mini. What got done that day is in
+[HOME_SERVER_CHANGELOG.md](HOME_SERVER_CHANGELOG.md#2026-09-19--verification-backups-couchdb).
+Only outstanding work is listed here.
 
-**1. Verify what's already running** — ✅ done. Three things it turned up:
+**1. 🔴 Regenerate the Gmail app password — nothing else can fix this**
 
-- 🔴 **The Kindle sync has been dead for ~73 days.** Every hourly run since
-  roughly early July fails with `[AUTHENTICATIONFAILED] Invalid credentials` —
-  the Gmail app password in `pkm/config.py` is no longer valid. **Needs your
-  hands** (see below). The whole notes plan depends on it.
-- 🟠 **Two of the four weekly DB dumps had never once worked** — `linkwarden_db`
-  was dumped as the wrong Postgres role, and `nextcloud_db`'s `mariadb-dump` ran
-  with no password. Only immich + paperless were ever landing in `~/backups/`.
-  Fixed and verified; all four now dump.
-- 🟢 The Aug 16 + 23 gap did **not** recur — Aug 30, Sep 6, Sep 13 all landed.
+The Kindle sync has been failing every hour since early July: the app password
+in `pkm/config.py` is no longer valid. The Scribe → Obsidian pipeline is dead
+until this is done, and the whole notes plan sits on it.
 
-**2. Two-minute jobs that prevent real loss** — ⏳ still to do, both need you
+- [ ] Google Account → Security → App passwords → generate a new one
+- [ ] Put it in `pkm/config.py` as `EMAIL_PASSWORD`
+- [ ] Test: `~/.dotfiles/pkm/.venv/bin/python3 ~/.dotfiles/pkm/kindle_sync.py`
 
-- Tailscale key expiry (it silently dropped the tailnet once already). Confirmed
-  `macmini` and `ugreen-nas` are both online right now, so nothing is broken yet.
-- ⚠️ T5 offsite is now **more** urgent: iCloud is cancelled, so there is no
-  cloud copy of the photos — only the NAS and two drives in the same room
+It will now shout on Discord if it breaks again — but only once the webhook is
+configured, which is step 2.
 
-**3. Free RAM** — ✅ done. `karakeep` ×3 and `actual-budget` stopped and removed
-from the staging registry; their data is untouched in `~/services/` and a
-`docker compose up -d` brings either back. Host went to ~38% free.
+**2. Configure the Discord webhook for job alerts (~2 min)**
 
-**4. CouchDB + Obsidian LiveSync** — 🟡 server done, plugin left. **CouchDB is
-up and reachable** (`services/couchdb/`): single-node cluster initialised, CORS
-set for `app://obsidian.md`, `obsidian` database created, anonymous requests
-401. Vault snapshotted first to `~/backups/vault-snapshots/`. Reachable at
-**`https://couchdb.peciulevicius.com`** (tunnel), `http://100.81.171.49:5984`
-(tailnet) and `127.0.0.1:5984` locally.
+The cron jobs now notify on failure and recovery, but the webhook file doesn't
+exist yet, so they are currently silent no-ops.
 
-Deliberately **not** behind Cloudflare Access — an interactive Access policy
-blocks the plugin, which can't log in. CouchDB's own auth is the gate. See
-`services/couchdb/README.md` for the service-token route if that changes.
+- [ ] Uptime Kuma → Settings → Notifications → the Discord entry → copy the URL
+- [ ] `mkdir -p ~/.config/homelab && chmod 600` a `notify.env` there containing
+      `DISCORD_WEBHOOK_URL=...` — see [scripts/cron/README.md](../scripts/cron/README.md)
 
-- [ ] Install Self-hosted LiveSync on each device, turn on E2E encryption and
-      set the same passphrase everywhere
-- [ ] ⚠️ **Start on the Mac mini** (it holds the real vault) and let it upload
-      before connecting the iPhone — LiveSync asks which side wins, and
-      answering with an empty device wipes the vault
+**3. Finish Obsidian LiveSync — the server side is done**
 
-**5. Odysseus** — ⏳ not started. [guides/SELF_HOSTED_AI.md](guides/SELF_HOSTED_AI.md).
-⚠️ **Port 7000 is not free** — macOS AirPlay Receiver (ControlCenter) holds it.
-Map it to another host port, or turn AirPlay Receiver off in System Settings.
+CouchDB is up at `https://couchdb.peciulevicius.com` with the `obsidian`
+database created. Only the plugin is left.
 
-**Needs your hands, nothing else can fix it:**
+- [ ] Install **Self-hosted LiveSync** on each device, turn on E2E encryption,
+      same passphrase everywhere
+- [ ] ⚠️ **Start on the Mac mini** — it holds the real vault. Let it finish
+      uploading before connecting the iPhone. LiveSync asks which side wins and
+      answering with an empty device wipes the vault. Snapshot is in
+      `~/backups/vault-snapshots/` if it goes wrong.
 
-- 🔴 **Regenerate the Gmail app password** (Google Account → Security → App
-  passwords), then put it in `pkm/config.py` as `EMAIL_PASSWORD` and test with
-  `~/.dotfiles/pkm/.venv/bin/python3 ~/.dotfiles/pkm/kindle_sync.py`. Until this
-  is done the Scribe → Obsidian pipeline is dead. Note the address moves to
-  Purelymail eventually, which will change `IMAP_SERVER` too.
-- ⚠️ **Google Authenticator → Ente Auth.** Highest-risk item in the whole
-  de-Google effort: its TOTP seeds sync to the Google account being left.
+**4. Two-minute jobs that prevent real loss** — see the section below
 
+- Tailscale key expiry (it silently dropped the tailnet once already)
+- ⚠️ T5 offsite: iCloud is cancelled, so there is no cloud copy of the photos —
+  only the NAS and two drives in the same room
 
+**5. Odysseus** — [guides/SELF_HOSTED_AI.md](guides/SELF_HOSTED_AI.md).
+Needs an Anthropic or OpenRouter API key from you, and a Cloudflare Access
+policy. ⚠️ **Port 7000 is taken** by macOS AirPlay Receiver — map it elsewhere
+or turn AirPlay Receiver off.
+
+**Not Mac mini work — do on the phone when convenient:**
+⚠️ **Google Authenticator → Ente Auth.** Highest-risk item in the whole
+de-Google effort: its TOTP seeds sync to the account being left.
 
 ---
 
@@ -138,17 +132,6 @@ was crash-looping in early September. Originals are intact (verified on disk;
 - [ ] photos.peciulevicius.com → Administration → Jobs → **Generate Thumbnails →
       Missing**
 
-### ~~Reconcile services marked removed that are still running~~ ✅ Done (2026-09-19)
-
-Was: the changelog recorded both as removed while all four containers were up as of
-2026-09-05. Both are now stopped and the record matches.
-
-- [x] ~~`actual-budget`~~ — stopped and removed 2026-09-19. Data kept at
-      `~/services/actual-budget/`; `docker compose up -d` there restores it.
-- [x] ~~`karakeep` + `karakeep-chrome` + `karakeep-meilisearch`~~ — stopped and
-      removed 2026-09-19, and dropped from `setup-services.sh` so a fresh
-      machine no longer stages it. Data kept at `~/services/karakeep/`.
-
 ### External backups are manual now — nothing warns when they go stale
 
 The nightly cron was removed on 2026-09-05 (the drives are not permanently
@@ -162,19 +145,6 @@ date before anyone noticed.
 
 Run a backup with:
 `~/.dotfiles/scripts/backup/backup-external.sh /Volumes/T7 --dry-run` then without `--dry-run`.
-
-### ~~Weekly database dumps have gaps~~ ✅ Fixed (2026-09-19)
-
-**Resolved 2026-09-19, and it was worse than a gap.** The Aug 16 + 23 gap did
-not recur (Aug 30, Sep 6, Sep 13 all landed), but checking turned up that
-`linkwarden` and `nextcloud` had **never once** dumped successfully: the script
-used the wrong Postgres role for linkwarden and passed no password to
-`mariadb-dump` for nextcloud. Both fixed; all four now verified.
-
-- [x] ~~Check whether next Sunday's dump lands~~ — the three most recent Sundays
-      all landed
-- [ ] Still worth a heartbeat: the failures were logged to `~/logs/db-backup.log`
-      and sat there unread for months. Nothing shouts when a backup breaks.
 
 ### Router DHCP reservation for the NAS
 
@@ -230,10 +200,26 @@ Paperless-NGX doesn't support traditional folders — it uses **tags**, **docume
 - [ ] Assign types/correspondents/tags to uploaded documents
 - [ ] Use **Saved Views** (left sidebar) to create folder-like filtered views
 
-### Linkwarden — browser extension + import
+### Linkwarden — it's set up; the friction is Brave Shields
 
-- [ ] Install Linkwarden browser extension
-- [ ] Import bookmarks from Chrome/Brave
+**Linkwarden is the keeper, not the thing being scrapped.** Karakeep was the
+experiment, it was tried as a replacement and reverted — and its containers are
+now stopped. Linkwarden stays on port 3005 / `links.peciulevicius.com`.
+
+The changelog says the extension is installed and **621 bookmarks are imported**,
+so the old "install the extension / import bookmarks" items here were stale.
+
+What's actually wrong: save-a-tab-and-it-syncs *is* what the extension does, but
+**Brave needs Shields disabled for the site** or it silently fails — which makes
+it feel like it doesn't work. That's the thing to fix.
+
+- [ ] Brave → `links.peciulevicius.com` → Shields **down** for this site, then
+      save a tab and confirm it appears on the phone PWA
+- [ ] If it still feels like friction after that, the honest comparison is
+      against browser-native sync, not against another self-hosted tool
+
+Linkwarden archives links; the **Obsidian Web Clipper** captures page *content*.
+They are complements, not competitors — see the Notes section.
 
 ### Octopus Deploy — researched, ruled out for now
 
@@ -522,39 +508,23 @@ only way to get both, and that's Phase 2.
 
 ### NAS — remaining follow-ups
 
-**Status (Jul 2026):** NAS arrived ✅ (UGREEN DH4300 Plus, SN H43001J61J30FAD0, warranty until 2028-07-23). Drives ordered — 3× IronWolf Pro 6TB recert (ST6000NE000) €230 each from [datablocks.dev](https://datablocks.dev), preorder arriving **~Jul 27–31**.
+**Hardware and migration history** — arrival, RAID build, SMB shares, the T7 →
+NAS copy and the switch of every service to NAS paths — is in
+[HOME_SERVER_CHANGELOG.md](HOME_SERVER_CHANGELOG.md#nas--arrival-and-migration-jul-aug-2026).
+Layout and paths are in [HOME_SERVER_REFERENCE.md](HOME_SERVER_REFERENCE.md).
 
-**Done (pre-drives, Jul 22):**
-- [x] NAS on network at 192.168.1.73 via WiFi extender ethernet port (100Mbps — extender is the bottleneck, acceptable for now)
-- [x] `nas.peciulevicius.com` → UGOS Pro web UI, via existing cloudflared tunnel on Mac mini (ingress: `http://192.168.1.73:9999`). No Docker needed on NAS.
-- [x] UGREENlink remote access active (backup access: https://ug.link/dh4300plus-dp)
-
-**Still to do (pre-drives):**
-- [ ] **NEXT SESSION:** Reserve 192.168.1.73 for NAS in router DHCP settings — if IP changes, nas.peciulevicius.com breaks. Steps:
-  1. Open http://192.168.1.1 in browser, log in (admin password often on router sticker)
-  2. Find the DHCP section — usually under *LAN*, *Network*, or *Advanced → DHCP Server*. The feature is called **"Address Reservation"**, **"Static Lease"**, **"DHCP Binding"**, or **"Reserved IP"** depending on brand
-  3. Add entry: MAC `6c:1f:f7:a9:39:e9` → IP `192.168.1.73` (device may appear in a connected-clients list as DH4300PLUS-DP — can often click it and hit "reserve")
-  4. Save/apply. No NAS reboot needed — reservation kicks in at next DHCP renewal
-  5. Verify: NAS Control Panel → Network still shows 192.168.1.73
+**Still to do (pre-drives config that never got finished):**
 - [ ] Enable SSH (Control Panel → Terminal; set "Shut down automatically" to never)
 - [ ] Enable "Auto power-on when power is supplied" + WOL (Hardware & Power → Power)
 - [ ] Set up 2FA on admin account (Security → Account security)
 - [ ] Enable DoS protection (Security → Security)
 - [ ] Change custom domain name from "localhost" to "nas" (Device Connection → LAN)
 
-**Migration done (2026-08-04)** ✅
-- [x] RAID 5 pool created (3× 6TB IronWolf Pro = ~11TiB usable), Btrfs
-- [x] SMB on; shares: `media`, `immich`, `audiobooks`, `books`, `unsorted`; service account `macmini` (ASCII name — `ž` in `Džiugas` breaks SMB auth)
-- [x] Tailscale via Docker container on NAS (`ugreen-nas`, 100.95.228.35) — remote SMB/Finder
-- [x] Full copy T7 → NAS (~680GB incl. 142G photo archives → `unsorted`), zero errors
-- [x] All services switched to NAS paths (`/Volumes/media` etc.); Immich Postgres moved to internal SSD (`~/services/immich/data/postgres`) — DBs must not live on SMB
-- [x] Reboot-proof mounts: `scripts/utils/mount-nas.sh` + `com.peciulevicius.mount-nas` LaunchAgent
-- [x] Glance tile for NAS
-
 **Remaining follow-ups:**
-- [x] ~~Update rclone/T5 backup scripts to NAS paths~~ (2026-08-04 — backup-t5.sh, backup-immich.sh, rclone-backup.sh all read from NAS mounts; T7 fully decoupled, safe to disconnect. Keep T7 data intact on the shelf ~2 weeks before wiping/repurposing)
 - [ ] Delete stale `immich/postgres` folder on NAS share (460MB dead copy — via Files app)
-- [ ] Verify first NAS-sourced backups: T5 cron (3am, needs T5 plugged) + rclone (5am)
+- [ ] Verify a NAS-sourced external backup by hand — the nightly T5/T7 cron was
+      removed 2026-09-05 (the drives aren't always plugged in, so it failed every
+      night). rclone → R2 at 5am is the only automated leg now.
 - [ ] Decide: delete stale `/Volumes/T7/docker/` (53G old Docker VM copy)
 - [ ] T5 future plan: reload with full photo/video collection, store at parents' home as offsite family copy
 - [ ] Verify drive sleep works (configured: 20 min idle)
@@ -565,100 +535,3 @@ only way to get both, and that's Phase 2.
 **Hardware reference:** 4-bay, RK3588C ARM 8-core, 8GB RAM (keep NAS storage-only — no heavy Docker workloads; compute stays on Mac mini), 2.5GbE port. Purchase total ~€1,060 (NAS €340 + drives €690 + switch/cables €30).
 
 ---
-
-## Reference
-
-### RAM baseline
-
-Mac mini M4, **16GB unified memory**. Docker VM ceiling is now **10GB** (raised
-from 7.8GB on 2026-07-23), but that is a *ceiling*, not a reservation — the VM
-allocates lazily.
-
-Measured 2026-09-08 with all 42 containers running:
-
-| Metric | Value | Reading |
-|---|---|---|
-| Containers, total | 5.2 GiB of the VM's 9.7 GiB | comfortable |
-| Docker VM, host-resident | **2.06 GB** | the 10GB ceiling is not actually taken |
-| macOS memory free | 43% | healthy |
-| Swap used | ~2.5 GB of 3 GB, **slowly shrinking** | historical, not active pressure |
-| Compressor occupied | ~7.5 GB | macOS working, but coping |
-
-**How to read swap on macOS:** "Pages free" is always near zero by design — macOS
-uses spare RAM as cache, so a low free-page count is not a warning. Judge by
-*memory pressure percentage* and whether swap is **growing**. Stable or shrinking
-swap is fine, even at 2.5GB. Growing swap plus pressure under ~20% is the real
-alarm.
-
-Biggest single consumers: `immich_server` (~775MB), `paperless` (~374MB),
-`mealie` (~354MB), `calibre` (~315MB), `karakeep` (~273MB).
-
-**Containers safe to stop while traveling:**
-`nextcloud`, `nextcloud_db`, `pihole`, `bazarr`, `sonarr`, `radarr`, `prowlarr`, `transmission`, `jellyseerr`, `immich_machine_learning`, `mealie`
-
----
-
-## Drive Layout (reference)
-
-Since the 2026-08-04 migration the **NAS is primary**. The two Samsung SSDs are
-backup targets only, plugged in occasionally and synced by hand.
-
-| Device | Size | Role | Mount path |
-|--------|------|------|-----------|
-| **UGREEN NAS** | ~11TiB usable (RAID 5) | Primary storage | `/Volumes/<share>` |
-| **T7** | 1TB | Manual backup | `/Volumes/T7/` |
-| **T5** | 500GB | Manual backup, destined offsite | `/Volumes/Backup/` |
-
-**What lives where:**
-
-| Data | Where | Path |
-|------|-------|------|
-| Immich photos | NAS | `/Volumes/immich/upload` |
-| Immich database | Internal SSD | `~/services/immich/data/postgres` (never on SMB — DBs corrupt over network mounts) |
-| Immich thumbnails | Internal SSD | `~/services/immich/data/thumbs` (SSD for fast scrolling; regenerable) |
-| Media (movies, TV, downloads) | NAS | `/Volumes/media/` |
-| Audiobooks | NAS | `/Volumes/audiobooks/` |
-| Calibre books | NAS | `/Volumes/books/` |
-| Docker data | Internal SSD | `~/Library/Containers/com.docker.docker` |
-
-**Still on T7 and not yet in Immich:** the year folders (`2002`–`2024`, `Močiutė`,
-`from iphone`) — ~140GB of archives, see TODO #20. T5 holds copies of the same
-folders, so they are not single-copy, but **do not wipe T7 until they are imported**.
-
-**Cloud backup (rclone → Cloudflare R2), nightly 5am:**
-- Docker service configs, obsidian vault, Calibre books, DB dumps → R2 `peciulevicius-backups`
-- Script: `~/.dotfiles/services/rclone/rclone-backup.sh`
-- ~1.3GB total (critical-only; photos/audiobooks excluded from R2)
-
-**Local backup (rsync NAS → external drive), MANUAL — no cron:**
-- `~/.dotfiles/scripts/backup/backup-external.sh /Volumes/T7` (or `/Volumes/Backup` for T5)
-- Covers: Immich originals + transcoded video, **database dumps**, audiobooks, Calibre books
-- Skips: media (movies/TV — too large, re-downloadable), Immich thumbnails (regenerable)
-- Both drives verified 1:1 against the NAS on 2026-09-05
-
-**If the NAS dies:** photos + books + audiobooks + DB dumps on T7 and T5. Configs on R2.
-Re-download media.
-**If a drive dies:** re-run the script against a replacement.
-**If the Mac mini dies:** all data safe on the NAS. Reinstall macOS, clone dotfiles,
-restore configs from R2.
-
-**The gap:** T7 and T5 currently sit in the same room as the NAS, so nothing survives
-fire/flood/theft. Moving T5 offsite (the parents' house plan) is what makes this 3-2-1.
-
----
-
-## Quick reference
-
-| Service | Container path | Mac mini path |
-|---|---|---|
-| Radarr/Sonarr media | `/media` | `/Volumes/media` |
-| Radarr movies | `/media/movies` | `/Volumes/media/movies` |
-| Sonarr TV | `/media/tv` | `/Volumes/media/tv` |
-| Transmission downloads | `/downloads` | `/Volumes/media/downloads` |
-| Audiobookshelf | `/audiobooks` | `/Volumes/audiobooks` |
-| Calibre library | `/books` | `/Volumes/books` |
-| Immich photos | `/usr/src/app/upload` | `/Volumes/immich/upload` |
-| Immich thumbnails | `/usr/src/app/upload/thumbs` | `~/services/immich/data/thumbs` (internal SSD) |
-| Immich DB | `/var/lib/postgresql/data` | `~/services/immich/data/postgres` (internal SSD) |
-
-All `/Volumes/<share>` paths are NAS SMB mounts — see `docs/NAS.md`.

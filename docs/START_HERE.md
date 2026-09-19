@@ -100,3 +100,40 @@ Full guide: [Claude Code Guide](./CLAUDE_CODE_GUIDE.md)
     ```powershell
     .\scripts\update.ps1  # update winget, npm, pnpm, Claude Code
     ```
+
+---
+
+## 5) Find Anything — the map
+
+### Running the homelab
+
+| I want to… | Go to |
+|---|---|
+| **See what needs doing next** | [HOME_SERVER_TODO.md](./HOME_SERVER_TODO.md) — outstanding work only |
+| See what's already been done, and why | [HOME_SERVER_CHANGELOG.md](./HOME_SERVER_CHANGELOG.md) — **check before proposing anything**; several ideas were tried and reverted |
+| Look up RAM, drive layout, container paths | [HOME_SERVER_REFERENCE.md](./HOME_SERVER_REFERENCE.md) |
+| Set up a Mac mini from scratch | [HOME_SERVER.md](./HOME_SERVER.md) |
+| See what each service is and its port | [SERVICES.md](./SERVICES.md) |
+| Understand the NAS and its mounts | [NAS.md](./NAS.md) |
+| Know what the scripts do | [UTILITY_SCRIPTS.md](./UTILITY_SCRIPTS.md) |
+| Fix or add a scheduled job | [../scripts/cron/README.md](../scripts/cron/README.md) |
+
+### The long-running projects
+
+Each has a guide holding the decisions already made. **Read the guide before
+reopening the topic** — they record what was ruled out and why.
+
+| Project | Guide | State |
+|---|---|---|
+| De-Googling | [guides/DEGOOGLE.md](./guides/DEGOOGLE.md) · [alternatives](./guides/DEGOOGLE_ALTERNATIVES.md) | ~90% done. Gaps: email, phone, calendar, AI |
+| Notes / PKM | [guides/NOTES.md](./guides/NOTES.md) | Vault + sync exist; capture friction is the real problem |
+| Books + Kindle | [guides/BOOKS.md](./guides/BOOKS.md) | Jailbreak decided; waiting on KOReader Scribe support |
+| Self-hosted AI | [guides/SELF_HOSTED_AI.md](./guides/SELF_HOSTED_AI.md) | Not started. Odysseus on port 7000 (which is taken) |
+| Octopus Deploy | [guides/OCTOPUS_DEPLOY.md](./guides/OCTOPUS_DEPLOY.md) | ❌ Ruled out on RAM — don't re-research |
+
+### Which file do I write in?
+
+- A thing **to do** → `HOME_SERVER_TODO.md`
+- A thing **done** → move it to `HOME_SERVER_CHANGELOG.md`, with the *why*
+- A **fact** about the machine → `HOME_SERVER_REFERENCE.md`
+- A **decision** on a long-running topic → that topic's guide
