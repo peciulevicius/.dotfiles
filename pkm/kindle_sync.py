@@ -16,6 +16,7 @@ Setup:
 """
 
 import email
+import hashlib
 import imaplib
 import os
 import re
@@ -73,9 +74,9 @@ def load_processed_ids() -> set[str]:
     return set(PROCESSED_IDS_FILE.read_text().splitlines())
 
 
-def mark_processed(uid: str) -> None:
+def mark_processed(message_id: str) -> None:
     with open(PROCESSED_IDS_FILE, "a") as f:
-        f.write(uid + "\n")
+        f.write(message_id + "\n")
 
 
 def extract_s3_url(redirect_url: str) -> str:
@@ -197,20 +198,44 @@ def main() -> None:
         sys.exit(1)
 
     imap.select("INBOX")
-    _, data = imap.search(None, f'(FROM "{KINDLE_SENDER}" SUBJECT "{KINDLE_SUBJECT_MARKER}")')
-    all_ids = data[0].split() if data[0] else []
-    msg_ids = [mid for mid in all_ids if mid.decode() not in processed_ids]
+    # UID search, not sequence numbers: sequence numbers are positional and
+    # renumber whenever mail leaves the mailbox, so a stored one can silently
+    # match a different email later.
+    _, data = imap.uid("SEARCH", None, f'(FROM "{KINDLE_SENDER}" SUBJECT "{KINDLE_SUBJECT_MARKER}")')
+    all_uids = data[0].split() if data[0] else []
 
-    if not msg_ids:
+    if not all_uids:
         log("No new Kindle export emails.")
         imap.logout()
         return
 
-    log(f"Found {len(msg_ids)} new export email(s).")
-
-    for msg_id in msg_ids:
-        _, raw = imap.fetch(msg_id, "(RFC822)")
+    # De-duplicate on the RFC822 Message-ID header rather than any server-side
+    # id. UIDs reset when UIDVALIDITY changes and do not survive a move to
+    # another provider; Message-ID is globally unique and travels with the mail.
+    pending: list[tuple[bytes, email.message.Message, str]] = []
+    for uid in all_uids:
+        _, raw = imap.uid("FETCH", uid, "(RFC822)")
+        if not raw or not raw[0]:
+            continue
         msg = email.message_from_bytes(raw[0][1])
+        message_id = (msg.get("Message-ID") or "").strip()
+        if not message_id:
+            # No Message-ID is unexpected; fall back to a stable digest of the
+            # headers that identify this export so it is not reprocessed hourly.
+            basis = f"{msg.get('Subject','')}|{msg.get('Date','')}|{msg.get('From','')}"
+            message_id = "sha256:" + hashlib.sha256(basis.encode()).hexdigest()
+        if message_id in processed_ids:
+            continue
+        pending.append((uid, msg, message_id))
+
+    if not pending:
+        log("No new Kindle export emails.")
+        imap.logout()
+        return
+
+    log(f"Found {len(pending)} new export email(s).")
+
+    for uid, msg, message_id in pending:
         notebook_name = extract_notebook_name(decode_subject(msg.get("Subject", "")))
         log(f'Processing: "{notebook_name}"')
 
@@ -221,14 +246,14 @@ def main() -> None:
             log("  No download links found — email may be expired.")
             skipped += 1
             if not DRY_RUN:
-                mark_processed(msg_id.decode())
+                mark_processed(message_id)
             continue
 
         if "txt" not in urls:
             log("  Only PDF found — use 'Searchable PDF' export on Scribe to get text too.")
             skipped += 1
             if not DRY_RUN:
-                mark_processed(msg_id.decode())
+                mark_processed(message_id)
             continue
 
         log("  Downloading…")
@@ -258,7 +283,7 @@ def main() -> None:
                     attachments["pdf"] = pdf_filename
 
             path = save_note(notebook_name, txt_content, attachments, today)
-            mark_processed(msg_id.decode())
+            mark_processed(message_id)
             log(f"  → {os.path.relpath(path, config.VAULT_PATH)} + {list(attachments.values())}")
 
         saved += 1
