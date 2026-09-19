@@ -222,6 +222,130 @@ LazyLibrarian PostProcessor creates this structure automatically using the `$Aut
 
 ---
 
+## Which service does what
+
+You already have the whole chain — worth restating since it's easy to lose track:
+
+| Need | Service | Where |
+|---|---|---|
+| **Find + download audiobooks** | **LazyLibrarian** | Tailscale only, :5299 |
+| **Store + listen to audiobooks** | **Audiobookshelf** | listen.peciulevicius.com |
+| **Find + download ebooks** | **LazyLibrarian** (same tool, both media) | :5299 |
+| **Store + read ebooks** | **Calibre** → **Calibre-Web** | books.peciulevicius.com |
+| Indexers / torrents | Prowlarr → Transmission | |
+
+So: **LazyLibrarian acquires, Audiobookshelf and Calibre-Web serve.** One tool
+handles both books and audiobooks — click "Wanted" and the PostProcessor routes
+EPUBs into Calibre and MP3/M4B into Audiobookshelf automatically.
+
+> `readarr` is also present in `services/`, but this guide's pipeline uses
+> LazyLibrarian. Readarr was archived upstream — **worth checking whether the
+> container is still running and removing it if unused** (same reconciliation
+> issue as karakeep/actual-budget in the TODO).
+
+---
+
+## Getting books onto the Kindle
+
+**They do not sync automatically today.** Two routes, and the difference matters
+for this project:
+
+### Route A — Send to Kindle (works now, no jailbreak)
+
+Calibre-Web has a **"Send to Kindle"** button that emails a book to your
+`@kindle.com` address.
+
+- ✅ Works today, no modification to the device
+- ❌ **Every book passes through Amazon**, gets converted server-side, and lands
+  in your Amazon library
+- ❌ Manual, one click per book — not real sync
+- ❌ Requires the sending address be whitelisted in your Amazon account
+
+### Route B — KOReader + OPDS (needs jailbreak) ⭐
+
+Calibre-Web exposes an **OPDS feed**. KOReader can browse and download from it
+directly over Wi-Fi.
+
+- ✅ **Zero Amazon involvement** — straight from `books.peciulevicius.com`
+- ✅ **Native EPUB**, no conversion
+- ✅ Browse your whole library from the device
+- ❌ Requires jailbreaking
+
+**Given the goal is owning your own things, Route B is the one that matches the
+project.** Route A works fine in the meantime.
+
+### Does the Kindle support EPUB? No — and this is the crux
+
+| | Native formats |
+|---|---|
+| **Stock Kindle** | AZW3, KFX, MOBI (legacy), PDF, TXT — **no EPUB** |
+| **KOReader** | EPUB, PDF, DjVu, FB2, CBZ, MOBI, and more |
+
+Send to Kindle *accepts* EPUB, but **Amazon converts it** on their servers.
+Since LazyLibrarian delivers EPUBs into Calibre, a stock Kindle means every book
+you download gets round-tripped through Amazon before you can read it.
+**KOReader reads them as-is.** That is the single strongest argument for the
+jailbreak.
+
+---
+
+## Jailbreak plan — and the warranty timing
+
+**Yes, do it.** It fits the project: it's what turns your self-hosted library
+into something the Kindle can actually use without Amazon in the middle.
+
+### ⚠️ Wait until the warranty expires — roughly 3 weeks
+
+The Scribe was **registered 2025-10-08**, so the 1-year warranty runs out around
+**2026-10-08**. Jailbreaking officially voids it. There's no urgency that
+justifies burning the last few weeks of cover.
+
+This lines up conveniently with the other blocker: **Vera's Scribe support still
+reads as pending**, not shipped (see [NOTES.md](NOTES.md)). Both reasons point
+the same way — wait.
+
+- [ ] **Now:** freeze firmware at **5.19.6** (fill storage, or Wi-Fi off).
+      Updating past it could strand the device before a port lands.
+- [ ] **After ~2026-10-08:** re-check the
+      [Jailbreaking Wizard](https://kindlemodding.org) for Scribe + 5.19.6
+- [ ] Then: `;kpm install koreader`
+- [ ] Point KOReader at Calibre-Web's **OPDS feed** (`books.peciulevicius.com`)
+- [ ] Keep Wi-Fi updates blocked afterwards so an update doesn't undo it
+
+---
+
+## Note-taking after the jailbreak — keep using Amazon's
+
+This is the part to get right, because the answer is counterintuitive.
+
+**KOReader's stylus support is not ready.** A pull request adding Kindle Scribe
+stylus events was merged in **March 2026**, proved unstable, and was **reverted**.
+A third-party plugin — **`pencil-handwriting.koplugin`** — targets the Scribe's
+EMR pen specifically with low-latency ink, eraser and per-page persistence, but
+it is early-stage and unofficial.
+
+**Amazon's stock note-taking is materially better:** notebooks, templates,
+sticky notes in books, and — critically — **handwriting OCR** via
+*Share → Searchable PDF*, which is what makes your meeting notes greppable once
+`kindle_sync.py` files them into Obsidian.
+
+### The division of labour
+
+**Jailbreaking is additive — the stock Kindle software stays.** So run both:
+
+| Task | Use |
+|---|---|
+| **Reading** your own EPUBs from Calibre-Web | **KOReader** (via OPDS) |
+| **Handwriting**, meeting notes, PDF markup, OCR export | **Amazon's stock software** |
+
+You lose nothing. The notebook pipeline into Obsidian keeps working exactly as
+it does now, and you gain an Amazon-free path for everything you read.
+
+> Revisit KOReader's stylus support in a year — if `pencil-handwriting` matures
+> or the native support lands stably, the last Amazon dependency here goes away.
+
+---
+
 ## Kindle Scribe + Audible "Read & Listen" — what actually works
 
 **Short answer: the Scribe cannot do true immersion reading.**

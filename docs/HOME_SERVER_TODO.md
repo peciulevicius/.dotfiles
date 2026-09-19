@@ -202,6 +202,25 @@ tool — swapping Obsidian for something else reproduces the same failure later.
 - [ ] **30 days of capture only, zero organising.** Then reassess.
       If it still hasn't stuck, Apple Notes for fleeting + Obsidian for durable
       is a legitimate end state, not a failure.
+- [ ] **Kindle is a target device too, not just phone + PC.** Full plan in
+      [guides/BOOKS.md](guides/BOOKS.md). Goal: read your own Calibre-Web EPUBs
+      on the Scribe **without Amazon in the middle**. Stock Kindle can't read
+      EPUB — Send to Kindle converts server-side, so every LazyLibrarian
+      download would round-trip through Amazon. KOReader reads EPUB natively via
+      Calibre-Web's OPDS feed.
+- [ ] **Jailbreak decision: yes — but wait ~3 weeks.** Scribe was registered
+      **2025-10-08**, so warranty runs out about **2026-10-08**. Jailbreaking
+      voids it, and Vera's Scribe support reads as pending anyway. Both point
+      the same way.
+- [ ] After warranty expires: re-check the Jailbreaking Wizard → `;kpm install
+      koreader` → point KOReader at `books.peciulevicius.com` OPDS
+- [ ] **Keep Amazon's stock software for handwriting.** KOReader's Scribe stylus
+      PR was merged March 2026 then reverted as unstable;
+      `pencil-handwriting.koplugin` is early-stage. Jailbreak is additive, so
+      run both: KOReader for reading, stock for notes + OCR export.
+- [ ] Check whether `readarr` is still running — the pipeline uses
+      LazyLibrarian, and Readarr was archived upstream (same reconciliation
+      issue as karakeep/actual-budget)
 - [ ] **Freeze the Kindle Scribe firmware at 5.19.6** — fill its storage or keep
       Wi-Fi off. Vera's Scribe port targets `<=5.19.6`; updating past it may
       strand the device. Confirm actual support via the Jailbreaking Wizard —

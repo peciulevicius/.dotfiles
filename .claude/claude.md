@@ -91,6 +91,23 @@ Obsidian Web Clipper, then 30 days of capture-only with no organising.
 - Scribe's only provider-neutral export route is **email** — its Drive/OneDrive
   options are 2025+ models only and are the services being left.
 
+### Books + Kindle — `docs/guides/BOOKS.md`
+
+**The Kindle Scribe is a target device for this project, not just phone and PC.**
+Goal: read self-hosted Calibre-Web EPUBs on it without Amazon in the middle.
+
+- **LazyLibrarian** acquires both ebooks and audiobooks; **Calibre-Web** and
+  **Audiobookshelf** serve them. `readarr` may be a stale container — verify.
+- Stock Kindle **cannot read EPUB**; Send to Kindle converts server-side at
+  Amazon. **KOReader reads EPUB natively** via Calibre-Web's OPDS feed — this is
+  the reason to jailbreak.
+- **Jailbreak decided: yes, but wait.** Scribe registered 2025-10-08, so warranty
+  ends ~2026-10-08; Vera's Scribe support also reads as pending. Freeze firmware
+  at **5.19.6** now — updating past it could strand the device.
+- **Keep Amazon's stock software for handwriting.** KOReader's Scribe stylus
+  support was merged then reverted as unstable. Jailbreak is additive: KOReader
+  for reading, stock Kindle for notes + OCR export into Obsidian.
+
 ### Self-hosted AI — `docs/guides/SELF_HOSTED_AI.md`
 
 Goal: own the chat history, memories and RAG corpus; rent the inference.
