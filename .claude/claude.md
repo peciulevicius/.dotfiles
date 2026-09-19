@@ -128,6 +128,17 @@ Goal: own the chat history, memories and RAG corpus; rent the inference.
 - Hardware ceiling is ~8B quantised. 16GB unified, shared with 42 containers.
   Do not propose 30B+ models.
 
+### Octopus Deploy — ruled out, `docs/guides/OCTOPUS_DEPLOY.md`
+
+Wanted as a day-job-mirroring .NET practice rig, **not** as a deploy path for
+Cloudflare Worker or static-site projects (`wrangler versions` already covers
+promote/rollback there). **Ruled out on the Mac mini 2026-09-19 on measured RAM**,
+not on principle: Octopus's SQL Server dependency needs ~3–4GB, and the host was
+already swapping 3GB of 4GB with only ~4.1GiB of Docker VM headroom left.
+Revisit only if it gets its own machine. Don't re-research it — the licence
+check, compose sketch, exposure rules and the unrecoverable master-key step are
+all in that guide.
+
 ## Rules for this repo
 
 - Configs must work cross-platform (macOS + Linux)

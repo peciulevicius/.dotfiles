@@ -9,39 +9,58 @@ Grouped by "what happens if I ignore this", not by number.
 
 ## ▶ Start here — next session on the Mac mini
 
-Planned 2026-09-19. Work top to bottom; each step unblocks the next.
+Worked through 2026-09-19 on the Mac mini. Steps 1, 3 and most of 4 are done —
+what's left is below.
 
-**1. Verify what's already running (~10 min, do this first)**
+**1. Verify what's already running** — ✅ done. Three things it turned up:
 
-```bash
-crontab -l | grep -E "kindle|backup|dump"     # are the jobs still scheduled?
-tail -20 ~/logs/kindle-sync.log                # last run? errors?
-docker ps --format '{{.Names}}' | sort         # what's actually up
-ls -la ~/backups/                              # did Sunday's DB dump land?
-```
+- 🔴 **The Kindle sync has been dead for ~73 days.** Every hourly run since
+  roughly early July fails with `[AUTHENTICATIONFAILED] Invalid credentials` —
+  the Gmail app password in `pkm/config.py` is no longer valid. **Needs your
+  hands** (see below). The whole notes plan depends on it.
+- 🟠 **Two of the four weekly DB dumps had never once worked** — `linkwarden_db`
+  was dumped as the wrong Postgres role, and `nextcloud_db`'s `mariadb-dump` ran
+  with no password. Only immich + paperless were ever landing in `~/backups/`.
+  Fixed and verified; all four now dump.
+- 🟢 The Aug 16 + 23 gap did **not** recur — Aug 30, Sep 6, Sep 13 all landed.
 
-The Kindle sync has been untested for months and the notes work depends on it.
-The weekly DB dumps had gaps (Aug 16 + 23 missing).
+**2. Two-minute jobs that prevent real loss** — ⏳ still to do, both need you
 
-**2. Two-minute jobs that prevent real loss** — see the section below
-
-- Tailscale key expiry (it silently dropped the tailnet once already)
+- Tailscale key expiry (it silently dropped the tailnet once already). Confirmed
+  `macmini` and `ugreen-nas` are both online right now, so nothing is broken yet.
 - ⚠️ T5 offsite is now **more** urgent: iCloud is cancelled, so there is no
   cloud copy of the photos — only the NAS and two drives in the same room
 
-**3. Free RAM (~5 min)** — stop `karakeep` ×3 and `actual-budget`. The changelog
-says both were removed; the containers are still running. ~400MB back, which
-funds the AI workspace.
+**3. Free RAM** — ✅ done. `karakeep` ×3 and `actual-budget` stopped and removed
+from the staging registry; their data is untouched in `~/services/` and a
+`docker compose up -d` brings either back. Host went to ~38% free.
 
-**4. CouchDB + Obsidian LiveSync (~30 min)** — the enabling step for notes.
-See [guides/NOTES.md](guides/NOTES.md). ⚠️ Back up the vault before first sync.
+**4. CouchDB + Obsidian LiveSync** — 🟡 half done. **CouchDB is up and healthy**
+on `localhost:5984` (`services/couchdb/`, single-node cluster initialised, CORS
+set for `app://obsidian.md`, anonymous access 401s). Vault snapshotted first to
+`~/backups/vault-snapshots/`. Still to do:
 
-**5. Odysseus (~30 min)** — [guides/SELF_HOSTED_AI.md](guides/SELF_HOSTED_AI.md).
-Docker Compose, port 7000, `AUTH_ENABLED=true`, behind Cloudflare Access.
+- [ ] Decide how mobile Obsidian reaches it — public hostname via the tunnel, or
+      Tailscale-only. **This needs a decision before the plugin can be set up**;
+      see `services/couchdb/README.md` for the Cloudflare Access caveat (an
+      interactive Access policy blocks the plugin, which can't log in — it needs
+      a service token, or Tailscale-only instead).
+- [ ] Install Self-hosted LiveSync on each device, E2E passphrase, ⚠️ first
+      device is the source of truth
 
-**Not Mac mini work — do on the phone when convenient:**
-⚠️ **Google Authenticator → Ente Auth.** Highest-risk item in the whole
-de-Google effort: its TOTP seeds sync to the Google account being left.
+**5. Odysseus** — ⏳ not started. [guides/SELF_HOSTED_AI.md](guides/SELF_HOSTED_AI.md).
+⚠️ **Port 7000 is not free** — macOS AirPlay Receiver (ControlCenter) holds it.
+Map it to another host port, or turn AirPlay Receiver off in System Settings.
+
+**Needs your hands, nothing else can fix it:**
+
+- 🔴 **Regenerate the Gmail app password** (Google Account → Security → App
+  passwords), then put it in `pkm/config.py` as `EMAIL_PASSWORD` and test with
+  `~/.dotfiles/pkm/.venv/bin/python3 ~/.dotfiles/pkm/kindle_sync.py`. Until this
+  is done the Scribe → Obsidian pipeline is dead. Note the address moves to
+  Purelymail eventually, which will change `IMAP_SERVER` too.
+- ⚠️ **Google Authenticator → Ente Auth.** Highest-risk item in the whole
+  de-Google effort: its TOTP seeds sync to the Google account being left.
 
 
 
@@ -115,14 +134,16 @@ was crash-looping in early September. Originals are intact (verified on disk;
 - [ ] photos.peciulevicius.com → Administration → Jobs → **Generate Thumbnails →
       Missing**
 
-### Reconcile services marked removed that are still running
+### ~~Reconcile services marked removed that are still running~~ ✅ Done (2026-09-19)
 
-The changelog records both as removed; all four containers are up as of
-2026-09-05. Either stop them or correct the record.
+Was: the changelog recorded both as removed while all four containers were up as of
+2026-09-05. Both are now stopped and the record matches.
 
-- [ ] `actual-budget` — replaced by Wallet by Budget Bakers, still running
-- [ ] `karakeep` + `karakeep-chrome` + `karakeep-meilisearch` — reverted to
-      Linkwarden, still running (three containers' worth of RAM)
+- [x] ~~`actual-budget`~~ — stopped and removed 2026-09-19. Data kept at
+      `~/services/actual-budget/`; `docker compose up -d` there restores it.
+- [x] ~~`karakeep` + `karakeep-chrome` + `karakeep-meilisearch`~~ — stopped and
+      removed 2026-09-19, and dropped from `setup-services.sh` so a fresh
+      machine no longer stages it. Data kept at `~/services/karakeep/`.
 
 ### External backups are manual now — nothing warns when they go stale
 
@@ -138,13 +159,18 @@ date before anyone noticed.
 Run a backup with:
 `~/.dotfiles/scripts/backup/backup-external.sh /Volumes/T7 --dry-run` then without `--dry-run`.
 
-### Weekly database dumps have gaps
+### ~~Weekly database dumps have gaps~~ ✅ Fixed (2026-09-19)
 
-`~/backups/` holds Aug 2, Aug 9, Aug 30 — **Aug 16 and Aug 23 are missing**.
-The Sunday 4am cron should have produced them; the Mac was likely asleep or the
-runs failed silently.
+**Resolved 2026-09-19, and it was worse than a gap.** The Aug 16 + 23 gap did
+not recur (Aug 30, Sep 6, Sep 13 all landed), but checking turned up that
+`linkwarden` and `nextcloud` had **never once** dumped successfully: the script
+used the wrong Postgres role for linkwarden and passed no password to
+`mariadb-dump` for nextcloud. Both fixed; all four now verified.
 
-- [ ] Check whether next Sunday's dump lands; if not, add a heartbeat
+- [x] ~~Check whether next Sunday's dump lands~~ — the three most recent Sundays
+      all landed
+- [ ] Still worth a heartbeat: the failures were logged to `~/logs/db-backup.log`
+      and sat there unread for months. Nothing shouts when a backup breaks.
 
 ### Router DHCP reservation for the NAS
 
@@ -204,6 +230,15 @@ Paperless-NGX doesn't support traditional folders — it uses **tags**, **docume
 
 - [ ] Install Linkwarden browser extension
 - [ ] Import bookmarks from Chrome/Brave
+
+### Octopus Deploy — researched, ruled out for now
+
+Wanted as a day-job-mirroring .NET practice rig. **Not building it on the Mac
+mini**: its SQL Server dependency needs ~3-4GB and the host is already swapping
+3GB of 4GB with ~4.1GiB of Docker VM headroom left. Full research, including the
+licence check, compose sketch and the unrecoverable master-key step, is in
+[guides/OCTOPUS_DEPLOY.md](guides/OCTOPUS_DEPLOY.md) so it doesn't get
+re-researched. Revisit only if it gets its own machine.
 
 ### VPN for torrents
 
