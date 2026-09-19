@@ -28,7 +28,9 @@ Google's page showed *no existing app passwords*, which confirms the old one was
 deleted rather than expired — so both of the above have been broken since July
 too. Test them, don't assume.
 
-To change it again later: `~/.dotfiles/scripts/setup/set-kindle-password.sh`.
+To set it again later (the Purelymail migration will need it), the helper that
+prompts without echoing is in git history:
+`git show 50c21f9:scripts/setup/set-kindle-password.sh > /tmp/set-pw.sh`
 
 ### 2. 📧 Custom email address — **before** touching any service login
 
@@ -201,6 +203,22 @@ use the same password as elsewhere. Rotate to unique generated passwords:
 ---
 
 ## Worth doing soon
+
+### Move Calibre's metadata.db off the SMB share
+
+`/Volumes/books/metadata.db` is SQLite on an SMB mount — the thing this setup's
+own rule says never to do (same reason Immich's Postgres lives on the internal
+SSD). It has not corrupted yet; the 2026-09-19 "malformed" error turned out to
+be a stale bind mount, not the file. But SQLite's locking is not reliable over
+SMB and Calibre *writes* this database.
+
+- [ ] Decide the layout: book files can stay on the NAS, but the library
+      metadata should live on the internal SSD
+- [ ] Calibre and Calibre-Web both open the same library, so they have to agree
+      on the new path — check whether Calibre-Web's `--dbpath`-style split works
+      before moving anything
+- [ ] Back up `metadata.db` first; a copy is already at
+      `~/backups/calibre-repair/`
 
 ### Regenerate missing Immich thumbnails
 

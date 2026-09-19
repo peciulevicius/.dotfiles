@@ -207,31 +207,6 @@ See [guides/NOTES.md](./guides/NOTES.md) for the full Obsidian + Syncthing workf
 
 ---
 
-## 🔑 scripts/setup/set-kindle-password.sh - Gmail app password
-
-Sets the Gmail app password that `pkm/kindle_sync.py` uses for IMAP, without the
-secret appearing in shell history, `ps` output, or a terminal transcript.
-
-```bash
-~/.dotfiles/scripts/setup/set-kindle-password.sh
-```
-
-Prompts silently (`read -s`), strips the spaces Google puts in the displayed
-value, writes it into `pkm/config.py` (gitignored, chmod 600), then runs a real
-IMAP login so a wrong paste is caught immediately. Keeps a `.bak` and restores
-it if the login fails.
-
-**Generate the password first** at <https://myaccount.google.com/apppasswords> —
-the entry is hidden from Google's Security menu, so the direct URL is needed.
-Gmail rejects the account password for IMAP whenever 2FA is on; only a 16-char
-app password works, and `kindle_sync.py` has no OAuth2 path.
-
-⚠️ The same password is used in **two other places** — Uptime Kuma's SMTP
-notification and Calibre-Web's Send-to-Kindle. The script reminds you on
-success; both fail silently otherwise.
-
----
-
 ## 🐳 services/setup-services.sh - Docker Services Setup
 
 Stages Docker Compose stacks and `.env` templates to `~/services/<service>/`.

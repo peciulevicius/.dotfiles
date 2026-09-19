@@ -121,8 +121,10 @@ nothing. Those renames are UI work; the checklist is in `~/credentials-import.md
 
 ### Kindle sync restored after ~73 days, and a silent data-loss bug fixed
 
-A new Gmail app password brought it back — `scripts/setup/set-kindle-password.sh`
-now sets it without the secret touching shell history or a transcript. Google's
+A new Gmail app password brought it back, set via a throwaway helper that
+prompted without echoing so the secret never touched shell history or a
+transcript (removed after use; recoverable with
+`git show 50c21f9:scripts/setup/set-kindle-password.sh`). Google's
 app-passwords page listed **none**, confirming the old one was deleted rather
 than expired, so Uptime Kuma's SMTP alerts and Calibre-Web's Send-to-Kindle
 broke at the same moment and stayed broken silently.
@@ -143,6 +145,30 @@ the planned move to Purelymail — UIDs would not, as they reset on a UIDVALIDIT
 change or provider move. Falls back to a sha256 of `Subject|Date|From` when a
 message carries no Message-ID. The 8 stale sequence numbers were dropped, safe
 because the inbox contains no Amazon mail to re-import.
+
+### Calibre-Web "database disk image is malformed" — stale bind mounts
+
+Not corruption. `metadata.db` passed `PRAGMA integrity_check` on the host the
+whole time. `/books` **inside the container** was returning EBADF: the host had
+remounted the SMB share while the container kept running, so its bind mount
+still pointed at the dead mount instance, and SQLite reading through that fd
+reports the file as malformed.
+
+A scan found **five more containers in the same state** — Jellyfin (movies and
+TV), Sonarr, Radarr and Bazarr were all blind to `/media` and had said nothing.
+`docker compose restart` re-resolves the bind mount; all twelve NAS-backed
+mounts verified healthy afterwards.
+
+The existing `nas-watchdog.sh` could not catch this: it checks that shares are
+mounted **on the host** and that containers are **running**, and both were true.
+It now also probes from inside each container and restarts any stack whose bind
+mount has gone stale, reporting it to Discord.
+
+⚠️ Worth noting the underlying rule this bumps into: `metadata.db` is SQLite
+living on an SMB share, which the repo's own guidance says never to do. It
+survived this time because the file was only being *read* through a dead fd
+rather than written. Moving the Calibre library metadata onto the internal SSD
+is the real fix and is now an open TODO.
 
 ### Security: Pi-hole had a 5-character password, publicly exposed
 
