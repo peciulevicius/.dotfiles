@@ -13,25 +13,22 @@ Last worked: **2026-09-19**. Finished work is in
 [HOME_SERVER_CHANGELOG.md](HOME_SERVER_CHANGELOG.md#2026-09-19--verification-backups-couchdb).
 The order below matters — each step unblocks the next.
 
-### 1. 🔴 Gmail **app** password — the Kindle sync is dead without it
+### 1. ✅ ~~Gmail app password~~ — done 2026-09-19, sync is alive
 
-Failing hourly since early July. Tried with the Google *account* password on
-2026-09-19 and it was rejected: Gmail IMAP needs a **16-character app password**
-(`abcd efgh ijkl mnop`) whenever 2FA is on.
+Fixed after ~73 days dead. Two follow-ups still open, because the **same app
+password** is used in two other places that fail silently:
 
-- [ ] Go direct to <https://myaccount.google.com/apppasswords> — the menu entry
-      is hidden, browsing the Security page will not find it
-- [ ] ⚠️ If it says *"not available for your account"*: **2-Step Verification is
-      probably off** (app passwords require it), or Advanced Protection is
-      enrolled. Troubleshooting + the Purelymail fallback:
-      `~/credentials-import.md`
-- [ ] Run `~/.dotfiles/scripts/setup/set-kindle-password.sh` — prompts without
-      echoing, writes it into `pkm/config.py`, and tests the IMAP login. Keeps
-      the secret out of shell history and out of any transcript.
-- [ ] ⚠️ **Used in two other places too** — Uptime Kuma's SMTP notification and
-      Calibre-Web's Send-to-Kindle Gmail SMTP. If the old app password was
-      revoked, both have been silently broken for the same ~73 days. Test each.
-      Step-by-step: `~/credentials-import.md`.
+- [ ] **Uptime Kuma** → `status.peciulevicius.com` → Settings → Notifications →
+      edit "Uptime Kuma" (SMTP) → paste the new app password → **Test** → Save
+- [ ] **Calibre-Web** → `books.peciulevicius.com` → Admin → SMTP settings →
+      paste → send a test to `peciulevicius-scribe@kindle.com`
+- [ ] Save the app password to Bitwarden
+
+Google's page showed *no existing app passwords*, which confirms the old one was
+deleted rather than expired — so both of the above have been broken since July
+too. Test them, don't assume.
+
+To change it again later: `~/.dotfiles/scripts/setup/set-kindle-password.sh`.
 
 ### 2. 📧 Custom email address — **before** touching any service login
 

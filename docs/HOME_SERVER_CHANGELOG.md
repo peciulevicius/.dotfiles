@@ -119,6 +119,31 @@ forward.
 account already exists in each app's database and editing `.env` changes
 nothing. Those renames are UI work; the checklist is in `~/credentials-import.md`.
 
+### Kindle sync restored after ~73 days, and a silent data-loss bug fixed
+
+A new Gmail app password brought it back — `scripts/setup/set-kindle-password.sh`
+now sets it without the secret touching shell history or a transcript. Google's
+app-passwords page listed **none**, confirming the old one was deleted rather
+than expired, so Uptime Kuma's SMTP alerts and Calibre-Web's Send-to-Kindle
+broke at the same moment and stayed broken silently.
+
+**Nothing was lost in the outage:** the inbox holds zero Amazon export emails,
+so no notebooks were sent during those 73 days. Consistent with the capture
+friction the notes guide describes — the Scribe was not being used.
+
+While verifying that, found a real bug. `.processed_ids` stored IMAP **sequence
+numbers** (51, 52, 61, 64-68), which are positional and renumber whenever mail
+leaves the mailbox. A stored number can therefore match a different email later:
+either a new export is silently skipped and its Amazon link expires after 7
+days, or an already-imported note is written to the vault twice. Both silent.
+
+Fixed: searches and fetches by UID, and dedupes on the RFC822 **Message-ID**
+header. Message-ID is globally unique and travels with the mail, so it survives
+the planned move to Purelymail — UIDs would not, as they reset on a UIDVALIDITY
+change or provider move. Falls back to a sha256 of `Subject|Date|From` when a
+message carries no Message-ID. The 8 stale sequence numbers were dropped, safe
+because the inbox contains no Amazon mail to re-import.
+
 ### Security: Pi-hole had a 5-character password, publicly exposed
 
 Auditing the `.env` files turned it up: `PIHOLE_PASSWORD` was 5 characters and
