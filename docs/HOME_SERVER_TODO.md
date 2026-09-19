@@ -7,6 +7,46 @@ Grouped by "what happens if I ignore this", not by number.
 
 ---
 
+## ▶ Start here — next session on the Mac mini
+
+Planned 2026-09-19. Work top to bottom; each step unblocks the next.
+
+**1. Verify what's already running (~10 min, do this first)**
+
+```bash
+crontab -l | grep -E "kindle|backup|dump"     # are the jobs still scheduled?
+tail -20 ~/logs/kindle-sync.log                # last run? errors?
+docker ps --format '{{.Names}}' | sort         # what's actually up
+ls -la ~/backups/                              # did Sunday's DB dump land?
+```
+
+The Kindle sync has been untested for months and the notes work depends on it.
+The weekly DB dumps had gaps (Aug 16 + 23 missing).
+
+**2. Two-minute jobs that prevent real loss** — see the section below
+
+- Tailscale key expiry (it silently dropped the tailnet once already)
+- ⚠️ T5 offsite is now **more** urgent: iCloud is cancelled, so there is no
+  cloud copy of the photos — only the NAS and two drives in the same room
+
+**3. Free RAM (~5 min)** — stop `karakeep` ×3 and `actual-budget`. The changelog
+says both were removed; the containers are still running. ~400MB back, which
+funds the AI workspace.
+
+**4. CouchDB + Obsidian LiveSync (~30 min)** — the enabling step for notes.
+See [guides/NOTES.md](guides/NOTES.md). ⚠️ Back up the vault before first sync.
+
+**5. Odysseus (~30 min)** — [guides/SELF_HOSTED_AI.md](guides/SELF_HOSTED_AI.md).
+Docker Compose, port 7000, `AUTH_ENABLED=true`, behind Cloudflare Access.
+
+**Not Mac mini work — do on the phone when convenient:**
+⚠️ **Google Authenticator → Ente Auth.** Highest-risk item in the whole
+de-Google effort: its TOTP seeds sync to the Google account being left.
+
+
+
+---
+
 ## Do these first — you lose data or access without them
 
 ### Disable Tailscale key expiry
