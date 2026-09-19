@@ -178,8 +178,10 @@ Paperless-NGX doesn't support traditional folders — it uses **tags**, **docume
 
 ### De-Google — migrate off all Google services
 
-**Full plan: [guides/DEGOOGLE.md](guides/DEGOOGLE.md).** Only the live decisions
-and next actions live here.
+**Full plan: [guides/DEGOOGLE.md](guides/DEGOOGLE.md).** Annotated replacement
+list for every Google service: **[guides/DEGOOGLE_ALTERNATIVES.md](guides/DEGOOGLE_ALTERNATIVES.md)**
+— check it before swapping any individual service. Only the live decisions and
+next actions live here.
 
 **Where you actually are:** Vaultwarden, Nextcloud, Immich, Tailscale, own domain
 with per-service subdomains — all done. That is PewDiePie's entire 22-minute

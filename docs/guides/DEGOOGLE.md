@@ -2,7 +2,9 @@
 
 Replace Google services with self-hosted or privacy-respecting alternatives.
 
-Companion: [SELF_HOSTED_AI.md](SELF_HOSTED_AI.md) covers the AI half of this.
+Companions: [SELF_HOSTED_AI.md](SELF_HOSTED_AI.md) covers the AI half.
+[DEGOOGLE_ALTERNATIVES.md](DEGOOGLE_ALTERNATIVES.md) is the annotated
+replacement list — **check it before swapping any individual service.**
 
 ---
 
@@ -273,6 +275,32 @@ custom-domain mail routes through your primary iCloud account rather than a
 separate IMAP server, so send-as behaviour in third-party clients is fiddly —
 **test it before migrating**. And it deepens Apple lock-in at the exact moment
 you're considering a Pixel.
+
+#### "But r/degoogle recommends Proton and Tuta"
+
+They do, and they're not wrong — they're answering a different question. The
+subreddit optimises for **FOSS purity and privacy ideology**. Two extra
+constraints apply here that flip the answer:
+
+1. **Native IMAP is mandatory** — `kindle_sync.py` and Odysseus's mail
+   integration connect headless, over plain IMAP.
+2. **~€1/month budget.**
+
+Against those, most of the popular picks fall out on price *before* the
+technical objection even matters:
+
+| Popular pick | Why it fails here |
+|---|---|
+| Proton Mail | ~$48/yr — **4× budget** — *and* Bridge-only IMAP |
+| Tuta Mail | ~$36/yr — **3× budget** — *and* **no IMAP at all** |
+| mailbox.org | €1 Light tier has IMAP but **no custom domain** (needs €3 Standard) |
+| Posteo | €1/mo, but **never supports custom domains by design** — it would force them to store customer identity data, breaking their privacy model |
+| Disroot | Free, but no custom domains |
+
+Neither Proton nor Tuta offers a custom domain on its free tier either, so
+"just use the free version" doesn't rescue them.
+
+**Purelymail at $10/yr is the only real mailbox that clears both constraints.**
 
 #### Why not Proton, given it's the famous privacy one
 
@@ -664,6 +692,20 @@ before committing.
 ---
 
 ## Gap 3 — Calendar + Contacts
+
+> **"Doesn't Nextcloud include email too?"** No — and this is the common
+> mistake. **Nextcloud Mail is an IMAP *client*, not a mail *server*.** It
+> displays mail from an account you already have elsewhere; it gives you no
+> address and cannot receive mail from the internet. Nextcloud replaces Drive,
+> Calendar, Contacts, Docs, Notes and Meet — **email still needs a provider.**
+>
+> PewDiePie hit exactly this: Nextcloud for *"PDFs, Google Docs, calendar,
+> contacts — all baked in one"*, but for mail, *"I decided to get my own email.
+> I paid a small fee. It was fiddly as hell."* Even in the video that started
+> this, **email was the one thing he paid someone else to host.**
+>
+> Full breakdown of what Nextcloud does and doesn't cover:
+> [DEGOOGLE_ALTERNATIVES.md](DEGOOGLE_ALTERNATIVES.md).
 
 Nextcloud is already running. This is unblocked work, maybe an hour.
 

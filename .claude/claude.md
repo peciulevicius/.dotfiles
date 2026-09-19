@@ -41,6 +41,11 @@ anything in these areas**, and keep `docs/HOME_SERVER_TODO.md` in sync with it.
 
 ### De-Googling — `docs/guides/DEGOOGLE.md`
 
+Annotated replacement list: **`docs/guides/DEGOOGLE_ALTERNATIVES.md`**. When the
+user is about to replace any individual Google service, **surface that file and
+its recommendation for that service** — it records what's already running, what
+was ruled out, and why, so popular-but-wrong picks don't get re-suggested.
+
 Goal: own all personal data, off Google. **~90% complete** — Immich, Nextcloud,
 Vaultwarden, Syncthing, own domain and Tailscale are all done and in use.
 
@@ -54,6 +59,12 @@ Standing decisions (don't relitigate without being asked):
   Fastmail (~$60/yr). Any provider must speak **native IMAP** — `kindle_sync.py`
   and Odysseus's mail integration both need it — which rules out Proton
   (Bridge-only), Tuta (no IMAP) and Zoho free (webmail only).
+- **Nextcloud Mail is an IMAP client, not a mail server.** It cannot host email.
+  Nextcloud covers Drive/Calendar/Contacts/Docs/Notes/Meet — email needs a provider.
+- **Proton and Tuta are ruled out** despite being the popular r/degoogle picks:
+  both exceed the ~€1/mo budget, and Proton is Bridge-only while Tuta has no
+  IMAP at all. mailbox.org's €1 tier has no custom domain; Posteo never supports
+  custom domains by design.
 - **Never delete the Google account.** It breaks remaining "Sign in with Google"
   logins and frees the address for someone else to register. Stop *using* it.
 - **Google Authenticator migration is the top priority** — its TOTP seeds sync
