@@ -180,6 +180,15 @@ the rest are just habit.
 
 Worth spelling out, because it drives every decision below.
 
+> **What `pkm/kindle_sync.py` is, since it keeps driving these decisions:** you
+> write notes on the Kindle Scribe, share them as a Searchable PDF to your own
+> email address, and an **hourly cron job** fetches those Amazon emails over
+> **IMAP**, extracts the text, and files each notebook into
+> `📥 Imports/` in your Obsidian vault. It has run since May 2026 and logs to
+> `~/logs/kindle-sync.log`. It authenticates with a Gmail app password in
+> `pkm/config.py`. **Plain IMAP is the only way it can reach a mailbox** — which
+> is why a provider without IMAP silently kills this automation.
+
 - **Your address is yours because the *domain* is yours.** `dziugas@peciulevicius.com`
   belongs to you forever. Providers are interchangeable plumbing behind it.
 - **MX records** (DNS, in Cloudflare) say *"mail for this domain goes to that server."*
@@ -302,6 +311,16 @@ Neither Proton nor Tuta offers a custom domain on its free tier either, so
 
 **Purelymail at $10/yr is the only real mailbox that clears both constraints.**
 
+**Is Proton's ~$48/yr just for email?** Essentially yes — Mail Plus is mail plus
+calendar, 15GB, one custom domain. Drive, VPN and Pass need **Proton Unlimited**
+at roughly $120/yr. So you'd be paying 4× budget for the mail piece alone.
+
+**And note PewDiePie did not use Proton.** From the video: *"there are free
+alternatives out there like Proton. I haven't tried it out. I decided to get my
+own email. I paid a small fee."* He bought a domain and paid a small provider —
+which is exactly the Purelymail path recommended here, not the Proton one the
+subreddit pushes.
+
 #### Why not Proton, given it's the famous privacy one
 
 Proton Mail Plus includes IMAP "via Bridge" — and Bridge is a **desktop
@@ -339,6 +358,19 @@ Free, with your own domain:
 
 The catch every "free email" list buries: **plain forwarding only receives.**
 To *reply* from `dziugas@peciulevicius.com` you need a real mailbox with SMTP.
+
+#### Which mail *client* should you use?
+
+Free, and independent of the provider — swap either without touching the other:
+
+| Where | Client |
+|---|---|
+| **iPhone + Mac** | ⭐ **Apple Mail** — built in, free, speaks IMAP, already on every device you own. No reason to install anything. |
+| **Desktop power use** | Thunderbird — free, open source, better for rules, multiple accounts, and search |
+| **Android (if a Pixel happens)** | Thunderbird for Android (formerly K-9 Mail) |
+
+Any of these works with Purelymail, Migadu, Fastmail or iCloud. None works with
+Tuta (no IMAP), and all need Bridge running for Proton.
 
 #### Recommendation for a ~€1/month budget
 
@@ -400,24 +432,39 @@ To be unambiguous, since you asked about "a few OSes on iPhone":
 
 So it's binary: harden iOS, or buy an Android.
 
-### Is GrapheneOS the most complete? Yes.
+### Does it have to be GrapheneOS, and does it have to be a Pixel? No.
 
-It is the most hardened and best-maintained privacy Android, and it's the
-correct choice if you go this route.
+GrapheneOS is the most hardened option, but it is **not the only one**, and
+**Fairphone is a genuine non-Pixel path**.
 
-| OS | Security | Devices | Verdict |
+| OS | Security | Devices | Notes |
 |---|---|---|---|
-| **GrapheneOS** | Strongest | Pixel only | The one to pick |
-| CalyxOS | Good | Pixel + a few | Uses microG; less hardened |
-| /e/OS | Weaker | Wide | Friendly, security is an afterthought |
-| LineageOS | Weakest | Widest | Usually can't relock the bootloader |
+| **GrapheneOS** | Strongest | **Pixel only** | Storage Scopes, per-app network permission, profiles |
+| **CalyxOS** | Good | **Pixel, Fairphone 5, some Motorola** | ⭐ Keeps verified boot **and relocks the bootloader**. Uses microG. The best non-Pixel option. |
+| **iodéOS** | Moderate | **Fairphone 6**, others | LineageOS-based, built-in ad blocker |
+| **/e/OS** | Moderate | **Fairphone 6**, wide | Android 16 base, friendliest, sold preinstalled on Murena phones |
+| LineageOS | Weakest | Widest | Usually **cannot relock the bootloader** — often *less* secure than stock |
 
-**Why Pixel-only** — this is the part people get wrong. It isn't favouritism.
-Pixels are effectively the only phones that let you relock the bootloader using
-*your own* signing key, preserving verified boot. On almost any other phone,
-installing a custom OS means leaving the bootloader unlocked forever, which
-throws away the hardware root of trust. LineageOS on a random phone is *less*
-secure than stock, not more.
+**Why the relocking point keeps coming up.** Installing a custom OS means
+unlocking the bootloader. If you can't *re*-lock it afterwards with your own
+signing key, you permanently lose verified boot — the hardware check that the
+OS hasn't been tampered with. Pixels allow this. **Fairphone allows this.**
+Most other phones do not, which is why LineageOS on a random handset is a
+downgrade rather than an upgrade.
+
+**So the honest device options are:**
+
+1. **Pixel + GrapheneOS** — strongest security, cheapest (Pixel 8a €233), but
+   Google hardware, which some find ironic
+2. **Fairphone 5 + CalyxOS** — repairable, ethical, Dutch company, ~10-year
+   parts support, verified boot preserved. Costs more (~€550+) and the hardware
+   security is below a Pixel's Titan M2. ⭐ **The pick if avoiding Google
+   hardware matters to you.**
+3. **Fairphone 6 + /e/OS or iodéOS** — easiest to live with, weakest of the three
+
+GrapheneOS also announced a **Motorola partnership for 2027 devices** — so the
+Pixel-only constraint may loosen right around when you'd actually be buying.
+Another reason not to rush.
 
 The four things PewDiePie highlighted are all real and all genuinely good:
 

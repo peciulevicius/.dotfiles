@@ -219,3 +219,43 @@ LazyLibrarian PostProcessor creates this structure automatically using the `$Aut
 | Calibre-Web | Browser | https://books.peciulevicius.com |
 | Calibre-Web OPDS | Kobo/KyBook | https://books.peciulevicius.com/opds |
 | Kindle | iOS/Hardware | Send via Calibre-Web → Send to Device |
+
+---
+
+## Kindle Scribe + Audible "Read & Listen" — what actually works
+
+**Short answer: the Scribe cannot do true immersion reading.**
+
+Two different features get confused:
+
+| Feature | What it does | Works on Scribe? |
+|---|---|---|
+| **Read & Listen** (formerly Whispersync for Voice) | Syncs your *position* between the Kindle ebook and the Audible audiobook, so you can switch between reading and listening without losing your place | ✅ Yes (audio over Bluetooth) |
+| **Immersion Reading** | Highlights each word/sentence **as the narrator reads it** | ❌ **No — app only.** Available in the Audible/Kindle apps on phone and tablet, not on e-ink devices. |
+
+So the thing you're picturing — text highlighting along with the narration —
+only happens in the phone app, never on the Scribe.
+
+**Why it's not available on all books:** it requires Amazon to have a
+Whispersync-paired ebook *and* audiobook for that title, and **you must own
+both formats**. Most catalogue titles don't have the pairing, and for those that
+do you're buying the book twice (the audiobook is usually discounted after
+buying the ebook).
+
+### What this means for the self-hosted stack
+
+You're right that it won't survive the move to Calibre + Audiobookshelf — it's
+an Amazon-account-tied feature that requires Amazon-purchased pairs. But it
+already doesn't work well: app-only, limited catalogue, two purchases per title.
+**Little is actually being given up.**
+
+**Worth investigating: [Storyteller](https://smoores.dev/storyteller)** — an
+open-source, self-hostable tool that uses forced alignment (Whisper) to sync an
+audiobook to its ebook and outputs a synced EPUB3 with media overlays. That is
+genuinely *immersion reading, self-hosted* — the thing the Scribe can't do —
+and it would sit naturally alongside Calibre and Audiobookshelf.
+
+- [ ] Evaluate Storyteller against a book you own in both formats
+- [ ] Note it needs CPU for the alignment pass — that's a Mac mini job, and a
+      candidate for the native-Whisper setup in
+      [SELF_HOSTED_AI.md](SELF_HOSTED_AI.md)
