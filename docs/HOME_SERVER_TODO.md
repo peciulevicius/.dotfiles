@@ -178,45 +178,169 @@ Paperless-NGX doesn't support traditional folders — it uses **tags**, **docume
 
 ### De-Google — migrate off all Google services
 
-**Goal:** Own all personal data. No Google Drive, Gmail, Calendar, Photos, or other Google services.
+**Full plan: [guides/DEGOOGLE.md](guides/DEGOOGLE.md).** Only the live decisions
+and next actions live here.
 
-**Why:** Data sovereignty — not dependent on a single corporation, easier to switch providers, data stays under your control.
+**Where you actually are:** Vaultwarden, Nextcloud, Immich, Tailscale, own domain
+with per-service subdomains — all done. That is PewDiePie's entire 22-minute
+video, finished months ago. **Four gaps remain: email, phone, calendar/contacts,
+AI.** Don't restart from step one.
 
-**Services to replace:**
+#### Email — the only real gap
 
-| Google service | Self-hosted replacement | Status |
-|---|---|---|
-| Gmail | Migadu / Fastmail / self-host with Stalwart Mail | Not started |
-| Google Drive | Nextcloud (already running) | Nextcloud ready, needs migration |
-| Google Calendar | Nextcloud Calendar (CalDAV) | Not started |
-| Google Contacts | Nextcloud Contacts (CardDAV) | Not started |
-| Google Photos | Immich (already running) | Immich ready, needs migration |
-| Google Docs | Nextcloud Office / OnlyOffice | Nextcloud ready |
-| YouTube | n/a (no full replacement) | — |
+Decision is still open. `guides/DEGOOGLE.md` has the full comparison and an
+explanation of how MX/SPF/DKIM actually work.
 
-**Migration order (recommended):**
-1. [ ] **Email first** — pick provider (Migadu ~€4/mo recommended: own domain, no Google dependency)
-  - Create account at Migadu with `peciulevicius.com` domain
-  - Add MX records in Cloudflare DNS
-  - Import Gmail archive (Google Takeout → IMAP import)
-  - Update all accounts (banking, work, services) to new address
-  - Update `pkm/config.py`: change `IMAP_SERVER` to new provider
-  - Keep Gmail forwarding for ~3 months, then delete
-2. [ ] **Calendar + Contacts** — enable Nextcloud Calendar + Contacts apps
-  - Add Nextcloud CalDAV to iPhone (Settings → Calendar → Add Account → Other)
-  - Add Nextcloud CardDAV to iPhone (Settings → Contacts → Add Account → Other)
-  - Import Google Calendar (export .ics → import to Nextcloud)
-  - Import Google Contacts (export .vcf → import to Nextcloud)
-3. [ ] **Drive** — redirect remaining Google Drive usage to Nextcloud
-  - Install Nextcloud desktop client on MacBook
-  - Move any files still in Google Drive → Nextcloud
-4. [ ] **Photos** — migrate Google Photos to Immich
-  - Google Takeout → download photos archive
-  - Import to Immich via bulk upload
-5. [ ] **Account cleanup** — after 3–6 months with no Google services
-  - Delete Google account (irreversible — confirm everything migrated first)
+**Do not self-host the mail server** — residential IP, blocklists, blocked
+port 25, no reverse DNS. Mail silently lands in spam and you never find out.
 
-**Note:** `pkm/kindle_sync.py` is already IMAP-based so switching email providers requires only changing `IMAP_SERVER` in `config.py`.
+Free first step, no provider decision needed, ~15 minutes:
+
+- [ ] Cloudflare → `peciulevicius.com` → Email → **enable Email Routing** (free)
+- [ ] `dziugas@peciulevicius.com` + catch-all → forwards to current Gmail
+- [ ] Start handing out the new address everywhere immediately
+
+That alone means every future switch is a DNS edit. Then, when ready to leave
+Gmail properly:
+
+- [ ] Pick a mailbox. Full comparison in the guide; short version:
+  - **Fastmail (~$60/yr)** — effortless on every device, and its CalDAV/CardDAV
+    is good enough to also close the calendar/contacts gap below
+  - **Purelymail (~$10/yr)** — cheapest credible option, plain IMAP (3GB base tier)
+  - **Migadu Micro ($19/yr)** — plain IMAP, but a hard **20 outgoing msgs/day cap**
+  - **iCloud+ (~€12/yr)** — you may already pay for it; works on Android too,
+    but send-as is fiddly and it deepens Apple lock-in right as you eye a Pixel
+  - ❌ **Not Proton** (Bridge-only IMAP fights the headless Mac mini) and
+    ❌ **not Tuta** (no IMAP at all — Odysseus and `kindle_sync.py` can't connect)
+- [ ] Repoint MX, add SPF/DKIM/DMARC, import the Gmail Takeout `.mbox`
+- [ ] Update `IMAP_SERVER` in `pkm/config.py`
+- [ ] Critical accounts first: Apple ID, banks, GitHub, Cloudflare, Stripe
+
+#### Calendar + Contacts — unblocked, ~1 hour
+
+Nextcloud is already running. Nothing is stopping this.
+
+- [ ] Enable Nextcloud Calendar + Contacts apps
+- [ ] Import Google `.ics` and `.vcf` exports
+- [ ] Add CalDAV + CardDAV accounts on the iPhone, verify two-way sync
+
+#### Phone — decision: don't buy a Pixel right now
+
+**You already captured ~90% of the win by self-hosting.** A de-Googled iPhone
+gets you to the stated goal; what's left is *Apple* telemetry, a smaller and
+different problem. Against that: €403, losing Apple Wallet's cards+coupons (no
+GrapheneOS equivalent — Google Wallet refuses to run), a bigger phone than the
+mini you chose, and you'd carry the iPhone anyway for React Native iOS testing.
+
+**Revisit when the 13 mini actually ages out (~2028–2030).** Buy a €233 Pixel 8a
+now only if the tinkering itself is the point — in which case it's a test device,
+not a replacement. Don't buy the €403 10a today either way.
+
+**The iPhone 13 mini cannot run a custom OS.** Bootloader can't be unlocked;
+checkm8 only covers A11 and earlier (yours is A15). It's harden-iOS or buy an
+Android — there is no third option.
+
+GrapheneOS *is* the most complete privacy OS, and it is Pixel-only because
+Pixels are effectively the only phones that let you relock the bootloader with
+your own key.
+
+- [ ] **Keep the 13 mini regardless.** On iOS 26.5, gets iOS 27, major updates to
+      ~2027–2028, security to ~2029–2030. You also **need a physical iPhone to test
+      Expo/React Native iOS builds** — so it stays either way. The realistic end
+      state is Pixel as daily driver, iPhone as dev device + tap-to-pay fallback.
+- [ ] **Now (~€90):** replace the 13 mini battery — buys years of runway
+- [ ] **Now (free):** enable **Advanced Data Protection** on iCloud, delete
+      Google apps, default search → DuckDuckGo
+- [ ] **Before committing to any Pixel:** check your banking apps survive
+      hardware attestation on a custom OS, and that HeliBoard does Lithuanian
+      swipe typing well enough
+- [ ] **Pick by purpose.** GrapheneOS supports Pixel 6 → **Pixel 10a** (no Pixel 11 yet).
+  - **Daily driver → Pixel 10a, €403 new at Telia.** Supported to **March 2033**
+    — furthest of any device. New battery, local warranty, no carrier-lock risk.
+  - **Just testing → Pixel 8a, €233 refurbed.** Supported to ~2031.
+  - ❌ **Not the Pixel 6 Pro at €205** — Google support ends **October 2026**,
+    this month. GrapheneOS drops devices when firmware updates stop.
+- [ ] **Check first, in this order:** does Google Wallet still refuse to run on
+      GrapheneOS (tap-to-pay would stop working — the biggest daily friction);
+      do your banks and Revolut survive hardware attestation; is HeliBoard's
+      Lithuanian swipe typing good enough.
+- [ ] Note the 10a is ~6.3" — **no modern Pixel is small**. You chose a *mini*.
+- [ ] If buying refurbished: confirm carrier-unlocked, not a US carrier model —
+      those bootloaders cannot be unlocked, making GrapheneOS impossible.
+- [ ] Minimal Phone 2 (€599/€699, 12GB) is **2.5–3× the 8a and cannot run
+      GrapheneOS** — not a Pixel, no Titan M2, ships with Play Services. It solves
+      *attention*, not *privacy*. GrapheneOS user profiles give the focus benefit
+      for €233 — which is what PewDiePie chose over a dumbphone.
+
+#### Quick wins
+
+- [ ] Confirm default search is DuckDuckGo/Kagi in every browser **and** on the phone
+- [ ] Confirm Brave (already installed) is the default browser
+- [ ] Audit "Sign in with Google" — each one breaks if you ever delete the account
+- [ ] Remove Google as a Cloudflare Access identity provider — **after** email moves
+- [ ] Maps: accept the loss. Apple Maps is the pragmatic swap; Organic Maps for offline.
+
+### Self-hosted AI — own the history, rent the compute
+
+**Full plan: [guides/SELF_HOSTED_AI.md](guides/SELF_HOSTED_AI.md).**
+
+Ollama + Open WebUI were removed once already for lack of RAM (see
+[HOME_SERVER_CHANGELOG.md](HOME_SERVER_CHANGELOG.md)). The likely real cause: **Ollama was running in Docker, which on macOS
+has no GPU passthrough** — so it ran on CPU at a fraction of Metal speed. Rule
+going forward: models run natively via Homebrew, only the web UI goes in Docker.
+
+**What you get from Phase 1 without any new hardware:** the chat history,
+memories, RAG corpus and agent configs live on your disk instead of inside
+Anthropic's and OpenAI's accounts. The prompts themselves still go to the
+provider — that is data *sovereignty*, not data *privacy*. A local model is the
+only way to get both, and that's Phase 2.
+
+#### Phase 1 — workspace with cloud backends
+
+- [ ] Free RAM by finishing the reconciliation above — stop `karakeep` ×3 and
+      `actual-budget` (~400MB, already on the list)
+- [x] ~~Check Odysseus macOS support~~ — confirmed: repo ships `build-macos-app.sh`
+      and `start-macos.sh`. <https://github.com/odysseus-dev/odysseus>, AGPL-3.0.
+      Docker Compose is still the right path here for consistency.
+- [ ] `services/odysseus/` — compose + `.env.example`; app listens on **port 7000**
+- [ ] Keep **`AUTH_ENABLED=true`** (the README insists on it for networked deploys)
+- [ ] Data dir on the **internal SSD**, never the NAS — it's database-backed
+- [ ] Anthropic or OpenRouter API key as the first backend
+- [ ] Expose at `ai.peciulevicius.com`, **behind Cloudflare Access** — this holds
+      your email, documents and memories, and the agent can execute code
+- [ ] Wire its **IMAP/SMTP email** integration to the new mailbox once chosen, and
+      its **CalDAV** sync to Nextcloud Calendar. It also speaks **MCP**.
+- [ ] Add data dir to `rclone-backup.sh`; add Glance tile + Uptime Kuma check
+
+#### Phase 2 — local models, natively
+
+- [ ] `brew install ollama` — **native, not Docker**; workspace points at
+      `http://host.docker.internal:11434`
+- [ ] Use Odysseus's **Cookbook** if available — it scans the hardware and scores
+      what this machine can actually run, which settles the "do I need more RAM"
+      question with data instead of guesswork
+- [ ] Start at Qwen3 4B (~2.5GB). Ceiling here is ~8B. Nothing 30B+ fits in 16GB.
+- [ ] Route by sensitivity: Claude for coding and hard reasoning, local for
+      journal/health/finances/Paperless documents and bulk drudgery
+- [ ] RAG over Paperless + Obsidian + Linkwarden — a small model over *your*
+      documents beats a big model that has never seen them
+
+#### Phase 3 — hardware (only after Phase 2 proves the need)
+
+- [ ] Don't buy anything until you know what you're actually missing.
+      M4 Pro 48–64GB ~€1,600–2,200, or a used 3090 ~€700–1,000. Claude is ~€20/mo,
+      so a €2,000 box is eight years of subscription and still loses at coding.
+      Buy it because local inference is the goal, not to save money.
+
+#### Bring Claude + ChatGPT history home
+
+- [ ] Export both (ChatGPT: Data Controls → Export; Claude: Privacy → Export)
+- [ ] Copy ChatGPT memories by hand — they are **not** in the export
+- [ ] Check whether the workspace already ships a ChatGPT importer before writing one
+- [ ] `scripts/ai/import-chat-history.py` — normalise both exports to the
+      workspace's import format
+- [ ] Keep raw exports at `/Volumes/unsorted/ai-exports/`, add to `rclone-backup.sh`
+- [ ] Point RAG at the archive — years of your own context, searchable
 
 ### NAS — remaining follow-ups
 

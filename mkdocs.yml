@@ -56,6 +56,7 @@ nav:
       - Notes & Obsidian: guides/NOTES.md
       - Books & Reading: guides/BOOKS.md
       - Degoogle Guide: guides/DEGOOGLE.md
+      - Self-Hosted AI: guides/SELF_HOSTED_AI.md
 
   - Reference:
       - Config Guide: CONFIG_GUIDE.md

@@ -2,199 +2,596 @@
 
 Replace Google services with self-hosted or privacy-respecting alternatives.
 
+Companion: [SELF_HOSTED_AI.md](SELF_HOSTED_AI.md) covers the AI half of this.
+
+---
+
+## Read this first — you are further along than you think
+
+PewDiePie's *"I'm DONE with Google"* is 22 minutes of a guy discovering
+Vaultwarden, Nextcloud, Tailscale, per-service subdomains and a home server.
+**You finished all of that months ago.** His setup is a Raspberry Pi 5 and a
+Steam Deck; yours is a Mac mini M4 with 42 containers and an 11TiB RAID 5 NAS.
+
+So don't restart the journey from step one. Here is the honest scoreboard:
+
+| What he did | Your status |
+|---|---|
+| Self-hosted password manager (Vaultwarden) | ✅ Running |
+| Self-hosted files/Drive replacement | ✅ Nextcloud + Syncthing + NAS |
+| Self-hosted notes (Joplin) | ✅ Obsidian + Syncthing |
+| Self-hosted photos | ✅ Immich (he didn't even get here) |
+| Own domain, per-service subdomains | ✅ `*.peciulevicius.com` via Cloudflare Tunnel |
+| Tailscale + zero trust + fail2ban | ✅ Tailscale + Cloudflare Access |
+| Calendar / Contacts / Docs off Google | ⚠️ Nextcloud is running, **not migrated** |
+| Search engine | ⚠️ Check your default |
+| Browser | ⚠️ Brave is installed, is it the default? |
+| **Email off Gmail** | ❌ **Not started — the real gap** |
+| **Phone OS** | ❌ iPhone 13 mini, fully Apple/Google |
+| Local AI | ❌ Tried Ollama, removed for RAM — see AI guide |
+| Maps | ❌ Still Google |
+
+**The remaining work is four things: email, phone, calendar/contacts, AI.**
+Everything below that line is already done. Skip to the section you need.
+
+---
+
 ## Replacement Map
 
 | Google Service | Self-Hosted | Hosted Alternative |
 |---------------|------------|-------------------|
-| Google Photos | Immich | None needed |
-| Google Drive | Nextcloud | ProtonDrive |
+| Google Photos | Immich ✅ | — |
+| Google Drive | Nextcloud ✅ | Proton Drive |
 | Google Docs | Nextcloud + Collabora | Notion, Coda |
-| Gmail | — | ProtonMail, Fastmail |
-| Google Calendar | Nextcloud Calendar | ProtonCalendar |
-| Google Contacts | Nextcloud Contacts | — |
+| Gmail | *don't* — see below | Purelymail, Migadu, Fastmail, Proton |
+| Google Calendar | Nextcloud Calendar | Proton Calendar, Fastmail |
+| Google Contacts | Nextcloud Contacts | Fastmail |
 | Chrome Sync | — | Firefox Sync |
-| Google Password Manager | Vaultwarden | Bitwarden Cloud |
-| YouTube | — | PeerTube (niche), FreeTube (client) |
-| Google Maps | — | Apple Maps, OsmAnd |
-| Google Analytics | PostHog (self-hosted) | Plausible Cloud |
+| Google Password Manager | Vaultwarden ✅ | Bitwarden Cloud |
+| YouTube | — | FreeTube / Grayjay (clients, not replacements) |
+| Google Maps | — | Apple Maps, OsmAnd, Organic Maps |
+| Google Analytics | PostHog | Plausible Cloud |
 | Google Search | — | DuckDuckGo, Kagi |
 | Google Fonts | — | bunny.net/fonts, self-host |
-| Google News | FreshRSS | — |
+| Google News | FreshRSS ✅ | — |
 | Google Home | — | Home Assistant |
+| Google/ChatGPT AI | Odysseus + local models | see [SELF_HOSTED_AI.md](SELF_HOSTED_AI.md) |
 
-## Migration Checklist
+---
 
-### Phase 1 — Quick Wins (no data migration)
+## Gap 1 — Email (the only genuinely unfinished one)
 
-- [ ] Switch default search to DuckDuckGo or Kagi
-- [ ] Switch browser to Firefox or Brave
-- [ ] Enable Firefox Sync instead of Chrome Sync
-- [ ] Install Bitwarden extension, import passwords from Google Password Manager
-- [ ] Switch to Vaultwarden as Bitwarden server (see [SERVICES.md](../SERVICES.md))
-- [ ] Switch Maps to Apple Maps (iPhone) or OsmAnd (Android)
-- [ ] Remove Google from 2FA — move TOTP codes to Bitwarden or Raivo
+### How email actually works
 
-### Phase 2 — Data Migrations
+Worth spelling out, because it drives every decision below.
 
-- [ ] **Google Photos → Immich**
-  - Set up Immich: `cd ~/docker/immich && docker compose up -d`
-  - Download Google Photos: Google Takeout → select Photos
-  - Import: Immich web UI → Import → select Takeout folder
-  - Install Immich app on phone → backup enabled
-  - After 30 days with no issues: delete Google Photos backup
+- **Your address is yours because the *domain* is yours.** `dziugas@peciulevicius.com`
+  belongs to you forever. Providers are interchangeable plumbing behind it.
+- **MX records** (DNS, in Cloudflare) say *"mail for this domain goes to that server."*
+  Switching provider = editing MX records. That is the whole migration.
+- **SPF / DKIM / DMARC** are TXT/CNAME records that prove outbound mail is
+  genuinely authorised by you. Without them Gmail and Outlook bin your mail.
+- `mail.peciulevicius.com` is just a *hostname*. You don't need one with a
+  hosted provider — it's only relevant if you run the mail server yourself.
 
-- [ ] **Google Drive → Nextcloud**
-  - Set up Nextcloud: `cd ~/docker/nextcloud && docker compose up -d`
-  - Download Google Drive: Google Takeout → select Drive
-  - Upload to Nextcloud via web UI or CLI
-  - Install Nextcloud desktop sync client
-  - Update shared links (send new Nextcloud links to collaborators)
+**The single highest-leverage move is getting onto your own domain.** Which
+provider sits behind it matters far less, and can change later for free.
 
-- [ ] **Gmail → ProtonMail or Fastmail**
+### Do NOT self-host the mail server
 
-  **Decision: ProtonMail vs Fastmail**
+You asked about "a service running" on the Mac mini. Don't. Mail is the one
+service where self-hosting is actively worse:
 
-  | | ProtonMail | Fastmail |
-  |---|---|---|
-  | Privacy | E2E encrypted, Swiss jurisdiction | Not E2E, Australian |
-  | Custom domain | Yes (Mail Plus, ~$4/mo) | Yes (Standard, ~$5/mo) |
-  | IMAP/SMTP | Via Proton Bridge app only | Native IMAP/SMTP |
-  | CalDAV/CardDAV | Yes (Bridge or native apps) | Yes (native, excellent) |
-  | Ecosystem | Mail + Calendar + Drive + VPN + Pass | Mail + Calendar + Contacts |
-  | Catch-all / aliases | Yes | Yes |
+- Residential IPs sit on Spamhaus PBL by default — your mail silently lands in
+  spam at Gmail and Outlook, and **you never find out**.
+- Most ISPs block outbound port 25 entirely.
+- You can't set reverse DNS on a residential connection, and receivers check it.
+- Every other service here degrades gracefully when the Mac mini is down.
+  A mail server that's down **bounces mail you never learn about**.
+- Note PewDiePie didn't self-host mail either — he bought a domain and paid a
+  provider. That's the correct call.
 
-  ProtonMail = privacy-first. Fastmail = "just works" with better standards support.
+Self-hosting mail is a fine hobby project on a VPS with a clean IP. It is not
+a way to receive your bank's 2FA codes.
 
-  **Step 0 — Use your own domain (most important step)**
-  - Set up email on `peciulevicius.com` (or another domain you own)
-  - Both Proton and Fastmail support custom domains on paid plans
-  - This means you're never locked into any provider — switch by changing MX records
-  - If you ever move providers, your email address stays the same
+### Step 1 — Free, today: Cloudflare Email Routing
 
-  **Step 1 — Set up new email**
-  - Create account on chosen provider (Proton or Fastmail)
-  - Add custom domain, configure MX + SPF + DKIM + DMARC records
-  - Verify domain ownership
-  - Create your address: `dziugas@peciulevicius.com` (or preferred format)
+You already run `peciulevicius.com` on Cloudflare. Email Routing is **free,
+unlimited addresses, ~15 minutes**, and it gets you onto your own domain
+immediately without choosing a provider or paying anything.
 
-  **Step 2 — Forward Gmail**
-  - Gmail → Settings → Forwarding → Add forwarding address → new email
-  - Keep a copy in Gmail (for safety during transition)
-  - This ensures you don't miss anything during migration
+- [ ] Cloudflare dashboard → `peciulevicius.com` → **Email** → Email Routing → enable
+- [ ] Let it add the MX + SPF records automatically
+- [ ] Create `dziugas@peciulevicius.com` → forwards to your current Gmail
+- [ ] Add a catch-all → same destination (so nothing is ever lost)
+- [ ] Create throwaway aliases per service: `bank@`, `shopping@`, `github@`.
+      When one starts getting spam you know exactly who sold you out, and you
+      delete just that alias.
 
-  **Step 3 — Import Gmail archive**
-  - Google Takeout → select Gmail → download .mbox
-  - ProtonMail: Import/Export app (desktop) or Easy Switch (web)
-  - Fastmail: Settings → Import & Export → Import from Gmail directly
+From this moment you start **giving out the new address everywhere**, while
+still reading mail in Gmail. Nothing breaks, nothing costs money, and every
+future provider switch is a DNS edit.
 
-  **Step 4 — Update critical accounts (do these first)**
-  - [ ] Apple ID
-  - [ ] Bank / financial institutions
-  - [ ] GitHub
-  - [ ] Domain registrar (Cloudflare)
-  - [ ] Stripe / payment processors
-  - [ ] Cloud providers (Vercel, Supabase, Cloudflare)
-  - [ ] Password manager (Vaultwarden) — update vault email
+**Limitation to understand:** Email Routing only *receives*. Replying still
+goes out through Gmail unless you configure "Send mail as", which keeps Google
+in the loop. That's acceptable for a transition phase — not as the end state.
 
-  **Step 5 — Update remaining accounts**
-  - Use Vaultwarden to find all accounts with the old Gmail
-  - Update 5-10 per day — don't try to do all at once
-  - For unimportant accounts: just leave them, they'll forward
+### Step 2 — When ready to actually leave: pick a mailbox
 
-  **Step 6 — Update contacts**
-  - Send a short "new email" message to frequent contacts
-  - Update email signature everywhere
-  - Update any public profiles (GitHub, LinkedIn, etc.)
+Your requirement is *"easy access on my phone and every other device."* That
+single line does most of the filtering: it means **native IMAP** (so any client
+on any OS works) or genuinely good first-party apps on every platform.
 
-  **Step 7 — Wind down Gmail (after 6 months)**
-  - Check Gmail forwarding is still catching stragglers
-  - After 6 months with no important mail going only to Gmail:
-    - Stop forwarding
-    - Set Gmail vacation responder with new address
-    - Keep the Google account (don't delete — prevents someone else registering it)
-    - Download final Takeout backup, store on B2
+Truly free + own domain + real IMAP no longer exists — Zoho's free tier is
+webmail-only, which would break `pkm/kindle_sync.py`. But it gets close to free.
 
-- [ ] **Google Calendar → Nextcloud Calendar**
-  - Export: Google Calendar → Settings → Export
-  - Import .ics files into Nextcloud Calendar
-  - Subscribe mobile calendar to Nextcloud via CalDAV
-  - Share calendar URL with contacts who need it
+| Provider | Cost/yr | IMAP/SMTP | Apps | Watch out for |
+|---|---|---|---|---|
+| **Fastmail** | ~$60 | ✅ native + JMAP | Excellent iOS/Android/web | Australian, not E2E |
+| **Migadu Micro** | $19 | ✅ native | None — bring your own client | **20 outgoing msgs/day cap** |
+| **Purelymail** | ~$10 | ✅ native | None | 3GB on the base tier; tiny indie operation |
+| **MXroute** | $59 | ✅ native | None | Unlimited domains + mailboxes, flat fee |
+| **Proton Mail Plus** | ~$50 | ⚠️ **Bridge only** | Excellent, all platforms | 15GB, 1 custom domain |
+| **iCloud+** | ~€12 | ✅ native | Native on Apple, IMAP on Android | Apple lock-in — see below |
+| **Tuta** | ~$36 | ❌ **none** | Own apps only | No IMAP at all — rules it out |
 
-- [ ] **Google Contacts → Nextcloud Contacts**
-  - Export: contacts.google.com → Export → vCard
-  - Import .vcf into Nextcloud Contacts
-  - Set up CardDAV sync on iPhone (Settings → Contacts → Accounts → Add)
+#### The three that actually deserve consideration
 
-### Phase 3 — Messaging & Communication
+**Fastmail — the "just works everywhere" pick.** Native IMAP *and* JMAP, strong
+first-party apps on every platform, unlimited aliases, masked email. Critically
+for you, its **CalDAV/CardDAV is best-in-class — it could replace Nextcloud
+Calendar + Contacts entirely**, closing Gap 3 at the same time. It's the most
+expensive of the sane options at ~$60/yr and it's the least "de-Googled" in
+spirit (Australian company, no E2E). But it is the one that will never make you
+fight your own email.
 
-- [ ] **WhatsApp/Messenger → Signal**
-  - Download Signal on phone and desktop
-  - Start with close friends/family — ask them to install Signal
-  - Use Signal as default for new conversations
-  - Keep Messenger for people who won't switch (can't fully escape Meta for social)
-  - Don't delete WhatsApp/Messenger — just reduce usage over time
+**Migadu Micro or Purelymail — the cheap picks.** Both ~€1–2/month, both plain
+IMAP so every client and `kindle_sync.py` work unchanged. Neither has apps; you
+use Apple Mail, Thunderbird, or whatever you like. **Migadu Micro's 20
+outgoing-messages/day cap is a real limit** — fine for personal mail, painful if
+you ever do anything bursty. Purelymail's base tier is only 3GB, so check your
+Gmail archive size before committing.
 
-### Phase 4 — Microsoft Cleanup
+**iCloud+ — the one you may already be paying for.** Custom domain email is
+included with *any* iCloud+ tier (from ~€0.99/mo, which also covers your 50GB of
+iCloud storage). It works with third-party clients via an **app-specific
+password** from appleid.apple.com, and it works on Android too. Two catches:
+custom-domain mail routes through your primary iCloud account rather than a
+separate IMAP server, so send-as behaviour in third-party clients is fiddly —
+**test it before migrating**. And it deepens Apple lock-in at the exact moment
+you're considering a Pixel.
 
-- [ ] **Audit Microsoft accounts**
-  - Check for any personal Microsoft accounts (Outlook, OneDrive, Xbox, etc.)
-  - Close/delete unused personal accounts
-  - Note: work C#/.NET usage is separate, no action needed there
+#### Why not Proton, given it's the famous privacy one
 
-### Phase 5 — Deepen Privacy
+Proton Mail Plus includes IMAP "via Bridge" — and Bridge is a **desktop
+application**. On your headless Mac mini that means running a GUI app just so
+`kindle_sync.py` and Odysseus's email integration can reach your mailbox. It
+fights your setup at every turn.
 
-- [ ] Remove Google Analytics from personal sites → use PostHog or Plausible
-- [ ] Replace Google Fonts with self-hosted fonts or bunny.net/fonts
-- [ ] Switch to a privacy-respecting DNS (Cloudflare 1.1.1.1 or NextDNS)
-- [ ] Audit app permissions — revoke Google sign-in from apps where possible
-- [ ] Set up NextDNS or Pi-hole to block tracking at DNS level
-- [ ] Review remaining Google accounts — delete unused ones
-- [ ] Enable Google Account activity controls to minimise data collection
-- [ ] Remove Google as Cloudflare Access identity provider (after email migration is done)
+And be clear-eyed about what the encryption buys you: **email to and from Gmail
+users is not end-to-end encrypted regardless of provider.** Proton's E2E only
+applies between Proton accounts. For a mailbox whose job is receiving bank
+codes, invoices and newsletters, you'd pay more for less compatibility and get
+encryption that mostly doesn't apply. Proton is excellent if E2E-between-Proton-
+users is a goal. It isn't yours.
 
-### Phase 6 — ProtonMail + Custom Domain Setup
+Tuta is worse on this axis — **no IMAP at all**, so `kindle_sync.py` and
+Odysseus simply cannot connect. Rule it out.
 
-- [ ] **Set up ProtonMail with `peciulevicius.com`**
-  - Sign up for ProtonMail Plus (~$4/mo)
-  - Add custom domain in ProtonMail settings
-  - Configure DNS records in Cloudflare:
-    - MX records (ProtonMail provides these)
-    - SPF: TXT record `v=spf1 include:_spf.protonmail.ch ~all`
-    - DKIM: CNAME records (ProtonMail provides 3 of these)
-    - DMARC: TXT record `v=DMARC1; p=quarantine`
-  - Verify domain ownership
-  - Create address: `dziugas@peciulevicius.com`
-  - All existing Gmail history can be imported via ProtonMail Easy Switch
+#### Recommendation
 
-## Services We're Not Escaping (and that's fine)
+- **If you'll pay ~$60/yr for it to be effortless: Fastmail.** Best apps,
+  native IMAP everywhere, and it can absorb your calendar and contacts too.
+- **If you want it near-free: Purelymail (~$10/yr)** — or Migadu Micro if the
+  20/day send cap doesn't bother you.
+- **Don't pick Proton or Tuta**, given headless IMAP is a hard requirement here.
+
+Either way you keep the domain, so this decision is reversible for the cost of
+a DNS edit. Don't agonise over it.
+
+### Step 3 — Cutover
+
+- [ ] Point MX records at the chosen provider (replaces Cloudflare Routing)
+- [ ] Add SPF, DKIM, DMARC records the provider gives you
+- [ ] Import Gmail archive — Takeout `.mbox`, or the provider's Gmail importer
+- [ ] Set Gmail to forward to the new address, keep a copy
+- [ ] Update `pkm/config.py` → new `IMAP_SERVER`
+- [ ] Update critical accounts first: Apple ID, banks, GitHub, Cloudflare,
+      Stripe, Vercel, Supabase, domain registrar, Vaultwarden vault email
+- [ ] Then 5–10 lesser accounts per day — don't try to do it in one sitting
+- [ ] After ~6 months: stop forwarding, set a vacation responder pointing at the
+      new address, take a final Takeout, **keep the Google account** (deleting it
+      lets someone else claim the address)
+
+---
+
+## Gap 2 — Phone
+
+### Your iPhone 13 mini cannot run a custom OS. At all.
+
+To be unambiguous, since you asked about "a few OSes on iPhone":
+
+- iPhones cannot dual-boot and cannot run alternative operating systems.
+- The bootloader cannot be unlocked. There is no `fastboot unlock` equivalent.
+- The checkm8 bootrom exploit — the only thing that ever made this semi-viable —
+  covers **A11 and earlier**. Your 13 mini is **A15**. Not applicable.
+- Projects like Project Sandcastle only ever booted crippled Linux on old
+  hardware. Nothing usable as a daily phone has ever existed.
+
+So it's binary: harden iOS, or buy an Android.
+
+### Is GrapheneOS the most complete? Yes.
+
+It is the most hardened and best-maintained privacy Android, and it's the
+correct choice if you go this route.
+
+| OS | Security | Devices | Verdict |
+|---|---|---|---|
+| **GrapheneOS** | Strongest | Pixel only | The one to pick |
+| CalyxOS | Good | Pixel + a few | Uses microG; less hardened |
+| /e/OS | Weaker | Wide | Friendly, security is an afterthought |
+| LineageOS | Weakest | Widest | Usually can't relock the bootloader |
+
+**Why Pixel-only** — this is the part people get wrong. It isn't favouritism.
+Pixels are effectively the only phones that let you relock the bootloader using
+*your own* signing key, preserving verified boot. On almost any other phone,
+installing a custom OS means leaving the bootloader unlocked forever, which
+throws away the hardware root of trust. LineageOS on a random phone is *less*
+secure than stock, not more.
+
+The four things PewDiePie highlighted are all real and all genuinely good:
+
+1. **Storage Scopes** — grant an app one folder, not your whole device.
+2. **Network permission** — apps ask for internet access at install; most don't
+   need it, and you can just say no. Nothing else offers this.
+3. **Closing an app actually kills it** — no silent background activity.
+4. **User profiles** — fully isolated containers. Put the apps you're obliged
+   to use (work, banking, a Google app) in a separate profile where they can't
+   see anything else. His unexpected takeaway was that the friction of
+   switching profiles *reduced his phone usage* — the privacy feature
+   doubled as a focus feature.
+
+### Should you buy a Pixel at all? — the actual call
+
+**No, not right now.** Buy one when the iPhone genuinely needs replacing
+(~2028–2030), or buy a cheap 8a *only* if the tinkering itself is the point.
+
+The reasoning, because "no" needs justifying more than "yes" does:
+
+**You already captured ~90% of the win.** Your photos, files, passwords, notes,
+documents, bookmarks and books are on your own hardware. That's the part that
+actually determines who has "track of your own things", and it's done. The phone
+OS is the last 10% — and it's the 10% with by far the most daily friction.
+
+**A de-Googled iPhone gets you almost all the way to your stated goal.** Delete
+the Google apps, switch search to DuckDuckGo, use Immich instead of Google
+Photos, Nextcloud instead of Drive, Vaultwarden instead of Google Passwords,
+enable Advanced Data Protection. At that point **Google is genuinely out of your
+phone.** What remains is *Apple* telemetry — which is a real concern, but it is
+a different and smaller one than the Google problem you set out to solve.
+
+**The switching costs land on things you actually use:**
+
+- **€403**, to replace a phone with 4+ years of support left
+- **Apple Wallet** — you said it yourself. Cards *and* coupons in one place is
+  genuinely convenient, and **there is no good GrapheneOS answer**: Google
+  Wallet refuses to run, so you lose tap-to-pay *and* the loyalty/coupon layer.
+  You carry a physical wallet anyway, so the payment half is survivable — but
+  this is a pure convenience loss with no privacy upside *for you specifically*,
+  since you're already carrying the cards.
+- **A bigger phone than you chose.** You bought a *mini*. The 10a is ~6.3".
+- **You need the iPhone anyway** for Expo/React Native iOS testing — so the
+  Pixel would be a *second* phone to carry, not a replacement.
+- Unverified: your banks' attestation checks, HeliBoard's Lithuanian swipe typing
+
+**What GrapheneOS would genuinely add** over a hardened iPhone — these are real,
+just incremental next to what you've already done:
+
+- **Per-app network permission.** Nothing else on any platform does this. Deny
+  internet to apps that have no business having it.
+- **Storage Scopes** — one folder, not your whole device
+- **No Apple telemetry**, and a system you can actually audit
+- **User profiles** — isolation, plus the focus side effect
+
+#### So: the two honest paths
+
+| If your goal is… | Do this |
+|---|---|
+| **"De-Google and own my data"** | **Don't buy.** Harden the iPhone (free, one evening), finish email and calendar/contacts. You're done — that's the goal met. |
+| **"I enjoy this and want to learn it"** | **Buy the Pixel 8a at €233**, not the 10a. Test device, low regret, keeps the iPhone as daily driver. Perfectly good reason to spend €233. |
+
+Either way, **don't buy the 10a at €403 today.** If it's a daily driver you'd be
+retiring a phone with years of life left; if it's an experiment, the 8a costs
+€170 less. Revisit the 10a (or whatever replaces it) when the 13 mini actually
+ages out — the support windows only get longer.
+
+#### The highest-value thing you can do this evening costs €0
+
+Enable **Advanced Data Protection** on iCloud, delete the Google apps, and
+switch your default search. That captures most of the realistic privacy gain
+available to you, immediately, with no hardware purchase and no friction. Do
+that first and see whether the remaining gap still bothers you in three months.
+
+### Which Pixel to buy (real prices, Sep 2026)
+
+GrapheneOS only runs on Pixels still receiving firmware and driver updates from
+Google. **When Google's support window closes, GrapheneOS drops the device** —
+so the support end date is the single most important number when buying.
+
+As of September 2026 GrapheneOS has production support for 21 Pixels, from the
+Pixel 6 generation through the **Pixel 10a**. No Pixel 11 model is supported yet.
+
+| Model | Price | Support ends | Years left | €/year | Verdict |
+|---|---|---|---|---|---|
+| **Pixel 10a** (new, Telia) | **€403** | **March 2033** | **6.5** | €62 | ✅ **Best if it's your daily driver** |
+| **Pixel 8a** (refurb) | **€233** | ~May 2031 | 4.6 | €51 | ✅ **Best if it's a test device** |
+| Pixel 8 (refurb) | €249 | ~Oct 2030 | 4.1 | €61 | Fine, no advantage over the 8a |
+| Pixel 10 (refurb) | €545 | ~2032 | 5.5 | €99 | Overpriced against the 10a |
+| **Pixel 6 Pro** (refurb) | €205 | **October 2026** | **~0** | — | ❌ **Do not buy** |
+
+**Yes, the Pixel 10a works with GrapheneOS** — and it currently has the
+*furthest* support date of any supported device, March 2033.
+
+#### Is the 10a worth €170 more than the 8a?
+
+Depends entirely on what the phone is *for*, and the headline €/year figure is
+misleading:
+
+- The 8a looks cheaper per year (€51 vs €62) — but it's **refurbished with an
+  aged battery**. Budget €70–90 for a replacement inside that window and it
+  becomes ~€67/year, i.e. *worse* than the 10a.
+- The 10a is **new**, from a Lithuanian retailer, with full local warranty and
+  easy recourse. No carrier-lock risk, no seller-grading lottery, no unknown
+  battery cycles.
+- 6.5 years of support means you likely don't think about phones again until
+  2033.
+
+**If this replaces your daily phone: buy the Pixel 10a at €403.** The extra
+€170 buys a new battery, a real warranty, two more years of support, and
+removes every refurbished-market risk below.
+
+**If you're testing GrapheneOS before committing: buy the Pixel 8a at €233.**
+Cheap enough to be a low-regret experiment, and still supported to 2031 if you
+end up keeping it.
+
+**The Pixel 6 Pro at €205 is the trap in that list.** Google's support for the
+Pixel 6 series ends **October 2026** — this month. GrapheneOS will drop it
+shortly after. Avoid regardless of price.
+
+#### If buying refurbished — the thing that can ruin the whole plan
+
+- [ ] **Confirm carrier-unlocked, and not a US carrier model.** Carrier-locked
+      Pixels (Verizon especially) have a **bootloader that cannot be unlocked**,
+      making GrapheneOS permanently impossible. The most common way to waste
+      money here. Doesn't apply to the new Telia 10a.
+- [ ] Check the battery health grade
+- [ ] refurbed is a legitimate EU marketplace (12-month warranty, 30-day
+      returns) but **individual sellers vary in grading** — read the seller
+      rating. Compare against Back Market and Swappie.
+
+### What daily life actually feels like vs your iPhone
+
+The honest version, because this is where people get surprised.
+
+**Mostly the same.** GrapheneOS with sandboxed Google Play is a normal, fast,
+polished Android phone. Sandboxed Play Services means push notifications and
+the vast majority of Play Store apps work normally — Google just runs as a
+regular app with no special system privileges.
+
+**What you'd genuinely lose:**
+
+| | Impact |
+|---|---|
+| **Contactless payment** | ⚠️ **The big one.** Google Wallet refuses to run on GrapheneOS — it demands a Play Integrity level a custom OS can't pass. **Tap-to-pay stops working.** In Lithuania, where contactless is universal, this is the friction you'd feel daily. *Verify current status before buying — this is the one to check first.* |
+| **iMessage / FaceTime** | Gone. Less painful here than in the US — Lithuania runs on WhatsApp, Messenger and Telegram, which are all cross-platform. |
+| **AirDrop, Handoff, Continuity with your Macs** | Gone. You'd lean on Syncthing and Nextcloud instead — which you already run. |
+| **Find My** | Gone. |
+| **Some banking apps** | Those doing hardware attestation may refuse. **Check your specific Lithuanian banks and Revolut before buying.** |
+| **Swipe keyboard** | He hit this exactly — no open-source swipe keyboard with his languages. For you that's Lithuanian + English. HeliBoard is the FOSS option; **verify Lithuanian swipe quality before buying**. Otherwise you're back on Google's or Microsoft's internet-connected keyboard. |
+| **Phone size** | You deliberately chose a *mini*. The 13 mini is 5.4"; the 10a is ~6.3". **No modern Pixel is small.** If you like the mini form factor, this is a real, permanent downgrade — and it's the one nobody warns you about. |
+
+**What gets better:** per-app network permission (deny internet to apps that
+don't need it — nothing on iOS does this), Storage Scopes, apps that actually
+die when closed, and user profiles for the apps you're obliged to use.
+
+**What transfers cleanly:** Immich, Nextcloud, Vaultwarden, Jellyfin and
+Syncthing all have solid Android apps. Your self-hosted stack is the easy part.
+
+### Would you still need the iPhone? Yes — and that's fine
+
+Three independent reasons, one of which is non-negotiable:
+
+1. **You build Expo / React Native apps.** You need a physical iPhone to test
+   iOS builds. That alone settles it — the 13 mini isn't going anywhere
+   regardless of what you decide about Google.
+2. **Contactless payments and stubborn banking apps** — keep the iPhone as the
+   fallback for the things GrapheneOS can't do.
+3. **Gradual migration.** Running both for a few months is how you find out
+   whether you'd actually live with GrapheneOS, without a risky cutover.
+
+So don't frame this as *replace the iPhone*. Frame it as **Pixel becomes the
+daily driver, iPhone stays as a dev device and payment fallback.** That's not a
+compromise — it's the sensible configuration, and it's what most people in this
+position actually end up doing.
+
+### Don't bin the 13 mini — you're right
+
+It's on **iOS 26.5** today and will get **iOS 27**. Major updates run to roughly
+2027–2028, security patches to about **2029–2030**. It is a perfectly secure,
+fully supported phone and will remain one for years.
+
+Replacing a €90 battery on a phone with four-plus years of security updates left
+is obviously better than throwing it away. Keep it.
+
+### But if you de-Google, is Apple still tracking you?
+
+Yes — less than Google, but "privacy" is partly Apple's *marketing position*,
+not a complete description of what the device does.
+
+**Genuinely better than Google:** Apple's core business is hardware, not ad
+targeting. On-device processing for Siri and photo analysis. App Tracking
+Transparency really did damage third-party tracking. And **Advanced Data
+Protection makes your iCloud data end-to-end encrypted** — that one toggle is a
+real, substantial win, and it's free.
+
+**But be clear-eyed:**
+
+- Apple runs a **growing ads business** (App Store, News, Stocks), and
+  personalised ads are on by default in some regions.
+- Device analytics are tied to your Apple ID via an identifier. Researchers have
+  repeatedly shown Apple's own first-party analytics are more identifiable than
+  the marketing implies.
+- **Without** Advanced Data Protection, Apple holds the keys to your iCloud
+  backups and can hand them to law enforcement.
+- You cannot audit any of it, block it, or deny Apple's own services network
+  access. It is a closed system you're trusting.
+
+**The honest ranking:** Google (ads are the business model) → Apple
+(meaningfully better, still closed and still commercial) → GrapheneOS (the only
+one where *you* decide what talks to the network).
+
+If your goal is *"de-Google and get control of my own things"* — you've already
+done the part that matters most by self-hosting your photos, files, passwords
+and notes. The phone OS is the last mile, and it's the step with the most
+day-to-day friction. Take it deliberately, not because of a YouTube video.
+
+### On the Minimal Phone 2 — you answered this yourself
+
+At **€599 for 256GB / €699 for 512GB**, it costs **2.5–3× the Pixel 8a**. And
+it is not a Pixel, so it has no Titan M2 security chip and **cannot run
+GrapheneOS** — it ships Android with Google Play Services. For a de-Googling
+project it is the wrong purchase at triple the price.
+
+Your instinct was right: the Pixel is both cheaper and the only one you can
+actually install anything on. The 12GB RAM spec is irrelevant here — phone RAM
+does nothing for privacy, and the 8a's 8GB is plenty.
+
+That said, don't dismiss what the Minimal Phone is *for*. E-Ink plus a physical
+keyboard is an **attention** product, not a privacy one. If what actually
+bothers you is the phone being a distraction machine, that's a different
+purchase with a different justification — and note PewDiePie considered a
+dumbphone, rejected it, and got the focus benefit from **GrapheneOS user
+profiles** instead. Same outcome, €233 instead of €599, and you get the privacy
+too.
+
+### The plan that fits your timeline
+
+You said you were thinking of a new iPhone in a couple of years and that a
+fresh battery would do for now. That's a good instinct — it lets you test
+before committing.
+
+- [ ] **Now (~€90):** replace the 13 mini battery. Buys you 2+ more years.
+- [ ] **Now (free):** harden iOS — see below. Gets most of the privacy win.
+- [ ] **Optional (€233):** buy the **refurbished Pixel 8a** as a second device
+      and flash GrapheneOS. Install is browser-based and takes ~20 minutes.
+      Run it for a month with your real apps. This is the only honest way to
+      find out if you'd live with it — and it costs a fraction of committing.
+      Verify it is carrier-unlocked first (see above).
+- [ ] **In ~2 years:** decide Pixel vs iPhone with actual experience instead of
+      a YouTube video.
+
+### Harden iOS in the meantime (free, do this regardless)
+
+- [ ] Enable **Advanced Data Protection** (Settings → Apple ID → iCloud) —
+      makes iCloud backups E2E. Biggest single iOS privacy win, one toggle.
+- [ ] Delete Google apps: Gmail, Maps, Drive, Photos, Chrome
+- [ ] Safari or Brave → default search **DuckDuckGo** or Kagi
+- [ ] Settings → Privacy → Tracking → **disable "Allow Apps to Request to Track"**
+- [ ] Add Immich, Nextcloud, Vaultwarden apps — replace the Google ones
+- [ ] Nextcloud CalDAV + CardDAV (Gap 3 below)
+- [ ] Lock screen: Settings → Face ID & Passcode → turn off Control Center and
+      Siri on the lock screen
+
+---
+
+## Gap 3 — Calendar + Contacts
+
+Nextcloud is already running. This is unblocked work, maybe an hour.
+
+- [ ] Nextcloud → Apps → enable **Calendar** and **Contacts**
+- [ ] Export Google Calendar (Settings → Import & Export → Export) → import `.ics`
+- [ ] Export Google Contacts (contacts.google.com → Export → vCard) → import `.vcf`
+- [ ] iPhone → Settings → Calendar → Accounts → Add → Other → **Add CalDAV Account**
+      → server `cloud.peciulevicius.com`
+- [ ] iPhone → Settings → Contacts → Accounts → Add → Other → **Add CardDAV Account**
+- [ ] Verify two-way sync, then delete the Google calendar from the phone
+
+> If you pick **Fastmail** for email, it does CalDAV/CardDAV natively and very
+> well — you could skip Nextcloud for this entirely. Decide email first.
+
+---
+
+## Gap 4 — Local AI
+
+Covered separately in **[SELF_HOSTED_AI.md](SELF_HOSTED_AI.md)** — including
+Odysseus, what your 16GB hardware can genuinely run, and how to pull your
+Claude and ChatGPT history onto the NAS.
+
+---
+
+## Quick wins (if not already done)
+
+- [ ] Default search → DuckDuckGo or Kagi, **in every browser and on the phone**
+- [ ] Default browser → Brave (already installed via `os/mac/install.sh`) or Firefox
+- [ ] Remove Google Fonts from personal sites → self-host or bunny.net/fonts
+- [ ] Remove Google Analytics → PostHog or Plausible
+- [ ] Point the router at Pi-hole (see the Pi-hole section in HOME_SERVER_TODO.md)
+- [ ] Remove Google as a Cloudflare Access identity provider — **after** email migration
+- [ ] Audit "Sign in with Google" — Google Account → Security → Your connections
+      to third-party apps. Each one is a service that breaks if you ever delete
+      the account. Migrate to email+password before touching Gmail.
+
+---
+
+## Maps — the one that actually loses
+
+PewDiePie's most honest moment: he switched to an open-source maps app and was
+**30 minutes late**, because Google's traffic prediction is genuinely excellent
+and it's excellent *because* of the surveillance. He gave up and used his car's
+built-in GPS.
+
+Realistic options, in order:
+
+1. **Apple Maps** — good in Lithuania now, far better privacy than Google, zero effort
+2. **Organic Maps / OsmAnd** — fully offline OpenStreetMap, excellent for hiking
+   and travel, weak on live traffic
+3. Keep Google Maps in a browser tab, signed out, when you truly need traffic
+
+Don't pretend this one is a clean win. It isn't.
+
+---
+
+## Services we're not escaping (and that's fine)
 
 | Service | Why |
 |---------|-----|
-| **Meta/Messenger** | Social connections — keep for people who won't use Signal |
-| **Apple** | Privacy-respecting enough, deeply integrated with macOS/iPhone |
-| **Amazon** | Shopping — no practical alternative |
-| **YouTube** | No real alternative, use FreeTube client for privacy |
-| **GitHub** | Developer ecosystem, owned by Microsoft but irreplaceable |
+| **YouTube** | No replacement exists. PewDiePie is *on* YouTube and said so. Use FreeTube or Grayjay as a client if you want to cut tracking. |
+| **Meta/Messenger** | Social graph. Keep for people who won't move to Signal. |
+| **Apple** | Meaningfully better than Google on privacy, and your Macs depend on it. |
+| **GitHub** | Microsoft-owned, developer ecosystem, irreplaceable. |
+| **Amazon** | Shopping. No practical alternative. |
+
+---
 
 ## Google Takeout
 
-Export all your Google data:
+1. takeout.google.com
+2. Select Photos, Drive, Mail, Calendar, Contacts
+3. Download and store the archive — it goes to Cloudflare R2 with everything
+   else via `~/.dotfiles/services/rclone/rclone-backup.sh`
 
-1. Go to takeout.google.com
-2. Select the services you want (Photos, Drive, Mail, Calendar, Contacts)
-3. Choose export format and frequency
-4. Download and store the archive securely (backup to B2)
+---
 
 ## Notes
 
-- The goal is not zero Google overnight — migrate at your own pace
-- Some Google services are genuinely hard to replace (YouTube, Maps)
-- Prioritise based on privacy impact: Photos and Passwords first
-- Use your own domain for email — never locked into any provider
-- Keep a migration log to track progress
+- The goal is not zero Google overnight. You're ~80% done; finish the four gaps.
+- **Own your domain for email.** That single step makes everything else reversible.
+- PewDiePie's actual thesis: *use the hardware you already have.* You have far
+  more than he does — the bottleneck is decisions, not equipment.
+- Keep a migration log in the TODO so you know what's genuinely cut over.
 
 ## Resources
 
-- `/r/degoogle` — community resources
 - privacyguides.org — vetted alternatives
-- alternativeto.net — find alternatives for any service
+- grapheneos.org — install guide and supported devices
+- `/r/degoogle`, `/r/selfhosted`
