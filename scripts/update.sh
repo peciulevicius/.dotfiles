@@ -352,7 +352,7 @@ echo ""
 
 # ── Docker Services Update ──────────────────────────────────────────────────
 if command -v docker &>/dev/null && docker info &>/dev/null 2>&1; then
-    DOCKER_DIR="$HOME/docker"
+    DOCKER_DIR="$HOME/services"
     if [[ -d "$DOCKER_DIR" ]]; then
         print_header "Updating Docker Services"
         for svc_dir in "$DOCKER_DIR"/*/; do

@@ -209,7 +209,7 @@ See [guides/NOTES.md](./guides/NOTES.md) for the full Obsidian + Syncthing workf
 
 ## 🐳 services/setup-services.sh - Docker Services Setup
 
-Stages Docker Compose stacks and `.env` templates to `~/docker/<service>/`.
+Stages Docker Compose stacks and `.env` templates to `~/services/<service>/`.
 
 ### Usage
 
@@ -247,7 +247,7 @@ See [SERVICES.md](./SERVICES.md) for full setup guide.
 
 ## ☁️ services/rclone/rclone-backup.sh - Cloud Backup
 
-Backs up `~/docker/` volumes to Backblaze B2 (or any rclone remote).
+Backs up `~/services/` volumes to Cloudflare R2 (or any rclone remote).
 
 ### Usage
 
@@ -264,8 +264,8 @@ Backs up `~/docker/` volumes to Backblaze B2 (or any rclone remote).
 ```bash
 brew install rclone
 rclone config  # configure B2 remote named 'b2-backup'
-cp ~/.dotfiles/services/rclone/.env.example ~/docker/rclone/.env
-nano ~/docker/rclone/.env
+cp ~/.dotfiles/services/rclone/.env.example ~/services/rclone/.env
+nano ~/services/rclone/.env
 ```
 
 ### Automate

@@ -296,7 +296,7 @@ parse_args() {
 
 maybe_setup_services() {
   echo ""
-  if confirm "Stage self-hosted services to ~/docker/?" false; then
+  if confirm "Stage self-hosted services to ~/services/?" false; then
     if command -v docker &>/dev/null; then
       bash "$DOTFILES_DIR/services/setup-services.sh"
     else

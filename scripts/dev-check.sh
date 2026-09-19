@@ -343,7 +343,7 @@ print_header "Self-Hosted Services"
 check_command optional rclone "rclone" "brew install rclone"
 
 if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
-    DOCKER_DIR="$HOME/docker"
+    DOCKER_DIR="$HOME/services"
     SERVICES=(immich vaultwarden nextcloud uptime-kuma freshrss syncthing portainer watchtower paperless-ngx calibre-web readarr)
 
     if [[ -d "$DOCKER_DIR" ]]; then
@@ -358,7 +358,7 @@ if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
         record_result optional true "Docker services staged" "$staged_count / ${#SERVICES[@]} services in $DOCKER_DIR" ""
         echo -e "${CYAN}  └─${NC} Running containers: $running_count"
     else
-        record_result optional false "Docker services" "~/docker/ not found — run services/setup-services.sh" "services/setup-services.sh"
+        record_result optional false "Docker services" "~/services/ not found — run services/setup-services.sh" "services/setup-services.sh"
     fi
 
     OBSIDIAN_VAULT="$HOME/obsidian-vault"

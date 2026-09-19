@@ -157,7 +157,7 @@ See [docs/UTILITY_SCRIPTS.md](docs/UTILITY_SCRIPTS.md) for detailed usage.
 │   └── setup/setup-obsidian.sh  # Obsidian vault setup
 │
 └── services/                    # 🐳 Self-hosted Docker Compose stacks
-    ├── setup-services.sh        # Stage all stacks to ~/docker/
+    ├── setup-services.sh        # Stage all stacks to ~/services/
     ├── immich/                  # Google Photos replacement
     ├── vaultwarden/             # Bitwarden password manager
     ├── nextcloud/               # Google Drive replacement
