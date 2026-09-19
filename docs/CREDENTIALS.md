@@ -1,11 +1,3 @@
-What to do now, in order
-
-1. Add those three passwords to Bitwarden — with the URLs, so autofill works. 5 minutes.
-2. Generate the Gmail app password. Still the single blocker on the Kindle sync, dead 73 days. Then put it in pkm/config.py — and remember it's used in two other places.
-3. Cloudflare Email Routing. Free, unblocks the whole email migration.
-4. Then walk docs/CREDENTIALS.md service by service at your own pace.
-
-
 # Credentials — where they live and what to change
 
 🚫 **No secrets in this file, ever — this repo is public on GitHub.** It records
@@ -13,9 +5,22 @@ What to do now, in order
 silently break something three weeks later.
 
 Real values live in `~/services/<svc>/.env` (gitignored), `~/.config/homelab/`,
-or Vaultwarden. While migrating everything into Bitwarden, a scratch worksheet
-at `~/credentials-import.md` (outside this repo, chmod 600) holds the values —
-delete it once the vault is populated.
+or Vaultwarden.
+
+**Two files, different lifespans — don't confuse them:**
+
+| | `~/credentials-import.md` | this file |
+|---|---|---|
+| Holds | the actual passwords | never a secret |
+| Where | outside the repo, chmod 600 | in the public repo |
+| Purpose | one-off worksheet for populating Bitwarden | permanent reference |
+| Lifespan | **delete once the vault is populated** | keep forever |
+
+The worksheet answers *"what do I paste into Bitwarden"*. This file answers
+*"what will break if I change this"* — like the Gmail app password being used in
+three places, or a Postgres role that has to change in two places at once. That
+knowledge is worth more in six months than the passwords are, and it can't live
+in a file you're going to delete.
 
 Master copy of every password belongs in **Vaultwarden**
 (`vault.peciulevicius.com`). Anything not there yet is listed as outstanding in
@@ -24,6 +29,45 @@ Master copy of every password belongs in **Vaultwarden**
 ---
 
 ## The Gmail app password — used in three places
+
+### What to do, start to finish
+
+Rotating it is four steps, and **step 3 is the one people forget** — the same
+password is used in three places, and two of them fail silently.
+
+**1. Generate it** — Google Account → Security → 2-Step Verification →
+**App passwords**. Name it something like "Mac mini homelab". Google shows it
+**once**, as four groups of four letters. Copy it immediately.
+
+**2. Save it to Bitwarden** before doing anything else. If you lose it here you
+just generate another, but it saves a round trip.
+
+**3. Put it in all three places:**
+
+```bash
+# a) Kindle sync (IMAP) — on the Mac mini
+nano ~/.dotfiles/pkm/config.py
+#    EMAIL_PASSWORD = "abcdefghijklmnop"   <- spaces optional, both work
+```
+
+```bash
+# b) Test it straight away — this is the whole point
+~/.dotfiles/pkm/.venv/bin/python3 ~/.dotfiles/pkm/kindle_sync.py
+#    want: "No new Kindle export emails." or "Found N new export email(s)"
+#    bad:  "IMAP login failed: [AUTHENTICATIONFAILED]"
+```
+
+- **c)** Uptime Kuma → `status.peciulevicius.com` → Settings → Notifications →
+  edit **"Uptime Kuma"** (the SMTP one) → paste into Password → **Test** → Save
+- **d)** Calibre-Web → `books.peciulevicius.com` → Admin → SMTP settings →
+  paste → send a test to `peciulevicius-scribe@kindle.com`
+
+**4. Revoke the old app password** in the same Google screen, once all three
+work.
+
+If the old one was already revoked (which is why the Kindle sync died), then
+(c) and (d) have been silently broken for the same ~73 days — so test both
+rather than assuming.
 
 ⚠️ **Gmail needs a 16-character app password** (`abcd efgh ijkl mnop`), not the
 account password. With 2FA on, the account password is rejected with
