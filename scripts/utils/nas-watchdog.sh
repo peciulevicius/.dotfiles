@@ -12,6 +12,15 @@
 # Order matters: mounts must exist BEFORE the containers start, or Docker
 # recreates the bind path as an empty directory on the internal SSD and the
 # service comes up pointing at nothing.
+#
+# Second, nastier failure mode (seen 2026-09-19): the host remounts a share
+# while containers keep running. The container's bind mount still points at the
+# OLD mount instance, which is now dead — every read returns EBADF. Nothing
+# exits, nothing is unmounted, so the checks above all pass while the service is
+# quietly broken. Calibre-Web surfaced it as "database disk image is malformed"
+# (SQLite reading through a dead fd); Jellyfin, Sonarr, Radarr and Bazarr were
+# silently blind to /media at the same time. A restart re-resolves the bind
+# mount, so this script now probes from *inside* each container.
 
 set -uo pipefail
 
@@ -62,7 +71,50 @@ if [ -n "$MISSING" ]; then
     log "shares remounted OK"
 fi
 
-# Mounts are healthy. Revive any NAS-backed container that is not running.
+# Mounts are healthy on the host. Now check that each running container can
+# actually still read its bind mount — see the header for why this differs.
+STALE_STACKS=()
+for stack in "${NAS_STACKS[@]}"; do
+    compose="$SERVICES_DIR/$stack/docker-compose.yml"
+    [ -f "$compose" ] || continue
+
+    for cname in $(docker compose -f "$compose" --project-directory "$SERVICES_DIR/$stack" \
+                     ps --format '{{.Name}}' 2>/dev/null); do
+        for dest in $(docker inspect "$cname" \
+                        --format '{{range .Mounts}}{{.Source}}>{{.Destination}}{{"\n"}}{{end}}' 2>/dev/null \
+                      | grep '^/Volumes/' | cut -d'>' -f2); do
+            if ! docker exec "$cname" ls "$dest" >/dev/null 2>&1; then
+                log "$stack: $cname cannot read $dest (stale bind mount) — will restart"
+                STALE_STACKS+=("$stack")
+                break 2
+            fi
+        done
+    done
+done
+
+if [ ${#STALE_STACKS[@]} -gt 0 ]; then
+    for stack in "${STALE_STACKS[@]}"; do
+        compose="$SERVICES_DIR/$stack/docker-compose.yml"
+        if docker compose -f "$compose" --project-directory "$SERVICES_DIR/$stack" \
+             restart >>"$LOG" 2>&1; then
+            log "$stack restarted to re-resolve its bind mount"
+        else
+            log "$stack FAILED to restart"
+        fi
+    done
+    if [ -f "$HOME/.dotfiles/scripts/lib/notify.sh" ]; then
+        # shellcheck source=../lib/notify.sh
+        source "$HOME/.dotfiles/scripts/lib/notify.sh"
+        notify_discord "NAS bind mounts went stale" \
+            "Restarted: ${STALE_STACKS[*]}
+
+The host remounted a share while these containers were running, so they
+were reading through a dead file descriptor. Silent until something tried
+to use the files." warn
+    fi
+fi
+
+# Revive any NAS-backed container that is not running.
 # `compose up -d` is used rather than `docker start` so a container that
 # exited while its bind path was missing gets recreated against the now
 # correct mount instead of resuming with a stale one.
