@@ -240,6 +240,45 @@ future provider switch is a DNS edit.
 goes out through Gmail unless you configure "Send mail as", which keeps Google
 in the loop. That's acceptable for a transition phase — not as the end state.
 
+#### How catch-all actually behaves (verified 2026-09-19)
+
+Explicit rules are matched **first**; anything unmatched falls through to the
+catch-all. With `contact@`, `hello@` and `dziugas@` defined plus a catch-all,
+`inbox@peciulevicius.com` was delivered — confirming the catch-all is live and
+that **every** local part at the domain now reaches the inbox.
+
+That is the feature *and* the drawback:
+
+- ✅ **Per-service aliases cost nothing.** Hand `netflix@`, `bank@`, `github@`
+  to each service without pre-creating them. When one starts receiving spam you
+  know precisely who leaked or sold the address, and you kill that one alias.
+- ⚠️ **Spam has no floor.** A catch-all accepts mail to addresses that were
+  never issued, so once the domain is scraped or dictionary-attacked, all of it
+  lands in the inbox. If that day arrives, replace the catch-all with explicit
+  rules for the aliases actually in use — the per-service naming makes that a
+  short list.
+
+#### ⚠️ Sending is the half that isn't solved yet
+
+Receiving at `dziugas@peciulevicius.com` works today. **Sending as it does
+not** — Cloudflare Email Routing provides no SMTP server. Gmail's *Send mail as*
+needs outbound SMTP credentials for the domain, which only a real mailbox
+provides.
+
+So during this phase, a reply to mail addressed to `dziugas@` goes out from the
+Gmail address, which partly defeats handing out the new one. Two consequences:
+
+- Fine for **signing up** to services — they mail you, you receive it
+- Weak for **correspondence with people**, who will see and reply to the Gmail
+  address again
+
+This is the strongest argument for not leaving Purelymail indefinitely on the
+"later" pile: it's $10/yr and it closes the sending half.
+
+Note the Kindle pipeline is unaffected either way — if the Amazon account email
+moves to `dziugas@`, Scribe exports still forward into Gmail, which is where
+`kindle_sync.py` reads from over IMAP.
+
 ### Step 2 — When ready to actually leave: pick a mailbox
 
 Your requirement is *"easy access on my phone and every other device."* That
