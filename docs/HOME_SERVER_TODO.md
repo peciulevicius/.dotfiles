@@ -176,6 +176,27 @@ Paperless-NGX doesn't support traditional folders — it uses **tags**, **docume
 - [ ] Update Transmission compose to use `network_mode: service:gluetun`
 - [ ] Test: `docker exec transmission curl ifconfig.me` should show VPN IP, not home IP
 
+### Notes — make capture frictionless before changing tools
+
+**Full plan: [guides/NOTES.md](guides/NOTES.md).** The vault, routing rules and
+Kindle sync all exist and go unused. The problem is capture friction, not the
+tool — swapping Obsidian for something else reproduces the same failure later.
+
+- [ ] Sync the vault via **iCloud** (native in Obsidian, free, reliable on
+      iOS/Mac). Syncthing stays for the Mac mini leg; switch to Obsidian Sync
+      (~€4/mo) only if a Pixel happens — iOS Syncthing is the weak point.
+- [ ] **One** quick-capture Shortcut on the iPhone home screen, ≤2 taps,
+      appending to the daily note
+- [ ] Install the **Obsidian Web Clipper** in Brave (complements Linkwarden:
+      it archives links, the clipper captures content)
+- [ ] Verify the Kindle sync still runs — it's on the **Mac mini**, not here:
+      `ssh macmini` then `crontab -l | grep kindle` and
+      `tail -20 ~/logs/kindle-sync.log`
+- [ ] **30 days of capture only, zero organising.** Then reassess.
+      If it still hasn't stuck, Apple Notes for fleeting + Obsidian for durable
+      is a legitimate end state, not a failure.
+- [ ] Later: point Odysseus's RAG at the vault
+
 ### De-Google — migrate off all Google services
 
 **Full plan: [guides/DEGOOGLE.md](guides/DEGOOGLE.md).** Annotated replacement
@@ -299,6 +320,9 @@ your own key.
       in only one profile at a time. Separate from the Transmission/gluetun plan.
 - [ ] If buying refurbished: confirm carrier-unlocked, not a US carrier model —
       those bootloaders cannot be unlocked, making GrapheneOS impossible.
+- [x] ~~Non-Pixel options?~~ Yes — CalyxOS runs on **Fairphone 5** and some
+      Motorola while still relocking the bootloader. **User prefers to stick with
+      Pixel**, so Fairphone is noted but not planned.
 - [ ] Minimal Phone 2 (€599/€699, 12GB) is **2.5–3× the 8a and cannot run
       GrapheneOS** — not a Pixel, no Titan M2, ships with Play Services. It solves
       *attention*, not *privacy*. GrapheneOS user profiles give the focus benefit

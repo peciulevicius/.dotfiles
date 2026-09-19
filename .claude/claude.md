@@ -73,6 +73,19 @@ Standing decisions (don't relitigate without being asked):
   ages out. The iPhone is kept regardless — it's needed for Expo/React Native
   iOS testing.
 
+### Notes / PKM — `docs/guides/NOTES.md`
+
+Obsidian vault + Syncthing + `pkm/kindle_sync.py` all exist but go largely
+unused. **Diagnosis is capture friction, not tool choice** — do not suggest
+replacing Obsidian. Fix: iCloud sync, a ≤2-tap iPhone capture Shortcut, the
+Obsidian Web Clipper, then 30 days of capture-only with no organising.
+
+- `pkm/kindle_sync.py` pulls Kindle Scribe notebook exports out of email over
+  IMAP into the vault, **hourly** (Amazon's share links expire after 7 days).
+  It runs on the **Mac mini**; `pkm/config.py` is gitignored and not in the repo.
+- Scribe's only provider-neutral export route is **email** — its Drive/OneDrive
+  options are 2025+ models only and are the services being left.
+
 ### Self-hosted AI — `docs/guides/SELF_HOSTED_AI.md`
 
 Goal: own the chat history, memories and RAG corpus; rent the inference.
