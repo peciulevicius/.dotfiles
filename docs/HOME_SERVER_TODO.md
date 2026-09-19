@@ -31,7 +31,9 @@ R2 deliberately excludes photos (too large).
 
 - [ ] Take T5 to the parents' house once it is loaded (it was verified 1:1 on
       2026-09-05 — see the backup section below)
-- [ ] Only after that, consider dropping iCloud
+- [x] ~~Consider dropping iCloud~~ — already cancelled (early 2026). This makes
+      getting T5 offsite *more* urgent, not less: there is no cloud copy of the
+      photos any more, only the NAS and two drives in the same room.
 
 ### Power-outage recovery is still manual
 
@@ -339,7 +341,8 @@ your own key.
       Expo/React Native iOS builds** — so it stays either way. The realistic end
       state is Pixel as daily driver, iPhone as dev device + tap-to-pay fallback.
 - [ ] **Now (~€90):** replace the 13 mini battery — buys years of runway
-- [ ] **Now (free):** enable **Advanced Data Protection** on iCloud, delete
+- [ ] **Now (free):** enable **Advanced Data Protection** on iCloud — works on
+      the free tier, no iCloud+ needed — delete
       Google apps, default search → DuckDuckGo
 - [ ] **Before committing to any Pixel:** check your banking apps survive
       hardware attestation on a custom OS, and that HeliBoard does Lithuanian

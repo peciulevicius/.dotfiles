@@ -256,7 +256,7 @@ webmail-only, which would break `pkm/kindle_sync.py`. But it gets close to free.
 | **Purelymail** | ~$10 | ✅ native | None | 3GB on the base tier; tiny indie operation |
 | **MXroute** | $59 | ✅ native | None | Unlimited domains + mailboxes, flat fee |
 | **Proton Mail Plus** | ~$50 | ⚠️ **Bridge only** | Excellent, all platforms | 15GB, 1 custom domain |
-| **iCloud+** | ~€12 | ✅ native | Native on Apple, IMAP on Android | Apple lock-in — see below |
+| ~~iCloud+~~ | ~€12 | ✅ native | — | ❌ **Rejected** — subscription (already cancelled) + Apple lock-in |
 | **Tuta** | ~$36 | ❌ **none** | Own apps only | No IMAP at all — rules it out |
 
 #### The three that actually deserve consideration
@@ -276,14 +276,11 @@ outgoing-messages/day cap is a real limit** — fine for personal mail, painful 
 you ever do anything bursty. Purelymail's base tier is only 3GB, so check your
 Gmail archive size before committing.
 
-**iCloud+ — the one you may already be paying for.** Custom domain email is
-included with *any* iCloud+ tier (from ~€0.99/mo, which also covers your 50GB of
-iCloud storage). It works with third-party clients via an **app-specific
-password** from appleid.apple.com, and it works on Android too. Two catches:
-custom-domain mail routes through your primary iCloud account rather than a
-separate IMAP server, so send-as behaviour in third-party clients is fiddly —
-**test it before migrating**. And it deepens Apple lock-in at the exact moment
-you're considering a Pixel.
+**iCloud+ — ruled out.** Custom domain email is included with any iCloud+ tier
+(~€0.99/mo) and it does work via app-specific password, on Android too. But
+**the iCloud subscription was cancelled in early 2026** — the NAS and Mac mini
+exist precisely to avoid monthly fees — and it would deepen Apple lock-in right
+as a Pixel is under consideration. Listed only so it isn't re-proposed.
 
 #### "But r/degoogle recommends Proton and Tuta"
 
@@ -369,7 +366,7 @@ Free, and independent of the provider — swap either without touching the other
 | **Desktop power use** | Thunderbird — free, open source, better for rules, multiple accounts, and search |
 | **Android (if a Pixel happens)** | Thunderbird for Android (formerly K-9 Mail) |
 
-Any of these works with Purelymail, Migadu, Fastmail or iCloud. None works with
+Any of these works with Purelymail, Migadu or Fastmail. None works with
 Tuta (no IMAP), and all need Bridge running for Proton.
 
 #### Recommendation for a ~€1/month budget
@@ -534,8 +531,8 @@ ages out — the support windows only get longer.
 
 #### The highest-value thing you can do this evening costs €0
 
-Enable **Advanced Data Protection** on iCloud, delete the Google apps, and
-switch your default search. That captures most of the realistic privacy gain
+Enable **Advanced Data Protection** on iCloud (free — it works on the base tier,
+no subscription needed), delete the Google apps, and switch your default search. That captures most of the realistic privacy gain
 available to you, immediately, with no hardware purchase and no friction. Do
 that first and see whether the remaining gap still bothers you in three months.
 
@@ -727,7 +724,8 @@ before committing.
 ### Harden iOS in the meantime (free, do this regardless)
 
 - [ ] Enable **Advanced Data Protection** (Settings → Apple ID → iCloud) —
-      makes iCloud backups E2E. Biggest single iOS privacy win, one toggle.
+      makes iCloud data E2E. Biggest single iOS privacy win, one toggle, and
+      **free — it does not need a paid iCloud+ plan.**
 - [ ] Delete Google apps: Gmail, Maps, Drive, Photos, Chrome
 - [ ] Safari or Brave → default search **DuckDuckGo** or Kagi
 - [ ] Settings → Privacy → Tracking → **disable "Allow Apps to Request to Track"**
