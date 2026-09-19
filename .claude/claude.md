@@ -142,6 +142,15 @@ all in that guide.
 
 ## Rules for this repo
 
+- **Adding or removing a service? Update the homepage too.** `services/glance/glance.yml`
+  drives `home.peciulevicius.com` — add a monitor (with `check-url`) *and* a
+  bookmark link, or remove both. Glance joins each service's Docker network to
+  reach its `check-url`, so also add the network to `services/glance/docker-compose.yml`.
+  A service that isn't on the homepage effectively doesn't exist.
+- **Push after every commit.** The repo is synced across machines via
+  `scripts/sync.sh`; unpushed commits mean the others run stale config.
+  ⚠️ The repo is **public** — sweep the staged diff for secrets first.
+
 - Configs must work cross-platform (macOS + Linux)
 - Installers: interactive prompts, backup existing files, clear output
 - Services: each gets `docker-compose.yml` + `.env.example` + README
