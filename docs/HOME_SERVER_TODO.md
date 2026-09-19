@@ -112,25 +112,33 @@ is mapped in [CREDENTIALS.md](CREDENTIALS.md).
 from the R2 backup. A restore from R2 gives you configs with no secrets.
 **Vaultwarden is the only copy.**
 
-**Decision 2026-09-19:** CouchDB reuses the existing shared password *for now*,
-so LiveSync can be set up without new friction. That is a deliberate temporary
-trade — CouchDB is the **only service reachable from the public internet**, so
-it is the worst place for a shared password and the first that should be rotated.
+**Decision 2026-09-19 — username `peciulevicius` everywhere, and two kinds of
+password:** one memorised passphrase for the Vaultwarden master, generated
+random for every service. Full policy and the per-service checklist are in
+[CREDENTIALS.md](CREDENTIALS.md).
 
-Work through every service, one at a time:
+✅ Already done: **CouchDB** and **Transmission** (both `.env`-backed, verified
+working; old credentials confirmed rejected).
 
-- [ ] ⚠️ **CouchDB first** — `~/services/couchdb/.env`, then re-enter the new
-      password in the LiveSync plugin on each device. Public-facing, so highest
-      exposure.
-- [ ] Walk `~/services/*/.env` and put each secret in Vaultwarden as you go
-- [ ] Replace each reused password with a generated one — generate in
-      Vaultwarden **first**, then update the `.env`, then
-      `docker compose up -d` and confirm the service still works
-- [ ] Gmail app password → Vaultwarden. It is used in **three** places, not one
-      (see [CREDENTIALS.md](CREDENTIALS.md)) — rotating it breaks all three
+⚠️ **`ADMIN_USER` / `GRAFANA_USER` in the other `.env` files are inert** — they
+only apply at first init, so those renames must happen in each app's own UI.
+
+- [ ] **Vaultwarden master password first** — a 4–6 word passphrase. It protects
+      everything else, so nothing below matters until this one is strong.
+- [ ] ⚠️ **Retire the old reused personal password.** It was in use across many
+      services; treat any account still on it as compromised-by-reuse until
+      rotated. The string is deliberately not recorded in this repo.
+- [ ] Work down the checklist in [CREDENTIALS.md](CREDENTIALS.md), one service
+      at a time: generate in Vaultwarden **first**, then change it in the app,
+      then confirm the app still works before moving on
+- [ ] Gmail app password → Vaultwarden. Used in **three** places, not one —
+      rotating it breaks all three
 - [ ] Bitwarden Vault Health report → clear the remaining reused-password flags
 
-Track progress per service; this is a walk, not a single sitting.
+⚠️ Leave internal database roles alone (`DB_USERNAME=postgres` and friends).
+Change the app's *login*, not the database role.
+
+This is a walk, not a single sitting.
 
 Both NAS accounts (`Džiugas` admin + `macmini` SMB service account) currently
 use the same password as elsewhere. Rotate to unique generated passwords:

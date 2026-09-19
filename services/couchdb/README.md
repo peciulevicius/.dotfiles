@@ -20,8 +20,8 @@ everywhere Obsidian runs.
 cd ~/services/couchdb
 
 # Generate a real password
-openssl rand -base64 32
 nano .env            # set COUCHDB_USER + COUCHDB_PASSWORD
+# Use a 6-word passphrase, not random characters — you type this on a phone
 
 docker compose up -d
 ```
@@ -58,7 +58,7 @@ app on each device; the tunnel only carries the sync traffic.
 ⚠️ **Deliberately *not* behind Cloudflare Access.** An Access policy that
 challenges the browser also blocks the Obsidian plugin, which cannot complete an
 interactive login. The gate is CouchDB's own auth: `require_valid_user = true`
-plus a 32-character generated password, and anonymous requests get a 401 —
+plus a six-word passphrase (~62 bits), and anonymous requests get a 401 —
 verified from the public hostname. If you later want Access in front, it has to
 be a **service token** whose `CF-Access-Client-Id` / `CF-Access-Client-Secret`
 the plugin sends as custom headers.
@@ -67,7 +67,8 @@ the plugin sends as custom headers.
 
 1. Install **Self-hosted LiveSync** from Community Plugins on each device
 2. Server URI `https://couchdb.peciulevicius.com`, the username/password from
-   `~/services/couchdb/.env`, database `obsidian` (already created)
+   `~/services/couchdb/.env` (user `peciulevicius`), database `obsidian`
+   (already created)
 3. Turn **End-to-End Encryption** on and set a passphrase — the same one
    everywhere. Without it the server sees your notes in the clear.
 4. ⚠️ Start on the **Mac mini**, the device holding the real vault, and let it

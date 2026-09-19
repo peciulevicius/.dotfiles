@@ -90,6 +90,24 @@ author). The pipeline is configured, not proven.
 Data directories for karakeep (238MB), actual-budget (80KB) and readarr (49MB)
 were moved out of `~/services/` to `~/.Trash/homelab-removed-20260919/`.
 
+### Credential policy set, first two services rotated
+
+Username standardised on **`peciulevicius`** (not `admin` — the first username
+every automated attack tries). Passwords split into two kinds: one memorised
+passphrase for the Vaultwarden master, generated random for everything else,
+with a six-word passphrase reserved for the one password actually typed by hand
+on a phone (CouchDB in the LiveSync plugin).
+
+Rotated and verified: **CouchDB** (`peciulevicius` + six-word passphrase, ~62
+bits — old credentials confirmed rejected, `obsidian` database intact, public
+HTTPS still 401s anonymously) and **Transmission** (`peciulevicius` + 28-char
+random).
+
+⚠️ Discovered while planning it: `ADMIN_USER` / `GRAFANA_USER` in the other
+`.env` files are **inert** — they are read only at first initialisation, so the
+account already exists in each app's database and editing `.env` changes
+nothing. Those renames are UI work. Checklist in [CREDENTIALS.md](CREDENTIALS.md).
+
 ### Added: CouchDB for Obsidian LiveSync
 
 `services/couchdb/` — single-node, CORS for `app://obsidian.md`, `obsidian`

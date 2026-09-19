@@ -50,15 +50,70 @@ is missing, notifications are a silent no-op and jobs still run normally.
 
 ---
 
+## The policy (decided 2026-09-19)
+
+**Username: `peciulevicius` everywhere** the app allows it. Not `admin` — that
+is the first username every automated attack tries, and it is free to change.
+
+**Passwords — two kinds, and the distinction is the whole point:**
+
+| Kind | Used for | How |
+|---|---|---|
+| **One memorised passphrase** | The Vaultwarden master password only | 4–6 random common words. The only password you ever type from memory. |
+| **Generated random** | Every service | Generated in Vaultwarden, stored there, autofilled or pasted. Never memorised, never reused. |
+
+The one exception is a password you genuinely have to **type by hand on a phone**
+— CouchDB, entered in the LiveSync plugin on each device. There, use a **six
+common words + two digits** passphrase (~62 bits): easy on a phone keyboard,
+still far stronger than anything memorable-and-short.
+
+❌ **Never one shared password across services.** One breach then becomes a total
+breach, and the most exposed service sets the security of every other one.
+❌ **Never a short memorable password on Vaultwarden** — it protects everything else.
+
+⚠️ **One personal password was reused across many services** as of 2026-09-19
+and is being retired. Treat any account still using it as compromised-by-reuse
+until rotated. (The string itself is deliberately not written down here — this
+repo is public.)
+
+---
+
+## Rename + rotate checklist
+
+`.env`-backed services take effect on `docker compose up -d`. **The rest only
+read `ADMIN_USER` / `GRAFANA_USER` at first initialisation** — the account
+already exists in the app's database, so editing `.env` does nothing and the
+rename has to happen in the app's own UI.
+
+| Service | Where | Status |
+|---|---|---|
+| CouchDB | `.env` → recreate | ✅ done 2026-09-19 — `peciulevicius` + six-word passphrase |
+| Transmission | `.env` → recreate | ✅ done 2026-09-19 — `peciulevicius` + 28-char random |
+| Vaultwarden | Web vault → Account Settings | ⬜ master password — **do this one first and carefully** |
+| Nextcloud | `cloud.peciulevicius.com` → Users | ⬜ UI only; `ADMIN_USER` in `.env` is inert now |
+| Paperless-ngx | `papers.peciulevicius.com` → Admin → Users | ⬜ UI only |
+| Grafana | `localhost:3000` → Profile | ⬜ UI only |
+| Immich | `photos.peciulevicius.com` → Account | ⬜ account email/password; leave `DB_USERNAME=postgres` alone |
+| Linkwarden | `links.peciulevicius.com` → Settings | ⬜ |
+| Calibre-Web | `books.peciulevicius.com` → Admin | ⬜ |
+| FreshRSS / Mealie / Audiobookshelf / Jellyfin / Uptime Kuma | each app's UI | ⬜ |
+| NAS (`Džiugas` admin, `macmini` SMB) | NAS UI + macOS Keychain | ⬜ then remount the four shares |
+
+⚠️ **`DB_USERNAME=postgres` in Immich, and the Postgres roles behind Paperless
+and Linkwarden, are internal database roles.** Renaming those breaks the app.
+Change the app's *login*, not the database role.
+
+---
+
 ## Service credentials
 
 | Service | Where the secret lives | Notes |
 |---|---|---|
-| CouchDB | `~/services/couchdb/.env` | User `obsidian`. ⚠️ **Publicly reachable** at `couchdb.peciulevicius.com` — this one should never share a password with anything else |
+| CouchDB | `~/services/couchdb/.env` | User `peciulevicius`, six-word passphrase. ⚠️ **Publicly reachable** at `couchdb.peciulevicius.com` — never share this password with anything else |
 | Vaultwarden | `~/services/vaultwarden/.env` | `ADMIN_TOKEN` |
 | Nextcloud | `~/services/nextcloud/.env` | MariaDB root + app user |
 | Immich / Paperless / Linkwarden | `~/services/<svc>/.env` | Postgres passwords |
-| Transmission | `~/services/transmission/.env` | Changed from defaults |
+| Transmission | `~/services/transmission/.env` | User `peciulevicius`, 28-char random (rotated 2026-09-19) |
 | NAS (`Džiugas` admin, `macmini` SMB) | NAS UI + macOS Keychain | ⚠️ Currently reused passwords — rotation is outstanding |
 
 Every `.env` under `~/services/` is **excluded from the R2 backup**
