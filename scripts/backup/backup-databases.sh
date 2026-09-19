@@ -10,6 +10,7 @@ BACKUP_DIR="$HOME/backups"
 DATE=$(date +%Y%m%d)
 DRY_RUN=false
 KEEP_DAYS=30
+ERRORS=0
 
 GREEN='\033[0;32m'
 RED='\033[0;31m'
@@ -54,6 +55,7 @@ dump_postgres() {
   else
     log_err "$label dump failed"
     rm -f "$file"
+    ((ERRORS++))
   fi
 }
 
@@ -82,6 +84,7 @@ dump_mysql() {
   else
     log_err "$label dump failed"
     rm -f "$file"
+    ((ERRORS++))
   fi
 }
 
@@ -111,4 +114,11 @@ if [[ "$DRY_RUN" == "false" ]]; then
 fi
 
 echo ""
+if [[ "$ERRORS" -gt 0 ]]; then
+  # Exit non-zero so run-with-notify.sh (and cron) can see the failure.
+  # Without this the script reported success while linkwarden and nextcloud
+  # had never dumped once.
+  log_err "Done with $ERRORS failed dump(s)"
+  exit 1
+fi
 log_ok "Done"
