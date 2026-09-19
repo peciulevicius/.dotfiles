@@ -30,6 +30,7 @@ services:
       - media
       - lazylibrarian
       - grafana_default
+      - couchdb
 
 networks:
   default:
@@ -68,4 +69,6 @@ networks:
   lazylibrarian:
     external: true
   grafana_default:
+    external: true
+  couchdb:
     external: true
