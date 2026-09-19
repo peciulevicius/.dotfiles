@@ -43,6 +43,39 @@ crontab.
 on macOS when the file is outside home — exits 0, wipes everything. Pipe via
 stdin and always `crontab -l` to verify.
 
+### Cleaned up: karakeep and actual-budget removed for real
+
+Containers stopped, images deleted (karakeep 2.1GB, alpine-chrome 958MB,
+meilisearch 234MB, actual-budget 548MB), `services/karakeep/` and
+`services/actual-budget/` deleted from the repo, and both dropped from
+`setup-services.sh` and `services/README.md`. Docker went from 44.78GB to
+35.47GB of images. Data directories under `~/services/` are still there.
+
+Also unmounted a duplicate SMB mount: `/Volumes/media-1` was the same NAS share
+mounted a second time by IP (`192.168.1.73`) alongside the mDNS mount at
+`/Volumes/media`. Nothing referenced it.
+
+### Fixed: the tunnel setup script pointed `links` at the wrong port
+
+`setup-cloudflare-tunnel.sh` mapped `links.peciulevicius.com` to **3006
+(Karakeep)**, but Linkwarden is on **3005** — so re-running it on a fresh
+machine would have broken the bookmark manager's URL. Corrected, and
+`couchdb` → 5984 added so a rebuild recreates the LiveSync hostname too.
+
+### Added: Discord webhook configured, alerts verified live
+
+`~/.config/homelab/notify.env` created with the same webhook Uptime Kuma uses.
+Test post returned HTTP 204. Cron job failures now actually reach Discord.
+
+### Tried and failed: the Gmail account password does not work for IMAP
+
+Filling `EMAIL_PASSWORD` with the Google **account** password was rejected with
+`AUTHENTICATIONFAILED`. Gmail IMAP requires a **16-character app password** when
+2FA is on. The field was cleared rather than left holding an account password in
+plaintext. New doc [CREDENTIALS.md](CREDENTIALS.md) maps the three places that
+password is used — `pkm/config.py`, Uptime Kuma SMTP, Calibre-Web Send-to-Kindle
+— because a revoked one breaks all three and only the first one is noisy.
+
 ### Added: CouchDB for Obsidian LiveSync
 
 `services/couchdb/` — single-node, CORS for `app://obsidian.md`, `obsidian`

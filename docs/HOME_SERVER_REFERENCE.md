@@ -47,11 +47,22 @@ alone wants 2GB. See [guides/OCTOPUS_DEPLOY.md](guides/OCTOPUS_DEPLOY.md).
 Since the 2026-08-04 migration the **NAS is primary**. The two Samsung SSDs are
 backup targets only, plugged in occasionally and synced by hand.
 
-| Device | Size | Role | Mount path |
-|--------|------|------|-----------|
-| **UGREEN NAS** | ~11TiB usable (RAID 5) | Primary storage | `/Volumes/<share>` |
-| **T7** | 1TB | Manual backup | `/Volumes/T7/` |
-| **T5** | 500GB | Manual backup, destined offsite | `/Volumes/Backup/` |
+| Device | Size | Role | Mount path | Connected? |
+|--------|------|------|-----------|---|
+| **UGREEN NAS** | ~11TiB usable (RAID 5) | Primary storage | `/Volumes/<share>` | always, over SMB |
+| **T7** | 1TB | Manual backup | `/Volumes/T7/` | **normally unplugged** |
+| **T5** | 500GB | Manual backup, destined offsite | `/Volumes/Backup/` | **normally unplugged** |
+
+**T7 and T5 are disconnected by design and were confirmed unplugged on
+2026-09-19.** The migration to the NAS is finished: every service reads from
+`/Volumes/<share>`, T7 was fully decoupled on 2026-08-04, and the nightly
+external-drive cron was deleted on 2026-09-05 precisely because the drives
+aren't attached. Any doc or script path mentioning `/Volumes/T7` is describing
+**what to do once you plug it back in**, not a live mount.
+
+Photos live in **Immich, on the NAS** — that is the source of truth now. The
+year folders still sitting on T7 are an *unimported archive*, not a working
+copy.
 
 **What lives where:**
 

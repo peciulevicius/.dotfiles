@@ -19,7 +19,7 @@ Docker Compose stacks for running your own cloud on a Mac mini (or any Docker ho
 | Homarr | 7575 | Home dashboard |
 | Paperless-ngx | 8000 | Document scanner and organiser |
 | Calibre-Web | 8083 | Ebook library server |
-| Rclone | — | Cloud backup (B2/S3) |
+| Rclone | — | Cloud backup (Cloudflare R2) |
 
 ### Utilities (8)
 
@@ -31,8 +31,7 @@ Docker Compose stacks for running your own cloud on a Mac mini (or any Docker ho
 | Audiobookshelf | 13378 | Audiobook and podcast server |
 | Linkwarden | 3005 | Bookmark manager with archiving |
 | Mealie | 9925 | Recipe manager and meal planner |
-| Actual Budget | 5006 | Personal finance manager |
-| Karakeep | 3005 | AI bookmark manager (Linkwarden replacement) |
+| CouchDB | 5984 | Obsidian LiveSync backend (replaces Obsidian Sync) |
 
 ### Media (6)
 

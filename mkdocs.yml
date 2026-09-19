@@ -48,6 +48,7 @@ nav:
       - Changelog (done, and why): HOME_SERVER_CHANGELOG.md
       - Reference (RAM, drives, paths): HOME_SERVER_REFERENCE.md
       - NAS: NAS.md
+      - Credentials map: CREDENTIALS.md
 
   - Claude Code:
       - Claude Code Guide: CLAUDE_CODE_GUIDE.md

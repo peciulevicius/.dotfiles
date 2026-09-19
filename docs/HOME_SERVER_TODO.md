@@ -13,29 +13,23 @@ Last worked: **2026-09-19** on the Mac mini. What got done that day is in
 [HOME_SERVER_CHANGELOG.md](HOME_SERVER_CHANGELOG.md#2026-09-19--verification-backups-couchdb).
 Only outstanding work is listed here.
 
-**1. 🔴 Regenerate the Gmail app password — nothing else can fix this**
+**1. 🔴 Generate a Gmail APP password — nothing else can fix this**
 
-The Kindle sync has been failing every hour since early July: the app password
-in `pkm/config.py` is no longer valid. The Scribe → Obsidian pipeline is dead
-until this is done, and the whole notes plan sits on it.
+The Kindle sync has failed every hour since early July. Tried on 2026-09-19 with
+the Google **account** password: rejected. Gmail IMAP needs a **16-character app
+password** (`abcd efgh ijkl mnop`) whenever 2FA is on — the account password can
+never work here.
 
-- [ ] Google Account → Security → App passwords → generate a new one
-- [ ] Put it in `pkm/config.py` as `EMAIL_PASSWORD`
+- [ ] Google Account → Security → 2-Step Verification → **App passwords**
+- [ ] Put it in `pkm/config.py` as `EMAIL_PASSWORD` (gitignored, Mac mini only)
 - [ ] Test: `~/.dotfiles/pkm/.venv/bin/python3 ~/.dotfiles/pkm/kindle_sync.py`
+- [ ] ⚠️ **The same app password is used in two other places** — Uptime Kuma's
+      SMTP notification and Calibre-Web's Send-to-Kindle. If the old one was
+      revoked, those broke silently too. See [CREDENTIALS.md](CREDENTIALS.md).
 
-It will now shout on Discord if it breaks again — but only once the webhook is
-configured, which is step 2.
+Discord alerts are live now, so the next time this breaks it will say so.
 
-**2. Configure the Discord webhook for job alerts (~2 min)**
-
-The cron jobs now notify on failure and recovery, but the webhook file doesn't
-exist yet, so they are currently silent no-ops.
-
-- [ ] Uptime Kuma → Settings → Notifications → the Discord entry → copy the URL
-- [ ] `mkdir -p ~/.config/homelab && chmod 600` a `notify.env` there containing
-      `DISCORD_WEBHOOK_URL=...` — see [scripts/cron/README.md](../scripts/cron/README.md)
-
-**3. Finish Obsidian LiveSync — the server side is done**
+**2. Finish Obsidian LiveSync — the server side is done**
 
 CouchDB is up at `https://couchdb.peciulevicius.com` with the `obsidian`
 database created. Only the plugin is left.
@@ -47,13 +41,13 @@ database created. Only the plugin is left.
       answering with an empty device wipes the vault. Snapshot is in
       `~/backups/vault-snapshots/` if it goes wrong.
 
-**4. Two-minute jobs that prevent real loss** — see the section below
+**3. Two-minute jobs that prevent real loss** — see the section below
 
 - Tailscale key expiry (it silently dropped the tailnet once already)
 - ⚠️ T5 offsite: iCloud is cancelled, so there is no cloud copy of the photos —
   only the NAS and two drives in the same room
 
-**5. Odysseus** — [guides/SELF_HOSTED_AI.md](guides/SELF_HOSTED_AI.md).
+**4. Odysseus** — [guides/SELF_HOSTED_AI.md](guides/SELF_HOSTED_AI.md).
 Needs an Anthropic or OpenRouter API key from you, and a Cloudflare Access
 policy. ⚠️ **Port 7000 is taken** by macOS AirPlay Receiver — map it elsewhere
 or turn AirPlay Receiver off.
@@ -108,7 +102,24 @@ watchdogs. This is exactly what happened on 2026-08-16.
       (NAS UI → Hardware & Power). Even a self-recovering Mac mini is useless if
       the NAS stays off.
 
-### Rotate the reused NAS passwords
+### Get every credential into Vaultwarden, one per service
+
+**The rule: one unique generated password per service, master copy in
+Vaultwarden.** Where each credential is used — and what breaks when it changes —
+is mapped in [CREDENTIALS.md](CREDENTIALS.md).
+
+⚠️ This matters more than it looks: `rclone-backup.sh` **excludes every `.env`**
+from the R2 backup. A restore from R2 gives you configs with no secrets.
+**Vaultwarden is the only copy.**
+
+- [ ] Walk `~/services/*/.env` and put each secret in Vaultwarden
+- [ ] Replace any reused password with a generated one, service by service
+- [ ] ⚠️ **CouchDB first** — it is the only one reachable from the public
+      internet (`couchdb.peciulevicius.com`), so a shared password there leaks
+      the widest. Password is in `~/services/couchdb/.env`; changing it means
+      re-entering it in the LiveSync plugin on each device.
+- [ ] Gmail app password → Vaultwarden, and note it is used in **three** places
+      (see [CREDENTIALS.md](CREDENTIALS.md)), not one
 
 Both NAS accounts (`Džiugas` admin + `macmini` SMB service account) currently
 use the same password as elsewhere. Rotate to unique generated passwords:
