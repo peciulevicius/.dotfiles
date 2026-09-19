@@ -76,6 +76,20 @@ plaintext. New doc [CREDENTIALS.md](CREDENTIALS.md) maps the three places that
 password is used — `pkm/config.py`, Uptime Kuma SMTP, Calibre-Web Send-to-Kindle
 — because a revoked one breaks all three and only the first one is noisy.
 
+### Removed: Readarr
+
+Checked before removing rather than assuming: **0 authors, 0 books, 0 grab
+history** in `readarr.db`. It had never acquired anything, and it is archived
+upstream. Container, image (300MB), repo directory and every reference in
+`dev-check.sh`, `nas-watchdog.sh`, `NAS.md` and the Calibre compose comments
+are gone. LazyLibrarian is the book pipeline.
+
+⚠️ Worth knowing: LazyLibrarian has **0 books downloaded** too (47 known, 1
+author). The pipeline is configured, not proven.
+
+Data directories for karakeep (238MB), actual-budget (80KB) and readarr (49MB)
+were moved out of `~/services/` to `~/.Trash/homelab-removed-20260919/`.
+
 ### Added: CouchDB for Obsidian LiveSync
 
 `services/couchdb/` — single-node, CORS for `app://obsidian.md`, `obsidian`

@@ -1,9 +1,10 @@
-# Calibre — full library manager + Content Server for Readarr integration
+# Calibre — full library manager + Content Server for LazyLibrarian integration
 # GUI (KasmVNC): http://100.81.171.49:8888
-# Content Server (internal): http://calibre:8081 — used by Readarr
+# Content Server (internal): http://calibre:8081 — used by LazyLibrarian
 # Note: port 8080 inside this image is nginx (KasmVNC GUI), not the content server
 #
-# Readarr integration: Settings → Media Management → Use Calibre
+# Acquisition integration: point LazyLibrarian at the Content Server above.
+# (Readarr was removed 2026-09-19 — archived upstream, never grabbed anything.)
 #   Host: calibre   Port: 8081   Library: /books
 
 name: calibre

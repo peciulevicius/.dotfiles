@@ -112,14 +112,25 @@ is mapped in [CREDENTIALS.md](CREDENTIALS.md).
 from the R2 backup. A restore from R2 gives you configs with no secrets.
 **Vaultwarden is the only copy.**
 
-- [ ] Walk `~/services/*/.env` and put each secret in Vaultwarden
-- [ ] Replace any reused password with a generated one, service by service
-- [ ] ⚠️ **CouchDB first** — it is the only one reachable from the public
-      internet (`couchdb.peciulevicius.com`), so a shared password there leaks
-      the widest. Password is in `~/services/couchdb/.env`; changing it means
-      re-entering it in the LiveSync plugin on each device.
-- [ ] Gmail app password → Vaultwarden, and note it is used in **three** places
-      (see [CREDENTIALS.md](CREDENTIALS.md)), not one
+**Decision 2026-09-19:** CouchDB reuses the existing shared password *for now*,
+so LiveSync can be set up without new friction. That is a deliberate temporary
+trade — CouchDB is the **only service reachable from the public internet**, so
+it is the worst place for a shared password and the first that should be rotated.
+
+Work through every service, one at a time:
+
+- [ ] ⚠️ **CouchDB first** — `~/services/couchdb/.env`, then re-enter the new
+      password in the LiveSync plugin on each device. Public-facing, so highest
+      exposure.
+- [ ] Walk `~/services/*/.env` and put each secret in Vaultwarden as you go
+- [ ] Replace each reused password with a generated one — generate in
+      Vaultwarden **first**, then update the `.env`, then
+      `docker compose up -d` and confirm the service still works
+- [ ] Gmail app password → Vaultwarden. It is used in **three** places, not one
+      (see [CREDENTIALS.md](CREDENTIALS.md)) — rotating it breaks all three
+- [ ] Bitwarden Vault Health report → clear the remaining reused-password flags
+
+Track progress per service; this is a walk, not a single sitting.
 
 Both NAS accounts (`Džiugas` admin + `macmini` SMB service account) currently
 use the same password as elsewhere. Rotate to unique generated passwords:
@@ -304,9 +315,11 @@ tool — swapping Obsidian for something else reproduces the same failure later.
       PR was merged March 2026 then reverted as unstable;
       `pencil-handwriting.koplugin` is early-stage. Jailbreak is additive, so
       run both: KOReader for reading, stock for notes + OCR export.
-- [ ] Check whether `readarr` is still running — the pipeline uses
-      LazyLibrarian, and Readarr was archived upstream (same reconciliation
-      issue as karakeep/actual-budget)
+- [x] ~~Check whether `readarr` is still running~~ — checked 2026-09-19 and
+      **removed**: 0 authors, 0 books, 0 grab history. It had never acquired
+      anything. ⚠️ But LazyLibrarian shows **0 books downloaded** too (47 known,
+      1 author), so the book pipeline is configured, not proven. Confirm it can
+      actually fetch something before relying on it.
 - [ ] **Freeze the Kindle Scribe firmware at 5.19.6** — fill its storage or keep
       Wi-Fi off. Vera's Scribe port targets `<=5.19.6`; updating past it may
       strand the device. Confirm actual support via the Jailbreaking Wizard —

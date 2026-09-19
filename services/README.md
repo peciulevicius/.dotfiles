@@ -33,14 +33,13 @@ Docker Compose stacks for running your own cloud on a Mac mini (or any Docker ho
 | Mealie | 9925 | Recipe manager and meal planner |
 | CouchDB | 5984 | Obsidian LiveSync backend (replaces Obsidian Sync) |
 
-### Media (6)
+### Media (5)
 
 | Service | Port | Purpose |
 |---------|------|---------|
 | Jellyfin | 8096 | Media server (movies, TV) |
 | Sonarr | 8989 | TV show management |
 | Radarr | 7878 | Movie management |
-| Readarr | 8787 | Book management (auto-import to Calibre) |
 | Prowlarr | 9696 | Indexer manager |
 | Transmission | 9091 | BitTorrent client |
 

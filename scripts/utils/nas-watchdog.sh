@@ -26,7 +26,7 @@ SHARES=(media immich audiobooks books unsorted)
 
 # Compose stacks that bind-mount a NAS share (dir name under ~/services)
 NAS_STACKS=(immich jellyfin audiobookshelf calibre calibre-web lazylibrarian
-            readarr bazarr sonarr-radarr transmission)
+            bazarr sonarr-radarr transmission)
 
 log() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" >> "$LOG"; }
 

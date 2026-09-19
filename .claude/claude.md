@@ -97,7 +97,8 @@ Obsidian Web Clipper, then 30 days of capture-only with no organising.
 Goal: read self-hosted Calibre-Web EPUBs on it without Amazon in the middle.
 
 - **LazyLibrarian** acquires both ebooks and audiobooks; **Calibre-Web** and
-  **Audiobookshelf** serve them. `readarr` may be a stale container — verify.
+  **Audiobookshelf** serve them. Readarr was **removed 2026-09-19** — it had
+  0 authors, 0 books and 0 grab history, and was archived upstream.
 - Stock Kindle **cannot read EPUB**; Send to Kindle converts server-side at
   Amazon. **KOReader reads EPUB natively** via Calibre-Web's OPDS feed — this is
   the reason to jailbreak.

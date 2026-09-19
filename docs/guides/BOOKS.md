@@ -238,10 +238,12 @@ So: **LazyLibrarian acquires, Audiobookshelf and Calibre-Web serve.** One tool
 handles both books and audiobooks — click "Wanted" and the PostProcessor routes
 EPUBs into Calibre and MP3/M4B into Audiobookshelf automatically.
 
-> `readarr` is also present in `services/`, but this guide's pipeline uses
-> LazyLibrarian. Readarr was archived upstream — **worth checking whether the
-> container is still running and removing it if unused** (same reconciliation
-> issue as karakeep/actual-budget in the TODO).
+> **Readarr was removed on 2026-09-19.** It had 0 authors, 0 books and 0 grab
+> history, and is archived upstream. LazyLibrarian is the pipeline.
+>
+> ⚠️ LazyLibrarian has **not actually downloaded anything either** (47 books
+> known, 1 author, 0 with status Open). Prove it can fetch a book before
+> assuming the acquisition half of this guide works.
 
 ---
 

@@ -344,7 +344,7 @@ check_command optional rclone "rclone" "brew install rclone"
 
 if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
     DOCKER_DIR="$HOME/services"
-    SERVICES=(immich vaultwarden nextcloud uptime-kuma freshrss syncthing portainer watchtower paperless-ngx calibre-web readarr)
+    SERVICES=(immich vaultwarden nextcloud uptime-kuma freshrss syncthing portainer watchtower paperless-ngx calibre-web couchdb)
 
     if [[ -d "$DOCKER_DIR" ]]; then
         staged_count=0

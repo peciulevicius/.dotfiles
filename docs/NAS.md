@@ -65,8 +65,8 @@ Each service = one folder in `~/services/<name>/` with `docker-compose.yml`
 | jellyfin, sonarr-radarr, transmission, bazarr | `MEDIA_DIR` | `/Volumes/media` |
 | immich | `UPLOAD_LOCATION` | `/Volumes/immich/upload` |
 | immich | `DB_DATA_LOCATION` | `./data/postgres` (internal SSD!) |
-| audiobookshelf, readarr | `AUDIOBOOKS_DIR` | `/Volumes/audiobooks` |
-| calibre, calibre-web, lazylibrarian, readarr | `BOOKS_DIR` | `/Volumes/books` |
+| audiobookshelf, lazylibrarian | `AUDIOBOOKS_DIR` | `/Volumes/audiobooks` |
+| calibre, calibre-web, lazylibrarian | `BOOKS_DIR` | `/Volumes/books` |
 | lazylibrarian | `DOWNLOADS_DIR` | `/Volumes/media/downloads` |
 
 Find every storage reference: `grep -rn "/Volumes" ~/services/*/.env`
