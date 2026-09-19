@@ -1,0 +1,38 @@
+# CouchDB — backing store for Obsidian Self-hosted LiveSync
+# Docs: https://github.com/vrtmrz/obsidian-livesync
+#
+# Data lives on the internal SSD (./data), never on the NAS — it is a database,
+# and SMB mounts corrupt them. Same rule as Immich's Postgres.
+#
+# local.ini is mounted at /config and copied into place by the entrypoint rather
+# than bind-mounted straight into /opt/couchdb/etc/local.d/. The stock entrypoint
+# runs `find /opt/couchdb \! -user couchdb -exec chown -f ... +` under `set -e`,
+# and a macOS bind mount shows up as root-owned and cannot be chowned — so find
+# returns non-zero and the container dies with no log output at all.
+
+name: couchdb
+
+services:
+  couchdb:
+    container_name: couchdb
+    image: couchdb:3.5.0
+    restart: unless-stopped
+    ports:
+      - "${COUCHDB_PORT:-5984}:5984"
+    volumes:
+      - ./data:/opt/couchdb/data
+      - ./local.ini:/config/local.ini:ro
+    environment:
+      COUCHDB_USER: ${COUCHDB_USER:?COUCHDB_USER required}
+      COUCHDB_PASSWORD: ${COUCHDB_PASSWORD:?COUCHDB_PASSWORD required}
+    entrypoint:
+      - /bin/bash
+      - -c
+      - cp /config/local.ini /opt/couchdb/etc/local.d/10-livesync.ini &&
+        exec /docker-entrypoint.sh /opt/couchdb/bin/couchdb
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
+
+networks:
+  default:
+    name: couchdb

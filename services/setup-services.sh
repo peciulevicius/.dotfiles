@@ -41,7 +41,7 @@ SERVICES=(
   jellyseerr
   bazarr
   grafana
-  karakeep
+  couchdb
 )
 
 SERVICE_PORTS=(
@@ -71,7 +71,7 @@ SERVICE_PORTS=(
   "jellyseerr:5055"
   "bazarr:6767"
   "grafana:3000,9090,9100"
-  "karakeep:3006"
+  "couchdb:5984"
 )
 
 log_ok()   { echo -e "${GREEN}✓${NC} $1"; }
@@ -132,6 +132,13 @@ stage_service() {
     cp "$script" "$dest_script"
     chmod +x "$dest_script"
     log_ok "$svc: copied $(basename "$script")"
+  done
+
+  # Copy any config files mounted into the container (e.g. couchdb/local.ini)
+  for conf in "$svc_dir"/*.ini "$svc_dir"/*.conf; do
+    [[ -f "$conf" ]] || continue
+    cp "$conf" "$dest_dir/$(basename "$conf")"
+    log_ok "$svc: copied $(basename "$conf")"
   done
 
   log_ok "$svc staged → $dest_dir"
