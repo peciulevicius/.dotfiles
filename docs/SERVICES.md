@@ -38,9 +38,9 @@ Run your own cloud on a Mac mini (or any Docker host). 26 services covering phot
 |---------|-----|------|---------|
 | [Jellyfin](#jellyfin) | watch.peciulevicius.com | 8096 | Media server (Plex alternative) |
 | [Jellyseerr](#jellyseerr) | Tailscale only | 5055 | Media request & discovery UI |
-| [Sonarr](#sonarr--radarr--prowlarr) | Tailscale only | 8989 | TV show management |
-| [Radarr](#sonarr--radarr--prowlarr) | Tailscale only | 7878 | Movie management |
-| [Prowlarr](#sonarr--radarr--prowlarr) | Tailscale only | 9696 | Indexer manager |
+| [Sonarr](#sonarr-radarr-prowlarr) | Tailscale only | 8989 | TV show management |
+| [Radarr](#sonarr-radarr-prowlarr) | Tailscale only | 7878 | Movie management |
+| [Prowlarr](#sonarr-radarr-prowlarr) | Tailscale only | 9696 | Indexer manager |
 | [Bazarr](#bazarr) | Tailscale only | 6767 | Automated subtitle management |
 | [Transmission](#transmission) | Tailscale only | 9091 | BitTorrent client |
 | [LazyLibrarian](#lazylibrarian) | Tailscale only | 5299 | Ebook & audiobook automation |
@@ -49,9 +49,9 @@ Run your own cloud on a Mac mini (or any Docker host). 26 services covering phot
 
 | Service | URL | Port | Purpose |
 |---------|-----|------|---------|
-| [Grafana](#grafana--prometheus) | Tailscale only | 3000 | Monitoring dashboards |
-| [Prometheus](#grafana--prometheus) | Tailscale only | 9090 | Metrics collection |
-| [Node Exporter](#grafana--prometheus) | — | 9100 | System metrics (CPU, RAM, disk) |
+| [Grafana](#grafana-prometheus) | Tailscale only | 3000 | Monitoring dashboards |
+| [Prometheus](#grafana-prometheus) | Tailscale only | 9090 | Metrics collection |
+| [Node Exporter](#grafana-prometheus) | — | 9100 | System metrics (CPU, RAM, disk) |
 
 ## Prerequisites
 

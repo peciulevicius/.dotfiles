@@ -116,7 +116,7 @@ Full guide: [Claude Code Guide](./CLAUDE_CODE_GUIDE.md)
 | See what each service is and its port | [SERVICES.md](./SERVICES.md) |
 | Understand the NAS and its mounts | [NAS.md](./NAS.md) |
 | Know what the scripts do | [UTILITY_SCRIPTS.md](./UTILITY_SCRIPTS.md) |
-| Fix or add a scheduled job | [../scripts/cron/README.md](../scripts/cron/README.md) |
+| Fix or add a scheduled job | [scripts/cron/README.md](https://github.com/peciulevicius/.dotfiles/blob/main/scripts/cron/README.md) |
 
 ### The long-running projects
 

@@ -48,9 +48,11 @@ nav:
       - Changelog (done, and why): HOME_SERVER_CHANGELOG.md
       - Reference (RAM, drives, paths): HOME_SERVER_REFERENCE.md
       - NAS: NAS.md
+      - Credential migration: CREDENTIAL_MIGRATION.md
 
   - Claude Code:
       - Claude Code Guide: CLAUDE_CODE_GUIDE.md
+      - Claude Workflow: guides/CLAUDE_WORKFLOW.md
 
   - Tools:
       - Modern CLI Tools: MODERN_CLI_TOOLS.md

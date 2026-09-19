@@ -170,6 +170,30 @@ survived this time because the file was only being *read* through a dead fd
 rather than written. Moving the Calibre library metadata onto the internal SSD
 is the real fix and is now an open TODO.
 
+### Cloudflare Email Routing live, catch-all verified
+
+`peciulevicius.com` now receives mail: `contact@`, `hello@`, `dziugas@` and a
+catch-all, all forwarding to Gmail. Verified by delivering to an address that
+was never created, which confirms the catch-all is active and that every local
+part at the domain reaches the inbox.
+
+Receive-only, though — Cloudflare provides no SMTP, so Gmail's "Send mail as"
+cannot send from the custom address. Fine for signups, weak for correspondence,
+and the concrete reason to stop deferring Purelymail.
+
+### Docs site build fixed
+
+`mkdocs build --strict` was failing on main. The cause was a link added earlier
+that day from `START_HERE.md` to `../scripts/cron/README.md` — outside the docs
+tree, so mkdocs cannot resolve it and strict mode turns that warning into a
+failure. Now an absolute GitHub URL.
+
+Also removed two brittle anchors into the changelog (em dashes slugify
+unpredictably) and fixed three genuinely wrong in-page anchors that had been
+broken for readers: `#sonarr--radarr--prowlarr`, `#grafana--prometheus` and
+`#setup--update` all use single hyphens once slugified. Verified by running the
+exact CI command locally — exit 0, no warnings.
+
 ### Security: Pi-hole had a 5-character password, publicly exposed
 
 Auditing the `.env` files turned it up: `PIHOLE_PASSWORD` was 5 characters and

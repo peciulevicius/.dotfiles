@@ -10,62 +10,36 @@ Grouped by "what happens if I ignore this", not by number.
 ## ▶ Start here — do these in this order
 
 Last worked: **2026-09-19**. Finished work is in
-[HOME_SERVER_CHANGELOG.md](HOME_SERVER_CHANGELOG.md#2026-09-19--verification-backups-couchdb).
+[HOME_SERVER_CHANGELOG.md](HOME_SERVER_CHANGELOG.md) (see the 2026-09-19 entry).
 The order below matters — each step unblocks the next.
 
-### 1. ✅ ~~Gmail app password~~ — done 2026-09-19, sync is alive
+### ✅ Done 2026-09-19 — Gmail app password, and the custom email address
 
-Fixed after ~73 days dead. Two follow-ups still open, because the **same app
-password** is used in two other places that fail silently:
+Both cleared. Kindle sync is alive after ~73 days; Uptime Kuma SMTP and
+Calibre-Web Send-to-Kindle were re-pointed at the new app password and tested
+working. Cloudflare Email Routing is live on `peciulevicius.com` with
+`contact@`, `hello@`, `dziugas@` and a **catch-all** — verified by delivering to
+an address that was never created.
 
-- [ ] **Uptime Kuma** → `status.peciulevicius.com` → Settings → Notifications →
-      edit "Uptime Kuma" (SMTP) → paste the new app password → **Test** → Save
-- [ ] **Calibre-Web** → `books.peciulevicius.com` → Admin → SMTP settings →
-      paste → send a test to `peciulevicius-scribe@kindle.com`
-- [ ] Save the app password to Bitwarden
+⚠️ Still true: Email Routing **receives only**. Replying goes out as Gmail until
+there is a real mailbox, so this is the argument for doing Purelymail sooner
+rather than later — see [guides/DEGOOGLE.md](guides/DEGOOGLE.md).
 
-Google's page showed *no existing app passwords*, which confirms the old one was
-deleted rather than expired — so both of the above have been broken since July
-too. Test them, don't assume.
+### 1. 🔑 Credentials into Bitwarden — **start here tomorrow**
 
-To set it again later (the Purelymail migration will need it), the helper that
-prompts without echoing is in git history:
-`git show 50c21f9:scripts/setup/set-kindle-password.sh > /tmp/set-pw.sh`
+Full checklist, no secrets: **[CREDENTIAL_MIGRATION.md](CREDENTIAL_MIGRATION.md)**.
+4 of ~18 services done.
 
-### 2. 📧 Custom email address — **before** touching any service login
-
-Free, ~15 minutes, commits you to nothing, and every later switch becomes a DNS
-edit. **This has to come before step 3**: you cannot change a service's login
-email to an address that doesn't receive mail yet — the verification link goes
-nowhere.
-
-- [ ] Cloudflare → `peciulevicius.com` → Email → **enable Email Routing**
-- [ ] `dziugas@peciulevicius.com` + catch-all → forwards to the current Gmail
-- [ ] Send yourself a test, confirm it arrives
-- [ ] Start handing out the new address everywhere from now on
-
-Purelymail comes much later — see [guides/DEGOOGLE.md](guides/DEGOOGLE.md).
-Do **not** flip MX until step 3 is finished.
-
-### 3. 🔑 Credentials into Bitwarden, one service at a time
-
-Everything — the table of services with URLs and usernames, the CLI reset
-commands, and the known issues — is in **`~/credentials-import.md`**.
-It lives outside this repo because this repo is public. Delete it once the
-vault is populated.
-
-- [ ] Save the three already-rotated services (CouchDB, Transmission, Pi-hole)
-- [ ] Work down the worksheet: generate in Bitwarden → set in the app → save,
+- [ ] Transcribe the three pending passwords from `~/credentials-import.md`
+      (CouchDB, Transmission, Pi-hole) plus the Gmail app password, then
+      `rm` that file
+- [ ] Work down the checklist: generate in Bitwarden → set in the app → save,
       with the **URL** on each entry so autofill matches
-- [ ] Where the login *is* the Gmail address (Vaultwarden, Immich, Linkwarden,
-      Mealie), switch it to the new address from step 2 at the same time
-- [ ] ⚠️ Decide about **Immich's Postgres password** — still the old reused one.
-      Internal-only, but changing it needs `ALTER USER` and the `.env` together.
-- [ ] ⚠️ **Nextcloud has two accounts** (`peciulevicius` and a second `admin`
-      whose display name is also "peciulevicius"). Pick one, delete the other.
-- [ ] Delete `~/credentials-import.md` when the vault is populated
+- [ ] Use the same pass to move email-based logins onto per-service aliases
+      (`immich@`, `linkwarden@`, …) — the catch-all means none need creating
+      first, and a spammed alias tells you exactly who leaked it
 
-### 4. 🔗 Finish Obsidian LiveSync — the server side is done
+### 2. 🔗 Finish Obsidian LiveSync — the server side is done
 
 CouchDB is up at `https://couchdb.peciulevicius.com`, `obsidian` database
 created, anonymous requests 401 on every path except `/_up`.
@@ -77,13 +51,13 @@ created, anonymous requests 401 on every path except `/_up`.
       answering with an empty device wipes the vault. Snapshot:
       `~/backups/vault-snapshots/`.
 
-### 5. 🛡️ Two-minute jobs that prevent real loss
+### 3. 🛡️ Two-minute jobs that prevent real loss
 
 - [ ] Tailscale key expiry (it silently dropped the tailnet once already)
 - [ ] ⚠️ T5 offsite — iCloud is cancelled, so there is no cloud copy of the
       photos, only the NAS and two drives in the same room
 
-### 6. 🤖 Odysseus
+### 4. 🤖 Odysseus
 
 [guides/SELF_HOSTED_AI.md](guides/SELF_HOSTED_AI.md). Needs an Anthropic or
 OpenRouter API key and a Cloudflare Access policy. ⚠️ **Port 7000 is taken** by
@@ -609,7 +583,7 @@ only way to get both, and that's Phase 2.
 
 **Hardware and migration history** — arrival, RAID build, SMB shares, the T7 →
 NAS copy and the switch of every service to NAS paths — is in
-[HOME_SERVER_CHANGELOG.md](HOME_SERVER_CHANGELOG.md#nas--arrival-and-migration-jul-aug-2026).
+[HOME_SERVER_CHANGELOG.md](HOME_SERVER_CHANGELOG.md) (see the NAS arrival/migration entry).
 Layout and paths are in [HOME_SERVER_REFERENCE.md](HOME_SERVER_REFERENCE.md).
 
 **Still to do (pre-drives config that never got finished):**

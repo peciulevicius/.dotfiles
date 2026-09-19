@@ -5,7 +5,7 @@ Everything about the Claude Code setup in this dotfiles repo — the 6 things, h
 ## Table of Contents
 
 - [The 6 Things](#the-6-things)
-- [Setup & Update](#setup--update)
+- [Setup & Update](#setup-update)
 - [New Project Setup](#new-project-setup)
 - [The 6 Things In Detail](#the-6-things-in-detail)
   - [1. Global CLAUDE.md](#1-global-claudemd)
