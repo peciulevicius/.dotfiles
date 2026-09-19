@@ -182,9 +182,16 @@ Paperless-NGX doesn't support traditional folders — it uses **tags**, **docume
 Kindle sync all exist and go unused. The problem is capture friction, not the
 tool — swapping Obsidian for something else reproduces the same failure later.
 
-- [ ] Sync the vault via **iCloud** (native in Obsidian, free, reliable on
-      iOS/Mac). Syncthing stays for the Mac mini leg; switch to Obsidian Sync
-      (~€4/mo) only if a Pixel happens — iOS Syncthing is the weak point.
+- [ ] **Stand up CouchDB + Self-hosted LiveSync** — self-hosted Obsidian sync,
+      works on iOS/Android/desktop, real-time, E2E, no subscription, no Apple
+      dependency. `services/couchdb/`, data on the **internal SSD** (database —
+      never SMB), exposed at `couchdb.peciulevicius.com` via the existing tunnel
+      (**mobile Obsidian requires HTTPS**), behind Cloudflare Access.
+      ⚠️ Back up the vault first — LiveSync's initial sync picks a source of
+      truth and can overwrite. Fallback if CouchDB is unwanted: Remotely Save →
+      Nextcloud WebDAV or R2.
+      ❌ Not iCloud (Apple dependency, and breaks on a Pixel), ❌ not Obsidian
+      Sync (~€4/mo subscription).
 - [ ] **One** quick-capture Shortcut on the iPhone home screen, ≤2 taps,
       appending to the daily note
 - [ ] Install the **Obsidian Web Clipper** in Brave (complements Linkwarden:
@@ -195,6 +202,12 @@ tool — swapping Obsidian for something else reproduces the same failure later.
 - [ ] **30 days of capture only, zero organising.** Then reassess.
       If it still hasn't stuck, Apple Notes for fleeting + Obsidian for durable
       is a legitimate end state, not a failure.
+- [ ] **Freeze the Kindle Scribe firmware at 5.19.6** — fill its storage or keep
+      Wi-Fi off. Vera's Scribe port targets `<=5.19.6`; updating past it may
+      strand the device. Confirm actual support via the Jailbreaking Wizard —
+      Scribe support reads as pending, not shipped.
+- [ ] Habit: **Share → Searchable PDF** after each meeting. Amazon's handwriting
+      OCR is what makes the notes greppable once they land in the vault.
 - [ ] Later: point Odysseus's RAG at the vault
 
 ### De-Google — migrate off all Google services

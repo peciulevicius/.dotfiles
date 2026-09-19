@@ -159,18 +159,39 @@ folder unsorted. Sorting happens later, or never.
 | **Web** | ⭐ **Obsidian Web Clipper** — official browser extension, clips any page to markdown straight into the vault | Pairs with Linkwarden ✅: Linkwarden archives the *link*, the clipper captures the *content you care about* |
 | **Kindle Scribe** | `pkm/kindle_sync.py` ✅ already built — hourly cron | See below |
 
-### Sync — the part that actually breaks
+### Sync — self-hosted, no subscriptions, no Apple dependency
+
+**Constraint: no monthly subscriptions, and nothing that ties the vault to the
+Apple ecosystem** — the NAS and Mac mini exist precisely to avoid both, and a
+future GrapheneOS phone must work too. That rules out iCloud *and* Obsidian Sync.
 
 | Option | Verdict |
 |---|---|
-| **iCloud** | ⭐ **Use this now.** Obsidian supports it natively on iOS + Mac, it's free, and you already pay for iCloud. Reliable in a way Syncthing on iOS is not. |
-| **Obsidian Sync** (~€4/mo) | The thing that "just works" everywhere including Android. ⭐ **Switch to this if a Pixel happens.** |
-| **Syncthing** ✅ | Free and excellent Mac↔Mac↔Android — but **iOS is the weak point**: needs Möbius Sync (paid) and iOS background limits make it unreliable. Fine for the Mac mini leg. |
+| **Self-hosted LiveSync + CouchDB** | ⭐ **The answer.** Community plugin, works on **iOS, Android, macOS, Windows**, real-time, E2E encrypted, free. CouchDB runs in Docker on the Mac mini. |
+| Remotely Save → Nextcloud WebDAV or R2 | Simpler fallback. Periodic rather than real-time, but no new database to run — points at Nextcloud ✅ or R2 ✅, both already yours. |
+| Syncthing ✅ | Keep for the Mac mini leg. Excellent on Android — **but iOS is the weak point** (Möbius Sync, background limits). Not the mobile answer while on iPhone. |
+| ❌ iCloud | Rejected — Apple ecosystem dependency, and breaks entirely if a Pixel happens. |
+| ❌ Obsidian Sync | Rejected — ~€4/mo subscription. |
 
-> **"Doesn't iCloud sync contradict de-Googling?"** No. The files are plain
-> markdown — sync is *transport*, not ownership. You can move the vault to any
-> other method in an afternoon. Don't let purity block the thing that makes the
-> system usable.
+**Self-hosted LiveSync is the right fit here** because the hard part — exposing
+the database over HTTPS so mobile Obsidian can reach it — is already solved:
+**the cloudflared tunnel is running.** It's one more container plus one more
+subdomain.
+
+- [ ] `services/couchdb/docker-compose.yml` + `.env.example`, per repo convention
+- [ ] Data dir on the **internal SSD**, not the NAS — it's a database, and
+      databases must not live on an SMB mount (same rule as Immich Postgres)
+- [ ] Expose at `couchdb.peciulevicius.com` via the existing tunnel —
+      **mobile Obsidian requires HTTPS**, plain HTTP will not work
+- [ ] Put it behind Cloudflare Access, or keep it Tailscale-only
+- [ ] Install the **Self-hosted LiveSync** community plugin on every device;
+      enable E2E encryption and set a passphrase
+- [ ] Add the CouchDB data dir to `rclone-backup.sh`
+- [ ] Add a Glance tile + Uptime Kuma check
+
+⚠️ **Do a one-way first sync.** LiveSync's initial setup asks which device is
+the source of truth — get this wrong and it can overwrite a vault. Back the
+vault up before the first connection.
 
 ### Search
 
@@ -185,7 +206,7 @@ A small local model over your own notes beats a large model that has never seen 
 
 ### Do this, in order
 
-- [ ] Pick **iCloud** as the sync method, get the vault on the iPhone
+- [ ] Stand up **CouchDB + Self-hosted LiveSync** (above), get the vault on the iPhone
 - [ ] Set up **one** quick-capture Shortcut on the iPhone home screen
 - [ ] Install the **Obsidian Web Clipper** in Brave
 - [ ] Verify the Kindle sync is still alive (below)
@@ -225,6 +246,42 @@ expire after 7 days**, so a slow poll risks losing exports.
 So yes: **email remains the only sensible route**, and that's a feature here, not
 a limitation — it's why the script is provider-agnostic.
 
+### Making meeting notes searchable — the pipeline already does this
+
+This is the actual requirement: handwrite in a meeting, **find it later**.
+
+**That is exactly what `kindle_sync.py` was built for, and it already works:**
+
+1. Scribe → **Share → Searchable PDF**. Amazon runs **handwriting OCR** and
+   produces a real text layer alongside the PDF.
+2. The email lands, the hourly cron picks it up, the script pulls **both** the
+   `.txt` and the `.pdf`.
+3. Both are filed into `📥 Imports/YYYY-MM-DD_HH-MM_name.md` in the vault.
+
+From there the handwriting is **plain searchable text**:
+
+```bash
+rg -i "that thing from the meeting" ~/obsidian-vault
+```
+
+…plus Obsidian's own search, and later Odysseus's RAG over the whole vault.
+
+**So the searchability problem is already solved — it's the last mile that
+isn't.** Nothing is searchable while the notes sit on the Scribe. The export
+has to actually happen, and the vault has to be somewhere you look.
+
+- [ ] Verify the cron still runs (see above) — it's untested for months
+- [ ] Get into the habit of **Share → Searchable PDF** at the end of each meeting
+- [ ] Remember Amazon's share links expire after **7 days** — if the Mac mini is
+      down for a week, those exports are lost
+
+> Amazon's handwriting OCR is genuinely good and costs nothing. There is no
+> comparable self-hosted handwriting OCR today — Tesseract is poor at cursive.
+> A local vision model (Qwen-VL via Odysseus) is the plausible future
+> replacement, but Amazon's is better right now. This is a reasonable place to
+> keep using their processing, since the *output* lands in your vault as plain
+> markdown you own.
+
 ### Note-taking on the Scribe, honestly
 
 It's a good *handwriting* device — excellent screen, pleasant pen feel, great for
@@ -235,21 +292,41 @@ a manual Share action.
 Treat it as the place for **deliberate, longform notes** that get exported in
 batches — not for catching fleeting thoughts. The phone is for that.
 
-### Jailbreaking the Scribe
+### Jailbreaking the Scribe — check the Wizard, and freeze firmware now
 
-Kindle jailbreaks are active in 2026 — **Vera** (firmware 5.17.1–5.19.6) and
-**Sanctuary** (5.16.4–5.18.3, runs in the Kindle browser, no PC or cable). Once
-jailbroken, `;kpm install koreader` installs KOReader.
+**Device here:** Kindle Scribe 1st gen (2024), serial `GO93…`, firmware **5.19.6**.
 
-⚠️ **Scribe-specific compatibility is not confirmed** in either project's
-published range — check [kindlemodding.org](https://kindlemodding.org) against
-your exact model and firmware before attempting anything.
+⚠️ **Scribe support appears to be pending, not shipped.** Vera's own page says
+it *"will be ported to `KS3(NFL)` and `KSC` firmwares <=5.19.6 **in the
+future**"* — which reads as Scribe targets not yet being supported, with 5.19.6
+as the intended ceiling.
 
-**But it probably wouldn't help you.** Jailbreaking improves *reading* — more
-formats, no Amazon lock-in, KOReader's superior typography. It does **not**
-improve note-taking: the pen and notebook features are Amazon's software, and
-KOReader doesn't replace them. If the goal is better notes, jailbreaking is the
-wrong lever.
+- [ ] **Confirm with the [Jailbreaking Wizard](https://kindlemodding.org)**
+      against the exact model + firmware before attempting anything. Don't infer
+      support from a version range in prose — the Wizard is authoritative.
+
+#### Whatever you decide, do this now: stop firmware updates
+
+You are on **5.19.6**, which is the ceiling mentioned. If the Scribe auto-updates
+past it, a future jailbreak may never apply to this device. Freezing costs
+nothing and is reversible.
+
+- [ ] **Fill the device's storage** — the documented trick to block auto-updates,
+      and listed as a Vera prerequisite
+- [ ] Or keep Wi-Fi off except when deliberately syncing
+- [ ] Optionally block Amazon's update endpoints at **Pi-hole** ✅ — but note the
+      router still doesn't point at Pi-hole, so this only works for devices
+      configured to use it manually
+
+#### It still won't improve note-taking
+
+Worth repeating, because it's the actual goal here: jailbreaking gets you
+**KOReader** — better reading, more formats, no Amazon lock-in. The pen,
+notebooks and handwriting OCR are **Amazon's software**, and KOReader does not
+replace them. Jailbreaking is a *reading* upgrade, not a *notes* upgrade.
+
+The good news: it's additive. A jailbroken Scribe keeps the stock notebook
+features, so the existing export pipeline keeps working.
 
 ### Storyteller doesn't need a jailbreak
 

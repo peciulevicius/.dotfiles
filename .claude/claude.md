@@ -77,8 +77,13 @@ Standing decisions (don't relitigate without being asked):
 
 Obsidian vault + Syncthing + `pkm/kindle_sync.py` all exist but go largely
 unused. **Diagnosis is capture friction, not tool choice** — do not suggest
-replacing Obsidian. Fix: iCloud sync, a ≤2-tap iPhone capture Shortcut, the
+replacing Obsidian. Fix: self-hosted sync, a ≤2-tap iPhone capture Shortcut, the
 Obsidian Web Clipper, then 30 days of capture-only with no organising.
+
+- **No subscriptions and no Apple-ecosystem dependency.** The user cancelled
+  iCloud; the NAS and Mac mini exist to avoid monthly fees, and a future
+  GrapheneOS phone must work. **Never propose iCloud or Obsidian Sync.**
+  Sync target is **CouchDB + Self-hosted LiveSync**, self-hosted on the Mac mini.
 
 - `pkm/kindle_sync.py` pulls Kindle Scribe notebook exports out of email over
   IMAP into the vault, **hourly** (Amazon's share links expire after 7 days).
