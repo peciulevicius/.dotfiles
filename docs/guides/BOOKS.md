@@ -146,6 +146,49 @@ These map to:
 4. Wait ~15 min for download + processing
 5. Ebook appears in Calibre-Web / Audiobookshelf automatically
 
+## Reading sideloaded books on the Kindle
+
+### Page numbers vs "Location"
+
+Tap the progress indicator at the bottom of the screen to cycle through
+**Location → Page in book → Time left in chapter → Time left in book**.
+
+But "Page in book" only appears when the file carries page-number data. Amazon
+supplies that as a separate **APNX** file, generated per-title by matching a
+print edition — store purchases get one, personal documents almost never do. So
+for anything sideloaded, the option is usually simply absent, and no setting
+brings it back.
+
+Two ways around it:
+
+- **Transfer over USB with Calibre instead of email.** Calibre's Kindle driver
+  generates an APNX alongside the book (Preferences → Devices → your Kindle →
+  page-number options: *fast*, *accurate*, or *pagebreak*). Send-to-Kindle email
+  transfers no APNX, so this only works over the cable.
+- **KOReader after the jailbreak** — it paginates natively and shows real page
+  numbers for EPUB without needing anything from Amazon. This is already the
+  plan; see the jailbreak section.
+
+### Covers not showing for Send-to-Kindle books
+
+Expected, and not something wrong with the library — 35 of 37 books have covers
+in Calibre. Books that arrive as **personal documents** frequently render with a
+generic placeholder instead of their cover art, because Amazon's conversion
+pipeline treats them differently from store purchases.
+
+Worth trying, in order:
+
+1. **Send AZW3 rather than EPUB.** AZW3 carries the cover in a form the Kindle
+   reads directly, with no conversion step to lose it. Much of the library
+   already has AZW3/AZW8 alongside EPUB from the DeDRM work.
+2. **Embed the cover into the file first** — in Calibre, select the book →
+   *Polish books* → **Update metadata in book files**. EPUBs that merely have a
+   cover in Calibre's database, rather than inside the file, lose it in transit.
+3. **USB transfer**, which skips Amazon's conversion entirely.
+
+Again, the durable answer is KOReader over the OPDS feed: it reads the EPUB as
+it exists in Calibre-Web, covers and all, with Amazon out of the loop.
+
 ## Known Gotchas
 
 ### Torznab `enabled` defaults to False
