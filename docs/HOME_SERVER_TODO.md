@@ -22,8 +22,10 @@ Failing hourly since early July. Tried with the Google *account* password on
 - [ ] Google Account → Security → 2-Step Verification → **App passwords**
 - [ ] Put it in `pkm/config.py` as `EMAIL_PASSWORD` (gitignored, Mac mini only)
 - [ ] Test: `~/.dotfiles/pkm/.venv/bin/python3 ~/.dotfiles/pkm/kindle_sync.py`
-- [ ] ⚠️ Used in **two other places** too — Uptime Kuma's SMTP notification and
-      Calibre-Web's Send-to-Kindle. See [CREDENTIALS.md](CREDENTIALS.md).
+- [ ] ⚠️ **Used in two other places too** — Uptime Kuma's SMTP notification and
+      Calibre-Web's Send-to-Kindle Gmail SMTP. If the old app password was
+      revoked, both have been silently broken for the same ~73 days. Test each.
+      Step-by-step: `~/credentials-import.md`.
 
 ### 2. 📧 Custom email address — **before** touching any service login
 
@@ -42,9 +44,10 @@ Do **not** flip MX until step 3 is finished.
 
 ### 3. 🔑 Credentials into Bitwarden, one service at a time
 
-Worksheet with the real values: **`~/credentials-import.md`** (outside this
-repo — it's public). The map of what each credential does:
-[CREDENTIALS.md](CREDENTIALS.md).
+Everything — the table of services with URLs and usernames, the CLI reset
+commands, and the known issues — is in **`~/credentials-import.md`**.
+It lives outside this repo because this repo is public. Delete it once the
+vault is populated.
 
 - [ ] Save the three already-rotated services (CouchDB, Transmission, Pi-hole)
 - [ ] Work down the worksheet: generate in Bitwarden → set in the app → save,
@@ -135,8 +138,8 @@ watchdogs. This is exactly what happened on 2026-08-16.
 ### Get every credential into Vaultwarden, one per service
 
 **The rule: one unique generated password per service, master copy in
-Vaultwarden.** Where each credential is used — and what breaks when it changes —
-is mapped in [CREDENTIALS.md](CREDENTIALS.md).
+Vaultwarden.** The working checklist, with a row per service, is
+`~/credentials-import.md` (outside this repo — this one is public).
 
 ⚠️ This matters more than it looks: `rclone-backup.sh` **excludes every `.env`**
 from the R2 backup. A restore from R2 gives you configs with no secrets.
@@ -144,8 +147,7 @@ from the R2 backup. A restore from R2 gives you configs with no secrets.
 
 **Decision 2026-09-19 — username `peciulevicius` everywhere, and two kinds of
 password:** one memorised passphrase for the Vaultwarden master, generated
-random for every service. Full policy and the per-service checklist are in
-[CREDENTIALS.md](CREDENTIALS.md).
+random for every service.
 
 ✅ Already done: **Vaultwarden master password**, **CouchDB**, **Transmission**
 and **Pi-hole** — the only services whose password is a runtime env var. All
@@ -158,11 +160,10 @@ the old one as exposed.
 ⚠️ **Everything else cannot be changed from a file.** Init-only env vars are
 inert once the account exists, and app accounts are salted hashes. Four services
 have CLI resets (Nextcloud, Paperless, FreshRSS, Grafana); the rest are UI only.
-Commands and the full explanation are in [CREDENTIALS.md](CREDENTIALS.md).
+Commands and the full explanation are in `~/credentials-import.md`.
 
 📋 **Worksheet with the real values: `~/credentials-import.md`** — deliberately
-outside this repo, which is public. [CREDENTIALS.md](CREDENTIALS.md) is the
-secret-free map: every service, its URL for autofill, and how to change it.
+outside this repo, which is public.
 
 ⚠️ **`ADMIN_USER` / `GRAFANA_USER` in the other `.env` files are inert** — they
 only apply at first init, so those renames must happen in each app's own UI.
@@ -170,12 +171,12 @@ only apply at first init, so those renames must happen in each app's own UI.
 - [ ] ⚠️ **Retire the old reused personal password.** It was in use across many
       services; treat any account still on it as compromised-by-reuse until
       rotated. The string is deliberately not recorded in this repo.
-- [ ] Work down the inventory in [CREDENTIALS.md](CREDENTIALS.md), one service
-      at a time: generate in Vaultwarden **first** (with the URL set so autofill
+- [ ] Work down the inventory in `~/credentials-import.md`, one service at a
+      time: generate in Vaultwarden **first** (with the URL set so autofill
       works), then change it in the app, then confirm the app still works
 - [ ] ⚠️ Several services use **the Gmail address as the login itself** —
       Vaultwarden, Immich, Linkwarden, Mealie. Those logins have to change at
-      the email migration, not just the forwarding. See CREDENTIALS.md.
+      the email migration, not just the forwarding.
 - [ ] Gmail app password → Vaultwarden. Used in **three** places, not one —
       rotating it breaks all three
 - [ ] Bitwarden Vault Health report → clear the remaining reused-password flags

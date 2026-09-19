@@ -72,8 +72,7 @@ Test post returned HTTP 204. Cron job failures now actually reach Discord.
 Filling `EMAIL_PASSWORD` with the Google **account** password was rejected with
 `AUTHENTICATIONFAILED`. Gmail IMAP requires a **16-character app password** when
 2FA is on. The field was cleared rather than left holding an account password in
-plaintext. New doc [CREDENTIALS.md](CREDENTIALS.md) maps the three places that
-password is used — `pkm/config.py`, Uptime Kuma SMTP, Calibre-Web Send-to-Kindle
+plaintext. The three places that password is used were mapped — `pkm/config.py`, Uptime Kuma SMTP, Calibre-Web Send-to-Kindle
 — because a revoked one breaks all three and only the first one is noisy.
 
 ### Removed: Readarr
@@ -108,8 +107,9 @@ out of Bitwarden anyway — on the phone too — nothing but the vault master is
 ever typed, so there is no reason for a service password to be memorable.
 Random everywhere.
 
-[CREDENTIALS.md](CREDENTIALS.md) now inventories **every** service with the URL
-to store in the Bitwarden entry, so autofill matches. It also flags that
+Every service was inventoried with the URL to store in the Bitwarden entry, so
+autofill matches (this lived in `docs/CREDENTIALS.md`, later folded into the
+out-of-repo worksheet `~/credentials-import.md` — see the note below). It also flags that
 several logins *are* the Gmail address (Vaultwarden, Immich, Linkwarden,
 Mealie), which the email migration has to change inside each app — not just
 forward.
@@ -117,7 +117,7 @@ forward.
 ⚠️ Discovered while planning it: `ADMIN_USER` / `GRAFANA_USER` in the other
 `.env` files are **inert** — they are read only at first initialisation, so the
 account already exists in each app's database and editing `.env` changes
-nothing. Those renames are UI work. Checklist in [CREDENTIALS.md](CREDENTIALS.md).
+nothing. Those renames are UI work; the checklist is in `~/credentials-import.md`.
 
 ### Security: Pi-hole had a 5-character password, publicly exposed
 
@@ -135,6 +135,22 @@ checked out as 32–64 char random.
 
 Also found **two Nextcloud accounts**: `peciulevicius`, and a second `admin`
 whose display name is confusingly also "peciulevicius".
+
+### Credentials documentation moved out of the repo entirely
+
+`docs/CREDENTIALS.md` was created and then deleted the same day. The reasoning:
+a secret-free "map" in the public repo and a separate worksheet holding the real
+values meant two files to keep in sync, and the map is not what you reach for
+while actually moving passwords into Bitwarden.
+
+Everything — the per-service table with URLs and usernames, the CLI reset
+commands, the Gmail app-password procedure, and the known issues — now lives in
+**`~/credentials-import.md`**, outside the repo, chmod 600, to be deleted once
+the vault is populated.
+
+What stays in the repo is the *rule*, in `.claude/CLAUDE.md`: this repo is
+public, so no password, token or webhook URL may ever land in it — not even in
+documentation.
 
 ### Added: CouchDB for Obsidian LiveSync
 
