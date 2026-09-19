@@ -62,10 +62,10 @@ is the first username every automated attack tries, and it is free to change.
 | **One memorised passphrase** | The Vaultwarden master password only | 4–6 random common words. The only password you ever type from memory. |
 | **Generated random** | Every service | Generated in Vaultwarden, stored there, autofilled or pasted. Never memorised, never reused. |
 
-The one exception is a password you genuinely have to **type by hand on a phone**
-— CouchDB, entered in the LiveSync plugin on each device. There, use a **six
-common words + two digits** passphrase (~62 bits): easy on a phone keyboard,
-still far stronger than anything memorable-and-short.
+**Random everywhere, including CouchDB** (decided 2026-09-19). The workflow is
+always: open Bitwarden, copy, paste — on the phone too. Nothing but the
+Vaultwarden master is ever typed from memory, so there is no reason for any
+service password to be memorable.
 
 ❌ **Never one shared password across services.** One breach then becomes a total
 breach, and the most exposed service sets the security of every other one.
@@ -78,26 +78,98 @@ repo is public.)
 
 ---
 
-## Rename + rotate checklist
+## Every service — the full inventory
+
+**One row per login.** The **URL column is what Bitwarden needs** as the item's
+URI so autofill offers the right entry. For Tailscale-only services use the
+`100.81.171.49` address as the URI — that is what you actually open.
+
+Tailscale IP: `100.81.171.49` · Locally, `localhost` works for the same ports.
+
+### Public (via Cloudflare Tunnel)
+
+| Service | URL for Bitwarden | Username | Secret lives | Done |
+|---|---|---|---|---|
+| Vaultwarden | `https://vault.peciulevicius.com` | your email | **the master password** | ✅ changed 2026-09-19 |
+| Immich | `https://photos.peciulevicius.com` | email | app account | ⬜ |
+| Nextcloud | `https://cloud.peciulevicius.com` | `peciulevicius` | app account | ⬜ |
+| Paperless-ngx | `https://papers.peciulevicius.com` | `peciulevicius` | app account | ⬜ |
+| FreshRSS | `https://rss.peciulevicius.com` | `peciulevicius` | app account | ⬜ |
+| Uptime Kuma | `https://status.peciulevicius.com` | `peciulevicius` | app account | ⬜ |
+| Calibre-Web | `https://books.peciulevicius.com` | `peciulevicius` | app account | ⬜ |
+| Pi-hole | `https://pihole.peciulevicius.com` | *(password only)* | app account | ⬜ |
+| Linkwarden | `https://links.peciulevicius.com` | email | app account | ⬜ |
+| Mealie | `https://recipes.peciulevicius.com` | email | app account | ⬜ |
+| Jellyfin | `https://watch.peciulevicius.com` | `peciulevicius` | app account | ⬜ |
+| Audiobookshelf | `https://listen.peciulevicius.com` | `peciulevicius` | app account | ⬜ |
+| Portainer | `https://portainer.peciulevicius.com` | `peciulevicius` | app account | ⬜ |
+| **CouchDB** | `https://couchdb.peciulevicius.com` | `peciulevicius` | `~/services/couchdb/.env` | ✅ 2026-09-19, 32-char random |
+| NAS (UGOS) | `https://nas.peciulevicius.com` | `Džiugas` | NAS UI | ⬜ ⚠️ reused |
+| Glance dashboard | `https://home.peciulevicius.com` | *(no login)* | — | n/a |
+| Stirling PDF | `https://pdf.peciulevicius.com` | *(no login)* | — | n/a |
+| IT-Tools | `https://tools.peciulevicius.com` | *(no login)* | — | n/a |
+
+### Tailscale-only (not exposed publicly)
+
+| Service | URL for Bitwarden | Username | Secret lives | Done |
+|---|---|---|---|---|
+| Sonarr | `http://100.81.171.49:8989` | *(API key / form auth)* | app account | ⬜ |
+| Radarr | `http://100.81.171.49:7878` | *(API key / form auth)* | app account | ⬜ |
+| Prowlarr | `http://100.81.171.49:9696` | *(API key / form auth)* | app account | ⬜ |
+| Bazarr | `http://100.81.171.49:6767` | `peciulevicius` | app account | ⬜ |
+| Jellyseerr | `http://100.81.171.49:5055` | via Jellyfin | app account | ⬜ |
+| **Transmission** | `http://100.81.171.49:9091` | `peciulevicius` | `~/services/transmission/.env` | ✅ 2026-09-19, 28-char random |
+| LazyLibrarian | `http://100.81.171.49:5299` | `peciulevicius` | app account | ⬜ |
+| Calibre (desktop) | `http://100.81.171.49:8888` | *(no login)* | — | n/a |
+| Grafana | `http://100.81.171.49:3000` | `peciulevicius` | `~/services/grafana/.env` (init only) | ⬜ UI |
+| Prometheus | `http://100.81.171.49:9090` | *(no login)* | — | n/a |
+| Syncthing | `http://100.81.171.49:8384` | `peciulevicius` | app account | ⬜ |
+
+### Not a web login
+
+| Thing | What | Where |
+|---|---|---|
+| Gmail app password | IMAP + SMTP | 3 places — see the top of this file |
+| Discord webhook | job + service alerts | `~/.config/homelab/notify.env` |
+| Cloudflare | tunnel + DNS | `~/.cloudflared/` credentials JSON |
+| Tailscale | tailnet auth | Tailscale app, Google SSO ⚠️ |
+| R2 (rclone) | cloud backup | `~/.config/rclone/rclone.conf` |
+| NAS SMB (`macmini`) | share mounts | NAS UI + macOS Keychain |
+| Postgres / MariaDB roles | internal only | `~/services/<svc>/.env` — ⚠️ never rename, app breaks |
+
+---
+
+## ⚠️ The email migration touches most of these
+
+Several services use **`dziugaspeciulevicius@gmail.com` as the login itself** —
+Vaultwarden, Immich, Linkwarden and Mealie above, plus every "Sign in with
+Google" account.
+
+When the mailbox moves to Purelymail, each of those needs its **login address
+changed inside the app**, not just the mail forwarded. Change the address first,
+while you can still receive at the old one to confirm the change — a service
+whose login email you can no longer receive at is a service you can't reset
+into.
+
+Order that works:
+
+1. New address forwards **to** Gmail (free Cloudflare Email Routing) — zero risk
+2. Change the login email in each service, verifying as you go
+3. Only then flip the MX records and stop using Gmail
+
+Also update at the same time: `EMAIL_ADDRESS` and `IMAP_SERVER` in
+`pkm/config.py`, and the SMTP host in Uptime Kuma and Calibre-Web.
+
+See [guides/DEGOOGLE.md](guides/DEGOOGLE.md).
+
+---
+
+## Renaming: what actually works
 
 `.env`-backed services take effect on `docker compose up -d`. **The rest only
 read `ADMIN_USER` / `GRAFANA_USER` at first initialisation** — the account
 already exists in the app's database, so editing `.env` does nothing and the
 rename has to happen in the app's own UI.
-
-| Service | Where | Status |
-|---|---|---|
-| CouchDB | `.env` → recreate | ✅ done 2026-09-19 — `peciulevicius` + six-word passphrase |
-| Transmission | `.env` → recreate | ✅ done 2026-09-19 — `peciulevicius` + 28-char random |
-| Vaultwarden | Web vault → Account Settings | ⬜ master password — **do this one first and carefully** |
-| Nextcloud | `cloud.peciulevicius.com` → Users | ⬜ UI only; `ADMIN_USER` in `.env` is inert now |
-| Paperless-ngx | `papers.peciulevicius.com` → Admin → Users | ⬜ UI only |
-| Grafana | `localhost:3000` → Profile | ⬜ UI only |
-| Immich | `photos.peciulevicius.com` → Account | ⬜ account email/password; leave `DB_USERNAME=postgres` alone |
-| Linkwarden | `links.peciulevicius.com` → Settings | ⬜ |
-| Calibre-Web | `books.peciulevicius.com` → Admin | ⬜ |
-| FreshRSS / Mealie / Audiobookshelf / Jellyfin / Uptime Kuma | each app's UI | ⬜ |
-| NAS (`Džiugas` admin, `macmini` SMB) | NAS UI + macOS Keychain | ⬜ then remount the four shares |
 
 ⚠️ **`DB_USERNAME=postgres` in Immich, and the Postgres roles behind Paperless
 and Linkwarden, are internal database roles.** Renaming those breaks the app.
@@ -105,21 +177,13 @@ Change the app's *login*, not the database role.
 
 ---
 
-## Service credentials
-
-| Service | Where the secret lives | Notes |
-|---|---|---|
-| CouchDB | `~/services/couchdb/.env` | User `peciulevicius`, six-word passphrase. ⚠️ **Publicly reachable** at `couchdb.peciulevicius.com` — never share this password with anything else |
-| Vaultwarden | `~/services/vaultwarden/.env` | `ADMIN_TOKEN` |
-| Nextcloud | `~/services/nextcloud/.env` | MariaDB root + app user |
-| Immich / Paperless / Linkwarden | `~/services/<svc>/.env` | Postgres passwords |
-| Transmission | `~/services/transmission/.env` | User `peciulevicius`, 28-char random (rotated 2026-09-19) |
-| NAS (`Džiugas` admin, `macmini` SMB) | NAS UI + macOS Keychain | ⚠️ Currently reused passwords — rotation is outstanding |
+## Backups do not contain your secrets
 
 Every `.env` under `~/services/` is **excluded from the R2 backup**
 (`rclone-backup.sh` has `--exclude "**/.env"`). That is deliberate — but it
 means **a restore from R2 gives you configs with no secrets**. Vaultwarden is
-the only copy. Keep it current.
+the only copy. Keep it current, and keep an emergency export of the vault
+somewhere offline.
 
 ---
 

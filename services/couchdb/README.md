@@ -21,7 +21,7 @@ cd ~/services/couchdb
 
 # Generate a real password
 nano .env            # set COUCHDB_USER + COUCHDB_PASSWORD
-# Use a 6-word passphrase, not random characters — you type this on a phone
+# Generate it in Vaultwarden — you copy-paste it into LiveSync, never type it
 
 docker compose up -d
 ```
@@ -51,14 +51,29 @@ it means sync works with Tailscale off. The tunnel ingress rule lives in
 `~/.cloudflared/config.yml`; the DNS record was created with
 `cloudflared tunnel route dns <tunnel-id> couchdb.peciulevicius.com`.
 
-**This is a sync endpoint, not a notes site.** Opening the hostname in a browser
-gives CouchDB's API and Fauxton admin UI — not your notes. Obsidian is still the
-app on each device; the tunnel only carries the sync traffic.
+### "I opened it and all I got was JSON"
+
+That is correct and means it is working. `couchdb.peciulevicius.com` is a
+**database API, not a website.** After the browser login prompt, the root path
+returns CouchDB's welcome document:
+
+```json
+{"couchdb":"Welcome","version":"3.5.0",...}
+```
+
+There is nothing else to see there. Your notes are not browsable here — Obsidian
+is still the app on every device, and the tunnel only carries sync traffic
+between them. If you want a browser view of the raw database, Fauxton is at
+`/_utils`, but you will never need it day to day.
+
+Anonymous requests get a **401 on every path, including `/`** — so if you saw
+the welcome JSON, your browser was already authenticated.
 
 ⚠️ **Deliberately *not* behind Cloudflare Access.** An Access policy that
 challenges the browser also blocks the Obsidian plugin, which cannot complete an
 interactive login. The gate is CouchDB's own auth: `require_valid_user = true`
-plus a six-word passphrase (~62 bits), and anonymous requests get a 401 —
+plus a 32-character random password, and anonymous requests get a 401 on every
+path including `/` —
 verified from the public hostname. If you later want Access in front, it has to
 be a **service token** whose `CF-Access-Client-Id` / `CF-Access-Client-Secret`
 the plugin sends as custom headers.

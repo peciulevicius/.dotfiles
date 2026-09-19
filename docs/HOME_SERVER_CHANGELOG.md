@@ -98,10 +98,21 @@ passphrase for the Vaultwarden master, generated random for everything else,
 with a six-word passphrase reserved for the one password actually typed by hand
 on a phone (CouchDB in the LiveSync plugin).
 
-Rotated and verified: **CouchDB** (`peciulevicius` + six-word passphrase, ~62
-bits — old credentials confirmed rejected, `obsidian` database intact, public
-HTTPS still 401s anonymously) and **Transmission** (`peciulevicius` + 28-char
-random).
+Rotated and verified: **Vaultwarden master password** (by hand), **CouchDB**
+(`peciulevicius` + 32-char random — old credentials rejected, `obsidian`
+database intact, anonymous requests 401 on every path including `/`) and
+**Transmission** (`peciulevicius` + 28-char random).
+
+The passphrase idea was dropped the same day: since every password is copied
+out of Bitwarden anyway — on the phone too — nothing but the vault master is
+ever typed, so there is no reason for a service password to be memorable.
+Random everywhere.
+
+[CREDENTIALS.md](CREDENTIALS.md) now inventories **every** service with the URL
+to store in the Bitwarden entry, so autofill matches. It also flags that
+several logins *are* the Gmail address (Vaultwarden, Immich, Linkwarden,
+Mealie), which the email migration has to change inside each app — not just
+forward.
 
 ⚠️ Discovered while planning it: `ADMIN_USER` / `GRAFANA_USER` in the other
 `.env` files are **inert** — they are read only at first initialisation, so the

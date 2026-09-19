@@ -117,20 +117,26 @@ password:** one memorised passphrase for the Vaultwarden master, generated
 random for every service. Full policy and the per-service checklist are in
 [CREDENTIALS.md](CREDENTIALS.md).
 
-✅ Already done: **CouchDB** and **Transmission** (both `.env`-backed, verified
-working; old credentials confirmed rejected).
+✅ Already done: **Vaultwarden master password**, **CouchDB** and
+**Transmission** (the two `.env`-backed services, both 32/28-char random,
+verified working with old credentials rejected).
+
+📋 **[CREDENTIALS.md](CREDENTIALS.md) now lists every service with the URL to
+put in the Bitwarden entry**, so autofill offers the right item. Work down that
+table — it is the checklist.
 
 ⚠️ **`ADMIN_USER` / `GRAFANA_USER` in the other `.env` files are inert** — they
 only apply at first init, so those renames must happen in each app's own UI.
 
-- [ ] **Vaultwarden master password first** — a 4–6 word passphrase. It protects
-      everything else, so nothing below matters until this one is strong.
 - [ ] ⚠️ **Retire the old reused personal password.** It was in use across many
       services; treat any account still on it as compromised-by-reuse until
       rotated. The string is deliberately not recorded in this repo.
-- [ ] Work down the checklist in [CREDENTIALS.md](CREDENTIALS.md), one service
-      at a time: generate in Vaultwarden **first**, then change it in the app,
-      then confirm the app still works before moving on
+- [ ] Work down the inventory in [CREDENTIALS.md](CREDENTIALS.md), one service
+      at a time: generate in Vaultwarden **first** (with the URL set so autofill
+      works), then change it in the app, then confirm the app still works
+- [ ] ⚠️ Several services use **the Gmail address as the login itself** —
+      Vaultwarden, Immich, Linkwarden, Mealie. Those logins have to change at
+      the email migration, not just the forwarding. See CREDENTIALS.md.
 - [ ] Gmail app password → Vaultwarden. Used in **three** places, not one —
       rotating it breaks all three
 - [ ] Bitwarden Vault Health report → clear the remaining reused-password flags
