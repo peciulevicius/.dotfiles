@@ -73,7 +73,9 @@ dump_mysql() {
   fi
 
   log_info "Dumping $label..."
-  if docker exec "$container" mariadb-dump -u root --all-databases > "$file" 2>/dev/null; then
+  # Password is read from the container's own env so it never lands in this repo
+  if docker exec "$container" sh -c \
+       'mariadb-dump -u root -p"$MYSQL_ROOT_PASSWORD" --all-databases' > "$file" 2>/dev/null; then
     local size
     size=$(du -h "$file" | cut -f1)
     log_ok "$label → $file ($size)"
@@ -93,8 +95,8 @@ dump_postgres "immich_postgres" "postgres" "immich"
 # Paperless-ngx (PostgreSQL)
 dump_postgres "paperless_db" "paperless" "paperless"
 
-# Linkwarden (PostgreSQL)
-dump_postgres "linkwarden_db" "linkwarden" "linkwarden"
+# Linkwarden (PostgreSQL) — superuser is 'postgres'; POSTGRES_DB is 'linkwarden'
+dump_postgres "linkwarden_db" "postgres" "linkwarden"
 
 # Nextcloud (MariaDB)
 dump_mysql "nextcloud_db" "nextcloud"
