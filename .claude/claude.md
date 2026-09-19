@@ -142,6 +142,21 @@ all in that guide.
 
 ## Rules for this repo
 
+- **Documentation is part of the change, not a follow-up.** Anything a future
+  reader — Džiugas in six months, or someone else entirely — would need to
+  understand this setup goes in `docs/`, in the same commit as the change:
+  what a thing does, how to set it up from scratch, how it works underneath,
+  and *why* it was built that way. Record the reasoning and the failure modes,
+  not just the commands. A change nobody can reconstruct later is unfinished
+  work. Put facts in `HOME_SERVER_REFERENCE.md`, decisions in the topic guide,
+  outstanding work in `HOME_SERVER_TODO.md`, finished work in
+  `HOME_SERVER_CHANGELOG.md`, and index it from `START_HERE.md`.
+- **Never commit a secret.** This repo is **public**. `docs/CREDENTIALS.md` maps
+  where credentials live and what breaks when they change — it must never hold
+  a password, token or webhook URL. Real values belong in `~/services/<svc>/.env`
+  (gitignored), `~/.config/homelab/` or Vaultwarden. Sweep the staged diff
+  before every commit.
+
 - **Adding or removing a service? Update the homepage too.** `services/glance/glance.yml`
   drives `home.peciulevicius.com` — add a monitor (with `check-url`) *and* a
   bookmark link, or remove both. Glance joins each service's Docker network to

@@ -117,6 +117,7 @@ Full guide: [Claude Code Guide](./CLAUDE_CODE_GUIDE.md)
 | Understand the NAS and its mounts | [NAS.md](./NAS.md) |
 | Know what the scripts do | [UTILITY_SCRIPTS.md](./UTILITY_SCRIPTS.md) |
 | Change a password and not break things | [CREDENTIALS.md](./CREDENTIALS.md) |
+| Understand why a password can't just be edited in a file | [CREDENTIALS.md](./CREDENTIALS.md#why-most-passwords-cant-be-changed-from-a-file) |
 | Fix or add a scheduled job | [../scripts/cron/README.md](../scripts/cron/README.md) |
 
 ### The long-running projects
@@ -138,3 +139,7 @@ reopening the topic** — they record what was ruled out and why.
 - A thing **done** → move it to `HOME_SERVER_CHANGELOG.md`, with the *why*
 - A **fact** about the machine → `HOME_SERVER_REFERENCE.md`
 - A **decision** on a long-running topic → that topic's guide
+
+🚫 **Never a secret, anywhere in this repo — it is public on GitHub.** Passwords,
+tokens and webhook URLs live in `~/services/<svc>/.env`, `~/.config/homelab/`
+or Vaultwarden. `CREDENTIALS.md` maps where they are; it never contains them.

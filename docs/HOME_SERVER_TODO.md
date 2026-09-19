@@ -7,52 +7,82 @@ Grouped by "what happens if I ignore this", not by number.
 
 ---
 
-## ▶ Start here — what's next
+## ▶ Start here — do these in this order
 
-Last worked: **2026-09-19** on the Mac mini. What got done that day is in
+Last worked: **2026-09-19**. Finished work is in
 [HOME_SERVER_CHANGELOG.md](HOME_SERVER_CHANGELOG.md#2026-09-19--verification-backups-couchdb).
-Only outstanding work is listed here.
+The order below matters — each step unblocks the next.
 
-**1. 🔴 Generate a Gmail APP password — nothing else can fix this**
+### 1. 🔴 Gmail **app** password — the Kindle sync is dead without it
 
-The Kindle sync has failed every hour since early July. Tried on 2026-09-19 with
-the Google **account** password: rejected. Gmail IMAP needs a **16-character app
-password** (`abcd efgh ijkl mnop`) whenever 2FA is on — the account password can
-never work here.
+Failing hourly since early July. Tried with the Google *account* password on
+2026-09-19 and it was rejected: Gmail IMAP needs a **16-character app password**
+(`abcd efgh ijkl mnop`) whenever 2FA is on.
 
 - [ ] Google Account → Security → 2-Step Verification → **App passwords**
 - [ ] Put it in `pkm/config.py` as `EMAIL_PASSWORD` (gitignored, Mac mini only)
 - [ ] Test: `~/.dotfiles/pkm/.venv/bin/python3 ~/.dotfiles/pkm/kindle_sync.py`
-- [ ] ⚠️ **The same app password is used in two other places** — Uptime Kuma's
-      SMTP notification and Calibre-Web's Send-to-Kindle. If the old one was
-      revoked, those broke silently too. See [CREDENTIALS.md](CREDENTIALS.md).
+- [ ] ⚠️ Used in **two other places** too — Uptime Kuma's SMTP notification and
+      Calibre-Web's Send-to-Kindle. See [CREDENTIALS.md](CREDENTIALS.md).
 
-Discord alerts are live now, so the next time this breaks it will say so.
+### 2. 📧 Custom email address — **before** touching any service login
 
-**2. Finish Obsidian LiveSync — the server side is done**
+Free, ~15 minutes, commits you to nothing, and every later switch becomes a DNS
+edit. **This has to come before step 3**: you cannot change a service's login
+email to an address that doesn't receive mail yet — the verification link goes
+nowhere.
 
-CouchDB is up at `https://couchdb.peciulevicius.com` with the `obsidian`
-database created. Only the plugin is left.
+- [ ] Cloudflare → `peciulevicius.com` → Email → **enable Email Routing**
+- [ ] `dziugas@peciulevicius.com` + catch-all → forwards to the current Gmail
+- [ ] Send yourself a test, confirm it arrives
+- [ ] Start handing out the new address everywhere from now on
 
-- [ ] Install **Self-hosted LiveSync** on each device, turn on E2E encryption,
-      same passphrase everywhere
+Purelymail comes much later — see [guides/DEGOOGLE.md](guides/DEGOOGLE.md).
+Do **not** flip MX until step 3 is finished.
+
+### 3. 🔑 Credentials into Bitwarden, one service at a time
+
+Worksheet with the real values: **`~/credentials-import.md`** (outside this
+repo — it's public). The map of what each credential does:
+[CREDENTIALS.md](CREDENTIALS.md).
+
+- [ ] Save the three already-rotated services (CouchDB, Transmission, Pi-hole)
+- [ ] Work down the worksheet: generate in Bitwarden → set in the app → save,
+      with the **URL** on each entry so autofill matches
+- [ ] Where the login *is* the Gmail address (Vaultwarden, Immich, Linkwarden,
+      Mealie), switch it to the new address from step 2 at the same time
+- [ ] ⚠️ Decide about **Immich's Postgres password** — still the old reused one.
+      Internal-only, but changing it needs `ALTER USER` and the `.env` together.
+- [ ] ⚠️ **Nextcloud has two accounts** (`peciulevicius` and a second `admin`
+      whose display name is also "peciulevicius"). Pick one, delete the other.
+- [ ] Delete `~/credentials-import.md` when the vault is populated
+
+### 4. 🔗 Finish Obsidian LiveSync — the server side is done
+
+CouchDB is up at `https://couchdb.peciulevicius.com`, `obsidian` database
+created, anonymous requests 401 on every path except `/_up`.
+
+- [ ] Install **Self-hosted LiveSync** on each device, E2E encryption on, same
+      passphrase everywhere
 - [ ] ⚠️ **Start on the Mac mini** — it holds the real vault. Let it finish
       uploading before connecting the iPhone. LiveSync asks which side wins and
-      answering with an empty device wipes the vault. Snapshot is in
-      `~/backups/vault-snapshots/` if it goes wrong.
+      answering with an empty device wipes the vault. Snapshot:
+      `~/backups/vault-snapshots/`.
 
-**3. Two-minute jobs that prevent real loss** — see the section below
+### 5. 🛡️ Two-minute jobs that prevent real loss
 
-- Tailscale key expiry (it silently dropped the tailnet once already)
-- ⚠️ T5 offsite: iCloud is cancelled, so there is no cloud copy of the photos —
-  only the NAS and two drives in the same room
+- [ ] Tailscale key expiry (it silently dropped the tailnet once already)
+- [ ] ⚠️ T5 offsite — iCloud is cancelled, so there is no cloud copy of the
+      photos, only the NAS and two drives in the same room
 
-**4. Odysseus** — [guides/SELF_HOSTED_AI.md](guides/SELF_HOSTED_AI.md).
-Needs an Anthropic or OpenRouter API key from you, and a Cloudflare Access
-policy. ⚠️ **Port 7000 is taken** by macOS AirPlay Receiver — map it elsewhere
-or turn AirPlay Receiver off.
+### 6. 🤖 Odysseus
 
-**Not Mac mini work — do on the phone when convenient:**
+[guides/SELF_HOSTED_AI.md](guides/SELF_HOSTED_AI.md). Needs an Anthropic or
+OpenRouter API key and a Cloudflare Access policy. ⚠️ **Port 7000 is taken** by
+macOS AirPlay Receiver — map it elsewhere or turn AirPlay Receiver off.
+
+### Not Mac mini work — on the phone, whenever
+
 ⚠️ **Google Authenticator → Ente Auth.** Highest-risk item in the whole
 de-Google effort: its TOTP seeds sync to the account being left.
 
@@ -117,13 +147,22 @@ password:** one memorised passphrase for the Vaultwarden master, generated
 random for every service. Full policy and the per-service checklist are in
 [CREDENTIALS.md](CREDENTIALS.md).
 
-✅ Already done: **Vaultwarden master password**, **CouchDB** and
-**Transmission** (the two `.env`-backed services, both 32/28-char random,
-verified working with old credentials rejected).
+✅ Already done: **Vaultwarden master password**, **CouchDB**, **Transmission**
+and **Pi-hole** — the only services whose password is a runtime env var. All
+32/28-char random, verified working, old credentials rejected.
 
-📋 **[CREDENTIALS.md](CREDENTIALS.md) now lists every service with the URL to
-put in the Bitwarden entry**, so autofill offers the right item. Work down that
-table — it is the checklist.
+🔴 **Pi-hole's old password was 5 characters and contained a common word, on a
+publicly exposed panel that controls network DNS.** Rotated 2026-09-19; treat
+the old one as exposed.
+
+⚠️ **Everything else cannot be changed from a file.** Init-only env vars are
+inert once the account exists, and app accounts are salted hashes. Four services
+have CLI resets (Nextcloud, Paperless, FreshRSS, Grafana); the rest are UI only.
+Commands and the full explanation are in [CREDENTIALS.md](CREDENTIALS.md).
+
+📋 **Worksheet with the real values: `~/credentials-import.md`** — deliberately
+outside this repo, which is public. [CREDENTIALS.md](CREDENTIALS.md) is the
+secret-free map: every service, its URL for autofill, and how to change it.
 
 ⚠️ **`ADMIN_USER` / `GRAFANA_USER` in the other `.env` files are inert** — they
 only apply at first init, so those renames must happen in each app's own UI.

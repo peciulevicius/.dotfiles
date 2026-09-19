@@ -1,7 +1,21 @@
+What to do now, in order
+
+1. Add those three passwords to Bitwarden — with the URLs, so autofill works. 5 minutes.
+2. Generate the Gmail app password. Still the single blocker on the Kindle sync, dead 73 days. Then put it in pkm/config.py — and remember it's used in two other places.
+3. Cloudflare Email Routing. Free, unblocks the whole email migration.
+4. Then walk docs/CREDENTIALS.md service by service at your own pace.
+
+
 # Credentials — where they live and what to change
 
-No secrets in this file. It records **where** each credential is used, so a
-rotation doesn't silently break something three weeks later.
+🚫 **No secrets in this file, ever — this repo is public on GitHub.** It records
+**where** each credential is used and how to change it, so a rotation doesn't
+silently break something three weeks later.
+
+Real values live in `~/services/<svc>/.env` (gitignored), `~/.config/homelab/`,
+or Vaultwarden. While migrating everything into Bitwarden, a scratch worksheet
+at `~/credentials-import.md` (outside this repo, chmod 600) holds the values —
+delete it once the vault is populated.
 
 Master copy of every password belongs in **Vaultwarden**
 (`vault.peciulevicius.com`). Anything not there yet is listed as outstanding in
@@ -161,6 +175,51 @@ Also update at the same time: `EMAIL_ADDRESS` and `IMAP_SERVER` in
 `pkm/config.py`, and the SMTP host in Uptime Kuma and Calibre-Web.
 
 See [guides/DEGOOGLE.md](guides/DEGOOGLE.md).
+
+---
+
+## Why most passwords can't be changed from a file
+
+A reasonable assumption is that every password sits in a `.env` somewhere and
+can be rewritten. It doesn't work that way, and the distinction decides how each
+service gets rotated:
+
+| Kind | Where the password lives | Can it be changed from a file? |
+|---|---|---|
+| **Runtime env var** — CouchDB, Transmission, Pi-hole | Read from `.env` on **every container start** | ✅ Edit `.env`, `docker compose up -d --force-recreate` |
+| **Init-only env var** — Nextcloud, Paperless, Grafana | Read **once**, at first initialisation, to create the account | ❌ The `.env` value is now inert. The account exists in the app's database. |
+| **App account** — everything else | A **salted hash** in the app's own database | ❌ The plaintext is unrecoverable by design. Change it in the app. |
+| **Internal DB role** — Immich/Paperless/Linkwarden Postgres | `.env` **and** the role inside the database | ⚠️ Both must change together, or the app can't connect |
+
+So "the password is in the docker file somewhere" is true for exactly three
+services. For the rest, the file that created the account no longer controls it.
+
+### Command-line resets, where they exist
+
+Four services can be reset without the UI. Generate the password in Vaultwarden
+first, then run the matching command:
+
+```bash
+# Nextcloud
+OC_PASS='NEW_PASSWORD' docker exec -u www-data -e OC_PASS nextcloud \
+  php occ user:resetpassword --password-from-env peciulevicius
+
+# Paperless-ngx  (interactive prompt)
+docker exec -it paperless python3 /usr/src/paperless/src/manage.py \
+  changepassword peciulevicius
+
+# FreshRSS
+docker exec freshrss php /var/www/FreshRSS/cli/update-user.php \
+  --user peciulevicius --password 'NEW_PASSWORD'
+
+# Grafana
+docker exec grafana grafana cli admin reset-admin-password 'NEW_PASSWORD'
+```
+
+Everything else is the app's own UI — there is no shortcut.
+
+⚠️ **Sonarr, Radarr and Prowlarr use an API key, not a password.** Copy each
+from Settings → General → API Key and store it as a secure note.
 
 ---
 

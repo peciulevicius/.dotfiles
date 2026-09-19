@@ -119,6 +119,23 @@ forward.
 account already exists in each app's database and editing `.env` changes
 nothing. Those renames are UI work. Checklist in [CREDENTIALS.md](CREDENTIALS.md).
 
+### Security: Pi-hole had a 5-character password, publicly exposed
+
+Auditing the `.env` files turned it up: `PIHOLE_PASSWORD` was 5 characters and
+contained a common word, on `pihole.peciulevicius.com` — a public admin panel
+that controls DNS for the whole network. Anyone into it could silently redirect
+any domain. Rotated to 32-char random and verified DNS still resolves. Treat the
+old password as exposed.
+
+Same audit found **Immich's Postgres role still uses the old reused personal
+password**. Internal-only, so lower risk, but changing it needs `ALTER USER`
+inside the database and the `.env` updated together — left for a deliberate
+session. Nextcloud, Paperless, Linkwarden and the Vaultwarden admin token all
+checked out as 32–64 char random.
+
+Also found **two Nextcloud accounts**: `peciulevicius`, and a second `admin`
+whose display name is confusingly also "peciulevicius".
+
 ### Added: CouchDB for Obsidian LiveSync
 
 `services/couchdb/` — single-node, CORS for `app://obsidian.md`, `obsidian`
