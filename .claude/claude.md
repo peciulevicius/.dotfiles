@@ -50,9 +50,14 @@ re-doing the finished parts.
 Standing decisions (don't relitigate without being asked):
 - **Never self-host the mail server** — residential IP, blocklists, blocked
   port 25. Use a provider on the user's own domain.
-- **Email provider is still undecided.** Any choice must speak **native IMAP**
-  — `pkm/kindle_sync.py` and Odysseus's mail integration both need it. This
-  rules out Proton (Bridge-only) and Tuta (no IMAP).
+- **Email: Purelymail ($10/yr).** Budget ceiling is ~€1/month, which rules out
+  Fastmail (~$60/yr). Any provider must speak **native IMAP** — `kindle_sync.py`
+  and Odysseus's mail integration both need it — which rules out Proton
+  (Bridge-only), Tuta (no IMAP) and Zoho free (webmail only).
+- **Never delete the Google account.** It breaks remaining "Sign in with Google"
+  logins and frees the address for someone else to register. Stop *using* it.
+- **Google Authenticator migration is the top priority** — its TOTP seeds sync
+  to the account being left, so it's a lockout risk. Ente Auth or Vaultwarden.
 - **No Pixel purchase for now.** Revisit ~2028–2030 when the iPhone 13 mini
   ages out. The iPhone is kept regardless — it's needed for Expo/React Native
   iOS testing.

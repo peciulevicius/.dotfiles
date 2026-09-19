@@ -59,6 +59,119 @@ Everything below that line is already done. Skip to the section you need.
 
 ---
 
+## Gap 0 — Accounts, logins and 2FA (do this FIRST)
+
+This is the part that actually bites, and it's where people lock themselves out.
+
+### ⚠️ Google Authenticator is the highest-priority item in this whole guide
+
+You have it on your phone. It holds the 2FA codes for who-knows-how-many
+accounts, and modern versions **sync to your Google account**. That means your
+2FA — the thing protecting everything else — currently depends on the exact
+account you're trying to leave.
+
+If you lose that account or that phone before migrating, you are locked out of
+every service whose TOTP lives there. **Do this first, before any email change.**
+
+- [ ] Google Authenticator → ⋯ → **Transfer accounts → Export accounts**.
+      It produces QR codes containing all your TOTP seeds.
+- [ ] Import them into a replacement (options below)
+- [ ] **Verify a few logins actually work** with the new app before deleting anything
+- [ ] Keep Google Authenticator installed but unused for a month as a safety net
+
+**Where to put them:**
+
+| Option | Verdict |
+|---|---|
+| **Ente Auth** | ✅ **Recommended.** Open source, E2E encrypted, free, cross-platform (iOS + Android + desktop), works on GrapheneOS. Keeps 2FA *separate* from your passwords. |
+| **Vaultwarden** (yours) | ✅ Works, and **self-hosting unlocks Bitwarden's premium TOTP for free**. But storing codes beside passwords means one compromised vault = both factors gone. Convenient; slightly weaker. |
+| Aegis | ✅ Excellent, Android-only — an option later if you go Pixel |
+
+Pick Ente Auth if you want it done properly, Vaultwarden if you value having
+everything in one place and accept the trade.
+
+### "Sign in with Google" — the real lock-in
+
+Two different things are tangled together in your password manager:
+
+**1. Accounts where Gmail is just the username.** `d…@gmail.com` + a password.
+These are easy — the login keeps working forever, and you change the email
+address at each service whenever you get round to it. No urgency.
+
+**2. Accounts using "Sign in with Google" (OAuth).** These have **no password of
+their own** — Google *is* the login. If the Google account ever goes away, so
+do they, and there's often no recovery path.
+
+- [ ] List them: Google Account → **Security** → *"Your connections to
+      third-party apps & services"*. Every entry there is a dependency.
+- [ ] For each one that matters: log in, go to account settings, **set a
+      password**, then change the email to your new address. Most services
+      support this — it converts OAuth into a normal login you control.
+- [ ] For the ones that don't matter, leave them. They'll keep working.
+
+### Never delete the Google account
+
+Worth stating plainly, because "delete Google" sounds like the goal:
+
+- Deleting it **breaks every remaining "Sign in with Google" account**, often
+  irrecoverably
+- It frees `dziugaspeciulevicius@gmail.com` for someone else to register — who
+  could then attempt password resets on accounts you forgot to migrate
+- It costs you nothing to keep a dormant, logged-out account
+
+**The goal is to stop *using* Google, not to delete the account.** Strip it
+back to an empty shell that forwards mail and anchors old OAuth logins.
+
+### Will mail still go to the Gmail address? Yes — and here's how to redirect it
+
+Every service you've ever signed up for still has `…@gmail.com` on file. That
+doesn't change until you change it at each one. But you don't have to read two
+inboxes while you work through them.
+
+**Phase A — new address forwards *to* Gmail** (Cloudflare Email Routing).
+You start handing out `dziugas@peciulevicius.com` immediately, but keep reading
+everything in Gmail. Nothing changes about your daily habits. Zero risk.
+
+**Phase B — flip it: Gmail forwards *to* the new address.** Once your real
+mailbox exists:
+
+- [ ] Gmail → Settings → **Forwarding and POP/IMAP** → add forwarding address →
+      verify → **Forward a copy of incoming mail to** your new address
+- [ ] Choose **"keep Gmail's copy in the Inbox"** — belt and braces during transition
+- [ ] Gmail → Settings → Accounts → set the new address as the default
+      **"Send mail as"** so replies go out from the right place
+
+From that moment **everything lands in the new inbox**, regardless of which
+address the sender used. You read one inbox. Old accounts keep working
+untouched.
+
+**Phase C — update accounts gradually.** Sort Vaultwarden by importance and do
+5–10 a day. Banks, Apple ID, GitHub, Cloudflare, Stripe first.
+
+**Phase D — after ~6 months** of nothing important arriving only at Gmail, stop
+the forwarding, set a vacation responder pointing at the new address, and let
+the account go dormant. **Don't delete it.**
+
+### Your phone's Google apps — what each becomes
+
+| App | Replacement | Notes |
+|---|---|---|
+| **Authenticator** | **Ente Auth** | ⚠️ Do this first — lockout risk |
+| **Gmail** | Purelymail via Apple Mail | After the migration above |
+| **Calendar** | Nextcloud Calendar (CalDAV) | Gap 3 — already running |
+| **Drive** | Nextcloud | Already running |
+| **Chrome** | Brave or Safari | Already installed on your Mac |
+| **Maps** | Apple Maps / Organic Maps | Accept some loss — see below |
+| **Translate** | Apple Translate, or DeepL | DeepL is better for Lithuanian |
+| **Sheets / Slides** | Nextcloud Office (OnlyOffice) | Or Apple Numbers/Keynote |
+| **Meet** | Jitsi (self-hostable) | Keep for work if others use it |
+| **Home** | Home Assistant | Only if you have smart devices |
+
+Delete them in that order — Authenticator is the one with real risk attached;
+the rest are just habit.
+
+---
+
 ## Gap 1 — Email (the only genuinely unfinished one)
 
 ### How email actually works
@@ -178,16 +291,55 @@ users is a goal. It isn't yours.
 Tuta is worse on this axis — **no IMAP at all**, so `kindle_sync.py` and
 Odysseus simply cannot connect. Rule it out.
 
-#### Recommendation
+#### "Is there no free one?" — client vs provider
 
-- **If you'll pay ~$60/yr for it to be effortless: Fastmail.** Best apps,
-  native IMAP everywhere, and it can absorb your calendar and contacts too.
-- **If you want it near-free: Purelymail (~$10/yr)** — or Migadu Micro if the
-  20/day send cap doesn't bother you.
-- **Don't pick Proton or Tuta**, given headless IMAP is a hard requirement here.
+Two different things get confused here:
 
-Either way you keep the domain, so this decision is reversible for the cost of
-a DNS edit. Don't agonise over it.
+- **Mail clients are free.** Apple Mail, Thunderbird, K-9/Thunderbird for
+  Android. You never pay for these and you can use any of them with any
+  provider below.
+- **The mailbox** — the server that holds and sends your mail — is what costs.
+
+Free, with your own domain:
+
+| Option | Cost | Catch |
+|---|---|---|
+| **Cloudflare Email Routing** | **€0** | **Receive only.** Cannot send from your address. |
+| ImprovMX | €0 | Same — forwarding only |
+| Forward Email (free tier) | €0 | Same — forwarding only. Sending is $3/mo. |
+| Zoho free | €0 | Webmail only, **no IMAP** — breaks `kindle_sync.py` and Odysseus |
+
+The catch every "free email" list buries: **plain forwarding only receives.**
+To *reply* from `dziugas@peciulevicius.com` you need a real mailbox with SMTP.
+
+#### Recommendation for a ~€1/month budget
+
+**Purelymail — $10/year, about €0.77/month.** It fits your ceiling with room to
+spare and it is a real mailbox, not forwarding:
+
+- Native IMAP/SMTP/POP3 — every client works, and `kindle_sync.py` plus
+  Odysseus's mail integration both connect with no special software
+- **No hard limits** on users, custom domains, addresses or storage — you stay
+  at $10/yr as long as usage costs them under $10/yr in resources
+- Custom domains at no extra charge
+
+Caveats worth knowing: it's a small indie operation (fine, but it *is* small),
+and their 2026 roadmap says the **pricing model is being redesigned** — so
+verify the price when you sign up.
+
+**Migadu Micro ($19/yr, ~€1.50/mo)** is the backup if Purelymail's pricing
+changes or you want a more established operator — but note its hard **20
+outgoing messages/day cap**.
+
+**Fastmail is out** at ~$60/yr — that's 6× your budget. Skip it. The only thing
+you lose is its excellent CalDAV/CardDAV, and Nextcloud already covers that.
+
+#### The €0 path, if you want to start without paying anything
+
+Cloudflare Email Routing (receive) + Gmail's "Send mail as" (reply). Costs
+nothing, gets you onto your own domain immediately, and keeps Google only in
+the *sending* path. Perfectly reasonable as a transition — just not the end
+state, since Google still sees outbound mail.
 
 ### Step 3 — Cutover
 
@@ -389,6 +541,13 @@ regular app with no special system privileges.
 | **Some banking apps** | Those doing hardware attestation may refuse. **Check your specific Lithuanian banks and Revolut before buying.** |
 | **Swipe keyboard** | He hit this exactly — no open-source swipe keyboard with his languages. For you that's Lithuanian + English. HeliBoard is the FOSS option; **verify Lithuanian swipe quality before buying**. Otherwise you're back on Google's or Microsoft's internet-connected keyboard. |
 | **Phone size** | You deliberately chose a *mini*. The 13 mini is 5.4"; the 10a is ~6.3". **No modern Pixel is small.** If you like the mini form factor, this is a real, permanent downgrade — and it's the one nobody warns you about. |
+
+**Mullvad works on GrapheneOS** — GrapheneOS's own FAQ names it as a
+recommended VPN client, and it installs from F-Droid with no Play Store
+involved. One quirk: Android only allows **always-on VPN in one user profile at
+a time**, so if you use profiles heavily, the VPN applies to whichever profile
+you enabled it in. (This is separate from the Transmission/gluetun VPN plan for
+the Mac mini — different machine, different purpose, both fine.)
 
 **What gets better:** per-app network permission (deny internet to apps that
 don't need it — nothing on iOS does this), Storage Scopes, apps that actually

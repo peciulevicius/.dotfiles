@@ -186,6 +186,28 @@ with per-service subdomains — all done. That is PewDiePie's entire 22-minute
 video, finished months ago. **Four gaps remain: email, phone, calendar/contacts,
 AI.** Don't restart from step one.
 
+#### ⚠️ Do this before anything else — Google Authenticator
+
+It holds your 2FA codes and syncs to the Google account you're trying to leave.
+Lose that account or phone before migrating and you're locked out of everything
+it protects. **Highest-priority item in the whole de-Google effort.**
+
+- [ ] Google Authenticator → ⋯ → Transfer accounts → **Export accounts**
+- [ ] Import into **Ente Auth** (open source, E2E, cross-platform) — or
+      Vaultwarden, which unlocks Bitwarden premium TOTP free when self-hosted,
+      at the cost of keeping both factors in one vault
+- [ ] Verify several logins work before deleting anything; keep the old app a month
+
+#### Accounts and "Sign in with Google"
+
+- [ ] List dependencies: Google Account → Security → *Your connections to
+      third-party apps & services*
+- [ ] For each that matters: set a real password, then change the email —
+      converts OAuth into a login you control
+- [ ] **Never delete the Google account.** It breaks remaining OAuth logins and
+      frees the address for someone else to register and attempt resets with.
+      Goal is to stop *using* Google, not to delete it.
+
 #### Email — the only real gap
 
 Decision is still open. `guides/DEGOOGLE.md` has the full comparison and an
@@ -203,15 +225,20 @@ Free first step, no provider decision needed, ~15 minutes:
 That alone means every future switch is a DNS edit. Then, when ready to leave
 Gmail properly:
 
-- [ ] Pick a mailbox. Full comparison in the guide; short version:
-  - **Fastmail (~$60/yr)** — effortless on every device, and its CalDAV/CardDAV
-    is good enough to also close the calendar/contacts gap below
-  - **Purelymail (~$10/yr)** — cheapest credible option, plain IMAP (3GB base tier)
-  - **Migadu Micro ($19/yr)** — plain IMAP, but a hard **20 outgoing msgs/day cap**
-  - **iCloud+ (~€12/yr)** — you may already pay for it; works on Android too,
-    but send-as is fiddly and it deepens Apple lock-in right as you eye a Pixel
-  - ❌ **Not Proton** (Bridge-only IMAP fights the headless Mac mini) and
-    ❌ **not Tuta** (no IMAP at all — Odysseus and `kindle_sync.py` can't connect)
+- [ ] **Budget is ~€1/month. Pick Purelymail — $10/yr (~€0.77/mo).** Native
+      IMAP/SMTP, no hard limits on domains/addresses/storage. Verify the price
+      at signup: their 2026 roadmap says the pricing model is being redesigned.
+  - Backup: **Migadu Micro ($19/yr)** — plain IMAP but a hard **20 outgoing
+    msgs/day cap**
+  - ❌ **Fastmail is out** at ~$60/yr — 6× budget. Nextcloud covers the
+    CalDAV/CardDAV it would have given us.
+  - ❌ **Not Proton** (Bridge-only IMAP fights the headless Mac mini),
+    ❌ **not Tuta** (no IMAP at all — Odysseus and `kindle_sync.py` can't connect),
+    ❌ **not Zoho free** (webmail only, no IMAP)
+- [ ] **Redirecting existing mail:** Phase A = new address forwards *to* Gmail
+      (free, zero risk). Phase B = flip it — Gmail → Settings → Forwarding →
+      forward all to the new address, and set it as default "Send mail as".
+      Everything then lands in one inbox regardless of which address senders use.
 - [ ] Repoint MX, add SPF/DKIM/DMARC, import the Gmail Takeout `.mbox`
 - [ ] Update `IMAP_SERVER` in `pkm/config.py`
 - [ ] Critical accounts first: Apple ID, banks, GitHub, Cloudflare, Stripe
@@ -265,6 +292,9 @@ your own key.
       do your banks and Revolut survive hardware attestation; is HeliBoard's
       Lithuanian swipe typing good enough.
 - [ ] Note the 10a is ~6.3" — **no modern Pixel is small**. You chose a *mini*.
+- [x] ~~Does Mullvad work on GrapheneOS?~~ Yes — GrapheneOS's FAQ recommends it,
+      installs from F-Droid, no Play Store. Caveat: Android allows always-on VPN
+      in only one profile at a time. Separate from the Transmission/gluetun plan.
 - [ ] If buying refurbished: confirm carrier-unlocked, not a US carrier model —
       those bootloaders cannot be unlocked, making GrapheneOS impossible.
 - [ ] Minimal Phone 2 (€599/€699, 12GB) is **2.5–3× the 8a and cannot run
