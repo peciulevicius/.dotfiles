@@ -19,7 +19,12 @@ Failing hourly since early July. Tried with the Google *account* password on
 2026-09-19 and it was rejected: Gmail IMAP needs a **16-character app password**
 (`abcd efgh ijkl mnop`) whenever 2FA is on.
 
-- [ ] Google Account → Security → 2-Step Verification → **App passwords**
+- [ ] Go direct to <https://myaccount.google.com/apppasswords> — the menu entry
+      is hidden, browsing the Security page will not find it
+- [ ] ⚠️ If it says *"not available for your account"*: **2-Step Verification is
+      probably off** (app passwords require it), or Advanced Protection is
+      enrolled. Troubleshooting + the Purelymail fallback:
+      `~/credentials-import.md`
 - [ ] Put it in `pkm/config.py` as `EMAIL_PASSWORD` (gitignored, Mac mini only)
 - [ ] Test: `~/.dotfiles/pkm/.venv/bin/python3 ~/.dotfiles/pkm/kindle_sync.py`
 - [ ] ⚠️ **Used in two other places too** — Uptime Kuma's SMTP notification and

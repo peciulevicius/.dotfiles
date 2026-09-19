@@ -235,6 +235,24 @@ ls -la ~/.dotfiles/pkm/.processed_ids
 **It runs hourly, not daily** — deliberately, because **Amazon's share links
 expire after 7 days**, so a slow poll risks losing exports.
 
+### ⚠️ Gmail app passwords may not be available
+
+`kindle_sync.py` authenticates with plain IMAP `login()`, which Gmail only
+accepts with a **16-character app password** — never the account password, and
+the script has no OAuth2 path.
+
+The app-passwords page is hidden from the Security menu; go direct to
+<https://myaccount.google.com/apppasswords>. If it reports the setting is
+unavailable, the usual cause is **2-Step Verification being off** (app passwords
+require it); Advanced Protection blocks them outright.
+
+If they stay unavailable, the fix is to bring the email migration forward:
+**Purelymail** gives a real IMAP mailbox that accepts a normal password.
+Cloudflare Email Routing does **not** work for this — it forwards only, with no
+mailbox to poll. Amazon sends exports to the address registered on the Amazon
+account, so either change that address or forward `do-not-reply@amazon.com`
+from Gmail into the new mailbox.
+
 ### Scribe export routes in 2026
 
 - **Email** ⭐ — *Share → Quick send* to your registered address. This is what
