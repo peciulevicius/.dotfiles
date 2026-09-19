@@ -101,9 +101,15 @@ Goal: read self-hosted Calibre-Web EPUBs on it without Amazon in the middle.
 - Stock Kindle **cannot read EPUB**; Send to Kindle converts server-side at
   Amazon. **KOReader reads EPUB natively** via Calibre-Web's OPDS feed — this is
   the reason to jailbreak.
-- **Jailbreak decided: yes, but wait.** Scribe registered 2025-10-08, so warranty
-  ends ~2026-10-08; Vera's Scribe support also reads as pending. Freeze firmware
-  at **5.19.6** now — updating past it could strand the device.
+- **Jailbreak decided: yes.** Blocker is **software availability, not warranty** —
+  Vera's Scribe support reads as pending. EU statutory warranty is 2 years
+  (~Oct 2027) and the jailbreak is reversible, so warranty is a minor factor.
+  Freeze firmware at **5.19.6** now — updating past it could strand the device.
+- **Wi-Fi stays on after jailbreaking** (`renametobin` blocks OTA updates), and
+  Wi-Fi is *required* — the Searchable PDF export routes through Amazon to email,
+  which feeds `kindle_sync.py`. Don't recommend permanent airplane mode.
+- **OPDS is pull, not push** — books don't auto-transfer. A `scp`-over-SSH push
+  script is possible later but isn't built.
 - **Keep Amazon's stock software for handwriting.** KOReader's Scribe stylus
   support was merged then reverted as unstable. Jailbreak is additive: KOReader
   for reading, stock Kindle for notes + OCR export into Obsidian.

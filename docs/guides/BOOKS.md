@@ -289,28 +289,112 @@ jailbreak.
 
 ---
 
-## Jailbreak plan — and the warranty timing
+## Will books transfer automatically? No — OPDS is *pull*
 
-**Yes, do it.** It fits the project: it's what turns your self-hosted library
-into something the Kindle can actually use without Amazon in the middle.
+Worth being precise, because "automatic" is doing a lot of work in that question.
 
-### ⚠️ Wait until the warranty expires — roughly 3 weeks
+**KOReader + OPDS is pull, not push.** You open KOReader → OPDS catalogue →
+tap a book → it downloads. About ten seconds, and you browse your whole library
+from the device — but **nothing arrives on its own** when LazyLibrarian finishes
+a download.
 
-The Scribe was **registered 2025-10-08**, so the 1-year warranty runs out around
-**2026-10-08**. Jailbreaking officially voids it. There's no urgency that
-justifies burning the last few weeks of cover.
+| Route | Automatic? |
+|---|---|
+| KOReader + OPDS | ❌ Pull — you tap to download, but the whole library is browsable |
+| Calibre-Web "Send to Kindle" | ⚠️ Push, but **one manual click per book** and Amazon converts it |
+| Custom SSH push script | ✅ Possible — see below |
 
-This lines up conveniently with the other blocker: **Vera's Scribe support still
-reads as pending**, not shipped (see [NOTES.md](NOTES.md)). Both reasons point
-the same way — wait.
+### If you want it genuinely automatic
 
-- [ ] **Now:** freeze firmware at **5.19.6** (fill storage, or Wi-Fi off).
-      Updating past it could strand the device before a port lands.
-- [ ] **After ~2026-10-08:** re-check the
-      [Jailbreaking Wizard](https://kindlemodding.org) for Scribe + 5.19.6
-- [ ] Then: `;kpm install koreader`
+A jailbroken Kindle is a Linux box, and **SSH can be enabled over Wi-Fi**. So a
+script on the Mac mini could push new EPUBs to the device whenever it's on the
+network — a cron job watching the Calibre library and `scp`-ing anything new to
+KOReader's books folder.
+
+That's a real option for this setup, but it's a **custom build**, not something
+that ships. Honestly: opening KOReader and tapping a book takes ten seconds, and
+you rarely start more than one book at a time. **Start with OPDS.** Build the
+push script later only if the friction actually bothers you.
+
+- [ ] Use OPDS first and see whether automation is even wanted
+- [ ] Optional later: `scripts/books/push-to-kindle.sh` — watch Calibre, `scp`
+      new EPUBs when the Scribe is reachable
+
+---
+
+## Jailbreak plan
+
+**Yes, do it.** It's what connects your self-hosted library to the device
+without Amazon in the middle.
+
+### Warranty: it's 2 years in the EU, not 1 — and the jailbreak is reversible
+
+Correcting the earlier note. Amazon's **1-year manufacturer warranty is a
+*commercial* guarantee**, and under EU law it runs **alongside**, not instead
+of, the mandatory **2-year statutory guarantee** from the seller. Bought in
+Lithuania and registered 2025-10-08, statutory cover runs to roughly
+**October 2027**.
+
+But that matters less than it sounds, for two reasons:
+
+1. **The jailbreak is reversible.** The documented un-jailbreak is: `renametobin`
+   → *Restore* (re-enables updates) → factory reset → install current firmware.
+   The device is stock again. If you ever needed a warranty claim, you'd restore
+   first.
+2. After the first year, the burden of proof shifts to the consumer in most
+   member states, so claims get harder regardless — and the statutory guarantee
+   only covers **defects present at delivery**, never damage you cause.
+
+**So warranty is not the real blocker. Software availability is.**
+Vera's Scribe support still reads as *pending* — that's what you're actually
+waiting for, and it has no fixed date.
+
+### Do this now, regardless
+
+- [ ] **Freeze firmware at 5.19.6.** Vera's Scribe target is capped at `<=5.19.6`
+      and you're exactly on it. Updating past it could strand the device before
+      a port lands. Fill the storage, or keep Wi-Fi off until you've decided.
+- [ ] Watch [kindlemodding.org](https://kindlemodding.org) for Scribe support
+- [ ] When it lands: run the **Jailbreaking Wizard** against your exact
+      model + firmware → `;kpm install koreader`
 - [ ] Point KOReader at Calibre-Web's **OPDS feed** (`books.peciulevicius.com`)
-- [ ] Keep Wi-Fi updates blocked afterwards so an update doesn't undo it
+
+---
+
+## Can you keep Wi-Fi on afterwards? Yes
+
+This is the question that trips people up, and the answer is reassuring.
+
+**Firmware updates do remove the jailbreak** — so an unguarded Kindle on Wi-Fi
+will eventually undo itself. But **the jailbreak toolchain includes an update
+blocker**: `renametobin` disables automatic updates (its *Restore* option is
+what re-enables them). With that in place, **normal Wi-Fi use is fine.**
+
+- [ ] After jailbreaking, confirm updates are blocked using the
+      **"Check OTA Status"** scriptlet from Marek's collection
+- [ ] Only then resume normal Wi-Fi use
+
+> The "forget all networks, enable Airplane mode" advice you'll see applies
+> **before and during** jailbreaking — it stops the device updating itself out
+> of a supported firmware while you're preparing. It is not the permanent state.
+
+**And yes, you need Wi-Fi for notes.** The *Share → Searchable PDF* export goes
+through Amazon's servers to reach your email, which is what feeds
+`kindle_sync.py`. A permanently offline Scribe would kill the Obsidian pipeline —
+so update blocking, not airplane mode, is the right answer.
+
+---
+
+## Anything else worth knowing
+
+- ✅ **Stock features are unaffected.** The KindleModding FAQ confirms
+  jailbreaking doesn't interfere with **Send to Kindle**, Libby, Readwise or
+  GoodReads. Your notebooks, handwriting OCR and export pipeline all keep working.
+- ⚠️ **A factory reset removes the jailbreak.** It survives reboots, not resets.
+- 📦 **Keep a copy of the jailbreak files and your KOReader config** — on the NAS,
+  so a re-flash is quick.
+- 🔋 KOReader can use more battery than stock depending on refresh settings.
+- 🔁 **Reversible** — restore, factory reset, update, and it's stock again.
 
 ---
 

@@ -208,12 +208,20 @@ tool — swapping Obsidian for something else reproduces the same failure later.
       EPUB — Send to Kindle converts server-side, so every LazyLibrarian
       download would round-trip through Amazon. KOReader reads EPUB natively via
       Calibre-Web's OPDS feed.
-- [ ] **Jailbreak decision: yes — but wait ~3 weeks.** Scribe was registered
-      **2025-10-08**, so warranty runs out about **2026-10-08**. Jailbreaking
-      voids it, and Vera's Scribe support reads as pending anyway. Both point
-      the same way.
-- [ ] After warranty expires: re-check the Jailbreaking Wizard → `;kpm install
-      koreader` → point KOReader at `books.peciulevicius.com` OPDS
+- [ ] **Jailbreak decision: yes.** Blocker is **software, not warranty** —
+      Vera's Scribe support reads as pending, no fixed date. (Warranty is
+      **2 years in the EU**, to ~Oct 2027, not 1 — and the jailbreak is
+      reversible via `renametobin` Restore → factory reset → update, so a
+      warranty claim stays possible.)
+- [ ] Watch kindlemodding.org → when Scribe lands, run the Jailbreaking Wizard
+      → `;kpm install koreader` → point KOReader at `books.peciulevicius.com` OPDS
+- [ ] **Wi-Fi stays on afterwards** — `renametobin` blocks OTA updates; verify
+      with the "Check OTA Status" scriptlet. Airplane mode is only for *before*
+      jailbreaking. Wi-Fi is required for notes: *Share → Searchable PDF* routes
+      through Amazon to email, which is what feeds `kindle_sync.py`.
+- [ ] **Books do not auto-transfer** — OPDS is pull (open KOReader, tap to
+      download). Optional later: `scripts/books/push-to-kindle.sh` to `scp` new
+      EPUBs over SSH when the Scribe is reachable. Try OPDS first.
 - [ ] **Keep Amazon's stock software for handwriting.** KOReader's Scribe stylus
       PR was merged March 2026 then reverted as unstable;
       `pencil-handwriting.koplugin` is early-stage. Jailbreak is additive, so
