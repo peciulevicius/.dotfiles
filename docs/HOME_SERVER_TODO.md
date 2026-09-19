@@ -25,8 +25,9 @@ Failing hourly since early July. Tried with the Google *account* password on
       probably off** (app passwords require it), or Advanced Protection is
       enrolled. Troubleshooting + the Purelymail fallback:
       `~/credentials-import.md`
-- [ ] Put it in `pkm/config.py` as `EMAIL_PASSWORD` (gitignored, Mac mini only)
-- [ ] Test: `~/.dotfiles/pkm/.venv/bin/python3 ~/.dotfiles/pkm/kindle_sync.py`
+- [ ] Run `~/.dotfiles/scripts/setup/set-kindle-password.sh` — prompts without
+      echoing, writes it into `pkm/config.py`, and tests the IMAP login. Keeps
+      the secret out of shell history and out of any transcript.
 - [ ] ⚠️ **Used in two other places too** — Uptime Kuma's SMTP notification and
       Calibre-Web's Send-to-Kindle Gmail SMTP. If the old app password was
       revoked, both have been silently broken for the same ~73 days. Test each.
