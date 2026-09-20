@@ -87,11 +87,22 @@ ls "import/Can't Hurt Me/"
 - Create an account on first run — it is local-only, but set a real password
 - **Settings → auto-import folder → `/import`** (or set it per-collection, so
   books land in a collection instead of *Uncollected*)
-- The book appears without any uploading
+- The book appears with cover, author, narrator and blurb already filled in
+- ⚠️ The add-book wizard still makes you **select the EPUB** before *Next*
+  becomes active. That is a picker, not an upload — the file stays in
+  `/import`, and the page afterwards shows both paths plus an *Asset folder*.
+- Hit **Create readaloud** to start transcription and alignment
 
-**3. Wait.** It transcribes the whole audiobook, then aligns. On this hardware
-expect **a long while** for a 13-hour book — leave it running and check back.
-This is the step that wants ~4GB.
+**3. Wait — properly.** It transcribes the entire audiobook first, then aligns.
+
+⚠️ **Docker on macOS has no GPU passthrough**, so transcription is CPU-only.
+For *Can't Hurt Me* that is **13 hr 38 min of audio**, and CPU transcription
+tends to run at roughly real-time or slower. Plan for this to take **many
+hours** — start it before bed rather than expecting it over coffee. This is also
+the step that wants ~4GB.
+
+Worth knowing before committing to a long book: a short one proves the pipeline
+end to end in a fraction of the time.
 
 **4. Download the aligned EPUB 3**, then put it where the Kindle can reach it:
 
