@@ -566,75 +566,84 @@ ls /mnt/us/kpm/packages/bin/                             # what can I run?
 
 `/mnt/us/kpm/packages/bin` is on `PATH`, so anything listed there runs by name.
 
-### Step 3 — Downloading files on the device
+### Step 3 — Why on-device downloading fails, and when to stop
 
-`wget` is already present on a Kindle — it is part of the busybox toolset that
-makes up the device's Unix userland. **Nothing needs installing**; `busybox wget`
-and `wget` are the same program reached two ways, so prefer the short form.
+The Kindle's `wget` is a busybox applet with limited TLS. Against GitHub it
+typically dies with:
 
-The pattern for every install below:
-
-```sh
-cd /mnt/us/koreader/plugins
-wget -O name.zip <url>
-unzip name.zip
-rm name.zip
+```
+wget: error getting response: Connection reset by peer
 ```
 
-If `wget` reports *not found*, it hasn't been symlinked on your build — call the
-same program directly with `busybox wget …`. That is not an installation, just a
-different way to invoke a binary already on the device.
+That is a **TLS handshake failure**, not a network or path problem, and no
+amount of retrying fixes it. GitHub redirects release downloads to a CDN whose
+modern TLS the applet cannot negotiate.
 
-⚠️ **Kindle Wi-Fi sleeps aggressively.** If a download stalls or fails, wake the
-screen, load any page in the stock browser to bring the radio up, then retry.
+⚠️ There is a second reason not to fight this: **the read-aloud plugin is 232 MB
+unpacked** — it bundles the Piper (123 MB) and espeak-ng (71 MB) speech engines.
+That is not a comfortable download over a sleepy Kindle Wi-Fi connection even if
+TLS worked.
 
-### Step 4 — Read-aloud with word highlighting
+**Use a computer for the plugins.** KPM packages still install fine on-device;
+it is only direct downloads that break.
 
-TTS with synchronised word highlighting, automatic page turns and Bluetooth
-audio, fully offline. The thing LARK could not do.
+### Step 4 — Install the plugins over USB
 
-```sh
-cd /mnt/us/koreader/plugins
-wget -O ab.zip https://github.com/stradichenko/audiobook.koplugin/releases/download/v0.2.2/audiobook-koplugin-v0.2.2.zip
-unzip ab.zip
-rm ab.zip
-ls
-```
-
-`ls` should show **`audiobook.koplugin`** — a folder. KOReader loads any
-`*.koplugin` folder in `plugins/`.
-
-Then **fully quit and relaunch KOReader** (not just a page refresh). Open a book
-→ ☰ menu → the audiobook/TTS entry → choose **Piper** for the natural voice; it
-downloads a voice model once, so stay on Wi-Fi for that first run.
-
-Newer release than v0.2.2?
-<https://github.com/stradichenko/audiobook.koplugin/releases>
-
-### Step 5 — KindleFetch inside KOReader
-
-The version that needs no launcher — it lives in KOReader, so the missing KUAL
-doesn't matter.
+#### On the Mac — fetch and unpack
 
 ```sh
-cd /mnt/us/koreader/plugins
-wget -O kf.zip https://github.com/william-spongberg/KindleFetch.koplugin/releases/download/v0.3/kindlefetch.koplugin.zip
-unzip kf.zip
-rm kf.zip
+mkdir -p ~/Downloads/kindle-plugins && cd ~/Downloads/kindle-plugins
+
+curl -L -O https://github.com/stradichenko/audiobook.koplugin/releases/download/v0.2.2/audiobook-koplugin-v0.2.2.zip
+curl -L -O https://github.com/william-spongberg/KindleFetch.koplugin/releases/download/v0.3/kindlefetch.koplugin.zip
+curl -L -O https://github.com/KindleTweaks/HotfixUpdater/releases/download/v1.0.2/HotfixUpdater.zip
+
+for z in *.zip; do unzip -qo "$z" -d "${z%.zip}-x"; done
 ```
 
-Restart KOReader → it appears in the ☰ menu. Searches Anna's Archive and Library
-Genesis and downloads straight into your library.
+Each archive contains exactly one thing to copy:
 
-#### Getting rid of the CLI version
+| Archive | Contains | Goes to |
+|---|---|---|
+| `audiobook-koplugin-…` | `audiobook.koplugin/` (232 MB) | `<Kindle>/koreader/plugins/` |
+| `kindlefetch.koplugin.zip` | `kindlefetch.koplugin/` (168 KB) | `<Kindle>/koreader/plugins/` |
+| `HotfixUpdater.zip` | `HotfixUpdater/` + `HotfixUpdater.sh` | `<Kindle>/` root (both) |
 
-The failed `curl … | sh` left nothing behind — piping to `sh` never writes a
-file, and the missing `/mnt/us/extensions/` proves it never ran. To drop what
-KPM installed:
+#### Copy them across
+
+1. Plug the Kindle in — it mounts as a USB volume
+2. Drag `audiobook.koplugin` and `kindlefetch.koplugin` into
+   `<Kindle>/koreader/plugins/`
+3. Drag **both** `HotfixUpdater` and `HotfixUpdater.sh` to the Kindle's **root**
+4. ⚠️ **Eject properly**, then restart the Kindle
+
+Or from the terminal, with the Kindle mounted:
+
+```sh
+K=/Volumes/Kindle            # check the real name with: ls /Volumes
+cp -R audiobook-koplugin-v0.2.2-x/audiobook.koplugin   "$K/koreader/plugins/"
+cp -R kindlefetch.koplugin-x/kindlefetch.koplugin      "$K/koreader/plugins/"
+cp -R HotfixUpdater-x/HotfixUpdater HotfixUpdater-x/HotfixUpdater.sh "$K/"
+diskutil eject "$K"
+```
+
+The 232 MB copy takes a few minutes over USB. Let it finish before ejecting.
+
+#### Then, on the Kindle
+
+- **Fully quit and relaunch KOReader** — not a page refresh
+- Open a book → ☰ menu → the audiobook/TTS entry → choose **Piper**
+- KindleFetch appears in the same ☰ menu
+- `HotfixUpdater.sh` shows up in the library as a tappable entry — run it once
+
+### Step 5 — Drop the broken CLI
 
 ```
 ;kpm uninstall kindlefetch
 ```
+
+The KOReader plugin replaces it, and needs no launcher — which is what made the
+CLI awkward without KUAL.
 
 ### Step 6 — Custom lockscreens
 
@@ -704,9 +713,19 @@ Usually the binary is missing rather than the command succeeding quietly —
 which curl wget unzip
 ```
 
-`wget` and `unzip` are normally present as part of busybox, the toolset the
-Kindle's userland is built from. If a bare name isn't found, prefix it:
-`busybox wget …`. Same program, nothing installed.
+`wget` and `unzip` normally exist as part of busybox, the toolset the Kindle's
+userland is already built from — **not something you install**. If a bare name
+isn't found, `busybox wget …` reaches the same binary.
+
+### `wget: error getting response: Connection reset by peer`
+
+A **TLS failure**, not a network fault. Busybox's `wget` cannot negotiate the
+TLS that GitHub's download CDN requires, so release downloads fail on-device
+however many times you retry.
+
+Use a computer for anything that has to be downloaded as a file. KPM packages
+are unaffected — `;kpm install …` keeps working, because KPM handles its own
+transport.
 
 ### `;kpm install X` says it worked but nothing runs
 
@@ -758,10 +777,12 @@ warranty is **2 years**, to roughly October 2027.
 - [x] ~~Add the OPDS catalog pointing at Calibre-Web~~
 - [ ] Set a HOME directory in KOReader + hide unsupported files
 - [ ] Verify OTA blocked ("Check OTA Status" scriptlet)
-- [ ] kTerm — do this early, it's how you fix things on-device
-- [ ] KindleFetch — the KOReader plugin version
-- [ ] `audiobook.koplugin` — read-aloud with word highlighting
-- [ ] Custom screensavers + PNGs in `/screensavers/`
+- [x] ~~kTerm~~ — `;kpm install kterm`
+- [ ] **Over USB**: `audiobook.koplugin` + `kindlefetch.koplugin` into
+      `koreader/plugins/`, HotfixUpdater to the root. On-device downloads fail
+      on TLS.
+- [ ] `;kpm uninstall kindlefetch` — the CLI, superseded by the plugin
+- [ ] Custom screensavers (`;kpm`, no download needed) + PNGs in `/screensavers/`
 - [ ] HotfixUpdater
 - [ ] UsbNetLite (optional — enables the push script)
 - [ ] Check for stray `.bin` files in the USB root, next time you connect
