@@ -413,8 +413,12 @@ available. Everything below is now live work, not a waiting game.
 
 ## What to install after the jailbreak
 
-`;kpm` is the package manager — commands are typed into the Kindle's **search
-bar**, prefixed with a semicolon. Directory of what exists:
+📘 **Step-by-step setup with screenshots-level detail:
+[KINDLE_SETUP.md](KINDLE_SETUP.md)** — written to be followable by anyone, not
+just on this hardware. The summary below is the *what and why*; that guide is
+the *how*.
+
+`;kpm` is the package manager. Directory of what exists:
 [KindleTweaks/Awesome-Kindle](https://github.com/KindleTweaks/Awesome-Kindle).
 
 ### 1. KOReader — the entire point of doing this
@@ -476,8 +480,8 @@ insurance for a device that stays on Wi-Fi.
 | Tool | Verdict |
 |---|---|
 | **kTerm** | An e-ink terminal. Genuinely useful when something breaks on-device. |
-| **LARK** | Audiobook player. You already run Audiobookshelf, and the Scribe has no speaker — Bluetooth only. Marginal. |
-| **KindleFetch** | Downloads from Anna's Archive. Duplicates the LazyLibrarian → Calibre-Web pipeline you already own, and bypasses it. Skip. |
+| **LARK** | 🔴 **Blocked** — the project supports *firmware <5.19* and the Scribe is on 5.19.6. Also no read-along/Whispersync and no streaming, so it would not replace Audiobookshelf. See [KINDLE_SETUP.md](KINDLE_SETUP.md#audiobooks-lark-doesnt-fit-this-device-yet). |
+| **KindleFetch** | ⭐ Worth having — grabs a book from Anna's Archive with no computer nearby. A shortcut alongside the LazyLibrarian → Calibre-Web library, not a replacement for it. |
 | **Disable ADs** | Not applicable — the Scribe has no ad-supported variant. |
 | **Android on Kindles** | Not for the Scribe, and it would destroy the handwriting stack. No. |
 | Games, KAnki, Kreate, Textadept | Fun, unrelated to this project. |

@@ -368,7 +368,15 @@ tool — swapping Obsidian for something else reproduces the same failure later.
 - [ ] **`;kpm install usbnetlite`** — SSH over USB, which is what unblocks the
       `scp` push script below. Do OPDS first; this is the upgrade.
 - [ ] **HotfixUpdater** — keeps OTA-blocking hotfixes current.
-      Directory of everything available: <https://github.com/KindleTweaks/Awesome-Kindle>
+- [ ] **KindleFetch** (KOReader plugin version) — grab a book from Anna's
+      Archive with no computer nearby. A shortcut beside the LazyLibrarian →
+      Calibre-Web library, not a replacement.
+- [x] ~~Consider LARK for audiobooks~~ — **ruled out 2026-09-20**: supports
+      firmware <5.19 and the Scribe is on 5.19.6, has no read-along/Whispersync,
+      and plays local files only so it cannot replace Audiobookshelf's streaming
+      and cross-device progress. Revisit if it gains 5.19+ support.
+
+📘 Full step-by-step: **[guides/KINDLE_SETUP.md](guides/KINDLE_SETUP.md)**
 - [ ] **Books do not auto-transfer** — OPDS is pull (open KOReader, tap to
       download). Optional later: `scripts/books/push-to-kindle.sh` to `scp` new
       EPUBs over SSH when the Scribe is reachable. Try OPDS first.

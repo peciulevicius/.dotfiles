@@ -127,7 +127,7 @@ reopening the topic** — they record what was ruled out and why.
 |---|---|---|
 | De-Googling | [guides/DEGOOGLE.md](./guides/DEGOOGLE.md) · [alternatives](./guides/DEGOOGLE_ALTERNATIVES.md) | ~90% done. Gaps: email, phone, calendar, AI |
 | Notes / PKM | [guides/NOTES.md](./guides/NOTES.md) | Vault + sync exist; capture friction is the real problem |
-| Books + Kindle | [guides/BOOKS.md](./guides/BOOKS.md) | Jailbreak decided; waiting on KOReader Scribe support |
+| Books + Kindle | [guides/BOOKS.md](./guides/BOOKS.md) · [setup](./guides/KINDLE_SETUP.md) | **Jailbroken 2026-09-20.** KOReader + OPDS is the live task |
 | Self-hosted AI | [guides/SELF_HOSTED_AI.md](./guides/SELF_HOSTED_AI.md) | Not started. Odysseus on port 7000 (which is taken) |
 | Octopus Deploy | [guides/OCTOPUS_DEPLOY.md](./guides/OCTOPUS_DEPLOY.md) | ❌ Ruled out on RAM — don't re-research |
 
