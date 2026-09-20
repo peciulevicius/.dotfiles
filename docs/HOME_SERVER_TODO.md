@@ -25,6 +25,22 @@ an address that was never created.
 there is a real mailbox, so this is the argument for doing Purelymail sooner
 rather than later — see [guides/DEGOOGLE.md](guides/DEGOOGLE.md).
 
+### 0. 📌 Quick wins left over from 2026-09-20
+
+- [ ] **Sync the Kindle wallpapers.** Six are ready in `wallpapers/kindle/`
+      (two rejects dropped, all renamed descriptively). Run
+      `~/.dotfiles/scripts/kindle/sync.sh`, then the one line it prints in
+      kTerm. It mirrors, so it also clears the ten stale `lockscreen-*.png`
+      left from the earlier numbered attempt.
+- [ ] **Finish the Storyteller alignment** — container is up at
+      `localhost:8087` with `cant-hurt-me.epub` + `.m4b` staged in
+      `~/Downloads/storyteller-input/`. Create the account, upload both, start
+      the job. ⚠️ `docker compose down` in `~/services/storyteller` when done.
+- [ ] Verify Kindle OTA is blocked ("Check OTA Status" scriptlet)
+- [ ] Stock app → **Share → Searchable PDF** → confirm the mail arrives. This
+      is the Obsidian pipeline, and it is the thing most likely to have broken
+      quietly during all the Kindle work.
+
 ### 1. 🔑 Credentials into Bitwarden — **start here tomorrow**
 
 Full checklist, no secrets: **[CREDENTIAL_MIGRATION.md](CREDENTIAL_MIGRATION.md)**.
