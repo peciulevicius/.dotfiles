@@ -369,7 +369,14 @@ tool — swapping Obsidian for something else reproduces the same failure later.
       Fallback: KOReader's own gear → Screen → Sleep screen → Wallpaper.
 - [ ] **`;kpm install usbnetlite`** — SSH over USB, which is what unblocks the
       `scp` push script below. Do OPDS first; this is the upgrade.
-- [ ] **HotfixUpdater** — keeps OTA-blocking hotfixes current.
+- [x] ~~HotfixUpdater~~ — **not needed on Vera**, which blocks OTA itself. The
+      universal hotfix belongs to the legacy jailbreak chain.
+- [ ] **Storyteller for true read-along?** Audiobookshelf playback in KOReader
+      works but does **not** highlight — real narration needs EPUB 3 Media
+      Overlays. [Storyteller](https://storyteller-platform.dev/) does the forced
+      alignment and is self-hostable. ⚠️ Wants ~4GB, i.e. the whole remaining
+      Docker headroom and the same budget as Odysseus — run it as a batch job,
+      not a permanent service.
 - [ ] **KindleFetch** (KOReader plugin version) — grab a book from Anna's
       Archive with no computer nearby. A shortcut beside the LazyLibrarian →
       Calibre-Web library, not a replacement.

@@ -251,12 +251,78 @@ upgrade once the library is big enough for one-at-a-time to annoy.
 
 ---
 
-## 5. HotfixUpdater
+## 5. HotfixUpdater — ⚠️ not needed on Vera
 
-Keeps the OTA-blocking hotfixes current as Amazon ships new firmware. Cheap
-insurance on a device that stays on Wi-Fi permanently.
+Skip it. The "Universal Hotfix" belongs to the **legacy** jailbreak chain
+(WinterBreak, SpringBreak, LanguageBreak, Sanctuary), where blocking OTA updates
+was a separate manual step. **Vera blocks OTA by itself**, so there is no hotfix
+to keep current and `HotfixUpdater` has nothing to act on.
+
+Verify the block once with the **"Check OTA Status"** scriptlet and move on.
 
 ---
+
+## Read-along: which books actually highlight, and which don't
+
+`audiobook.koplugin` does two quite different things, and the difference decides
+whether you get highlighting and page turns.
+
+| Mode | Where the audio comes from | Highlights + turns pages? |
+|---|---|---|
+| **TTS** | Synthesised on-device from the text | ✅ **Always** |
+| **Audiobook playback** | An [Audiobookshelf](https://www.audiobookshelf.org/) server | ❌ **No** — it's a player |
+| **Media Overlay EPUB** | Narration embedded in the book, pre-aligned | ✅ (support is *work in progress*) |
+
+**Why TTS always works:** the plugin generates the speech from the very words it
+is highlighting, so it knows the position exactly. Nothing to align.
+
+**Why real narration doesn't:** an Audiobookshelf audiobook is just an audio
+file. Nothing in it says "this second corresponds to that word", so the plugin
+plays it and the page sits still. You get a good audiobook player with your
+library synced — but not read-along.
+
+### Getting real narration to highlight: EPUB 3 Media Overlays
+
+The standard for read-along is **EPUB 3 Media Overlays** — a SMIL map embedded
+in the book pairing text fragments with audio timestamps. Amazon's Whispersync
+is their proprietary equivalent, built from Audible's alignment data, which is
+why it only works on matched Kindle+Audible editions you bought from them.
+
+The plugin's README lists *"Storyteller compatibility; EPUB 3 Media Overlays
+support (work in progress)"* — so this path exists but is not finished. Check
+the release notes before relying on it.
+
+### Storyteller — self-hosted Whispersync
+
+[Storyteller](https://storyteller-platform.dev/) takes an ebook **and** its
+audiobook, transcribes the audio, uses **forced alignment** to match it
+sentence-by-sentence against the text, and outputs a single **EPUB 3 with Media
+Overlays**. Self-hosted, Docker, and the resulting file works in any reader that
+supports Media Overlays.
+
+It fits this stack unusually well — the audiobooks are already in Audiobookshelf
+and the ebooks already in Calibre-Web.
+
+⚠️ **RAM.** Storyteller wants **~4GB**, which is roughly the entire Docker
+headroom left on the Mac mini and the same budget earmarked for Odysseus — the
+constraint that ruled out [Octopus Deploy](OCTOPUS_DEPLOY.md). Alignment is a
+**batch job**, not a permanent service, so the realistic pattern is: bring it up,
+process a book, take it down. Don't leave it running.
+
+### ⚠️ What happens with narrator asides
+
+This is the honest limitation of any alignment tool, including Storyteller and
+Whispersync.
+
+Forced alignment maps **audio to text that exists in the book**. When a narrator
+ad-libs, chats between chapters, or adds commentary that isn't in the manuscript
+— David Goggins being the obvious example — there is no text for those words to
+align to. Expect the highlight to **stall or drift** during those passages and
+pick up again when the narration returns to the written text.
+
+Books where the narration follows the manuscript closely align well. Heavily
+ad-libbed audiobooks are the worst case for this technology, not a bug in the
+tool.
 
 ## Audiobooks: LARK doesn't fit this device (yet)
 
@@ -365,7 +431,6 @@ library and taking handwritten notes.
 |---|---|---|
 | [KOReader](https://koreader.rocks/) ✅ | The reason for jailbreaking. EPUB natively, real pagination, OPDS. | `;kpm install koreader` — **done** |
 | [KindleFetch](https://github.com/justrals/KindleFetch) | Download books from Anna's Archive on-device, no computer. | `;kpm install kindlefetch`, or better the [KOReader plugin](https://github.com/william-spongberg/KindleFetch.koplugin) |
-| [HotfixUpdater](https://github.com/KindleTweaks/HotfixUpdater) | Keeps the universal hotfix current, which is what keeps OTA blocked. | Manual — grab the release |
 | [kTerm](https://github.com/bfabiszewski/kterm) | E-ink terminal. How you install everything else without a computer. | `;kpm install kterm` — **done** |
 | [UsbNetLite](https://github.com/notmarek/kindle-usbnetlite) | SSH over USB. Unblocks the `scp` push script instead of pulling one book at a time. | Manual |
 
@@ -627,7 +692,6 @@ Type the commands it printed — roughly:
 cd /mnt/us
 wget -O ab.zip http://<mac-mini-ip>:8765/audiobook-koplugin-v0.2.2.zip
 wget -O kf.zip http://<mac-mini-ip>:8765/kindlefetch.koplugin.zip
-wget -O hf.zip http://<mac-mini-ip>:8765/HotfixUpdater.zip
 ```
 
 Both devices must be on the **same Wi-Fi**. Then unpack into place:
@@ -637,10 +701,7 @@ cd /mnt/us/koreader/plugins
 unzip /mnt/us/ab.zip
 unzip /mnt/us/kf.zip
 
-cd /mnt/us
-unzip /mnt/us/hf.zip
-
-rm /mnt/us/ab.zip /mnt/us/kf.zip /mnt/us/hf.zip
+rm /mnt/us/ab.zip /mnt/us/kf.zip
 ls /mnt/us/koreader/plugins/     # expect audiobook.koplugin + kindlefetch.koplugin
 ```
 
@@ -651,9 +712,8 @@ Stop the server on the Mac with Ctrl-C when you're done.
 #### Then, on the Kindle
 
 - **Fully quit and relaunch KOReader** — not a page refresh
-- Open a book → ☰ menu → the audiobook/TTS entry → choose **Piper**
-- KindleFetch appears in the same ☰ menu
-- `HotfixUpdater.sh` shows in the library as a tappable entry — run it once
+- **Tools → Audiobook Read-Along → Voice settings** → choose **Piper**
+- KindleFetch is in the ☰ book menu
 
 ### Step 5 — Drop the broken CLI
 
@@ -694,19 +754,7 @@ alphabetically and are scaled automatically. Getting images across is the same
 ⚠️ Untested on the Scribe's 10.2" panel — see the lockscreens section above for
 the KOReader fallback if scaling looks wrong.
 
-### Step 7 — HotfixUpdater
-
-```sh
-cd /mnt/us
-curl -L -O https://github.com/KindleTweaks/HotfixUpdater/releases/download/v1.0.2/HotfixUpdater.zip
-unzip HotfixUpdater.zip
-```
-
-Launch it the same way as KindleFetch — a scriptlet in `documents/` pointing at
-whatever `.sh` it unpacked. Keeps the universal hotfix current, which is what
-keeps OTA blocked.
-
-### Step 8 — UsbNetLite (optional)
+### Step 6 — UsbNetLite (optional)
 
 Only worth it when tapping through OPDS one book at a time starts to grate;
 it enables a bulk `scp` push from the Mac mini.
@@ -718,6 +766,27 @@ it enables a bulk `scp` push from the Mac mini.
 - [ ] **Stock app: write a note → Share → Searchable PDF** → confirm the email
       arrives. This is what feeds `kindle_sync.py`; check it after *every* round
       of installs.
+
+---
+
+## KindleFetch: "no books found"
+
+Not your setup — it's upstream. **Anna's Archive throttles scraping behind
+Cloudflare**, which breaks the plugin's search. Tracked as
+[issue #24](https://github.com/william-spongberg/KindleFetch.koplugin/issues/24)
+against v0.3.
+
+Worth trying:
+
+- Check for a release newer than v0.3
+- Delete the plugin folder, reinstall, and clear KOReader's cache
+- The alternative plugin [fischer-hub/annas.koplugin](https://github.com/fischer-hub/annas.koplugin)
+  has the same upstream problem but is worth a look
+
+Meanwhile the self-hosted pipeline is unaffected: **LazyLibrarian → Calibre-Web
+→ OPDS** doesn't touch Anna's Archive, and the OPDS catalog in KOReader keeps
+working regardless. KindleFetch was always the convenience shortcut, not the
+library.
 
 ---
 
@@ -799,11 +868,10 @@ warranty is **2 years**, to roughly October 2027.
 - [x] ~~kTerm~~ — `;kpm install kterm`
 - [ ] **Over the LAN** (`scripts/books/serve-to-kindle.sh` on the Mac mini, then
       `wget` in kTerm): `audiobook.koplugin` + `kindlefetch.koplugin` into
-      `koreader/plugins/`, HotfixUpdater to the root. ⚠️ USB doesn't work — the
+      `koreader/plugins/`. ⚠️ USB doesn't work — the
       Scribe is MTP and macOS can't mount it. HTTPS doesn't work either.
 - [ ] `;kpm uninstall kindlefetch` — the CLI, superseded by the plugin
 - [ ] Custom screensavers (`;kpm`, no download needed) + PNGs in `/screensavers/`
-- [ ] HotfixUpdater
 - [ ] UsbNetLite (optional — enables the push script)
 - [ ] Check for stray `.bin` files in the USB root, next time you connect
 - [ ] Confirm stock handwriting + *Share → Searchable PDF* still works
