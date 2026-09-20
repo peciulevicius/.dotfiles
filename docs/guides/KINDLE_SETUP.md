@@ -805,7 +805,23 @@ want. Good sources:
 | Book covers, maps, typography | Line art and strong shapes suit e-ink far better than busy photos |
 
 Preview and cull in Finder first — the Kindle is the worst place to discover an
-image looks wrong. Then convert and push:
+image looks wrong.
+
+**The easy way** — one command does convert *and* serve:
+
+```sh
+~/.dotfiles/scripts/books/kindle-lockscreens.sh ~/Downloads
+```
+
+It greyscales and resizes everything it finds to 1860 × 2480, letterboxing
+rather than cropping, writes them to `~/Pictures/kindle-lockscreens/` as
+`lockscreen-01.png`…, then prints the `wget` lines for kTerm. Uses `sips`, built
+into macOS, and handles AVIF and HEIC as well as JPEG and PNG.
+
+⚠️ Small sources get upscaled and look soft on a 300 ppi panel — anything under
+about 1200 px on its long edge is worth swapping out.
+
+**The manual way**, if you prefer ImageMagick:
 
 ```sh
 mkdir -p ~/Pictures/kindle-lockscreens

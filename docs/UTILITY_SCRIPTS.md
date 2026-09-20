@@ -207,6 +207,35 @@ See [guides/NOTES.md](./guides/NOTES.md) for the full Obsidian + Syncthing workf
 
 ---
 
+## 🖼️ scripts/books/kindle-lockscreens.sh - Kindle lockscreen images
+
+Converts a folder of images to Kindle Scribe lockscreens and serves them to the
+device in one step.
+
+```bash
+~/.dotfiles/scripts/books/kindle-lockscreens.sh            # ~/Downloads
+~/.dotfiles/scripts/books/kindle-lockscreens.sh ~/Pictures/holiday
+```
+
+- Output: greyscale PNG at **1860 × 2480**, the Scribe's native panel
+- **Letterboxes rather than crops** — cropping silently cuts faces off
+- Reads **AVIF, HEIC, JPEG, PNG, WebP** via `sips`, which ships with macOS, so
+  there is no ImageMagick or Homebrew dependency
+- Writes to `~/Pictures/kindle-lockscreens/` as `lockscreen-01.png`… (they
+  rotate alphabetically on the device)
+- Hands off to `serve-to-kindle.sh`, which prints the `wget` lines to paste into
+  kTerm
+
+Preview the results in Finder before pushing — `open ~/Pictures/kindle-lockscreens`.
+
+⚠️ Small sources get upscaled and will look soft on a 300 ppi panel. Anything
+under roughly 1200 px on its long edge is worth replacing.
+
+Needs the custom screensaver package installed first — see
+[guides/KINDLE_SETUP.md](./guides/KINDLE_SETUP.md).
+
+---
+
 ## 📖 scripts/books/serve-to-kindle.sh - Get files onto a Kindle
 
 Serves a directory over plain HTTP on the LAN so a jailbroken Kindle can `wget`
