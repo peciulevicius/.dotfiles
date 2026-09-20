@@ -297,7 +297,7 @@ confusion — **`;kpm install` does not work for most things on the list.**
 |---|---|---|
 | **KPM** | `;kpm install <name>` in the search bar, or `kpm -S <name>` in kterm | More than the wiki's package page lists — `kterm` installs this way even though it isn't on it. **Always try KPM first.** |
 | **KOReader plugin** | Unzip a `*.koplugin` folder into `koreader/plugins/` | Anything ending `.koplugin` |
-| **Manual scriptlet / extension** | Unzip into `documents/` or `extensions/` at the Kindle's root. A `.sh` in `documents/` appears in the library as a tappable "book". | Most of the rest |
+| **Manual scriptlet** | Unzip somewhere under `/mnt/us`, then drop a `.sh` into `documents/` — it appears in the library as a tappable "book". ⚠️ Not `extensions/`: that is the old KUAL layout and doesn't exist on Vera. | Most of the rest |
 
 The [KPM wiki](https://kpmwiki.vercel.app/packages) lists `blockamazon`,
 `gnomegames`, `hello`, `hyprpad`, `kanki`, `kindlefetch`, `kwordle`, `make` and
@@ -486,33 +486,63 @@ A **scriptlet** is just a `.sh` file in `documents/`. It shows up in the Kindle
 library looking like a book; tapping it runs the script. That is the whole
 mechanism.
 
+#### Where KPM actually puts things
+
+Not `extensions/` — that is the **old KUAL layout** and does not exist on a Vera
+install. KPM uses:
+
+| Path | Contents |
+|---|---|
+| `/mnt/us/kpm/packages/` | installed packages |
+| `/mnt/us/kpm/packages/bin/` | their executables |
+| `/usr/local/bin/kpm` | KPM itself |
+| `/etc/kpm` | configuration |
+
+`/mnt/us/kpm/packages/bin` is added to `PATH` via `/etc/profile`, so in kTerm the
+package name alone should work.
+
 #### Launching KindleFetch
 
-KPM installs it to `/mnt/us/extensions/kindlefetch/`, with `run.sh` as the entry
-point. Two ways to start it:
-
-**From kTerm** — works immediately:
+**Try this first** in kTerm:
 
 ```sh
-sh /mnt/us/extensions/kindlefetch/run.sh
+kindlefetch
 ```
 
-**As a tappable library entry** — better, because you won't want kTerm every
-time. Create a scriptlet once:
+If the shell can't find it, look rather than guess:
+
+```sh
+ls /mnt/us/kpm/packages/
+ls /mnt/us/kpm/packages/bin/
+```
+
+And if it's somewhere else entirely, search for it:
+
+```sh
+find /mnt/us -iname '*kindlefetch*' 2>/dev/null
+```
+
+Then run whatever that turns up — e.g.
+`sh /mnt/us/kpm/packages/kindlefetch/run.sh`.
+
+#### Make it tappable instead of terminal-only
+
+Once you know the working command, wrap it in a **scriptlet** so it opens from
+the library:
 
 ```sh
 cat > /mnt/us/documents/KindleFetch.sh <<'EOF'
 #!/bin/sh
-sh /mnt/us/extensions/kindlefetch/run.sh
+kindlefetch
 EOF
 chmod +x /mnt/us/documents/KindleFetch.sh
 ```
 
-**KindleFetch** now appears in your Kindle library alongside your books. Tap it
-to launch. If it doesn't show up, restart the device.
+Replace `kindlefetch` with the full path if the bare name didn't work.
+**KindleFetch** then appears in your library next to your books — tap to launch.
+Restart the device if it doesn't show up.
 
-The same trick gives any `extensions/` tool a launcher — change the path inside
-the heredoc.
+The same wrapper gives any KPM package a launcher.
 
 #### Using it
 
@@ -523,6 +553,18 @@ in `documents/`, so they appear in both the stock library and KOReader.
 is standalone; the plugin puts the same search inside KOReader so you never
 leave the reader. You have the CLI; add the plugin later only if switching apps
 starts to annoy.
+
+### Finding anything on the device
+
+Two commands worth remembering, because upstream docs frequently describe paths
+from older jailbreaks that don't exist here:
+
+```sh
+find /mnt/us -maxdepth 2 -iname '*<name>*' 2>/dev/null   # where did it install?
+ls /mnt/us/kpm/packages/bin/                             # what can I run?
+```
+
+`/mnt/us/kpm/packages/bin` is on `PATH`, so anything listed there runs by name.
 
 ### Step 3 — Getting files onto the Kindle with kTerm
 
@@ -603,8 +645,10 @@ curl -L -O https://github.com/chengandre/kindle-custom-screensaver/releases/down
 unzip custom-screensaver-0.3.0-kindlehf.zip
 ```
 
-It unpacks `documents/`, `extensions/` and `screensavers/` and merges them into
-the existing folders at the root — that's expected, not a mistake.
+It unpacks `documents/`, `extensions/` and `screensavers/`, merging into the root.
+⚠️ It will **create** `extensions/`, which Vera otherwise has no use for — that
+folder is only meaningful to KUAL, so treat the screensaver's own scriptlet in
+`documents/` as the way to drive it. Prefer the KPM route above.
 
 Then put **PNG** files into `/mnt/us/screensavers/`. Any filename; they rotate
 alphabetically and are scaled automatically. Getting images across is the same
