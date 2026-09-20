@@ -46,27 +46,48 @@ docker compose up -d
 open http://localhost:8087
 ```
 
+## Importing from disk, not the browser
+
+`./import` is bind-mounted to **`/import`** in the container, and Storyteller
+can import from a server path — so a 744MB audiobook never has to go through a
+browser upload.
+
+Three rules that decide whether it works:
+
+1. **Every book needs its own folder.** `/import/Can't Hurt Me/` holding both
+   the EPUB and the M4B. Loose files at the top level are not picked up.
+2. **Originals are neither copied nor moved.** Storyteller reads them where they
+   are, so `./import` is the canonical location for anything queued — deleting a
+   folder there removes the source.
+3. **Don't overlap folders.** A top-level auto-import folder *and* a
+   per-collection one covering the same path gives you duplicate books.
+
+Configure it at **Settings → auto-import folder → `/import`**, or per-collection
+if you'd rather books land in a collection than in *Uncollected*.
+
+⚠️ This folder lives on the **internal SSD** and audiobooks are large. Clear out
+books once aligned; the SSD had ~30GB free when this was written.
+
 ## Worked example — *Can't Hurt Me*
 
 Both halves were already on the server, so this is the shape of every future
 alignment.
 
-**1. Start it and stage the files** (done 2026-09-20):
+**1. Start it and drop the files into the import folder** (done 2026-09-20):
 
 ```bash
 cd ~/services/storyteller && docker compose up -d
-ls ~/Downloads/storyteller-input/
+ls "import/Can't Hurt Me/"
 #   cant-hurt-me.epub   9.0M   (from Calibre, /Volumes/books)
-#   cant-hurt-me.m4b    780M   (from Audiobookshelf, /Volumes/audiobooks)
+#   cant-hurt-me.m4b    744M   (from Audiobookshelf, /Volumes/audiobooks)
 ```
 
 **2. In the browser** at <http://localhost:8087>:
 
 - Create an account on first run — it is local-only, but set a real password
-- **Add book** → upload `cant-hurt-me.epub`
-- Upload `cant-hurt-me.m4b` as its audio. 780MB over localhost is quick; the
-  progress bar is the upload, not the alignment.
-- Start processing
+- **Settings → auto-import folder → `/import`** (or set it per-collection, so
+  books land in a collection instead of *Uncollected*)
+- The book appears without any uploading
 
 **3. Wait.** It transcribes the whole audiobook, then aligns. On this hardware
 expect **a long while** for a 13-hour book — leave it running and check back.

@@ -28,6 +28,10 @@ services:
       - "${STORYTELLER_PORT:-8087}:8001"
     volumes:
       - ./data:/data
+      # Auto-import source. Storyteller reads books from here and does NOT copy
+      # them, so this folder stays the canonical location for anything queued.
+      # Each book needs its OWN folder holding both the ebook and its audio.
+      - ./import:/import
     environment:
       STORYTELLER_SECRET_KEY: ${STORYTELLER_SECRET_KEY:?STORYTELLER_SECRET_KEY required}
       STORYTELLER_LOG_LEVEL: ${STORYTELLER_LOG_LEVEL:-info}
