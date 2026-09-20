@@ -346,17 +346,29 @@ tool — swapping Obsidian for something else reproduces the same failure later.
       EPUB — Send to Kindle converts server-side, so every LazyLibrarian
       download would round-trip through Amazon. KOReader reads EPUB natively via
       Calibre-Web's OPDS feed.
-- [ ] **Jailbreak decision: yes.** Blocker is **software, not warranty** —
-      Vera's Scribe support reads as pending, no fixed date. (Warranty is
-      **2 years in the EU**, to ~Oct 2027, not 1 — and the jailbreak is
-      reversible via `renametobin` Restore → factory reset → update, so a
-      warranty claim stays possible.)
-- [ ] Watch kindlemodding.org → when Scribe lands, run the Jailbreaking Wizard
-      → `;kpm install koreader` → point KOReader at `books.peciulevicius.com` OPDS
-- [ ] **Wi-Fi stays on afterwards** — `renametobin` blocks OTA updates; verify
-      with the "Check OTA Status" scriptlet. Airplane mode is only for *before*
-      jailbreaking. Wi-Fi is required for notes: *Share → Searchable PDF* routes
-      through Amazon to email, which is what feeds `kindle_sync.py`.
+- [x] ~~**Jailbreak the Scribe**~~ — **done 2026-09-20 with Vera.** Support
+      landed earlier than expected; `;kpm` is available on the device.
+- [ ] **Post-jailbreak housekeeping** — delete leftover `.bin` update files from
+      the Kindle's root plus the jailbreak's filler files; a stray `.bin` can
+      undo the jailbreak
+- [ ] **Verify OTA is blocked** with the "Check OTA Status" scriptlet. Modern
+      `hdnext`-stack jailbreaks block updates automatically — verify, don't
+      assume. Then normal Wi-Fi is fine, and Wi-Fi is *required* for notes:
+      *Share → Searchable PDF* routes through Amazon to email, which feeds
+      `kindle_sync.py`.
+- [ ] **`;kpm install koreader`**, then point it at
+      `https://books.peciulevicius.com/opds`. Verified 2026-09-20: that endpoint
+      answers with HTTP Basic auth, which KOReader speaks, and is deliberately
+      not behind Cloudflare Access. Use the Calibre-Web login.
+- [ ] **Custom lockscreens** — `;kpm add-repo https://kpm.andrecheng.com/kpm.json`
+      then `;kpm update && ;kpm install custom-screensaver`; PNGs go in
+      `/screensavers/`. ⚠️ Author tested it on PW5/PW6/12th-gen, **not the
+      Scribe** — the firmware range matches but the 10.2" panel may scale oddly.
+      Fallback: KOReader's own gear → Screen → Sleep screen → Wallpaper.
+- [ ] **`;kpm install usbnetlite`** — SSH over USB, which is what unblocks the
+      `scp` push script below. Do OPDS first; this is the upgrade.
+- [ ] **HotfixUpdater** — keeps OTA-blocking hotfixes current.
+      Directory of everything available: <https://github.com/KindleTweaks/Awesome-Kindle>
 - [ ] **Books do not auto-transfer** — OPDS is pull (open KOReader, tap to
       download). Optional later: `scripts/books/push-to-kindle.sh` to `scp` new
       EPUBs over SSH when the Scribe is reachable. Try OPDS first.
@@ -369,10 +381,9 @@ tool — swapping Obsidian for something else reproduces the same failure later.
       anything. ⚠️ But LazyLibrarian shows **0 books downloaded** too (47 known,
       1 author), so the book pipeline is configured, not proven. Confirm it can
       actually fetch something before relying on it.
-- [ ] **Freeze the Kindle Scribe firmware at 5.19.6** — fill its storage or keep
-      Wi-Fi off. Vera's Scribe port targets `<=5.19.6`; updating past it may
-      strand the device. Confirm actual support via the Jailbreaking Wizard —
-      Scribe support reads as pending, not shipped.
+- [x] ~~**Freeze firmware at 5.19.6**~~ — moot now that the jailbreak is in and
+      blocking OTA. Keep it that way: never let the device take a firmware
+      update, or the jailbreak goes with it.
 - [ ] Habit: **Share → Searchable PDF** after each meeting. Amazon's handwriting
       OCR is what makes the notes greppable once they land in the vault.
 - [ ] Later: point Odysseus's RAG at the vault

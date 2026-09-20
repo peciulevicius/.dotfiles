@@ -8,6 +8,27 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-20 — Kindle Scribe jailbroken
+
+Done with **Vera** on firmware 5.19.6. Earlier than `guides/BOOKS.md` predicted —
+that guide was written while Vera's Scribe port still read as *pending*, and the
+plan had been to wait and watch kindlemodding.org.
+
+`;kpm` is available on the device, so the rest of the books plan is now live
+work rather than a waiting game: KOReader over Calibre-Web's OPDS feed, custom
+screensavers, and UsbNetLite for the SSH push script.
+
+Verified while planning it: `https://books.peciulevicius.com/opds` answers with
+**HTTP Basic auth**, which KOReader's OPDS client speaks natively, and it is not
+behind Cloudflare Access — an Access challenge would block the reader the same
+way it blocks the Obsidian LiveSync plugin. So the intended setup works as
+designed.
+
+The recommendations, with reasoning about what to skip, are in
+[guides/BOOKS.md](guides/BOOKS.md#what-to-install-after-the-jailbreak).
+
+---
+
 ## 2026-09-19 — Verification, backups, CouchDB
 
 A "just verify what's running" session that turned up two silent failures.

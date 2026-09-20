@@ -394,17 +394,98 @@ But that matters less than it sounds, for two reasons:
 Vera's Scribe support still reads as *pending* — that's what you're actually
 waiting for, and it has no fixed date.
 
-### Do this now, regardless
+### ✅ Jailbroken 2026-09-20 with Vera
 
-- [ ] **Freeze firmware at 5.19.6.** Vera's Scribe target is capped at `<=5.19.6`
-      and you're exactly on it. Updating past it could strand the device before
-      a port lands. Fill the storage, or keep Wi-Fi off until you've decided.
-- [ ] Watch [kindlemodding.org](https://kindlemodding.org) for Scribe support
-- [ ] When it lands: run the **Jailbreaking Wizard** against your exact
-      model + firmware → `;kpm install koreader`
-- [ ] Point KOReader at Calibre-Web's **OPDS feed** (`books.peciulevicius.com`)
+Scribe support landed sooner than this guide predicted — it was written while
+Vera's Scribe port read as *pending*. The device is jailbroken and `;kpm` is
+available. Everything below is now live work, not a waiting game.
+
+**Housekeeping first** (from the KindleModding wiki's post-jailbreak page):
+
+- [ ] Delete any leftover `.bin` update files from the Kindle's root, plus the
+      jailbreak's filler files — a stray `.bin` can undo the jailbreak
+- [ ] Confirm OTA is blocked with the **"Check OTA Status"** scriptlet. Modern
+      `hdnext`-stack jailbreaks block updates automatically, but verify rather
+      than assume — then normal Wi-Fi use is fine, and Wi-Fi is *required* for
+      the notes pipeline.
 
 ---
+
+## What to install after the jailbreak
+
+`;kpm` is the package manager — commands are typed into the Kindle's **search
+bar**, prefixed with a semicolon. Directory of what exists:
+[KindleTweaks/Awesome-Kindle](https://github.com/KindleTweaks/Awesome-Kindle).
+
+### 1. KOReader — the entire point of doing this
+
+```
+;kpm install koreader
+```
+
+Then point it at Calibre-Web's OPDS feed:
+`https://books.peciulevicius.com/opds`
+
+Verified 2026-09-20: that endpoint answers with **HTTP Basic auth**
+(`WWW-Authenticate: Basic`), which KOReader's OPDS client speaks natively, and it
+is deliberately **not** behind Cloudflare Access — an Access challenge would
+block the reader exactly as it blocks the Obsidian LiveSync plugin. Use the
+Calibre-Web login.
+
+This is what removes Amazon from the loop: KOReader reads the EPUB as it exists
+in Calibre-Web, and it paginates natively so real page numbers work — see the
+sideloading section above.
+
+### 2. UsbNetLite — SSH over USB
+
+```
+;kpm install usbnetlite
+```
+
+Worth it because it unblocks the push script this guide has listed as
+"possible later" all along: with SSH on the device, new EPUBs can be `scp`'d
+straight across instead of pulled one at a time through OPDS. OPDS first, since
+it needs nothing; this is the upgrade path.
+
+### 3. Custom screensavers / lockscreens
+
+```
+;kpm add-repo https://kpm.andrecheng.com/kpm.json
+;kpm list-repo
+;kpm update
+;kpm install custom-screensaver
+```
+
+Drop **PNG** files into `/screensavers/` on the Kindle's storage; any filename
+works, images are scaled automatically, and they rotate alphabetically. It needs
+neither KOReader nor KUAL.
+
+⚠️ **Tested by its author on Kindle 12th gen, Paperwhite 5 and Paperwhite 6
+(firmware 5.18.6–5.19.6) — not the Scribe.** The firmware matches, but the
+Scribe's panel is 10.2" rather than ~6–7", so scaling is the thing to watch. If
+it misbehaves, KOReader's own sleep screen is the fallback: **gear → Screen →
+Sleep screen → Wallpaper**, pointed at a folder of images.
+
+### 4. HotfixUpdater
+
+Keeps the OTA-blocking hotfixes current as Amazon ships new firmware. Cheap
+insurance for a device that stays on Wi-Fi.
+
+### Also available, with an opinion
+
+| Tool | Verdict |
+|---|---|
+| **kTerm** | An e-ink terminal. Genuinely useful when something breaks on-device. |
+| **LARK** | Audiobook player. You already run Audiobookshelf, and the Scribe has no speaker — Bluetooth only. Marginal. |
+| **KindleFetch** | Downloads from Anna's Archive. Duplicates the LazyLibrarian → Calibre-Web pipeline you already own, and bypasses it. Skip. |
+| **Disable ADs** | Not applicable — the Scribe has no ad-supported variant. |
+| **Android on Kindles** | Not for the Scribe, and it would destroy the handwriting stack. No. |
+| Games, KAnki, Kreate, Textadept | Fun, unrelated to this project. |
+
+⚠️ **Do not replace the stock reader for handwriting.** KOReader's Scribe stylus
+support was merged and then reverted as unstable. The jailbreak is *additive*:
+KOReader for reading EPUBs, stock Kindle software for notes and the Searchable
+PDF export that feeds `kindle_sync.py`.
 
 ## Can you keep Wi-Fi on afterwards? Yes
 
