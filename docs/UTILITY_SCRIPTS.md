@@ -238,13 +238,33 @@ Needs the custom screensaver package installed first — see
 
 ## 📖 scripts/books/serve-to-kindle.sh - Get files onto a Kindle
 
-Serves a directory over plain HTTP on the LAN so a jailbroken Kindle can `wget`
-from it, and prints the ready-made command for each file.
+Serves a directory over plain HTTP on the LAN and **generates an installer**, so
+getting anything onto the Kindle is **one command typed on the device** rather
+than one per file.
 
 ```bash
 ~/.dotfiles/scripts/books/serve-to-kindle.sh                  # ~/Downloads/kindle-plugins
 ~/.dotfiles/scripts/books/serve-to-kindle.sh ~/some/dir 9000  # custom dir + port
 ```
+
+On the Kindle, in kTerm:
+
+```sh
+wget -O /tmp/i.sh http://<mac-ip>:8765/_install.sh && sh /tmp/i.sh
+```
+
+The generated `_install.sh` creates the folders, downloads everything, unpacks
+zips **into the right place**, and **skips whatever is already there** — so it
+is safe to re-run, and re-running after adding files only fetches the new ones.
+
+Routing is by file type:
+
+| File | Goes to |
+|---|---|
+| `*.png` `*.jpg` | `/mnt/us/screensavers/` |
+| `*koplugin*.zip` | unpacked into `/mnt/us/koreader/plugins/` |
+| other `*.zip` | unpacked at `/mnt/us` |
+| anything else | `/mnt/us/` |
 
 **Why it's needed** — both obvious routes are dead ends on this hardware:
 
