@@ -46,14 +46,59 @@ docker compose up -d
 open http://localhost:8087
 ```
 
-## Using it
+## Worked example — *Can't Hurt Me*
 
-1. Upload the **EPUB** and the **audiobook** (M4B or MP3) for the same title
-2. Start the alignment job — it transcribes, then aligns. **Slow**: expect the
-   better part of an hour for a long book on this hardware.
-3. Download the produced EPUB 3
-4. Put it in Calibre-Web so it reaches the Kindle over OPDS like anything else
-5. `docker compose down`
+Both halves were already on the server, so this is the shape of every future
+alignment.
+
+**1. Start it and stage the files** (done 2026-09-20):
+
+```bash
+cd ~/services/storyteller && docker compose up -d
+ls ~/Downloads/storyteller-input/
+#   cant-hurt-me.epub   9.0M   (from Calibre, /Volumes/books)
+#   cant-hurt-me.m4b    780M   (from Audiobookshelf, /Volumes/audiobooks)
+```
+
+**2. In the browser** at <http://localhost:8087>:
+
+- Create an account on first run — it is local-only, but set a real password
+- **Add book** → upload `cant-hurt-me.epub`
+- Upload `cant-hurt-me.m4b` as its audio. 780MB over localhost is quick; the
+  progress bar is the upload, not the alignment.
+- Start processing
+
+**3. Wait.** It transcribes the whole audiobook, then aligns. On this hardware
+expect **a long while** for a 13-hour book — leave it running and check back.
+This is the step that wants ~4GB.
+
+**4. Download the aligned EPUB 3**, then put it where the Kindle can reach it:
+
+```bash
+cp ~/Downloads/<aligned>.epub "/Volumes/books/David Goggins/"
+# then in Calibre-Web, or via Calibre, refresh the library
+```
+
+It then appears in the OPDS catalog like any other book, and KOReader downloads
+it over Wi-Fi — no cable, no MTP.
+
+**5. Stop it.**
+
+```bash
+cd ~/services/storyteller && docker compose down
+```
+
+### ⚠️ Expect this particular book to align imperfectly
+
+*Can't Hurt Me* is close to the worst case: Goggins talks **between** chapters,
+and those "challenge" segments are not in the manuscript. Forced alignment has
+no text to attach them to, so the highlight will stall or drift through them and
+recover when he returns to the written text.
+
+The chapters themselves should track well. If you want a clean first test of
+whether the whole pipeline works, align a **straight-read novel** first and try
+this one second — otherwise a poor result won't tell you whether the tooling is
+broken or the book is simply hard.
 
 ## Storage
 

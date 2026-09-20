@@ -774,16 +774,56 @@ it to toggle the screensaver on.
 > a local file. The zip is the route verified to contain a working scriptlet, so
 > prefer it.
 
+#### What happens when you tap it
+
+The library entry is a **toggle**, not an app. Tapping it runs
+`extensions/custom-screensaver/toggle.sh`, which switches the custom screensaver
+**on or off** and then returns you to the library. There is no interface and no
+picker — it either takes over the sleep screen or hands it back to Amazon.
+
+So the sequence is: **add images first, then tap to enable.** With an empty
+`/mnt/us/screensavers/` there is nothing to show, and you'll see either Amazon's
+default or a blank screen. Tap it again any time to turn it off.
+
 #### Add your images
+
 
 ```sh
 mkdir -p /mnt/us/screensavers
 ```
 
 PNGs go there — any filename, rotating alphabetically, scaled automatically.
-Serve them the same way: put images in a folder on the Mac and run
-`serve-to-kindle.sh ~/Pictures/kindle-lockscreens`; the script detects images and
-prints `wget` lines pointing at `/mnt/us/screensavers/`.
+
+**Where the images come from is up to you** — the package ships none. You pick
+them on the Mac, where you can see them properly, and push only the ones you
+want. Good sources:
+
+| Source | Why |
+|---|---|
+| **Your own photos, via Immich** | `photos.peciulevicius.com` — already yours, and a favourite shot in high-contrast greyscale looks superb on e-ink |
+| [Unsplash](https://unsplash.com) / [Pexels](https://pexels.com) | Free, high resolution. Search "black and white" or "minimal". |
+| Book covers, maps, typography | Line art and strong shapes suit e-ink far better than busy photos |
+
+Preview and cull in Finder first — the Kindle is the worst place to discover an
+image looks wrong. Then convert and push:
+
+```sh
+mkdir -p ~/Pictures/kindle-lockscreens
+cd ~/Pictures/kindle-lockscreens
+# drop your chosen JPGs/PNGs here, then:
+i=1; for f in *.jpg *.jpeg *.png; do
+  [ -e "$f" ] || continue
+  magick "$f" -colorspace Gray -resize 1860x2480^     -gravity center -extent 1860x2480 -quality 92     "$(printf 'lockscreen-%02d.png' $i)"
+  i=$((i+1))
+done
+rm -f *.jpg *.jpeg          # keep only the converted PNGs
+
+~/.dotfiles/scripts/books/serve-to-kindle.sh ~/Pictures/kindle-lockscreens
+```
+
+The script detects images and prints `wget` lines pointing straight at
+`/mnt/us/screensavers/`. Run those in kTerm, then tap the library entry to
+enable.
 
 **Sizing** — the Scribe's panel is **1860 × 2480 px** (10.2", 300 ppi):
 
