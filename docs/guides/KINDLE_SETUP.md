@@ -295,13 +295,15 @@ confusion — **`;kpm install` does not work for most things on the list.**
 
 | Method | How | Which tools |
 |---|---|---|
-| **KPM** | `;kpm install <name>` in the search bar, or `kpm -S <name>` in kterm | Only a handful of official packages, plus whatever third-party repos you add |
+| **KPM** | `;kpm install <name>` in the search bar, or `kpm -S <name>` in kterm | More than the wiki's package page lists — `kterm` installs this way even though it isn't on it. **Always try KPM first.** |
 | **KOReader plugin** | Unzip a `*.koplugin` folder into `koreader/plugins/` | Anything ending `.koplugin` |
 | **Manual scriptlet / extension** | Unzip into `documents/` or `extensions/` at the Kindle's root, then run from the search bar or KUAL | Most of the rest |
 
-KPM's official package list is small — as of 2026-09: `blockamazon`,
-`gnomegames`, `hello`, `hyprpad`, `kanki`, `kindlefetch`, `kwordle`, `make`,
-`musl`. Check the current list at the [KPM wiki](https://kpmwiki.vercel.app/packages).
+The [KPM wiki](https://kpmwiki.vercel.app/packages) lists `blockamazon`,
+`gnomegames`, `hello`, `hyprpad`, `kanki`, `kindlefetch`, `kwordle`, `make` and
+`musl` — but that page is **incomplete**: `kterm` and `koreader` both install
+through KPM without appearing on it. Try `;kpm install <name>` before assuming
+a manual install is needed.
 
 > **KindleForge** is a GUI app store for Kindles and sounds like the obvious
 > shortcut, but skip it here: it targets AdBreak/WinterBreak/LanguageBreak
@@ -361,7 +363,7 @@ library and taking handwritten notes.
 | [KOReader](https://koreader.rocks/) ✅ | The reason for jailbreaking. EPUB natively, real pagination, OPDS. | `;kpm install koreader` — **done** |
 | [KindleFetch](https://github.com/justrals/KindleFetch) | Download books from Anna's Archive on-device, no computer. | `;kpm install kindlefetch`, or better the [KOReader plugin](https://github.com/william-spongberg/KindleFetch.koplugin) |
 | [HotfixUpdater](https://github.com/KindleTweaks/HotfixUpdater) | Keeps the universal hotfix current, which is what keeps OTA blocked. | Manual — grab the release |
-| [kTerm](https://github.com/bfabiszewski/kterm) | E-ink terminal. What you need when something breaks on-device, and the fallback for `kpm -S`. | Manual — unzip to `extensions/` |
+| [kTerm](https://github.com/bfabiszewski/kterm) | E-ink terminal. How you install everything else without a computer. | `;kpm install kterm` — **done** |
 | [UsbNetLite](https://github.com/notmarek/kindle-usbnetlite) | SSH over USB. Unblocks the `scp` push script instead of pulling one book at a time. | Manual |
 
 ### Worth considering
@@ -454,69 +456,156 @@ than a reading companion. The plugin is the better fit.
 
 ## Install walkthrough, in order
 
-### Step 1 — KPM packages
+Everything below is done **on the Kindle, with no computer**, using kTerm.
 
-Search bar, one at a time. If a scriptlet doesn't respond, do Step 2 first and
-use `kpm -S <name>` in the terminal instead.
+### Step 1 — KPM packages ✅
 
 ```
 ;kpm update
+;kpm install kterm
 ;kpm install kindlefetch
 ```
 
-Optional extras: `;kpm install hyprpad`, `;kpm install gnomegames`,
-`;kpm install kwordle`. Skip `hello`. Leave `make` and `musl` for when a package
-asks for them. Hold off on `blockamazon` until you've read the warning above.
+More is in KPM than the wiki's package page lists — **kterm installs via KPM
+too.** When in doubt, just try `;kpm install <name>`; if it isn't there, fall
+back to a manual install.
 
-### Step 2 — kTerm
+### Step 2 — Using KindleFetch (the CLI you installed) ✅
 
-Not a KPM package. [Grab the release](https://github.com/bfabiszewski/kterm),
-unzip, and copy the extension folder into `extensions/` at the Kindle's storage
-root. Launch it from KUAL or its scriptlet.
+It registers itself as a **KUAL menu entry**, so:
 
-Worth doing early: it is how you diagnose anything that goes wrong on-device,
-and it's the fallback whenever the `;kpm` search-bar form misbehaves.
+1. Open **KUAL** → look for **KindleFetch**
+2. Type a title, author or keyword
+3. Tap a result → it downloads to the device
 
-### Step 3 — KindleFetch, the good version
+**No KUAL on a Vera jailbreak?** Modern jailbreaks favour scriptlets, so try
+`;kindlefetch` in the search bar. Failing that, run it from kTerm:
 
-The KPM package installs the CLI. The **KOReader plugin** is nicer, because
-search and download happen inside the reader you already live in:
+```sh
+ls /mnt/us/extensions/kindlefetch/     # find what's there
+sh /mnt/us/extensions/kindlefetch/bin/kindlefetch.sh
+```
 
-1. Download the release from
-   [william-spongberg/KindleFetch.koplugin](https://github.com/william-spongberg/KindleFetch.koplugin)
-2. Copy the `KindleFetch.koplugin` folder into `koreader/plugins/`
-3. Restart KOReader — it appears in the ☰ menu
+Downloads land in `documents/` by default, so they show up in both the stock
+library and KOReader.
 
-Also covers Library Genesis.
+**CLI vs the KOReader plugin — you can have both**, they don't conflict. The CLI
+is standalone; the plugin puts the same search inside KOReader so you never
+leave the reader. Having installed the CLI, just use it; add the plugin later if
+switching apps starts to annoy.
 
-### Step 4 — Read-aloud plugin
+### Step 3 — Getting files onto the Kindle with kTerm
 
-Same pattern: copy `audiobook.koplugin` into `koreader/plugins/`, restart
-KOReader. Pick **Piper** for voice quality; it downloads a voice model once.
+This is the part the rest depends on. Three commands, and every manual install
+below follows the same shape.
 
-### Step 5 — Custom screensavers
+```sh
+# 1. go somewhere sensible
+cd /mnt/us
 
-See the lockscreens section above — `;kpm add-repo …` then
-`;kpm install custom-screensaver`, PNGs into `/screensavers/`.
+# 2. download
+curl -L -O <url>
 
-### Step 6 — HotfixUpdater
+# 3. unzip
+unzip <file.zip>
+```
 
-[Release](https://github.com/KindleTweaks/HotfixUpdater) → unzip → copy to the
-Kindle root as its README directs. Keeps OTA blocking current.
+⚠️ **If `unzip: not found`**, use busybox — it's always present:
 
-### Step 7 — UsbNetLite, when you want it
+```sh
+busybox unzip <file.zip>
+```
 
-[notmarek/kindle-usbnetlite](https://github.com/notmarek/kindle-usbnetlite).
-SSH over USB, for the bulk push script. OPDS already covers day-to-day.
+Typing long URLs on an e-ink keyboard is miserable. Two ways around it:
 
-### Copying files with no computer
+- Pair a **Bluetooth keyboard** — the Scribe supports one
+- Or plug into a computer once and do Steps 4–6 together in Finder
 
-Steps 2–4 need files placed into folders. Options without plugging in:
+### Step 4 — Read-aloud with word highlighting
 
-- **KindleFetch's own downloader** once it's running
-- **kTerm + `curl`** — `cd /mnt/us/koreader/plugins && curl -LO <release-url>`
-  then `unzip`. This is the main reason to install kTerm early.
-- Otherwise, plug into a computer once and do Steps 2–4 together
+```sh
+cd /mnt/us/koreader/plugins
+curl -L -O https://github.com/stradichenko/audiobook.koplugin/releases/download/v0.2.2/audiobook-koplugin-v0.2.2.zip
+unzip audiobook-koplugin-v0.2.2.zip
+rm audiobook-koplugin-v0.2.2.zip
+ls        # you should now see: audiobook.koplugin
+```
+
+The zip contains a folder named `audiobook.koplugin` — that is the plugin.
+KOReader loads any `*.koplugin` folder it finds in `plugins/`.
+
+Then **fully restart KOReader** (exit and relaunch; a screen refresh isn't
+enough). Open a book → ☰ menu → look for the audiobook/TTS entry → pick a
+voice. Choose **Piper** for quality; it downloads a voice model on first use, so
+be on Wi-Fi.
+
+Check the release page for a newer tag than `v0.2.2`:
+<https://github.com/stradichenko/audiobook.koplugin/releases>
+
+### Step 5 — KindleFetch inside KOReader (optional)
+
+Only if you want search without leaving the reader:
+
+```sh
+cd /mnt/us/koreader/plugins
+curl -L -O https://github.com/william-spongberg/KindleFetch.koplugin/releases/download/v0.3/kindlefetch.koplugin.zip
+unzip kindlefetch.koplugin.zip
+rm kindlefetch.koplugin.zip
+```
+
+Restart KOReader; it appears in the ☰ menu.
+
+### Step 6 — Custom lockscreens
+
+This one ships a **KPM repository**, so it's the easy path:
+
+```
+;kpm add-repo https://kpm.andrecheng.com/kpm.json
+;kpm update
+;kpm install custom-screensaver
+```
+
+Manual alternative, if the repo doesn't resolve:
+
+```sh
+cd /mnt/us
+curl -L -O https://github.com/chengandre/kindle-custom-screensaver/releases/download/v0.3.0/custom-screensaver-0.3.0-kindlehf.zip
+unzip custom-screensaver-0.3.0-kindlehf.zip
+```
+
+It unpacks `documents/`, `extensions/` and `screensavers/` and merges them into
+the existing folders at the root — that's expected, not a mistake.
+
+Then put **PNG** files into `/mnt/us/screensavers/`. Any filename; they rotate
+alphabetically and are scaled automatically. Getting images across is the same
+`curl -L -O <image-url>` from that folder, or drag them over USB.
+
+⚠️ Untested on the Scribe's 10.2" panel — see the lockscreens section above for
+the KOReader fallback if scaling looks wrong.
+
+### Step 7 — HotfixUpdater
+
+```sh
+cd /mnt/us
+curl -L -O https://github.com/KindleTweaks/HotfixUpdater/releases/download/v1.0.2/HotfixUpdater.zip
+unzip HotfixUpdater.zip
+```
+
+Run it from KUAL or its scriptlet. Keeps the universal hotfix current, which is
+what keeps OTA blocked.
+
+### Step 8 — UsbNetLite (optional)
+
+Only worth it when tapping through OPDS one book at a time starts to grate;
+it enables a bulk `scp` push from the Mac mini.
+[notmarek/kindle-usbnetlite](https://github.com/notmarek/kindle-usbnetlite)
+
+### Verify nothing broke
+
+- [ ] Open a book from the OPDS catalog — still works
+- [ ] **Stock app: write a note → Share → Searchable PDF** → confirm the email
+      arrives. This is what feeds `kindle_sync.py`; check it after *every* round
+      of installs.
 
 ---
 
