@@ -377,9 +377,13 @@ tool — swapping Obsidian for something else reproduces the same failure later.
       wants ~4GB, the same headroom as Odysseus, on a host already swapping.
       ⚠️ Media Overlay support in `audiobook.koplugin` is still *work in
       progress*, so verify before aligning a shelf full of books.
-- [ ] **Custom lockscreens** — `;kpm install custom-screensaver` (its own KPM
-      repo, so no download needed), then PNGs at **1860 × 2480** into
-      `/mnt/us/screensavers/` via `scripts/books/serve-to-kindle.sh`.
+- [ ] **Custom lockscreens** — ⚠️ the KPM route fails with *"failed to install
+      packages"*; use the zip instead. It ships `documents/Custom Screensaver.sh`,
+      which is a Vera scriptlet, so it needs no KUAL. Serve
+      `custom-screensaver-0.3.0-kindlehf.zip` (already in
+      `~/Downloads/kindle-plugins`) with `scripts/books/serve-to-kindle.sh`,
+      `wget` + `unzip` it at `/mnt/us`, then PNGs at **1860 × 2480** into
+      `/mnt/us/screensavers/`.
 - [ ] **KindleFetch** (KOReader plugin version) — grab a book from Anna's
       Archive with no computer nearby. A shortcut beside the LazyLibrarian →
       Calibre-Web library, not a replacement.

@@ -75,11 +75,18 @@ or drifts until the narration returns to the manuscript.
 Books narrated close to the text align well. Heavily ad-libbed audiobooks are
 the worst case for this technique, in Storyteller and Whispersync alike.
 
-## Not exposed publicly
+## On the homepage, as a link only
 
-No tunnel hostname, no Glance monitor — it is off almost all the time, so a
-monitor would only generate false alarms. Reach it at `localhost:8087` on the
-Mac mini, or over Tailscale at `100.81.171.49:8087` while it happens to be up.
+`home.peciulevicius.com` carries a **bookmark** for it under System, labelled
+*"Storyteller (off by default)"*, pointing at `http://100.81.171.49:8087`.
+
+Deliberately **not a monitor with a `check-url`**: the service is stopped almost
+all the time, so a monitor would sit permanently red and train you to ignore
+the dashboard. The repo rule is that a service missing from the homepage
+effectively doesn't exist — a link satisfies that without the false alarms.
+
+No public tunnel hostname either. Reach it on the Mac mini at `localhost:8087`,
+or over Tailscale while it is up.
 
 ## Backup
 

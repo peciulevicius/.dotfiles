@@ -160,6 +160,9 @@ pages:
 
               - title: System
                 links:
+                  - title: Storyteller (off by default)
+                    url: http://100.81.171.49:8087
+                    icon: si:bookstack
                   - title: Portainer
                     url: https://portainer.peciulevicius.com
                     icon: si:portainer

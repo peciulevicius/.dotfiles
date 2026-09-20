@@ -730,56 +730,75 @@ CLI awkward without KUAL.
 
 ### Step 6 — Custom lockscreens
 
-**No download needed** — this one ships its own KPM repo, and KPM handles its own
-transport, so the TLS problem doesn't apply.
+#### ⚠️ The KPM route often fails
+
+`;kpm add-repo …` followed by `;kpm install custom-screensaver` frequently ends
+in **"failed to install packages"**. Third-party repos are the least reliable
+part of KPM. Don't fight it — the manual install is straightforward and needs no
+KUAL, because the package ships a **scriptlet**.
+
+Inside the zip:
 
 ```
-;kpm add-repo https://kpm.andrecheng.com/kpm.json
-;kpm list-repo
-;kpm update
-;kpm install custom-screensaver
+documents/Custom Screensaver.sh          <- the launcher (a Vera scriptlet)
+extensions/custom-screensaver/...        <- the code
 ```
 
-#### Getting images onto the device
+That `.sh` in `documents/` is exactly Vera's launcher mechanism, so the package
+works on this jailbreak even though its docs predate it.
 
-PNGs go in `/mnt/us/screensavers/`. Use the same LAN server as the plugins —
-put your images in a folder on the Mac mini and run:
+#### Install it over the LAN
+
+**On the Mac mini** — the file is already in `~/Downloads/kindle-plugins`:
 
 ```sh
-~/.dotfiles/scripts/books/serve-to-kindle.sh ~/Pictures/kindle-lockscreens
+~/.dotfiles/scripts/books/serve-to-kindle.sh
 ```
 
-It detects images and prints `wget` lines that write straight to
-`/mnt/us/screensavers/`. On the Kindle, create the folder first if it doesn't
-exist:
+**On the Kindle, in kTerm:**
+
+```sh
+cd /mnt/us
+wget -O ss.zip http://<mac-mini-ip>:8765/custom-screensaver-0.3.0-kindlehf.zip
+unzip ss.zip
+rm ss.zip
+```
+
+Unzipping at `/mnt/us` merges `documents/` and `extensions/` into the existing
+folders — expected, not a mistake.
+
+**"Custom Screensaver"** then appears in your library as a tappable entry. Open
+it to toggle the screensaver on.
+
+> There is also a `.kpkg` in the release, which KPM may be able to install from
+> a local file. The zip is the route verified to contain a working scriptlet, so
+> prefer it.
+
+#### Add your images
 
 ```sh
 mkdir -p /mnt/us/screensavers
 ```
 
-then paste the commands it printed.
+PNGs go there — any filename, rotating alphabetically, scaled automatically.
+Serve them the same way: put images in a folder on the Mac and run
+`serve-to-kindle.sh ~/Pictures/kindle-lockscreens`; the script detects images and
+prints `wget` lines pointing at `/mnt/us/screensavers/`.
 
-#### Image sizing
-
-The Scribe's panel is **1860 × 2480 px** (10.2", 300 ppi). Images are scaled
-automatically, but matching that resolution avoids soft edges.
-
-- **Greyscale** — it's e-ink, colour is wasted
-- **High contrast** — low-contrast images look muddy
-- Any filename; they rotate **alphabetically**
-
-Prepare them on the Mac with ImageMagick if you like:
+**Sizing** — the Scribe's panel is **1860 × 2480 px** (10.2", 300 ppi):
 
 ```sh
 magick input.jpg -colorspace Gray -resize 1860x2480^ \
   -gravity center -extent 1860x2480 -quality 92 lockscreen-01.png
 ```
 
-#### If it looks wrong on the Scribe
+Greyscale and high contrast: it is e-ink, and low-contrast images look muddy.
 
-⚠️ The package's author tested Paperwhite 5/6 and 12th-gen — **not the Scribe**,
-whose panel is much larger. If scaling misbehaves, fall back to KOReader's own
-sleep screen, which only covers sleeping from inside KOReader:
+#### If it misbehaves on the Scribe
+
+⚠️ The author tested Paperwhite 5/6 and 12th-gen, **not** the Scribe's larger
+panel. Fallback is KOReader's own sleep screen, which only applies while
+KOReader is running:
 
 > gear icon → **Screen** → **Sleep screen** → **Wallpaper** → point at a folder
 
