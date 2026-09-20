@@ -8,7 +8,7 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
-## 2026-09-20 — Kindle Scribe jailbroken
+## 2026-09-20 — Kindle Scribe jailbroken, KOReader + read-along
 
 Done with **Vera** on firmware 5.19.6. Earlier than `guides/BOOKS.md` predicted —
 that guide was written while Vera's Scribe port still read as *pending*, and the
@@ -28,6 +28,26 @@ The recommendations, with reasoning about what to skip, are in
 [guides/BOOKS.md](guides/BOOKS.md#what-to-install-after-the-jailbreak).
 
 ---
+
+### Storyteller deployed for read-along books
+
+`services/storyteller/` on port 8087 (8001 is Vaultwarden). Verified running —
+HTTP 200, **340 MB idle** — then stopped again, which is how it is meant to
+live: `restart: "no"`, brought up only to align a book.
+
+It exists because KOReader's audiobook plugin plays Audiobookshelf audiobooks
+but **cannot highlight text during real narration** — an audio file has no map
+from seconds to words. Storyteller transcribes the audio, force-aligns it
+against the ebook, and emits an EPUB 3 with Media Overlays, which does.
+
+⚠️ The ~4GB figure is for alignment, not idle, and that is the same headroom
+Odysseus is earmarked for on a host already swapping 4.1GB. Batch use only.
+
+⚠️ Media Overlay support in `audiobook.koplugin` is still *work in progress*, so
+align one book and confirm the Kindle highlights it before doing a shelf.
+
+Data on the internal SSD (SQLite), excluded from R2 — the audio is bulky and
+regenerable; the aligned EPUBs belong in Calibre-Web, which is backed up.
 
 ## 2026-09-19 — Verification, backups, CouchDB
 
