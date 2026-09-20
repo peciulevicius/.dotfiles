@@ -566,105 +566,75 @@ ls /mnt/us/kpm/packages/bin/                             # what can I run?
 
 `/mnt/us/kpm/packages/bin` is on `PATH`, so anything listed there runs by name.
 
-### Step 3 — Getting files onto the device
+### Step 3 — Downloading files on the device
 
-Two routes. Try on-device first; fall back to USB, which always works.
+`wget` is already present on a Kindle — it is part of the busybox toolset that
+makes up the device's Unix userland. **Nothing needs installing**; `busybox wget`
+and `wget` are the same program reached two ways, so prefer the short form.
 
-#### Route A — on-device, in kTerm
+The pattern for every install below:
 
 ```sh
 cd /mnt/us/koreader/plugins
-curl -L -O <url>
-unzip <file.zip>
+wget -O name.zip <url>
+unzip name.zip
+rm name.zip
 ```
 
-⚠️ **`curl` may not exist.** A bare `curl … | sh` that prints *nothing at all*
-usually means the binary is missing, not that the script ran silently. Check:
+If `wget` reports *not found*, it hasn't been symlinked on your build — call the
+same program directly with `busybox wget …`. That is not an installation, just a
+different way to invoke a binary already on the device.
 
-```sh
-which curl wget unzip busybox
-```
-
-**busybox is always present**, and has both wget and unzip built in:
-
-```sh
-busybox wget -O plugin.zip <url>
-busybox unzip plugin.zip
-```
-
-If `busybox wget` also fails, it's the network — Kindle Wi-Fi sleeps
-aggressively. Wake the screen, load any page in the Kindle browser, then retry.
-
-#### Route B — USB, five minutes, no debugging
-
-You have resisted this, but it is genuinely the shortest path for the remaining
-steps: no curl, no typing URLs on an e-ink keyboard, no path archaeology.
-
-1. Plug the Kindle into the Mac
-2. Download the zips in a browser and unzip them on the Mac
-3. Drag the resulting folders into place on the Kindle volume
-4. Eject properly, then restart the Kindle
-
-The destination for every KOReader plugin is
-`<Kindle>/koreader/plugins/<name>.koplugin`.
-
-⚠️ **Eject before unplugging.** Pulling the cable mid-write is a decent way to
-corrupt the filesystem.
+⚠️ **Kindle Wi-Fi sleeps aggressively.** If a download stalls or fails, wake the
+screen, load any page in the stock browser to bring the radio up, then retry.
 
 ### Step 4 — Read-aloud with word highlighting
 
-This is the one worth doing: TTS with synchronised word highlighting, automatic
-page turns, Bluetooth audio, fully offline.
-
-**Download:** <https://github.com/stradichenko/audiobook.koplugin/releases>
-(latest at time of writing: `audiobook-koplugin-v0.2.2.zip`)
-
-**On-device:**
+TTS with synchronised word highlighting, automatic page turns and Bluetooth
+audio, fully offline. The thing LARK could not do.
 
 ```sh
 cd /mnt/us/koreader/plugins
-busybox wget -O ab.zip https://github.com/stradichenko/audiobook.koplugin/releases/download/v0.2.2/audiobook-koplugin-v0.2.2.zip
-busybox unzip ab.zip
+wget -O ab.zip https://github.com/stradichenko/audiobook.koplugin/releases/download/v0.2.2/audiobook-koplugin-v0.2.2.zip
+unzip ab.zip
 rm ab.zip
-ls        # expect: audiobook.koplugin
+ls
 ```
 
-**Over USB:** unzip on the Mac, drag the `audiobook.koplugin` folder into
-`<Kindle>/koreader/plugins/`.
+`ls` should show **`audiobook.koplugin`** — a folder. KOReader loads any
+`*.koplugin` folder in `plugins/`.
 
-Either way: **fully quit and relaunch KOReader** — not just a page refresh. Open
-a book → ☰ → the audiobook/TTS entry → choose **Piper** for the natural voice
-(downloads a model once, so be on Wi-Fi).
+Then **fully quit and relaunch KOReader** (not just a page refresh). Open a book
+→ ☰ menu → the audiobook/TTS entry → choose **Piper** for the natural voice; it
+downloads a voice model once, so stay on Wi-Fi for that first run.
 
-### Step 5 — KindleFetch in KOReader
+Newer release than v0.2.2?
+<https://github.com/stradichenko/audiobook.koplugin/releases>
 
-If the CLI won't launch, this is the version that will — it lives inside
-KOReader and needs no launcher, no scriptlet, no KUAL.
+### Step 5 — KindleFetch inside KOReader
 
-**Download:** `kindlefetch.koplugin.zip` from
-<https://github.com/william-spongberg/KindleFetch.koplugin/releases>
+The version that needs no launcher — it lives in KOReader, so the missing KUAL
+doesn't matter.
 
 ```sh
 cd /mnt/us/koreader/plugins
-busybox wget -O kf.zip https://github.com/william-spongberg/KindleFetch.koplugin/releases/download/v0.3/kindlefetch.koplugin.zip
-busybox unzip kf.zip
+wget -O kf.zip https://github.com/william-spongberg/KindleFetch.koplugin/releases/download/v0.3/kindlefetch.koplugin.zip
+unzip kf.zip
 rm kf.zip
 ```
 
-Restart KOReader → it appears in the ☰ menu. Searches Anna's Archive and
-Library Genesis, downloads straight into your library.
+Restart KOReader → it appears in the ☰ menu. Searches Anna's Archive and Library
+Genesis and downloads straight into your library.
 
-#### Removing the CLI version, if you want it gone
+#### Getting rid of the CLI version
 
-Nothing was left behind by the failed `curl … | sh` — piping to `sh` never
-writes a file, and the absent `/mnt/us/extensions/` confirms it never ran. To
-remove what KPM installed:
+The failed `curl … | sh` left nothing behind — piping to `sh` never writes a
+file, and the missing `/mnt/us/extensions/` proves it never ran. To drop what
+KPM installed:
 
-```sh
+```
 ;kpm uninstall kindlefetch
 ```
-
-Or delete `/mnt/us/kpm/packages/kindlefetch/` if that's where it landed.
 
 ### Step 6 — Custom lockscreens
 
@@ -727,14 +697,16 @@ it enables a bulk `scp` push from the Mac mini.
 
 ### A command prints nothing at all
 
-Usually the binary is missing rather than the command succeeding quietly.
-`which curl wget unzip busybox` tells you what you actually have. **busybox is
-always there** and provides `wget` and `unzip` as applets:
+Usually the binary is missing rather than the command succeeding quietly —
+`curl` in particular is often absent. See what you actually have:
 
 ```sh
-busybox wget -O out.zip <url>
-busybox unzip out.zip
+which curl wget unzip
 ```
+
+`wget` and `unzip` are normally present as part of busybox, the toolset the
+Kindle's userland is built from. If a bare name isn't found, prefix it:
+`busybox wget …`. Same program, nothing installed.
 
 ### `;kpm install X` says it worked but nothing runs
 
