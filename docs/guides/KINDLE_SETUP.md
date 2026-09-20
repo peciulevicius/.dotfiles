@@ -288,20 +288,93 @@ worth checking whether it has moved past the 5.19 limit)
 
 ---
 
-## Worth installing
+## How installs actually work
 
-| Tool | Why |
+Three different mechanisms, and knowing which one a tool uses saves most of the
+confusion — **`;kpm install` does not work for most things on the list.**
+
+| Method | How | Which tools |
+|---|---|---|
+| **KPM** | `;kpm install <name>` in the search bar, or `kpm -S <name>` in kterm | Only a handful of official packages, plus whatever third-party repos you add |
+| **KOReader plugin** | Unzip a `*.koplugin` folder into `koreader/plugins/` | Anything ending `.koplugin` |
+| **Manual scriptlet / extension** | Unzip into `documents/` or `extensions/` at the Kindle's root, then run from the search bar or KUAL | Most of the rest |
+
+KPM's official package list is small — as of 2026-09: `blockamazon`,
+`gnomegames`, `hello`, `hyprpad`, `kanki`, `kindlefetch`, `kwordle`, `make`,
+`musl`. Check the current list at the [KPM wiki](https://kpmwiki.vercel.app/packages).
+
+> **KindleForge** is a GUI app store for Kindles and sounds like the obvious
+> shortcut, but skip it here: it targets AdBreak/WinterBreak/LanguageBreak
+> jailbreaks (not Vera), and its author has it in **maintenance mode pending a
+> rewrite on top of KPM**. Use KPM directly.
+
+---
+
+## Going through Awesome-Kindle, annotated
+
+Every entry from [the list](https://github.com/KindleTweaks/Awesome-Kindle),
+with a verdict for **this** setup — a Scribe used for reading a self-hosted
+library and taking handwritten notes.
+
+### Install these
+
+| Tool | What it does | How |
+|---|---|---|
+| [KOReader](https://koreader.rocks/) ✅ | The reason for jailbreaking. EPUB natively, real pagination, OPDS. | `;kpm install koreader` — **done** |
+| [KindleFetch](https://github.com/justrals/KindleFetch) | Download books from Anna's Archive on-device, no computer. | `;kpm install kindlefetch`, or better the [KOReader plugin](https://github.com/william-spongberg/KindleFetch.koplugin) |
+| [HotfixUpdater](https://github.com/KindleTweaks/HotfixUpdater) | Keeps the universal hotfix current, which is what keeps OTA blocked. | Manual — grab the release |
+| [kTerm](https://github.com/bfabiszewski/kterm) | E-ink terminal. What you need when something breaks on-device, and the fallback for `kpm -S`. | Manual — unzip to `extensions/` |
+| [UsbNetLite](https://github.com/notmarek/kindle-usbnetlite) | SSH over USB. Unblocks the `scp` push script instead of pulling one book at a time. | Manual |
+
+### Worth considering
+
+| Tool | Verdict |
 |---|---|
-| **kterm** | E-ink terminal. The thing you need when something breaks on-device, and the fallback for `kpm -S` syntax. |
-| **KOPlugins** | KOReader plugin ecosystem — dictionaries, statistics, custom gestures. |
+| [Kreate](https://github.com/Foskya/Kreate) | Drawing app. The Scribe has the best stylus of any Kindle, so this is the one "fun" tool that actually suits the hardware. ⚠️ Won't replace stock handwriting for the notes pipeline. |
+| [Textadept](https://github.com/kbarni/textadept-kindle) | Real text editor, Bluetooth keyboard support. Interesting as a distraction-free writing device — though notes belong in the Obsidian vault, not stranded on the Kindle. |
+| [RAnki](https://github.com/crazy-electron/ranki) / [KAnki](https://github.com/crizmo/KAnki) | Flashcards. RAnki uses the real Anki backend and **syncs**, so it's the one to pick if you want this at all. KAnki is `;kpm install kanki`. |
+| [ScreenControl](https://kindlemodshelf.me/screencontrol.html) | Mirrors the screen over the network with input. Genuinely useful for demoing or debugging without hovering over the device. |
+| [Alpine](https://github.com/schuhumi/alpine_kindle) | Full Linux on the Kindle. A project in itself, not a tool. |
 
-## Skip these
+### Blocked or not applicable here
 
 | Tool | Why not |
 |---|---|
-| **Android on Kindles** | Would destroy the handwriting stack the notes pipeline depends on. |
-| **Disable ADs** | No ad-supported Scribe variant exists. |
-| Games, KAnki, Kreate, Textadept | Fun; unrelated to this setup. |
+| [LARK](https://github.com/kbarni/LARKPlayer) 🔴 | Firmware **<5.19** only; this Scribe is 5.19.6. Also no read-along and no streaming — see the audiobooks section below. |
+| [KinAMP](https://github.com/kbarni/KinAMP) | Bluetooth music player by the same author, so expect the same firmware ceiling. You carry a phone. |
+| [SOX Media Player](https://www.mobileread.com/forums/showthread.php?t=368945) | Bluetooth audio + internet radio. Same reasoning. |
+| [Disable ADs](https://scriptlets.notmarek.com/scriptlets/disable_ads.sh) | No ad-supported Scribe variant exists. |
+| [Android on Kindles](https://github.com/Ooonana/Guide-to-installing-android-on-kindle) | ❌ Would destroy the stock handwriting stack the notes pipeline depends on. Not on this device. |
+| [KindleForge](https://github.com/KindleTweaks/KindleForge) | Targets other jailbreaks, and in maintenance mode pending a KPM rewrite. |
+
+### Games — harmless, unrelated
+
+[KWordle](https://github.com/crizmo/KWordle) ·
+[IllusionChess](https://github.com/penguins184/IllusionChess) ·
+[Gnome Chess & Minesweeper](https://github.com/crazy-electron/GnomeGames4Kindle)
+(`;kpm install gnomegames`) ·
+[Gambatte-K2](https://github.com/crazy-electron/gambatte-k2) (Game Boy emulator) ·
+[Crossword](https://github.com/roygbyte/crossword.koplugin) (a KOReader plugin) ·
+[Tetris](https://kindlemodshelf.me/tetris.html) ·
+[KindleKraft](https://github.com/penguins184/KindleKraft) /
+[KindleCraft](https://github.com/gingrspacecadet/bareiron) (Minecraft servers) ·
+[KShips](https://github.com/LOT-Projects/KShips) ·
+[KPomo](https://github.com/crizmo/KPomo) (Pomodoro timer)
+
+A 10.2" e-ink Game Boy emulator is a funny thing to own. None of it affects the
+reading or notes setup.
+
+### Where to look when this list goes stale
+
+- [KindleModding Wiki](https://kindlemodding.org/) — the authoritative guide
+- [KindleModShelf](https://kindlemodshelf.me/) — catalog with per-project pages
+- [Penguins' Mesquite Wiki](https://github.com/penguins184/Penguins-Kindle-Wiki)
+- [KindleModding Discord](https://discord.kindlemodding.org)
+
+⚠️ **Check firmware compatibility before installing anything.** This Scribe is on
+**5.19.6**, which is newer than several projects support — LARK is the worked
+example. A tool that assumes an older firmware can fail quietly or misbehave
+rather than refusing to start.
 
 ---
 
@@ -317,12 +390,15 @@ warranty is **2 years**, to roughly October 2027.
 
 ## Setup checklist
 
+- [x] ~~Jailbreak (Vera, firmware 5.19.6)~~ — 2026-09-20
+- [x] ~~`;kpm install koreader`~~
+- [x] ~~Add the OPDS catalog pointing at Calibre-Web~~
+- [ ] Set a HOME directory in KOReader + hide unsupported files
 - [ ] Verify OTA blocked ("Check OTA Status" scriptlet)
-- [ ] Check for stray `.bin` files in the USB root, next time you connect
-- [ ] `;kpm install koreader`
-- [ ] Add the OPDS catalog, download one book, confirm it opens
-- [ ] `;kpm install custom-screensaver` + PNGs in `/screensavers/`
-- [ ] KindleFetch KOReader plugin
-- [ ] `;kpm install usbnetlite` (optional, enables the push script)
+- [ ] KindleFetch — the KOReader plugin version
+- [ ] Custom screensavers + PNGs in `/screensavers/`
+- [ ] kTerm (also the fallback for `kpm -S` syntax)
 - [ ] HotfixUpdater
+- [ ] UsbNetLite (optional — enables the push script)
+- [ ] Check for stray `.bin` files in the USB root, next time you connect
 - [ ] Confirm stock handwriting + *Share → Searchable PDF* still works

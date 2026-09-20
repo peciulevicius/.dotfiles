@@ -356,10 +356,12 @@ tool — swapping Obsidian for something else reproduces the same failure later.
       assume. Then normal Wi-Fi is fine, and Wi-Fi is *required* for notes:
       *Share → Searchable PDF* routes through Amazon to email, which feeds
       `kindle_sync.py`.
-- [ ] **`;kpm install koreader`**, then point it at
-      `https://books.peciulevicius.com/opds`. Verified 2026-09-20: that endpoint
-      answers with HTTP Basic auth, which KOReader speaks, and is deliberately
-      not behind Cloudflare Access. Use the Calibre-Web login.
+- [x] ~~**`;kpm install koreader`** + OPDS catalog pointed at
+      `https://books.peciulevicius.com/opds`~~ — **done 2026-09-20.** The whole
+      point of the jailbreak is now working: own library, no Amazon round trip.
+- [ ] In KOReader, set a **HOME directory** (long-press `documents/` or a new
+      `books/` folder) and turn off *Show unsupported files* — the browser opens
+      on the storage root and shows firmware internals otherwise
 - [ ] **Custom lockscreens** — `;kpm add-repo https://kpm.andrecheng.com/kpm.json`
       then `;kpm update && ;kpm install custom-screensaver`; PNGs go in
       `/screensavers/`. ⚠️ Author tested it on PW5/PW6/12th-gen, **not the
