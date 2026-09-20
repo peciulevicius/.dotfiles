@@ -362,7 +362,7 @@ you rarely start more than one book at a time. **Start with OPDS.** Build the
 push script later only if the friction actually bothers you.
 
 - [ ] Use OPDS first and see whether automation is even wanted
-- [ ] Optional later: `scripts/books/push-to-kindle.sh` — watch Calibre, `scp`
+- [ ] Optional later: `scripts/kindle/push-books.sh` — watch Calibre, `scp`
       new EPUBs when the Scribe is reachable
 
 ---

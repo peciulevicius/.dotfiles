@@ -207,44 +207,17 @@ See [guides/NOTES.md](./guides/NOTES.md) for the full Obsidian + Syncthing workf
 
 ---
 
-## 🖼️ scripts/books/kindle-lockscreens.sh - Kindle lockscreen images
+## 📱 scripts/kindle/sync.sh - Sync files to a jailbroken Kindle
 
-Converts a folder of images to Kindle Scribe lockscreens and serves them to the
-device in one step.
-
-```bash
-~/.dotfiles/scripts/books/kindle-lockscreens.sh            # ~/Downloads
-~/.dotfiles/scripts/books/kindle-lockscreens.sh ~/Pictures/holiday
-```
-
-- Output: greyscale PNG at **1860 × 2480**, the Scribe's native panel
-- **Letterboxes rather than crops** — cropping silently cuts faces off
-- Reads **AVIF, HEIC, JPEG, PNG, WebP** via `sips`, which ships with macOS, so
-  there is no ImageMagick or Homebrew dependency
-- Writes to `~/Pictures/kindle-lockscreens/` as `lockscreen-01.png`… (they
-  rotate alphabetically on the device)
-- Hands off to `serve-to-kindle.sh`, which prints the `wget` lines to paste into
-  kTerm
-
-Preview the results in Finder before pushing — `open ~/Pictures/kindle-lockscreens`.
-
-⚠️ Small sources get upscaled and will look soft on a 300 ppi panel. Anything
-under roughly 1200 px on its long edge is worth replacing.
-
-Needs the custom screensaver package installed first — see
-[guides/KINDLE_SETUP.md](./guides/KINDLE_SETUP.md).
-
----
-
-## 📖 scripts/books/serve-to-kindle.sh - Get files onto a Kindle
-
-Serves a directory over plain HTTP on the LAN and **generates an installer**, so
-getting anything onto the Kindle is **one command typed on the device** rather
-than one per file.
+One script for everything that has to reach the Kindle. It serves over plain
+HTTP on the LAN and generates an installer, so the device side is always a
+single command however many files are involved.
 
 ```bash
-~/.dotfiles/scripts/books/serve-to-kindle.sh                  # ~/Downloads/kindle-plugins
-~/.dotfiles/scripts/books/serve-to-kindle.sh ~/some/dir 9000  # custom dir + port
+~/.dotfiles/scripts/kindle/sync.sh                              # wallpapers (mirror)
+~/.dotfiles/scripts/kindle/sync.sh --dir ~/Downloads/kindle-plugins
+~/.dotfiles/scripts/kindle/sync.sh --list                       # inspect/delete by hand
+~/.dotfiles/scripts/kindle/sync.sh --port 9000
 ```
 
 On the Kindle, in kTerm:
@@ -253,11 +226,23 @@ On the Kindle, in kTerm:
 wget -O /tmp/i.sh http://<mac-ip>:8765/_install.sh && sh /tmp/i.sh
 ```
 
-The generated `_install.sh` creates the folders, downloads everything, unpacks
-zips **into the right place**, and **skips whatever is already there** — so it
-is safe to re-run, and re-running after adding files only fetches the new ones.
+### Wallpaper mode is a mirror
 
-Routing is by file type:
+Sources live in `wallpapers/kindle/`. They are converted to the Scribe's
+**1860 x 2480 greyscale** — letterboxed, never cropped — and the device is made
+to **match the source exactly**.
+
+**That is how you delete a wallpaper you don't like:** remove it from
+`wallpapers/kindle/` and sync again; it disappears from the Kindle too.
+
+Converted names derive from the source filename (`4.jpg` -> `ks-4.png`) rather
+than a counter, so adding or removing one image doesn't renumber the rest and
+leave stale content sitting in a reused slot.
+
+Reads **AVIF, HEIC, JPEG, PNG, WebP** via `sips`, built into macOS — no
+ImageMagick needed. Warns when a source is small enough to look soft at 300 ppi.
+
+### `--dir` mode only adds
 
 | File | Goes to |
 |---|---|
@@ -266,15 +251,17 @@ Routing is by file type:
 | other `*.zip` | unpacked at `/mnt/us` |
 | anything else | `/mnt/us/` |
 
-**Why it's needed** — both obvious routes are dead ends on this hardware:
+It never deletes here — losing a working plugin to a typo is not a risk worth
+taking. Re-running fetches only what is missing.
+
+### Why LAN HTTP
+
+Both obvious routes are dead ends on this hardware:
 
 - **USB**: Kindles from ~2022, the Scribe included, present as **MTP**, which
-  macOS cannot mount without third-party software. The volume never appears.
-- **Downloading on the Kindle**: its busybox `wget` can't negotiate the TLS that
+  macOS cannot mount without third-party software.
+- **Downloading on the Kindle**: its busybox `wget` cannot negotiate the TLS
   GitHub's CDN requires — HTTPS fails with *"Connection reset by peer"*.
-
-Plain HTTP over the LAN avoids both. The server runs only while the script is in
-the foreground and serves read-only.
 
 See [guides/KINDLE_SETUP.md](./guides/KINDLE_SETUP.md).
 

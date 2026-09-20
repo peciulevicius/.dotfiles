@@ -71,7 +71,7 @@ scripts/docs.sh build         ← build static site (runs in CI)
 |------|-----------|
 | `utils/arw-to-jpeg.sh` | Convert Sony ARW RAW files to JPEG for Immich upload (macOS, no deps) |
 | `utils/utils.sh` | Shared print/formatting functions used by Linux + Windows installers |
-| `wallpapers/` | Wallpaper management script |
+| `kindle/sync.sh` | Sync wallpapers, plugins and files to a jailbroken Kindle over the LAN |
 
 ---
 

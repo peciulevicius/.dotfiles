@@ -1,0 +1,207 @@
+#!/bin/bash
+# Sync files to a jailbroken Kindle over the LAN.
+#
+#   sync.sh                  # wallpapers: mirror wallpapers/kindle/ to the device
+#   sync.sh --dir <path>     # push any folder (plugins, books, zips)
+#   sync.sh --list           # show what is currently on the device, and exit
+#   sync.sh --port 9000      # use a different port
+#
+# On the Kindle you always run the same single line in kTerm, which the script
+# prints with the right IP filled in:
+#
+#   wget -O /tmp/i.sh http://<ip>:<port>/_install.sh && sh /tmp/i.sh
+#
+# WALLPAPER MODE IS A MIRROR. Images are converted to the Scribe's 1860x2480
+# greyscale and the device's screensavers folder is made to match the source
+# exactly — new images are added, and ones you deleted locally are deleted from
+# the Kindle. That is how you remove a wallpaper you didn't like: delete it from
+# wallpapers/kindle/ and sync again.
+#
+# --dir mode only ADDS. Deleting plugin folders automatically would be a good
+# way to lose a working install to a typo.
+#
+# Why LAN HTTP rather than USB: Kindles from ~2022 (Scribe included) present as
+# MTP, which macOS cannot mount, and the device's busybox wget cannot negotiate
+# the TLS that GitHub's CDN requires. Plain HTTP on the LAN needs nothing
+# installed on either machine.
+
+set -uo pipefail
+
+DOTFILES="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+SRC_WALLPAPERS="$DOTFILES/wallpapers/kindle"
+CACHE="$HOME/.cache/kindle-wallpapers"
+
+MODE="wallpapers"
+DIR=""
+PORT=8765
+W=1860
+H=2480
+GRAY="/System/Library/ColorSync/Profiles/Generic Gray Gamma 2.2 Profile.icc"
+
+GREEN='\033[0;32m'; CYAN='\033[0;36m'; YELLOW='\033[1;33m'; RED='\033[0;31m'; NC='\033[0m'
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --dir)  MODE="dir"; DIR="$2"; shift 2 ;;
+    --port) PORT="$2"; shift 2 ;;
+    --list) MODE="list"; shift ;;
+    -h|--help) sed -n '2,30p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    *) echo "Unknown option: $1"; exit 1 ;;
+  esac
+done
+
+IP="$(ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/null)"
+[[ -n "$IP" ]] || { echo -e "${RED}No LAN IP — are you on Wi-Fi?${NC}"; exit 1; }
+BASE="http://$IP:$PORT"
+
+if [[ "$MODE" == "list" ]]; then
+  cat <<EOF
+Run this in kTerm to see what's on the device:
+
+  ls -la /mnt/us/screensavers/
+  ls /mnt/us/koreader/plugins/
+
+To delete one wallpaper by hand:
+
+  rm /mnt/us/screensavers/<name>.png
+
+Though the normal way is to delete it from $SRC_WALLPAPERS
+and re-run this script — wallpaper sync mirrors, so it removes it for you.
+EOF
+  exit 0
+fi
+
+# ── Wallpaper mode: convert source images into a cache dir ────────────────────
+if [[ "$MODE" == "wallpapers" ]]; then
+  [[ -d "$SRC_WALLPAPERS" ]] || { echo "Missing $SRC_WALLPAPERS"; exit 1; }
+  [[ -f "$GRAY" ]] || { echo "Grey ColorSync profile missing"; exit 1; }
+
+  rm -rf "$CACHE"; mkdir -p "$CACHE"
+  echo -e "${CYAN}Converting${NC} $SRC_WALLPAPERS → ${W}x${H} greyscale"
+  echo ""
+
+  shopt -s nullglob nocaseglob
+  i=1
+  for f in "$SRC_WALLPAPERS"/*.jpg "$SRC_WALLPAPERS"/*.jpeg "$SRC_WALLPAPERS"/*.png \
+           "$SRC_WALLPAPERS"/*.avif "$SRC_WALLPAPERS"/*.heic "$SRC_WALLPAPERS"/*.webp; do
+    [[ -f "$f" ]] || continue
+    sw=$(sips -g pixelWidth  "$f" 2>/dev/null | awk '/pixelWidth/{print $2}')
+    sh=$(sips -g pixelHeight "$f" 2>/dev/null | awk '/pixelHeight/{print $2}')
+    [[ -n "$sw" && -n "$sh" && "$sw" -gt 0 ]] || { echo -e "  ${YELLOW}skip${NC} $(basename "$f")"; continue; }
+
+    # Name from the SOURCE file, never a counter. Sequential names renumber on
+    # every add or delete, so a slot would keep stale content while the
+    # installer skipped it as "already there".
+    stem="$(basename "$f")"; stem="${stem%.*}"
+    stem="$(printf '%s' "$stem" | tr -c '[:alnum:]._-' '-')"
+    dest="$CACHE/ks-${stem}.png"
+    # Fit inside the panel, pad the rest: cropping would cut the subject out.
+    if (( sw * H > sh * W )); then resize=(--resampleWidth "$W"); else resize=(--resampleHeight "$H"); fi
+
+    if sips -s format png "${resize[@]}" --padToHeightWidth "$H" "$W" --padColor 000000 \
+            --matchTo "$GRAY" "$f" --out "$dest" >/dev/null 2>&1; then
+      warn=""
+      (( sw < 1200 && sh < 1200 )) && warn=" ${YELLOW}(low-res, will look soft)${NC}"
+      echo -e "  ${GREEN}✓${NC} $(basename "$f") → $(basename "$dest")  ${sw}x${sh}${warn}"
+      i=$((i+1))
+    else
+      echo -e "  ${YELLOW}skip${NC} $(basename "$f") — sips could not read it"
+    fi
+  done
+  shopt -u nullglob nocaseglob
+
+  [[ $((i-1)) -gt 0 ]] || { echo "No images converted. Add some to $SRC_WALLPAPERS"; exit 1; }
+  DIR="$CACHE"
+  echo ""
+  echo -e "${GREEN}$((i-1)) wallpaper(s)${NC} ready — preview: open $CACHE"
+fi
+
+[[ -d "$DIR" ]] || { echo "No such directory: $DIR"; exit 1; }
+
+# ── Generate the on-device installer (POSIX sh: it runs under busybox) ────────
+INSTALLER="$DIR/_install.sh"
+{
+  echo '#!/bin/sh'
+  echo '# Generated by kindle/sync.sh — safe to re-run.'
+  echo 'set -u'
+  echo 'BASE="'"$BASE"'"'
+  echo 'PLUGINS=/mnt/us/koreader/plugins'
+  echo 'SAVERS=/mnt/us/screensavers'
+  echo 'mkdir -p "$PLUGINS" "$SAVERS"'
+  echo 'ok=0; skip=0; gone=0; fail=0'
+  echo ''
+  echo 'get() {'
+  echo '  if [ -e "$2" ]; then echo "  = $(basename "$2")"; skip=$((skip+1)); return 0; fi'
+  echo '  if wget -q -O "$2.part" "$BASE/$1"; then mv "$2.part" "$2"; echo "  + $(basename "$2")"; ok=$((ok+1));'
+  echo '  else rm -f "$2.part"; echo "  ! FAILED $1"; fail=$((fail+1)); fi'
+  echo '}'
+  echo ''
+  echo 'unpack() {'
+  echo '  if [ -e "$3" ]; then echo "  = $(basename "$3") installed"; skip=$((skip+1)); rm -f "$1"; return 0; fi'
+  echo '  if ( cd "$2" && unzip -oq "$1" ); then echo "  > unpacked into $2"; ok=$((ok+1)); rm -f "$1";'
+  echo '  else echo "  ! unzip failed: $1"; fail=$((fail+1)); fi'
+  echo '}'
+  echo ''
+
+  shopt -s nullglob
+  keep=""
+  for f in "$DIR"/*; do
+    [[ -f "$f" ]] || continue
+    name="$(basename "$f")"
+    [[ "$name" == "_install.sh" ]] && continue
+    case "$name" in
+      *.png|*.jpg|*.jpeg)
+        keep="$keep|$name"
+        printf 'get "%s" "$SAVERS/%s"\n' "$name" "$name" ;;
+      *koplugin*.zip)
+        inner="$(unzip -Z1 "$f" 2>/dev/null | head -1 | cut -d/ -f1)"
+        printf 'get "%s" "/mnt/us/%s"\n' "$name" "$name"
+        printf 'unpack "/mnt/us/%s" "$PLUGINS" "$PLUGINS/%s"\n' "$name" "${inner:-$name}" ;;
+      *.zip)
+        # First real FILE, not the first directory: archives unpacking into
+        # documents/ would otherwise always look already-installed.
+        marker="$(unzip -Z1 "$f" 2>/dev/null | grep -v '/$' | head -1)"
+        printf 'get "%s" "/mnt/us/%s"\n' "$name" "$name"
+        printf 'unpack "/mnt/us/%s" "/mnt/us" "/mnt/us/%s"\n' "$name" "${marker:-$name}" ;;
+      *)
+        printf 'get "%s" "/mnt/us/%s"\n' "$name" "$name" ;;
+    esac
+  done
+  shopt -u nullglob
+
+  # Mirror: in wallpaper mode, remove device images the source no longer has.
+  if [[ "$MODE" == "wallpapers" ]]; then
+    echo ''
+    echo '# Mirror the source: drop wallpapers that were deleted locally.'
+    echo 'KEEP="'"$keep"'|"'
+    echo 'for existing in "$SAVERS"/*; do'
+    echo '  [ -e "$existing" ] || continue'
+    echo '  b=$(basename "$existing")'
+    echo '  case "$KEEP" in'
+    echo '    *"|$b|"*) ;;'
+    echo '    *) rm -f "$existing"; echo "  - removed $b"; gone=$((gone+1)) ;;'
+    echo '  esac'
+    echo 'done'
+  fi
+
+  echo ''
+  echo 'echo ""'
+  echo 'echo "done: $ok added, $skip unchanged, $gone removed, $fail failed"'
+  echo '[ "$fail" -eq 0 ] || exit 1'
+} > "$INSTALLER"
+chmod +x "$INSTALLER"
+
+count=$(find "$DIR" -maxdepth 1 -type f ! -name '_install.sh' | wc -l | tr -d ' ')
+
+echo ""
+echo -e "${CYAN}Serving${NC} $DIR  (${count} file(s))"
+[[ "$MODE" == "wallpapers" ]] && echo -e "${YELLOW}Mirror mode:${NC} the Kindle will end up matching this set exactly."
+echo ""
+echo -e "${YELLOW}On the Kindle, in kTerm:${NC}"
+echo ""
+echo -e "  ${GREEN}wget -O /tmp/i.sh $BASE/_install.sh && sh /tmp/i.sh${NC}"
+echo ""
+echo -e "${GREEN}Ctrl-C here when it finishes.${NC}"
+echo ""
+
+cd "$DIR" && exec python3 -m http.server "$PORT" --bind 0.0.0.0

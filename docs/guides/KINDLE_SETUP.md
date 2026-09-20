@@ -243,7 +243,7 @@ Anna's Archive indexes copyrighted material; what you download is your call.
 ```
 
 Gives the Kindle an SSH server over the USB cable. That unblocks a push script
-(`scripts/books/push-to-kindle.sh`, not yet written) to `scp` new EPUBs across in
+(`scripts/kindle/push-books.sh`, not yet written) to `scp` new EPUBs across in
 bulk rather than tapping through OPDS one at a time.
 
 Do OPDS first — it needs nothing and works over Wi-Fi from anywhere. This is the
@@ -679,7 +679,7 @@ from the Mac mini over the local network and `wget` them on the device.
 #### On the Mac mini
 
 ```sh
-~/.dotfiles/scripts/books/serve-to-kindle.sh
+~/.dotfiles/scripts/kindle/sync.sh --dir ~/Downloads/kindle-plugins
 ```
 
 It serves `~/Downloads/kindle-plugins` and prints the exact `wget` line for each
@@ -752,7 +752,7 @@ works on this jailbreak even though its docs predate it.
 **On the Mac mini** — the file is already in `~/Downloads/kindle-plugins`:
 
 ```sh
-~/.dotfiles/scripts/books/serve-to-kindle.sh
+~/.dotfiles/scripts/kindle/sync.sh --dir ~/Downloads/kindle-plugins
 ```
 
 **On the Kindle, in kTerm:**
@@ -807,39 +807,24 @@ want. Good sources:
 Preview and cull in Finder first — the Kindle is the worst place to discover an
 image looks wrong.
 
-**The easy way** — one command does convert *and* serve:
+**One command does everything:**
 
 ```sh
-~/.dotfiles/scripts/books/kindle-lockscreens.sh ~/Downloads
+~/.dotfiles/scripts/kindle/sync.sh
 ```
 
-It greyscales and resizes everything it finds to 1860 × 2480, letterboxing
-rather than cropping, writes them to `~/Pictures/kindle-lockscreens/` as
-`lockscreen-01.png`…, then prints the `wget` lines for kTerm. Uses `sips`, built
-into macOS, and handles AVIF and HEIC as well as JPEG and PNG.
+It reads `wallpapers/kindle/` in this repo, converts each image to 1860 × 2480
+greyscale (letterboxed, never cropped), then serves them and prints the single
+line to run in kTerm.
 
-⚠️ Small sources get upscaled and look soft on a 300 ppi panel — anything under
-about 1200 px on its long edge is worth swapping out.
+⚠️ **This is a mirror.** The Kindle ends up matching `wallpapers/kindle/`
+exactly — which is how you remove one you don't like: delete the source image
+and sync again.
 
-**The manual way**, if you prefer ImageMagick:
+Small sources get upscaled and look soft on a 300 ppi panel; the script warns
+about anything under ~1200 px.
 
-```sh
-mkdir -p ~/Pictures/kindle-lockscreens
-cd ~/Pictures/kindle-lockscreens
-# drop your chosen JPGs/PNGs here, then:
-i=1; for f in *.jpg *.jpeg *.png; do
-  [ -e "$f" ] || continue
-  magick "$f" -colorspace Gray -resize 1860x2480^     -gravity center -extent 1860x2480 -quality 92     "$(printf 'lockscreen-%02d.png' $i)"
-  i=$((i+1))
-done
-rm -f *.jpg *.jpeg          # keep only the converted PNGs
-
-~/.dotfiles/scripts/books/serve-to-kindle.sh ~/Pictures/kindle-lockscreens
-```
-
-The script detects images and prints `wget` lines pointing straight at
-`/mnt/us/screensavers/`. Run those in kTerm, then tap the library entry to
-enable.
+Then tap the **Custom Screensaver** entry in your library to enable it.
 
 **Sizing** — the Scribe's panel is **1860 × 2480 px** (10.2", 300 ppi):
 
@@ -973,7 +958,7 @@ warranty is **2 years**, to roughly October 2027.
 - [x] ~~KOReader + OPDS catalog~~
 - [x] ~~`audiobook.koplugin`~~ — Tools → Audiobook Read-Along, Audiobookshelf connected
 - [x] ~~`kindlefetch.koplugin`~~ — installed (search broken upstream, not your setup)
-- [ ] **Over the LAN** (`scripts/books/serve-to-kindle.sh` on the Mac mini, then
+- [ ] **Over the LAN** (`scripts/kindle/sync.sh` on the Mac mini, then
       `wget` in kTerm): `audiobook.koplugin` + `kindlefetch.koplugin` into
       `koreader/plugins/`. ⚠️ USB doesn't work — the
       Scribe is MTP and macOS can't mount it. HTTPS doesn't work either.

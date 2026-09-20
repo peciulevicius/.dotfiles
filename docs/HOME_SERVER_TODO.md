@@ -381,7 +381,7 @@ tool — swapping Obsidian for something else reproduces the same failure later.
       packages"*; use the zip instead. It ships `documents/Custom Screensaver.sh`,
       which is a Vera scriptlet, so it needs no KUAL. Serve
       `custom-screensaver-0.3.0-kindlehf.zip` (already in
-      `~/Downloads/kindle-plugins`) with `scripts/books/serve-to-kindle.sh`,
+      `~/Downloads/kindle-plugins`) with `scripts/kindle/sync.sh`,
       `wget` + `unzip` it at `/mnt/us`, then PNGs at **1860 × 2480** into
       `/mnt/us/screensavers/`.
 - [ ] **KindleFetch** (KOReader plugin version) — grab a book from Anna's
@@ -402,7 +402,7 @@ tool — swapping Obsidian for something else reproduces the same failure later.
 
 📘 Full step-by-step: **[guides/KINDLE_SETUP.md](guides/KINDLE_SETUP.md)**
 - [ ] **Books do not auto-transfer** — OPDS is pull (open KOReader, tap to
-      download). Optional later: `scripts/books/push-to-kindle.sh` to `scp` new
+      download). Optional later: `scripts/kindle/sync.sh --dir` to `scp` new
       EPUBs over SSH when the Scribe is reachable. Try OPDS first.
 - [ ] **Keep Amazon's stock software for handwriting.** KOReader's Scribe stylus
       PR was merged March 2026 then reverted as unstable;
