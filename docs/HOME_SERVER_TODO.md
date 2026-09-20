@@ -377,6 +377,14 @@ tool — swapping Obsidian for something else reproduces the same failure later.
       firmware <5.19 and the Scribe is on 5.19.6, has no read-along/Whispersync,
       and plays local files only so it cannot replace Audiobookshelf's streaming
       and cross-device progress. Revisit if it gains 5.19+ support.
+- [ ] **Read-aloud with word highlighting** — what LARK was wanted for actually
+      exists as [audiobook.koplugin](https://github.com/stradichenko/audiobook.koplugin):
+      TTS, synchronised highlighting, auto page turns, Bluetooth, fully offline.
+      Copy into `koreader/plugins/`. Use the Piper voice.
+- [ ] ⚠️ **If installing `blockamazon`, test the Searchable PDF export straight
+      after.** It blocks Amazon domains via `/etc/hosts` and does not document
+      which — and the handwriting OCR export routes through Amazon to email,
+      which is what feeds `kindle_sync.py`. Reversible via KUAL's unblock.
 
 📘 Full step-by-step: **[guides/KINDLE_SETUP.md](guides/KINDLE_SETUP.md)**
 - [ ] **Books do not auto-transfer** — OPDS is pull (open KOReader, tap to

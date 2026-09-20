@@ -310,6 +310,44 @@ KPM's official package list is small — as of 2026-09: `blockamazon`,
 
 ---
 
+## What each KPM package is
+
+The official repo is small. As of 2026-09:
+
+| Package | What it is | Verdict here |
+|---|---|---|
+| `kindlefetch` | Download books from Anna's Archive on-device | ⭐ **Install** |
+| `blockamazon` | Blocks Amazon domains via `/etc/hosts` to disable the Kindle store | ⚠️ **Careful** — see below |
+| `hyprpad` | Simple on-device text editor, e-ink optimised | Optional |
+| `kanki` | Anki-style flashcards | Optional — [RAnki](https://github.com/crazy-electron/ranki) syncs with real Anki, this doesn't |
+| `gnomegames` | Chess (decent AI) + Minesweeper | Fun |
+| `kwordle` | Wordle | Fun |
+| `hello` | A hello-world test package | Skip — it exists to verify KPM works |
+| `make` | The `make` build tool | **Dependency**, pulled in when something needs it |
+| `musl` | The musl C library | **Dependency**, same |
+
+`make` and `musl` are libraries other packages depend on — install them only when
+something asks, not on their own.
+
+### ⚠️ `blockamazon` could break the notes pipeline
+
+It works by blocking Amazon domains in `/etc/hosts` to kill the store. The
+project does **not** document which domains, and this device depends on Amazon
+for one thing that matters: *Share → Searchable PDF* routes the handwriting OCR
+**through Amazon to email**, which is what feeds `kindle_sync.py` into the
+Obsidian vault.
+
+If you want it:
+
+1. Install it, then **immediately test a Searchable PDF export** and confirm the
+   mail arrives
+2. If it doesn't, unblock — the extension ships an **unblock** function in KUAL,
+   so it is reversible
+
+Don't install it and discover three weeks later that notes stopped syncing.
+
+---
+
 ## Going through Awesome-Kindle, annotated
 
 Every entry from [the list](https://github.com/KindleTweaks/Awesome-Kindle),
@@ -378,6 +416,110 @@ rather than refusing to start.
 
 ---
 
+## Read-aloud with word highlighting — this exists, and it isn't LARK
+
+**LARK cannot do this.** It plays pre-recorded MP3/M4B audiobook *files*. It has
+no connection to whatever book is open, no text synchronisation and no
+highlighting — and it is blocked on 5.19.6 anyway.
+
+What does do it: **[audiobook.koplugin](https://github.com/stradichenko/audiobook.koplugin)**,
+a KOReader plugin providing *"text-to-speech with synchronized word
+highlighting, automatic page turns, and Bluetooth audio support."*
+
+Open a book in KOReader, start it, and it reads aloud while highlighting each
+word and turning pages by itself — the experience you were describing.
+
+- **TTS engines:** espeak-ng (light), **Piper** (neural, far more natural),
+  sanoTTS
+- **Fully offline** — no network needed for synthesis; Piper voice models are
+  downloaded once from HuggingFace
+- **Bluetooth**: device scanning and pairing, plus headset media-button control
+- **Install:** download the release zip, copy the `audiobook.koplugin` folder
+  into `koreader/plugins/`
+
+### How it differs from Whispersync
+
+| | Amazon Immersion Reading | audiobook.koplugin |
+|---|---|---|
+| Voice | Human narrator (Audible) | Synthesised (Piper is good, not human) |
+| Needs | Matched Kindle + Audible editions, bought | Any book you can open |
+| Highlighting | ✅ | ✅ |
+| Works with your own EPUBs | ❌ | ✅ |
+
+Amazon's **VoiceView** screen reader is also on the device and reads aloud over
+Bluetooth, but it is an accessibility tool narrating the whole interface rather
+than a reading companion. The plugin is the better fit.
+
+---
+
+## Install walkthrough, in order
+
+### Step 1 — KPM packages
+
+Search bar, one at a time. If a scriptlet doesn't respond, do Step 2 first and
+use `kpm -S <name>` in the terminal instead.
+
+```
+;kpm update
+;kpm install kindlefetch
+```
+
+Optional extras: `;kpm install hyprpad`, `;kpm install gnomegames`,
+`;kpm install kwordle`. Skip `hello`. Leave `make` and `musl` for when a package
+asks for them. Hold off on `blockamazon` until you've read the warning above.
+
+### Step 2 — kTerm
+
+Not a KPM package. [Grab the release](https://github.com/bfabiszewski/kterm),
+unzip, and copy the extension folder into `extensions/` at the Kindle's storage
+root. Launch it from KUAL or its scriptlet.
+
+Worth doing early: it is how you diagnose anything that goes wrong on-device,
+and it's the fallback whenever the `;kpm` search-bar form misbehaves.
+
+### Step 3 — KindleFetch, the good version
+
+The KPM package installs the CLI. The **KOReader plugin** is nicer, because
+search and download happen inside the reader you already live in:
+
+1. Download the release from
+   [william-spongberg/KindleFetch.koplugin](https://github.com/william-spongberg/KindleFetch.koplugin)
+2. Copy the `KindleFetch.koplugin` folder into `koreader/plugins/`
+3. Restart KOReader — it appears in the ☰ menu
+
+Also covers Library Genesis.
+
+### Step 4 — Read-aloud plugin
+
+Same pattern: copy `audiobook.koplugin` into `koreader/plugins/`, restart
+KOReader. Pick **Piper** for voice quality; it downloads a voice model once.
+
+### Step 5 — Custom screensavers
+
+See the lockscreens section above — `;kpm add-repo …` then
+`;kpm install custom-screensaver`, PNGs into `/screensavers/`.
+
+### Step 6 — HotfixUpdater
+
+[Release](https://github.com/KindleTweaks/HotfixUpdater) → unzip → copy to the
+Kindle root as its README directs. Keeps OTA blocking current.
+
+### Step 7 — UsbNetLite, when you want it
+
+[notmarek/kindle-usbnetlite](https://github.com/notmarek/kindle-usbnetlite).
+SSH over USB, for the bulk push script. OPDS already covers day-to-day.
+
+### Copying files with no computer
+
+Steps 2–4 need files placed into folders. Options without plugging in:
+
+- **KindleFetch's own downloader** once it's running
+- **kTerm + `curl`** — `cd /mnt/us/koreader/plugins && curl -LO <release-url>`
+  then `unzip`. This is the main reason to install kTerm early.
+- Otherwise, plug into a computer once and do Steps 2–4 together
+
+---
+
 ## Recovery
 
 The jailbreak is **reversible**: `renametobin` *Restore* → factory reset →
@@ -395,9 +537,10 @@ warranty is **2 years**, to roughly October 2027.
 - [x] ~~Add the OPDS catalog pointing at Calibre-Web~~
 - [ ] Set a HOME directory in KOReader + hide unsupported files
 - [ ] Verify OTA blocked ("Check OTA Status" scriptlet)
+- [ ] kTerm — do this early, it's how you fix things on-device
 - [ ] KindleFetch — the KOReader plugin version
+- [ ] `audiobook.koplugin` — read-aloud with word highlighting
 - [ ] Custom screensavers + PNGs in `/screensavers/`
-- [ ] kTerm (also the fallback for `kpm -S` syntax)
 - [ ] HotfixUpdater
 - [ ] UsbNetLite (optional — enables the push script)
 - [ ] Check for stray `.bin` files in the USB root, next time you connect
