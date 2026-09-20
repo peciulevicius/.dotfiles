@@ -1,0 +1,39 @@
+# Storyteller — self-hosted Whispersync
+#
+# Takes an ebook + its audiobook, transcribes the audio, force-aligns it against
+# the text, and outputs a single EPUB 3 with Media Overlays. KOReader's
+# audiobook plugin reads those, giving real narration with word highlighting —
+# which plain Audiobookshelf playback cannot do.
+#
+# ⚠️ RUN THIS AS A BATCH JOB, NOT A PERMANENT SERVICE.
+# Alignment wants ~4GB, which is most of the Mac mini's remaining Docker
+# headroom, and the host is already swapping. Bring it up, process a book, take
+# it down:
+#
+#   docker compose up -d      # then align a book at http://localhost:8087
+#   docker compose down       # when finished
+#
+# Data lives on the internal SSD: it is SQLite-backed, and databases must never
+# sit on the NAS SMB mount (same rule as Immich's Postgres). Audio uploads are
+# large, so watch free space — the SSD had ~34GB free when this was written.
+
+name: storyteller
+
+services:
+  storyteller:
+    container_name: storyteller
+    image: registry.gitlab.com/storyteller-platform/storyteller:latest
+    restart: "no"          # deliberate: this is not an always-on service
+    ports:
+      - "${STORYTELLER_PORT:-8087}:8001"
+    volumes:
+      - ./data:/data
+    environment:
+      STORYTELLER_SECRET_KEY: ${STORYTELLER_SECRET_KEY:?STORYTELLER_SECRET_KEY required}
+      STORYTELLER_LOG_LEVEL: ${STORYTELLER_LOG_LEVEL:-info}
+    labels:
+      - "com.centurylinklabs.watchtower.enable=false"
+
+networks:
+  default:
+    name: storyteller

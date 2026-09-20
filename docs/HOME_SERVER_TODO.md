@@ -362,21 +362,24 @@ tool — swapping Obsidian for something else reproduces the same failure later.
 - [ ] In KOReader, set a **HOME directory** (long-press `documents/` or a new
       `books/` folder) and turn off *Show unsupported files* — the browser opens
       on the storage root and shows firmware internals otherwise
-- [ ] **Custom lockscreens** — `;kpm add-repo https://kpm.andrecheng.com/kpm.json`
-      then `;kpm update && ;kpm install custom-screensaver`; PNGs go in
-      `/screensavers/`. ⚠️ Author tested it on PW5/PW6/12th-gen, **not the
-      Scribe** — the firmware range matches but the 10.2" panel may scale oddly.
-      Fallback: KOReader's own gear → Screen → Sleep screen → Wallpaper.
 - [ ] **`;kpm install usbnetlite`** — SSH over USB, which is what unblocks the
       `scp` push script below. Do OPDS first; this is the upgrade.
 - [x] ~~HotfixUpdater~~ — **not needed on Vera**, which blocks OTA itself. The
       universal hotfix belongs to the legacy jailbreak chain.
-- [ ] **Storyteller for true read-along?** Audiobookshelf playback in KOReader
-      works but does **not** highlight — real narration needs EPUB 3 Media
-      Overlays. [Storyteller](https://storyteller-platform.dev/) does the forced
-      alignment and is self-hostable. ⚠️ Wants ~4GB, i.e. the whole remaining
-      Docker headroom and the same budget as Odysseus — run it as a batch job,
-      not a permanent service.
+- [x] ~~Storyteller for true read-along~~ — **deployed 2026-09-20** as
+      `services/storyteller/` on port 8087, `restart: "no"` so it stays off.
+      Audiobookshelf playback in KOReader does **not** highlight; real narration
+      needs EPUB 3 Media Overlays, which Storyteller produces by forced
+      alignment.
+- [ ] **Align a first book and confirm the Kindle highlights it.** Upload an
+      EPUB + its audiobook at `localhost:8087`, drop the output into
+      Calibre-Web, open it over OPDS. ⚠️ `docker compose down` afterwards — it
+      wants ~4GB, the same headroom as Odysseus, on a host already swapping.
+      ⚠️ Media Overlay support in `audiobook.koplugin` is still *work in
+      progress*, so verify before aligning a shelf full of books.
+- [ ] **Custom lockscreens** — `;kpm install custom-screensaver` (its own KPM
+      repo, so no download needed), then PNGs at **1860 × 2480** into
+      `/mnt/us/screensavers/` via `scripts/books/serve-to-kindle.sh`.
 - [ ] **KindleFetch** (KOReader plugin version) — grab a book from Anna's
       Archive with no computer nearby. A shortcut beside the LazyLibrarian →
       Calibre-Web library, not a replacement.

@@ -31,10 +31,17 @@ echo -e "${CYAN}at${NC}      http://$IP:$PORT"
 echo ""
 echo -e "${YELLOW}On the Kindle, in kTerm:${NC}"
 echo ""
-for f in "$DIR"/*.zip; do
+shopt -s nullglob
+for f in "$DIR"/*; do
   [[ -f "$f" ]] || continue
-  echo "  wget -O /mnt/us/$(basename "$f") http://$IP:$PORT/$(basename "$f")"
+  name="$(basename "$f")"
+  case "$name" in
+    *.png|*.jpg|*.jpeg) dest="/mnt/us/screensavers/$name" ;;
+    *)                  dest="/mnt/us/$name" ;;
+  esac
+  echo "  wget -O $dest http://$IP:$PORT/$name"
 done
+shopt -u nullglob
 echo ""
 echo -e "${GREEN}Ctrl-C to stop the server when you're done.${NC}"
 echo ""

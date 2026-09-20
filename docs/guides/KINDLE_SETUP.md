@@ -303,6 +303,10 @@ supports Media Overlays.
 It fits this stack unusually well — the audiobooks are already in Audiobookshelf
 and the ebooks already in Calibre-Web.
 
+**Deployed here as `services/storyteller/`, port 8087** (8001 is Vaultwarden),
+with `restart: "no"` so it never comes back on its own. Setup and usage:
+[services/storyteller/README.md](https://github.com/peciulevicius/.dotfiles/blob/main/services/storyteller/README.md).
+
 ⚠️ **RAM.** Storyteller wants **~4GB**, which is roughly the entire Docker
 headroom left on the Mac mini and the same budget earmarked for Odysseus — the
 constraint that ruled out [Octopus Deploy](OCTOPUS_DEPLOY.md). Alignment is a
@@ -652,7 +656,7 @@ TLS worked.
 **Use a computer for the plugins.** KPM packages still install fine on-device;
 it is only direct downloads that break.
 
-### Step 4 — ⚠️ USB does not work on macOS either
+### ⚠️ Why USB does not work on macOS either
 
 Plug a modern Kindle into a Mac and it shows:
 
@@ -726,35 +730,60 @@ CLI awkward without KUAL.
 
 ### Step 6 — Custom lockscreens
 
-This one ships a **KPM repository**, so it's the easy path:
+**No download needed** — this one ships its own KPM repo, and KPM handles its own
+transport, so the TLS problem doesn't apply.
 
 ```
 ;kpm add-repo https://kpm.andrecheng.com/kpm.json
+;kpm list-repo
 ;kpm update
 ;kpm install custom-screensaver
 ```
 
-Manual alternative, if the repo doesn't resolve:
+#### Getting images onto the device
+
+PNGs go in `/mnt/us/screensavers/`. Use the same LAN server as the plugins —
+put your images in a folder on the Mac mini and run:
 
 ```sh
-cd /mnt/us
-curl -L -O https://github.com/chengandre/kindle-custom-screensaver/releases/download/v0.3.0/custom-screensaver-0.3.0-kindlehf.zip
-unzip custom-screensaver-0.3.0-kindlehf.zip
+~/.dotfiles/scripts/books/serve-to-kindle.sh ~/Pictures/kindle-lockscreens
 ```
 
-It unpacks `documents/`, `extensions/` and `screensavers/`, merging into the root.
-⚠️ It will **create** `extensions/`, which Vera otherwise has no use for — that
-folder is only meaningful to KUAL, so treat the screensaver's own scriptlet in
-`documents/` as the way to drive it. Prefer the KPM route above.
+It detects images and prints `wget` lines that write straight to
+`/mnt/us/screensavers/`. On the Kindle, create the folder first if it doesn't
+exist:
 
-Then put **PNG** files into `/mnt/us/screensavers/`. Any filename; they rotate
-alphabetically and are scaled automatically. Getting images across is the same
-`curl -L -O <image-url>` from that folder, or drag them over USB.
+```sh
+mkdir -p /mnt/us/screensavers
+```
 
-⚠️ Untested on the Scribe's 10.2" panel — see the lockscreens section above for
-the KOReader fallback if scaling looks wrong.
+then paste the commands it printed.
 
-### Step 6 — UsbNetLite (optional)
+#### Image sizing
+
+The Scribe's panel is **1860 × 2480 px** (10.2", 300 ppi). Images are scaled
+automatically, but matching that resolution avoids soft edges.
+
+- **Greyscale** — it's e-ink, colour is wasted
+- **High contrast** — low-contrast images look muddy
+- Any filename; they rotate **alphabetically**
+
+Prepare them on the Mac with ImageMagick if you like:
+
+```sh
+magick input.jpg -colorspace Gray -resize 1860x2480^ \
+  -gravity center -extent 1860x2480 -quality 92 lockscreen-01.png
+```
+
+#### If it looks wrong on the Scribe
+
+⚠️ The package's author tested Paperwhite 5/6 and 12th-gen — **not the Scribe**,
+whose panel is much larger. If scaling misbehaves, fall back to KOReader's own
+sleep screen, which only covers sleeping from inside KOReader:
+
+> gear icon → **Screen** → **Sleep screen** → **Wallpaper** → point at a folder
+
+### Step 7 — UsbNetLite (optional)
 
 Only worth it when tapping through OPDS one book at a time starts to grate;
 it enables a bulk `scp` push from the Mac mini.
@@ -866,6 +895,9 @@ warranty is **2 years**, to roughly October 2027.
 - [ ] Set a HOME directory in KOReader + hide unsupported files
 - [ ] Verify OTA blocked ("Check OTA Status" scriptlet)
 - [x] ~~kTerm~~ — `;kpm install kterm`
+- [x] ~~KOReader + OPDS catalog~~
+- [x] ~~`audiobook.koplugin`~~ — Tools → Audiobook Read-Along, Audiobookshelf connected
+- [x] ~~`kindlefetch.koplugin`~~ — installed (search broken upstream, not your setup)
 - [ ] **Over the LAN** (`scripts/books/serve-to-kindle.sh` on the Mac mini, then
       `wget` in kTerm): `audiobook.koplugin` + `kindlefetch.koplugin` into
       `koreader/plugins/`. ⚠️ USB doesn't work — the

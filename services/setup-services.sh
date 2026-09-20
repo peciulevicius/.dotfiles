@@ -42,6 +42,7 @@ SERVICES=(
   bazarr
   grafana
   couchdb
+  storyteller
 )
 
 SERVICE_PORTS=(
@@ -72,6 +73,7 @@ SERVICE_PORTS=(
   "bazarr:6767"
   "grafana:3000,9090,9100"
   "couchdb:5984"
+  "storyteller:8087"
 )
 
 log_ok()   { echo -e "${GREEN}✓${NC} $1"; }

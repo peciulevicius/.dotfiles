@@ -75,6 +75,9 @@ SYNC_CMD+=(--exclude "immich/data/**")
 # and it is backed up separately below. Syncing live .couch files would upload
 # an inconsistent snapshot for data that can simply be re-seeded from the vault.
 SYNC_CMD+=(--exclude "couchdb/data/**")
+# Storyteller holds bulky audio uploads and regenerable working files; the
+# aligned EPUBs it produces belong in Calibre-Web, which is backed up.
+SYNC_CMD+=(--exclude "storyteller/data/**")
 # Large app installs — reinstallable, not user data
 SYNC_CMD+=(--exclude "nextcloud/data/**")
 SYNC_CMD+=(--exclude "sonarr-radarr/data/**")
