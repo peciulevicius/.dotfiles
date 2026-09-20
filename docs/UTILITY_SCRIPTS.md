@@ -207,6 +207,30 @@ See [guides/NOTES.md](./guides/NOTES.md) for the full Obsidian + Syncthing workf
 
 ---
 
+## 📖 scripts/books/serve-to-kindle.sh - Get files onto a Kindle
+
+Serves a directory over plain HTTP on the LAN so a jailbroken Kindle can `wget`
+from it, and prints the ready-made command for each file.
+
+```bash
+~/.dotfiles/scripts/books/serve-to-kindle.sh                  # ~/Downloads/kindle-plugins
+~/.dotfiles/scripts/books/serve-to-kindle.sh ~/some/dir 9000  # custom dir + port
+```
+
+**Why it's needed** — both obvious routes are dead ends on this hardware:
+
+- **USB**: Kindles from ~2022, the Scribe included, present as **MTP**, which
+  macOS cannot mount without third-party software. The volume never appears.
+- **Downloading on the Kindle**: its busybox `wget` can't negotiate the TLS that
+  GitHub's CDN requires — HTTPS fails with *"Connection reset by peer"*.
+
+Plain HTTP over the LAN avoids both. The server runs only while the script is in
+the foreground and serves read-only.
+
+See [guides/KINDLE_SETUP.md](./guides/KINDLE_SETUP.md).
+
+---
+
 ## 🐳 services/setup-services.sh - Docker Services Setup
 
 Stages Docker Compose stacks and `.env` templates to `~/services/<service>/`.

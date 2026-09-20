@@ -587,54 +587,73 @@ TLS worked.
 **Use a computer for the plugins.** KPM packages still install fine on-device;
 it is only direct downloads that break.
 
-### Step 4 — Install the plugins over USB
+### Step 4 — ⚠️ USB does not work on macOS either
 
-#### On the Mac — fetch and unpack
+Plug a modern Kindle into a Mac and it shows:
 
-```sh
-mkdir -p ~/Downloads/kindle-plugins && cd ~/Downloads/kindle-plugins
+> *"If your Kindle is not listed on your computer or you're using macOS, go to
+> amazon.com/connectmykindle for additional help and macOS software support."*
 
-curl -L -O https://github.com/stradichenko/audiobook.koplugin/releases/download/v0.2.2/audiobook-koplugin-v0.2.2.zip
-curl -L -O https://github.com/william-spongberg/KindleFetch.koplugin/releases/download/v0.3/kindlefetch.koplugin.zip
-curl -L -O https://github.com/KindleTweaks/HotfixUpdater/releases/download/v1.0.2/HotfixUpdater.zip
+Kindles from roughly 2022 onward — the **Scribe included** — present themselves
+over **MTP** rather than as a USB mass-storage drive, and **macOS has no native
+MTP support**. The volume never mounts, so there is nothing to drag files into.
 
-for z in *.zip; do unzip -qo "$z" -d "${z%.zip}-x"; done
-```
+You could install an MTP client (OpenMTP is the open-source one; Android File
+Transfer is Google's and unmaintained), but there is a better route that needs
+no software at all.
 
-Each archive contains exactly one thing to copy:
+### Step 4 — Serve the files over the LAN instead
 
-| Archive | Contains | Goes to |
-|---|---|---|
-| `audiobook-koplugin-…` | `audiobook.koplugin/` (232 MB) | `<Kindle>/koreader/plugins/` |
-| `kindlefetch.koplugin.zip` | `kindlefetch.koplugin/` (168 KB) | `<Kindle>/koreader/plugins/` |
-| `HotfixUpdater.zip` | `HotfixUpdater/` + `HotfixUpdater.sh` | `<Kindle>/` root (both) |
+The Kindle can't do **HTTPS**, but plain **HTTP** is fine. So serve the files
+from the Mac mini over the local network and `wget` them on the device.
 
-#### Copy them across
-
-1. Plug the Kindle in — it mounts as a USB volume
-2. Drag `audiobook.koplugin` and `kindlefetch.koplugin` into
-   `<Kindle>/koreader/plugins/`
-3. Drag **both** `HotfixUpdater` and `HotfixUpdater.sh` to the Kindle's **root**
-4. ⚠️ **Eject properly**, then restart the Kindle
-
-Or from the terminal, with the Kindle mounted:
+#### On the Mac mini
 
 ```sh
-K=/Volumes/Kindle            # check the real name with: ls /Volumes
-cp -R audiobook-koplugin-v0.2.2-x/audiobook.koplugin   "$K/koreader/plugins/"
-cp -R kindlefetch.koplugin-x/kindlefetch.koplugin      "$K/koreader/plugins/"
-cp -R HotfixUpdater-x/HotfixUpdater HotfixUpdater-x/HotfixUpdater.sh "$K/"
-diskutil eject "$K"
+~/.dotfiles/scripts/books/serve-to-kindle.sh
 ```
 
-The 232 MB copy takes a few minutes over USB. Let it finish before ejecting.
+It serves `~/Downloads/kindle-plugins` and prints the exact `wget` line for each
+file it finds, with the right LAN IP already filled in. Leave it running.
+
+Pass a different folder or port as arguments:
+`serve-to-kindle.sh ~/some/dir 9000`
+
+#### On the Kindle, in kTerm
+
+Type the commands it printed — roughly:
+
+```sh
+cd /mnt/us
+wget -O ab.zip http://<mac-mini-ip>:8765/audiobook-koplugin-v0.2.2.zip
+wget -O kf.zip http://<mac-mini-ip>:8765/kindlefetch.koplugin.zip
+wget -O hf.zip http://<mac-mini-ip>:8765/HotfixUpdater.zip
+```
+
+Both devices must be on the **same Wi-Fi**. Then unpack into place:
+
+```sh
+cd /mnt/us/koreader/plugins
+unzip /mnt/us/ab.zip
+unzip /mnt/us/kf.zip
+
+cd /mnt/us
+unzip /mnt/us/hf.zip
+
+rm /mnt/us/ab.zip /mnt/us/kf.zip /mnt/us/hf.zip
+ls /mnt/us/koreader/plugins/     # expect audiobook.koplugin + kindlefetch.koplugin
+```
+
+Stop the server on the Mac with Ctrl-C when you're done.
+
+⚠️ The read-aloud plugin is **232 MB**, so that one takes a while even over LAN.
 
 #### Then, on the Kindle
 
 - **Fully quit and relaunch KOReader** — not a page refresh
 - Open a book → ☰ menu → the audiobook/TTS entry → choose **Piper**
 - KindleFetch appears in the same ☰ menu
-- `HotfixUpdater.sh` shows up in the library as a tappable entry — run it once
+- `HotfixUpdater.sh` shows in the library as a tappable entry — run it once
 
 ### Step 5 — Drop the broken CLI
 
@@ -778,9 +797,10 @@ warranty is **2 years**, to roughly October 2027.
 - [ ] Set a HOME directory in KOReader + hide unsupported files
 - [ ] Verify OTA blocked ("Check OTA Status" scriptlet)
 - [x] ~~kTerm~~ — `;kpm install kterm`
-- [ ] **Over USB**: `audiobook.koplugin` + `kindlefetch.koplugin` into
-      `koreader/plugins/`, HotfixUpdater to the root. On-device downloads fail
-      on TLS.
+- [ ] **Over the LAN** (`scripts/books/serve-to-kindle.sh` on the Mac mini, then
+      `wget` in kTerm): `audiobook.koplugin` + `kindlefetch.koplugin` into
+      `koreader/plugins/`, HotfixUpdater to the root. ⚠️ USB doesn't work — the
+      Scribe is MTP and macOS can't mount it. HTTPS doesn't work either.
 - [ ] `;kpm uninstall kindlefetch` — the CLI, superseded by the plugin
 - [ ] Custom screensavers (`;kpm`, no download needed) + PNGs in `/screensavers/`
 - [ ] HotfixUpdater
