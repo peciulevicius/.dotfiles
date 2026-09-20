@@ -566,66 +566,105 @@ ls /mnt/us/kpm/packages/bin/                             # what can I run?
 
 `/mnt/us/kpm/packages/bin` is on `PATH`, so anything listed there runs by name.
 
-### Step 3 — Getting files onto the Kindle with kTerm
+### Step 3 — Getting files onto the device
 
-This is the part the rest depends on. Three commands, and every manual install
-below follows the same shape.
+Two routes. Try on-device first; fall back to USB, which always works.
+
+#### Route A — on-device, in kTerm
 
 ```sh
-# 1. go somewhere sensible
-cd /mnt/us
-
-# 2. download
+cd /mnt/us/koreader/plugins
 curl -L -O <url>
-
-# 3. unzip
 unzip <file.zip>
 ```
 
-⚠️ **If `unzip: not found`**, use busybox — it's always present:
+⚠️ **`curl` may not exist.** A bare `curl … | sh` that prints *nothing at all*
+usually means the binary is missing, not that the script ran silently. Check:
 
 ```sh
-busybox unzip <file.zip>
+which curl wget unzip busybox
 ```
 
-Typing long URLs on an e-ink keyboard is miserable. Two ways around it:
+**busybox is always present**, and has both wget and unzip built in:
 
-- Pair a **Bluetooth keyboard** — the Scribe supports one
-- Or plug into a computer once and do Steps 4–6 together in Finder
+```sh
+busybox wget -O plugin.zip <url>
+busybox unzip plugin.zip
+```
+
+If `busybox wget` also fails, it's the network — Kindle Wi-Fi sleeps
+aggressively. Wake the screen, load any page in the Kindle browser, then retry.
+
+#### Route B — USB, five minutes, no debugging
+
+You have resisted this, but it is genuinely the shortest path for the remaining
+steps: no curl, no typing URLs on an e-ink keyboard, no path archaeology.
+
+1. Plug the Kindle into the Mac
+2. Download the zips in a browser and unzip them on the Mac
+3. Drag the resulting folders into place on the Kindle volume
+4. Eject properly, then restart the Kindle
+
+The destination for every KOReader plugin is
+`<Kindle>/koreader/plugins/<name>.koplugin`.
+
+⚠️ **Eject before unplugging.** Pulling the cable mid-write is a decent way to
+corrupt the filesystem.
 
 ### Step 4 — Read-aloud with word highlighting
 
-```sh
-cd /mnt/us/koreader/plugins
-curl -L -O https://github.com/stradichenko/audiobook.koplugin/releases/download/v0.2.2/audiobook-koplugin-v0.2.2.zip
-unzip audiobook-koplugin-v0.2.2.zip
-rm audiobook-koplugin-v0.2.2.zip
-ls        # you should now see: audiobook.koplugin
-```
+This is the one worth doing: TTS with synchronised word highlighting, automatic
+page turns, Bluetooth audio, fully offline.
 
-The zip contains a folder named `audiobook.koplugin` — that is the plugin.
-KOReader loads any `*.koplugin` folder it finds in `plugins/`.
+**Download:** <https://github.com/stradichenko/audiobook.koplugin/releases>
+(latest at time of writing: `audiobook-koplugin-v0.2.2.zip`)
 
-Then **fully restart KOReader** (exit and relaunch; a screen refresh isn't
-enough). Open a book → ☰ menu → look for the audiobook/TTS entry → pick a
-voice. Choose **Piper** for quality; it downloads a voice model on first use, so
-be on Wi-Fi.
-
-Check the release page for a newer tag than `v0.2.2`:
-<https://github.com/stradichenko/audiobook.koplugin/releases>
-
-### Step 5 — KindleFetch inside KOReader (optional)
-
-Only if you want search without leaving the reader:
+**On-device:**
 
 ```sh
 cd /mnt/us/koreader/plugins
-curl -L -O https://github.com/william-spongberg/KindleFetch.koplugin/releases/download/v0.3/kindlefetch.koplugin.zip
-unzip kindlefetch.koplugin.zip
-rm kindlefetch.koplugin.zip
+busybox wget -O ab.zip https://github.com/stradichenko/audiobook.koplugin/releases/download/v0.2.2/audiobook-koplugin-v0.2.2.zip
+busybox unzip ab.zip
+rm ab.zip
+ls        # expect: audiobook.koplugin
 ```
 
-Restart KOReader; it appears in the ☰ menu.
+**Over USB:** unzip on the Mac, drag the `audiobook.koplugin` folder into
+`<Kindle>/koreader/plugins/`.
+
+Either way: **fully quit and relaunch KOReader** — not just a page refresh. Open
+a book → ☰ → the audiobook/TTS entry → choose **Piper** for the natural voice
+(downloads a model once, so be on Wi-Fi).
+
+### Step 5 — KindleFetch in KOReader
+
+If the CLI won't launch, this is the version that will — it lives inside
+KOReader and needs no launcher, no scriptlet, no KUAL.
+
+**Download:** `kindlefetch.koplugin.zip` from
+<https://github.com/william-spongberg/KindleFetch.koplugin/releases>
+
+```sh
+cd /mnt/us/koreader/plugins
+busybox wget -O kf.zip https://github.com/william-spongberg/KindleFetch.koplugin/releases/download/v0.3/kindlefetch.koplugin.zip
+busybox unzip kf.zip
+rm kf.zip
+```
+
+Restart KOReader → it appears in the ☰ menu. Searches Anna's Archive and
+Library Genesis, downloads straight into your library.
+
+#### Removing the CLI version, if you want it gone
+
+Nothing was left behind by the failed `curl … | sh` — piping to `sh` never
+writes a file, and the absent `/mnt/us/extensions/` confirms it never ran. To
+remove what KPM installed:
+
+```sh
+;kpm uninstall kindlefetch
+```
+
+Or delete `/mnt/us/kpm/packages/kindlefetch/` if that's where it landed.
 
 ### Step 6 — Custom lockscreens
 
@@ -681,6 +720,52 @@ it enables a bulk `scp` push from the Mac mini.
 - [ ] **Stock app: write a note → Share → Searchable PDF** → confirm the email
       arrives. This is what feeds `kindle_sync.py`; check it after *every* round
       of installs.
+
+---
+
+## Troubleshooting
+
+### A command prints nothing at all
+
+Usually the binary is missing rather than the command succeeding quietly.
+`which curl wget unzip busybox` tells you what you actually have. **busybox is
+always there** and provides `wget` and `unzip` as applets:
+
+```sh
+busybox wget -O out.zip <url>
+busybox unzip out.zip
+```
+
+### `;kpm install X` says it worked but nothing runs
+
+KPM installs to `/mnt/us/kpm/packages/`, with executables in
+`/mnt/us/kpm/packages/bin/` (on `PATH` via `/etc/profile`). Check what actually
+landed:
+
+```sh
+ls /mnt/us/kpm/packages/ /mnt/us/kpm/packages/bin/
+find /mnt/us -iname '*<name>*' 2>/dev/null
+```
+
+Not every package ships something runnable by name — some are libraries
+(`make`, `musl`), and some expect a launcher that only KUAL provided.
+
+### Nothing appears in the library after adding a scriptlet
+
+A `.sh` in `documents/` should show as a "book". If it doesn't: check
+`chmod +x`, then restart the device — the library index only rescans on boot.
+
+### Downloads fail but the device is on Wi-Fi
+
+Kindle Wi-Fi sleeps aggressively. Wake the screen, load any page in the stock
+browser to bring the radio up, then retry immediately.
+
+### When to stop debugging and use the cable
+
+If two attempts at an on-device download fail, plug into a computer. Every
+remaining install is "unzip a folder into `koreader/plugins/`", which takes
+minutes over USB and needs no working `curl`, no typed URLs and no guessing at
+paths. ⚠️ Eject before unplugging.
 
 ---
 
