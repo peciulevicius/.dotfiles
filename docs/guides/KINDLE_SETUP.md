@@ -224,7 +224,7 @@ and it keeps everything in one app:
 | Version | Install | Notes |
 |---|---|---|
 | **KOReader plugin** ⭐ | [william-spongberg/KindleFetch.koplugin](https://github.com/william-spongberg/KindleFetch.koplugin) | Search and download without leaving KOReader. Also covers Library Genesis. |
-| CLI | `;kpm install kindlefetch` (or `kpm -S kindlefetch`) | Runs in kterm / KUAL. [justrals/KindleFetch](https://github.com/justrals/KindleFetch) |
+| CLI | `;kpm install kindlefetch` | Launch via kTerm or a scriptlet — **not KUAL**, which Vera does not support. [justrals/KindleFetch](https://github.com/justrals/KindleFetch) |
 
 **How it fits with the self-hosted stack:** it doesn't replace it. LazyLibrarian
 → Calibre-Web remains the library — everything catalogued, backed up to R2, and
@@ -297,7 +297,7 @@ confusion — **`;kpm install` does not work for most things on the list.**
 |---|---|---|
 | **KPM** | `;kpm install <name>` in the search bar, or `kpm -S <name>` in kterm | More than the wiki's package page lists — `kterm` installs this way even though it isn't on it. **Always try KPM first.** |
 | **KOReader plugin** | Unzip a `*.koplugin` folder into `koreader/plugins/` | Anything ending `.koplugin` |
-| **Manual scriptlet / extension** | Unzip into `documents/` or `extensions/` at the Kindle's root, then run from the search bar or KUAL | Most of the rest |
+| **Manual scriptlet / extension** | Unzip into `documents/` or `extensions/` at the Kindle's root. A `.sh` in `documents/` appears in the library as a tappable "book". | Most of the rest |
 
 The [KPM wiki](https://kpmwiki.vercel.app/packages) lists `blockamazon`,
 `gnomegames`, `hello`, `hyprpad`, `kanki`, `kindlefetch`, `kwordle`, `make` and
@@ -343,8 +343,11 @@ If you want it:
 
 1. Install it, then **immediately test a Searchable PDF export** and confirm the
    mail arrives
-2. If it doesn't, unblock — the extension ships an **unblock** function in KUAL,
-   so it is reversible
+2. If it doesn't, unblock it. The upstream extension exposes unblock **through
+   KUAL**, which Vera does not have — so before installing, confirm the KPM
+   package offers an unblock path of its own. Worst case it is an `/etc/hosts`
+   edit you can undo in kTerm:
+   `cp /etc/hosts /etc/hosts.bak` first, and restore that file to reverse it.
 
 Don't install it and discover three weeks later that notes stopped syncing.
 
@@ -472,27 +475,54 @@ back to a manual install.
 
 ### Step 2 — Using KindleFetch (the CLI you installed) ✅
 
-It registers itself as a **KUAL menu entry**, so:
+#### ⚠️ There is no KUAL, and you should not install one
 
-1. Open **KUAL** → look for **KindleFetch**
-2. Type a title, author or keyword
-3. Tap a result → it downloads to the device
+**KUAL is obsolete and does not work with Vera.** It was the old launcher for
+pre-`hdnext` jailbreaks. Vera replaces it with **scriptlets** — so any
+instruction that says "open KUAL" (including KindleFetch's own docs, and the KPM
+wiki) predates this jailbreak. Ignore it.
 
-**No KUAL on a Vera jailbreak?** Modern jailbreaks favour scriptlets, so try
-`;kindlefetch` in the search bar. Failing that, run it from kTerm:
+A **scriptlet** is just a `.sh` file in `documents/`. It shows up in the Kindle
+library looking like a book; tapping it runs the script. That is the whole
+mechanism.
+
+#### Launching KindleFetch
+
+KPM installs it to `/mnt/us/extensions/kindlefetch/`, with `run.sh` as the entry
+point. Two ways to start it:
+
+**From kTerm** — works immediately:
 
 ```sh
-ls /mnt/us/extensions/kindlefetch/     # find what's there
-sh /mnt/us/extensions/kindlefetch/bin/kindlefetch.sh
+sh /mnt/us/extensions/kindlefetch/run.sh
 ```
 
-Downloads land in `documents/` by default, so they show up in both the stock
-library and KOReader.
+**As a tappable library entry** — better, because you won't want kTerm every
+time. Create a scriptlet once:
 
-**CLI vs the KOReader plugin — you can have both**, they don't conflict. The CLI
+```sh
+cat > /mnt/us/documents/KindleFetch.sh <<'EOF'
+#!/bin/sh
+sh /mnt/us/extensions/kindlefetch/run.sh
+EOF
+chmod +x /mnt/us/documents/KindleFetch.sh
+```
+
+**KindleFetch** now appears in your Kindle library alongside your books. Tap it
+to launch. If it doesn't show up, restart the device.
+
+The same trick gives any `extensions/` tool a launcher — change the path inside
+the heredoc.
+
+#### Using it
+
+Type a title, author or keyword → browse results → tap to download. Books land
+in `documents/`, so they appear in both the stock library and KOReader.
+
+**CLI vs the KOReader plugin — you can run both**, they don't conflict. The CLI
 is standalone; the plugin puts the same search inside KOReader so you never
-leave the reader. Having installed the CLI, just use it; add the plugin later if
-switching apps starts to annoy.
+leave the reader. You have the CLI; add the plugin later only if switching apps
+starts to annoy.
 
 ### Step 3 — Getting files onto the Kindle with kTerm
 
@@ -591,8 +621,9 @@ curl -L -O https://github.com/KindleTweaks/HotfixUpdater/releases/download/v1.0.
 unzip HotfixUpdater.zip
 ```
 
-Run it from KUAL or its scriptlet. Keeps the universal hotfix current, which is
-what keeps OTA blocked.
+Launch it the same way as KindleFetch — a scriptlet in `documents/` pointing at
+whatever `.sh` it unpacked. Keeps the universal hotfix current, which is what
+keeps OTA blocked.
 
 ### Step 8 — UsbNetLite (optional)
 
