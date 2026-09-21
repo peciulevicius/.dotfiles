@@ -31,6 +31,7 @@ services:
       - lazylibrarian
       - grafana_default
       - couchdb
+      - odysseus_default
 
 networks:
   default:
@@ -71,4 +72,6 @@ networks:
   grafana_default:
     external: true
   couchdb:
+    external: true
+  odysseus_default:
     external: true

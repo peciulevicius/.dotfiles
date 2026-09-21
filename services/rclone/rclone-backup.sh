@@ -78,6 +78,14 @@ SYNC_CMD+=(--exclude "couchdb/data/**")
 # Storyteller holds bulky audio uploads and regenerable working files; the
 # aligned EPUBs it produces belong in Calibre-Web, which is backed up.
 SYNC_CMD+=(--exclude "storyteller/data/**")
+# Odysseus: back up data/ — owning the chat history, memories and RAG corpus is
+# the entire point of self-hosting it. Exclude only the regenerable caches:
+# HuggingFace model downloads and Cookbook-installed Python packages.
+SYNC_CMD+=(--exclude "odysseus/data/huggingface/**")
+SYNC_CMD+=(--exclude "odysseus/data/local/**")
+SYNC_CMD+=(--exclude "odysseus/logs/**")
+# Upstream source tree — it is a git clone, re-creatable with setup.sh
+SYNC_CMD+=(--exclude "odysseus/.git/**")
 # Large app installs — reinstallable, not user data
 SYNC_CMD+=(--exclude "nextcloud/data/**")
 SYNC_CMD+=(--exclude "sonarr-radarr/data/**")

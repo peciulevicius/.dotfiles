@@ -43,6 +43,7 @@ SERVICES=(
   grafana
   couchdb
   storyteller
+  odysseus
 )
 
 SERVICE_PORTS=(
@@ -74,6 +75,7 @@ SERVICE_PORTS=(
   "grafana:3000,9090,9100"
   "couchdb:5984"
   "storyteller:8087"
+  "odysseus:7001"
 )
 
 log_ok()   { echo -e "${GREEN}✓${NC} $1"; }
