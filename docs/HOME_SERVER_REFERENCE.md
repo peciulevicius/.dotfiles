@@ -186,13 +186,11 @@ folders, so they are not single-copy, but **do not wipe T7 until they are import
 - Script: `~/.dotfiles/services/rclone/rclone-backup.sh`
 - ~2.9GB total (critical-only; audiobooks excluded from R2), **$0/month** — under
   the 10GB free tier
-- **Immich photo originals — opt-in, not yet enabled.** `BACKUP_IMMICH_PHOTOS=true`
-  in `~/services/rclone/.env` adds `/Volumes/immich/upload/upload` (~73GB,
-  encoded-video/thumbs/backups excluded as regenerable or redundant with the
-  DB dump above) as a second offsite copy alongside the T5 drive plan below.
-  Off by default: the first run is a multi-hour upload and moves the bill to
-  ~$1/month. See `services/rclone/README.md` and
-  [HOME_SERVER_TODO.md](HOME_SERVER_TODO.md) "offsite photos" before enabling.
+- **Immich photo originals — enabled 2026-09-21.** `/Volumes/immich/upload/upload`
+  → R2 `immich-photos/`, **72.4GB, 6,696 files, zero errors**
+  (encoded-video/thumbs/backups excluded as regenerable or redundant with the
+  DB dump above). Second offsite copy alongside the T5 drive plan below.
+  Total R2 bill is now ~$1/month. See `services/rclone/README.md`.
 
 **Local backup (rsync NAS → external drive), MANUAL — no cron:**
 - `~/.dotfiles/scripts/backup/backup-external.sh /Volumes/T7` (or `/Volumes/Backup` for T5)

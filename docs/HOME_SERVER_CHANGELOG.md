@@ -40,6 +40,32 @@ sections. Older detail moved under "Detail and standing items". Refreshed the
 SSD section (it had hit 15GiB/92%, not the 29GB recorded) and added the
 warning that `docker image prune -a` would delete Storyteller.
 
+## 2026-09-21 (actually final) — Immich offsite backup ran clean
+
+**Flipped `BACKUP_IMMICH_PHOTOS=true` and ran it.** Verified R2 pricing live
+against Cloudflare's own pricing page first ($0.015/GB-month, 10GB free, free
+egress — matched what was already documented). Dry run predicted 72.4 GiB /
+6,696 files; the real run landed exactly that, zero errors.
+
+**First attempt crashed — self-inflicted.** Fixed the portainer.db/celerybeat
+BadDigest bug (see above) by `cp`-ing the corrected script over the *live*
+file while the backup was still running against it. Bash reads a script
+incrementally; changing its length under a running interpreter corrupts its
+read position, and it hit a syntax error a few steps later and died mid-run.
+No data was lost — services/Obsidian/DB-dumps had already completed before
+the crash, and Immich's own object count in R2 was confirmed at 0 before the
+retry, so nothing was left half-written. **Lesson: never overwrite a script
+file while it may still be executing** — wait for the run to finish, or write
+to a temp file and `mv` it in atomically instead of `cp` in place. Restarted
+clean; the second run went start to finish with no intervention.
+
+Checked but did not yet act on: R2 API token scope (the setup docs never
+directed scoping it to one bucket — should be verified/tightened in the
+Cloudflare dashboard), Cloudflare account 2FA (not tracked in the credential
+checklist at all despite controlling DNS/Tunnel/Email/R2), Nextcloud's actual
+user files (83MB, currently fully excluded from any backup), and audiobooks
+(18GB, would add ~$0.28/month to enable the same way as photos).
+
 ## 2026-09-21 (final) — Fixed live drift instead of just flagging it, caught a stale setup guide
 
 **Went back and actually fixed what the drift sweep found**, rather than

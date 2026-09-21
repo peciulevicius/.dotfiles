@@ -268,12 +268,10 @@ nothing is currently broken. Both are written up in full under
 - 🔴 **Tailscale key expiry — 2027-03-04.** Odysseus, Vaultwarden and all
   phone access are Tailscale-only. When the key expires, remote access to
   everything stops at once, and it stops *quietly*. It has happened once already.
-- 🔴 **No offsite copy of the photos yet.** iCloud is cancelled, so Immich's
-  archive is NAS + two drives **in the same room** — RAID survives a dead
-  drive, not a fire. A cloud copy now exists as a switch
-  (`BACKUP_IMMICH_PHOTOS`, added 2026-09-21) but is **not yet turned on** — see
-  "Get one copy of the photos out of the building" below for the decision and
-  the exact commands.
+- ✅ **Cloud offsite copy of photos — done 2026-09-21.** 72.4GB, all originals,
+  in R2. iCloud is cancelled, so this + the still-pending T5-to-parents' plan
+  (below) is what makes photos 3-2-1. RAID survives a dead drive, R2 survives
+  a fire in this room.
 
 ### ✅ Odysseus — detail for step 8
 
@@ -371,26 +369,19 @@ upload speed) and move the R2 bill from $0/month (everything else combined is
 is incremental — rclone only transfers new or changed files — so the cost and
 time only spike once, on the first run.
 
-- [ ] Decide: is ~$1/month acceptable for an always-on, no-travel-required
-      offsite copy of every photo and video? (Recommendation: yes — it's the
-      cheapest, fastest-to-implement layer here, and it doesn't replace Plan A,
-      it just means the photos aren't waiting on a trip to be safe)
-- [ ] If yes, run it **by hand first**, not via cron, so the first (large)
-      transfer is watched rather than discovered in tomorrow's log:
+- [x] ~~Decide and run it~~ — done 2026-09-21. **72.396 GiB, 6,696 files,
+      zero errors**, matches the dry-run prediction exactly. First run hit a
+      bash gotcha (a live re-`cp` of the script mid-execution corrupted the
+      running interpreter's read position — never overwrite a script file
+      while it's still executing) and separately caught two live-SQLite files
+      that fail every run (`portainer.db`, Celery's schedule) — both fixed,
+      both now excluded. Second attempt ran clean end to end.
+- [ ] Spot-check restore integrity once — pick one real photo and pull it back:
       ```bash
-      cd ~/services/rclone
-      echo 'BACKUP_IMMICH_PHOTOS=true' >> .env    # already false in .env, flip it
-      ./rclone-backup.sh --dry-run                 # see size/file count first
-      ./rclone-backup.sh                            # real run — this is the slow one
-      ```
-- [ ] Verify after it completes:
-      ```bash
-      rclone size r2:peciulevicius-backups/immich-photos   # should read ~73GB
-      # Spot-check restore integrity — pick one real photo and pull it back:
       rclone copy r2:peciulevicius-backups/immich-photos/<some-file> /tmp/restore-test/
       ```
-- [ ] Once confirmed, let the nightly 5am cron pick it up automatically —
-      no further change needed, the flag being `true` is the whole switch
+- [x] ~~Let the nightly cron pick it up~~ — no further change needed, the flag
+      being `true` is the whole switch
 - [ ] Re-check yearly that it's still running: `rclone size` should track the
       library's growth, not stay flat
 
