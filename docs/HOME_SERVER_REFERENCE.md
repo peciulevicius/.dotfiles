@@ -12,15 +12,23 @@ Mac mini M4, **16GB unified memory**. Docker VM ceiling is now **10GB** (raised
 from 7.8GB on 2026-07-23), but that is a *ceiling*, not a reservation — the VM
 allocates lazily.
 
-Measured 2026-09-19 with 39 containers running (karakeep x3 and actual-budget
-stopped, couchdb added):
+Measured 2026-09-21 with 42 containers, after adding the four-container
+Odysseus stack:
 
 | Metric | Value | Reading |
 |---|---|---|
-| Containers, total | 5.55 GiB of the VM's 9.7 GiB | ~4.1 GiB headroom |
-| macOS memory free | 39% | healthy |
-| Swap used | ~2.8 GB of 4 GB | historical; watch whether it grows |
-| Compressor occupied | ~7.4 GB | macOS working, but coping |
+| Containers, total | 7.59 GiB of the VM's 9.7 GiB | **2.11 GiB headroom** |
+| macOS memory free | 30% | tighter; watch it |
+| Swap used | ~3.3 GB of 4 GB | |
+
+⚠️ **This is the tightest the host has been.** The next service to add needs a
+plan for what comes off first — **SearXNG** (~141MB, only powers Odysseus's web
+search) is the designated sacrifice.
+
+Odysseus stack: odysseus ~745MB, searxng ~141MB, ntfy ~45MB, chromadb ~28MB.
+
+Previous baselines: 2026-09-19, 39 containers, 5.55 GiB used / ~4.1 GiB free.
+2026-09-08, 42 containers, 5.2 GiB used / 43% free.
 
 Previous baseline, 2026-09-08 with 42 containers: 5.2 GiB of containers, 43%
 free, ~2.5 GB swap.
