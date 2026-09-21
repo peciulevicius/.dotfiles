@@ -87,18 +87,41 @@ ollama pull qwen3:4b        # reasoning model, slower by design
 ollama pull qwen2.5:7b      # step up, still inside the ~8B ceiling
 ```
 
-### ⚠️ Reasoning models feel "slow" because they are verbose
+### Measured model comparison (2026-09-21)
 
-Measured on this host, same prompt ("name three benefits of zone 2 training"):
+Same prompt to all three — a real training question, not a toy one ("resting
+heart rate up from 48 to 55 over two weeks, sleep worse, 8h/week"). All ran
+**100% on the GPU** via native Ollama.
 
-| Model | Output tokens | Speed |
-|---|---|---|
-| `qwen3:4b` | **762** — mostly hidden reasoning, 77 chars visible | 33.5 tok/s |
-| `llama3.2:3b` | **33** | 38.7 tok/s |
+| | `llama3.2:3b` | `qwen3:4b` | `qwen2.5:7b` |
+|---|---|---|---|
+| Speed | **42.9 tok/s** | 31.9 tok/s | 20.1 tok/s |
+| Wall clock | **14s** | ⚠️ **80s** | 30s |
+| RAM loaded | 2.5 GB | 3.2 GB | 4.8 GB |
+| Tokens written | 451 | **2445** | 479 |
+| Answer quality | shallow, generic | verbose, not smarter | **best** |
 
-The hardware is fine. Qwen3 thinks at length before answering, and Ollama's
-`"think": false` does not suppress it cleanly — the reasoning just leaks into
-the visible reply instead. Use a non-reasoning model as the default.
+**Use `qwen2.5:7b` for chats** — the only one whose answers engaged with the
+actual numbers in the question. 30s for a considered reply is a fair trade.
+
+**Use `llama3.2:3b` for Odysseus's background calls** — chat titles, summaries,
+tagging. Those need speed, not intelligence, and you never see them.
+
+⚠️ **`qwen3:4b` is dominated on both axes** — slower end to end than the 7B
+*and* less useful. It is a reasoning model: it wrote **2445 tokens** to answer
+one question, and Ollama's `"think": false` does not suppress that cleanly —
+the reasoning leaks into the visible reply instead. Don't make it the default.
+
+⚠️ **A 7B is not Claude.** It gives sensible, safe, general advice and keeps the
+data on your disk — which is the whole point — but don't expect real reasoning.
+
+### Host headroom at 7B
+
+`qwen2.5:7b` loaded pushed the host to **23% memory free** with macOS growing
+swap to 7 GB (6.5 used), all 43 containers still running. It works and nothing
+crashed, but that is the ceiling. If the machine starts feeling sluggish,
+`llama3.2:3b` is the safe fallback. Reducing Docker's 9.7 GiB VM allocation is
+the lever if a 7B becomes the routine default.
 
 ## Local overrides
 

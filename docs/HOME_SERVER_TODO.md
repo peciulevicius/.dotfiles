@@ -75,6 +75,17 @@ Full checklist, no secrets: **[CREDENTIAL_MIGRATION.md](CREDENTIAL_MIGRATION.md)
       (`immich@`, `linkwarden@`, …) — the catch-all means none need creating
       first, and a spammed alias tells you exactly who leaked it
 
+> **Do email next, ahead of the remaining Odysseus polish** (decided
+> 2026-09-21). Odysseus is functionally done; what is left there is optional.
+> Email *blocks* three things: `kindle_sync.py` still authenticates with a
+> **Gmail app password**, Odysseus's IMAP client has nothing to connect to, and
+> Cloudflare Email Routing **receives only** — every reply still goes out as
+> `@gmail.com`.
+>
+> ⚠️ **Do it in the same pass as the credential migration.** Both require
+> logging into each of the ~14 remaining services. Set the Bitwarden password
+> *and* change the address in one visit, or you do 28 logins instead of 14.
+
 ### 2. 🔗 Finish Obsidian LiveSync — the server side is done
 
 CouchDB is up at `https://couchdb.peciulevicius.com`, `obsidian` database
@@ -111,8 +122,16 @@ through native Ollama. Full notes:
       not included in the export — copy them by hand.
 - [ ] Point **RAG at `~/obsidian-vault`**
 - [ ] Point the **IMAP client at Purelymail** after the email migration
-- [ ] Try **Cookbook** for browsing models — ⚠️ never let it serve "Local"
-      while Odysseus runs in Docker; that is CPU-only on macOS
+- [x] ~~Try **Cookbook**~~ — ❌ **unusable on this host, settled 2026-09-21.**
+      Docker on macOS has no GPU passthrough, so Cookbook scans the *container*,
+      not the M4: it reports `No GPU`, rates 1.5B models "PERFECT" and offers
+      70GB downloads. Anything it serves is CPU-only. Verified no stray
+      download landed (`data/huggingface/` is 72KB). Use native Ollama.
+- [ ] Set Odysseus's model defaults: **`qwen2.5:7b` for chats**, **`llama3.2:3b`
+      for background calls** (titles, summaries, tagging). Benchmarks in
+      `services/odysseus/README.md`
+- [ ] `ollama rm qwen3:4b` — dominated on both axes: slower end to end than the
+      7B *and* less useful (2445 tokens to answer one question)
 - [ ] Point Odysseus's **Agent (OpenCode)** at Ollama for private or throwaway
       coding; keep Claude Code for real work
 - [ ] Only if a concrete gap appears: Gemini or OpenAI keys
