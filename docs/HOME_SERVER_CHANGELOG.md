@@ -8,6 +8,39 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-21 — Local model benchmarks, disk cleanup, email runbook
+
+**Models.** Benchmarked all three local models on the same real training
+question, 100% GPU via native Ollama. `qwen2.5:7b` (20.1 tok/s, 4.8 GB) is the
+only one that engaged with the numbers in the question — it becomes the chat
+default. `llama3.2:3b` (42.9 tok/s, 2.5 GB) is twice as fast but shallow, so it
+takes Odysseus's background calls (titles, tagging). **Removed `qwen3:4b`** —
+dominated on both axes: 2445 tokens and 80s to answer what the 7B answered in
+479 and 30s. Ollama's `"think": false` does not suppress reasoning cleanly.
+
+**Cookbook ruled out permanently.** Docker on macOS has no GPU passthrough, so
+Cookbook scans the *container*, not the M4 — it reports `No GPU`, rates 1.5B
+models "PERFECT" and offers 70 GB downloads. Verified no stray download ever
+landed: `data/huggingface/` is 72 KB and the writable layer 74.8 MB.
+
+**Disk was at 92%** (15 GiB free), not the ~29 GB previously recorded. Freed
+6.05 GB of Docker build cache and 477 MB of Homebrew cache → **22 GiB**.
+⚠️ Learned: the 2.77 GB "unused" image is **Storyteller**, merely stopped —
+`docker image prune -a` would have deleted it. Dangling-only reclaimed 0 B.
+
+**Email audit.** Checked all 43 containers and every script: `pkm/kindle_sync.py`
+is the **only** consumer of email (IMAP). Uptime Kuma and `notify.sh` use
+Discord webhooks; **no container has SMTP configured**. So the Purelymail
+migration breaks nothing — it is a 3-line change in one gitignored file.
+
+**Wrote [guides/EMAIL.md](./guides/EMAIL.md)** — a from-cold runbook: the four
+moving parts, provider comparison with the IMAP requirement that eliminates
+Proton/Tuta/Zoho, the signup dropdown gotcha (it is the *admin user's* address,
+not your domain), all seven DNS records, rollback via re-enabling Email Routing,
+verification commands, and the permanent Gmail funnel for contacts who have the
+old address. Fixed stale status rows in `START_HERE.md` (Odysseus listed as
+"not started") and `DEGOOGLE.md` (email listed as "not started").
+
 ## 2026-09-21 — Odysseus deployed, read-along verified, Calibre repaired
 
 ### Odysseus running on 7001

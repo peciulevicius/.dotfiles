@@ -86,6 +86,24 @@ Full checklist, no secrets: **[CREDENTIAL_MIGRATION.md](CREDENTIAL_MIGRATION.md)
 > logging into each of the ~14 remaining services. Set the Bitwarden password
 > *and* change the address in one visit, or you do 28 logins instead of 14.
 
+### 1b. 💾 Disk — cleaned 2026-09-21, watch it
+
+Was **15 GiB free (92% full)**, now **22 GiB**. Freed by `docker builder prune
+-af` (6.05 GB) and `brew cleanup --prune=all` (477 MB).
+
+- [ ] Reclaim the last ~2.1 GB of applied-update staging:
+      `rm -rf ~/Library/Caches/com.microsoft.VSCode.ShipIt ~/Library/Caches/com.bitwarden.desktop.ShipIt ~/Library/Caches/bitwarden-updater`
+- [ ] Move the Calibre library off SMB onto the internal SSD (1.1 GB)
+- [ ] ~2.3 GB of locked `.smbdelete` duplicates — needs NAS-side deletion
+
+⚠️ **Do not run `docker image prune -a`.** The 2.77 GB "unused" image is
+**Storyteller**, which is simply stopped most of the time. `-a` would delete it
+and anything else not currently running. Dangling-only (`docker image prune -f`)
+reclaimed 0 B — there is nothing dangling to collect.
+
+💡 `Docker.raw` is 48 GB and does not shrink on delete; it TRIMs back after a
+prune. Judge free space with `df -h /System/Volumes/Data`, not the file size.
+
 ### 2. 🔗 Finish Obsidian LiveSync — the server side is done
 
 CouchDB is up at `https://couchdb.peciulevicius.com`, `obsidian` database
@@ -630,6 +648,20 @@ Free first step, no provider decision needed, ~15 minutes:
 
 That alone means every future switch is a DNS edit. Then, when ready to leave
 Gmail properly:
+
+> 📘 **Full runbook: [guides/EMAIL.md](./guides/EMAIL.md)** — DNS records,
+> signup gotcha, rollback, verification and the Gmail funnel. Written
+> 2026-09-21 so this can be rebuilt from cold.
+>
+> ✅ **Audited 2026-09-21: nothing in the stack breaks.** `pkm/kindle_sync.py`
+> is the *only* thing using email (IMAP). Uptime Kuma and `notify.sh` use
+> Discord webhooks; **no container has SMTP configured at all.**
+>
+> ⚠️ **Signup gotcha:** the domain dropdown on Purelymail's signup form
+> (`purelymail.com`, `cheapermail.com`, …) is the **account admin user's**
+> address, *not* your mail domain. Pick any, use a **long** username (short
+> ones on shared domains carry a $0–$1.20/yr anti-squat fee), then add
+> `peciulevicius.com` separately — users on your own domain are free.
 
 - [ ] **Budget is ~€1/month. Pick Purelymail — $10/yr (~€0.77/mo).** Native
       IMAP/SMTP, no hard limits on domains/addresses/storage. Verify the price

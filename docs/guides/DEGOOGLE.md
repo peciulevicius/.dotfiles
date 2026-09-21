@@ -28,7 +28,7 @@ So don't restart the journey from step one. Here is the honest scoreboard:
 | Calendar / Contacts / Docs off Google | ⚠️ Nextcloud is running, **not migrated** |
 | Search engine | ⚠️ Check your default |
 | Browser | ⚠️ Brave is installed, is it the default? |
-| **Email off Gmail** | ❌ **Not started — the real gap** |
+| **Email off Gmail** | ⏳ **Half done.** Receiving on the domain via Cloudflare Email Routing; **sending is still Gmail** until Purelymail. See [EMAIL.md](./EMAIL.md) |
 | **Phone OS** | ❌ iPhone 13 mini, fully Apple/Google |
 | Local AI | ❌ Tried Ollama, removed for RAM — see AI guide |
 | Maps | ❌ Still Google |

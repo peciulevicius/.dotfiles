@@ -125,10 +125,11 @@ reopening the topic** — they record what was ruled out and why.
 
 | Project | Guide | State |
 |---|---|---|
+| **Email** | [guides/EMAIL.md](./guides/EMAIL.md) | ⏳ **Active.** Cloudflare Email Routing live (receive-only); Purelymail is the next buy |
 | De-Googling | [guides/DEGOOGLE.md](./guides/DEGOOGLE.md) · [alternatives](./guides/DEGOOGLE_ALTERNATIVES.md) | ~90% done. Gaps: email, phone, calendar, AI |
 | Notes / PKM | [guides/NOTES.md](./guides/NOTES.md) | Vault + sync exist; capture friction is the real problem |
 | Books + Kindle | [guides/BOOKS.md](./guides/BOOKS.md) · [setup](./guides/KINDLE_SETUP.md) | **Jailbroken 2026-09-20.** KOReader + OPDS is the live task |
-| Self-hosted AI | [guides/SELF_HOSTED_AI.md](./guides/SELF_HOSTED_AI.md) | Not started. Odysseus on port 7000 (which is taken) |
+| Self-hosted AI | [guides/SELF_HOSTED_AI.md](./guides/SELF_HOSTED_AI.md) | ✅ **Odysseus running on 7001** (7000 is AirPlay). Local models via native Ollama |
 | Octopus Deploy | [guides/OCTOPUS_DEPLOY.md](./guides/OCTOPUS_DEPLOY.md) | ❌ Ruled out on RAM — don't re-research |
 
 ### Which file do I write in?
