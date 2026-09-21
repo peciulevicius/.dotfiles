@@ -7,7 +7,7 @@ Vaultwarden. Tick rows off as you go.
 transcribe live in `~/credentials-import.md` (chmod 600, outside the repo);
 delete that file once the vault holds everything.
 
-Status: **2 of ~18 services done.** Started 2026-09-19.
+Status: **4 of ~18 services done.** Started 2026-09-19.
 
 ---
 

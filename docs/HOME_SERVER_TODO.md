@@ -17,7 +17,7 @@ is written out so it survives being read cold in a year.
 
 | # | Step | Why it is here and not later |
 |---|---|---|
-| **1** | 🔴 Delete the plaintext vault exports | 212 cleartext passwords sitting in `~/Downloads` |
+| **1** | ✅ ~~Delete the plaintext vault exports~~ | Done 2026-09-21 |
 | **2** | 🔴 Move TOTP off Google Authenticator | Seeds sync to the account being left — lockout risk |
 | **3** | 🔴 Rotate the Vaultwarden admin token | Leaked into a container config on 2026-09-21 |
 | **4** | 📮 Buy Purelymail + DNS | Everything below depends on the mailbox existing |
@@ -29,25 +29,15 @@ is written out so it survives being read cold in a year.
 
 ---
 
-### 1. 🔴 Delete the plaintext vault exports — do this first
+### ✅ 1. Delete the plaintext vault exports — done
 
-Made during the 2026-09-21 Vaultwarden scare, never cleaned up. **Verified
-still present:** `bitwarden_export_20260921133119.json` holds **220 items, 212
-with cleartext passwords**, `encrypted: false`. The `.csv` is the same data.
+Made during the 2026-09-21 Vaultwarden scare (212 cleartext passwords,
+`encrypted: false`), cleaned up same day — verified 2026-09-21, no
+`bitwarden_export*` files remain anywhere in `~/Downloads`.
 
-```bash
-rm ~/Downloads/bitwarden_export_20260921133119.json    ~/Downloads/bitwarden_export_20260921133138.csv
-```
-
-- [ ] Delete the two **unencrypted** exports above
-- [ ] Decide on `bitwarden_encrypted_export_*.json` and the `.zip` — encrypted
-      with the master password, so lower risk, but still a full vault copy.
-      Keep only if deliberately archived somewhere durable.
-- [ ] Empty the Trash afterwards — `rm` to Trash is not deletion
-
-> ⚠️ The vault was never damaged; the real fix was upgrading Vaultwarden
-> 1.35.4 → 1.37.3. These exports are leftover blast radius from the debugging,
-> not a backup anyone needs.
+> The vault itself was never damaged; the real fix was upgrading Vaultwarden
+> 1.35.4 → 1.37.3. These exports were leftover blast radius from the
+> debugging, not a backup anyone needed.
 
 ### 2. 🔴 Move TOTP off Google Authenticator — before any password change
 
@@ -270,10 +260,12 @@ nothing is currently broken. Both are written up in full under
 - 🔴 **Tailscale key expiry — 2027-03-04.** Odysseus, Vaultwarden and all
   phone access are Tailscale-only. When the key expires, remote access to
   everything stops at once, and it stops *quietly*. It has happened once already.
-- 🔴 **No offsite copy of the photos.** iCloud is cancelled and R2 excludes the
-  photo library, so Immich's archive is NAS + two drives **in the same room**.
-  RAID survives a dead drive, not a fire. The least replaceable data in the
-  house has the weakest backup.
+- 🔴 **No offsite copy of the photos yet.** iCloud is cancelled, so Immich's
+  archive is NAS + two drives **in the same room** — RAID survives a dead
+  drive, not a fire. A cloud copy now exists as a switch
+  (`BACKUP_IMMICH_PHOTOS`, added 2026-09-21) but is **not yet turned on** — see
+  "Get one copy of the photos out of the building" below for the decision and
+  the exact commands.
 
 ### ✅ Odysseus — detail for step 8
 
@@ -301,8 +293,9 @@ through native Ollama. Full notes:
 - [ ] Set Odysseus's model defaults: **`qwen2.5:7b` for chats**, **`llama3.2:3b`
       for background calls** (titles, summaries, tagging). Benchmarks in
       `services/odysseus/README.md`
-- [ ] `ollama rm qwen3:4b` — dominated on both axes: slower end to end than the
-      7B *and* less useful (2445 tokens to answer one question)
+- [x] ~~`ollama rm qwen3:4b`~~ — done 2026-09-21. Dominated on both axes:
+      slower end to end than the 7B *and* less useful (2445 tokens to answer
+      one question)
 - [ ] Point Odysseus's **Agent (OpenCode)** at Ollama for private or throwaway
       coding; keep Claude Code for real work
 - [ ] Only if a concrete gap appears: Gemini or OpenAI keys
@@ -342,13 +335,60 @@ actual fix.
 
 Photos live on the NAS (RAID 5) plus T7 and T5 — but all three sit in the same
 room. RAID survives a dead drive; it does not survive fire, flood, or theft.
-R2 deliberately excludes photos (too large).
+Two complementary plans, not either/or — the drive is already loaded and just
+needs a trip, the cloud copy needs nothing but a decision.
 
-- [ ] Take T5 to the parents' house once it is loaded (it was verified 1:1 on
-      2026-09-05 — see the backup section below)
+**Plan A — physical drive, already loaded, needs a trip**
+
+- [ ] Take T5 to the parents' house once possible (it was verified 1:1 against
+      the NAS on 2026-09-05 — see the backup section below)
 - [x] ~~Consider dropping iCloud~~ — already cancelled (early 2026). This makes
       getting T5 offsite *more* urgent, not less: there is no cloud copy of the
       photos any more, only the NAS and two drives in the same room.
+
+**Plan B — cloud copy of originals via the existing R2 backup, added 2026-09-21**
+
+Measured: Immich's library is **90GB total**, but only **73GB (`upload/`) is
+irreplaceable**. `encoded-video/` (15GB) and `thumbs/` (1.5GB) are transcodes
+and thumbnails Immich regenerates from the originals; `backups/` (878MB) is
+Immich's own DB snapshot, already redundant with the weekly `pg_dump` of
+`immich_postgres` that Backup 3 already ships to R2. So the cloud copy only
+needs the 73GB, not the full 90GB.
+
+`rclone-backup.sh` now has this wired up as **Backup 5**, guarded behind
+`BACKUP_IMMICH_PHOTOS` — **off by default**, deliberately: flipping it silently
+would hand the next 5am cron run a ~73GB first upload (hours, depending on
+upload speed) and move the R2 bill from $0/month (everything else combined is
+~2.9GB, under the 10GB free tier) to **~$1/month**. Every run after the first
+is incremental — rclone only transfers new or changed files — so the cost and
+time only spike once, on the first run.
+
+- [ ] Decide: is ~$1/month acceptable for an always-on, no-travel-required
+      offsite copy of every photo and video? (Recommendation: yes — it's the
+      cheapest, fastest-to-implement layer here, and it doesn't replace Plan A,
+      it just means the photos aren't waiting on a trip to be safe)
+- [ ] If yes, run it **by hand first**, not via cron, so the first (large)
+      transfer is watched rather than discovered in tomorrow's log:
+      ```bash
+      cd ~/services/rclone
+      echo 'BACKUP_IMMICH_PHOTOS=true' >> .env    # already false in .env, flip it
+      ./rclone-backup.sh --dry-run                 # see size/file count first
+      ./rclone-backup.sh                            # real run — this is the slow one
+      ```
+- [ ] Verify after it completes:
+      ```bash
+      rclone size r2:peciulevicius-backups/immich-photos   # should read ~73GB
+      # Spot-check restore integrity — pick one real photo and pull it back:
+      rclone copy r2:peciulevicius-backups/immich-photos/<some-file> /tmp/restore-test/
+      ```
+- [ ] Once confirmed, let the nightly 5am cron pick it up automatically —
+      no further change needed, the flag being `true` is the whole switch
+- [ ] Re-check yearly that it's still running: `rclone size` should track the
+      library's growth, not stay flat
+
+Full detail: `services/rclone/README.md` "Immich photo/video backup", and the
+updated backup facts table in
+[HOME_SERVER_REFERENCE.md](HOME_SERVER_REFERENCE.md).
 
 ### Power-outage recovery is still manual
 

@@ -40,6 +40,26 @@ sections. Older detail moved under "Detail and standing items". Refreshed the
 SSD section (it had hit 15GiB/92%, not the 29GB recorded) and added the
 warning that `docker image prune -a` would delete Storyteller.
 
+## 2026-09-21 (later still) — Offsite photo backup plan, fastembed cache leak fixed
+
+**Added an opt-in cloud offsite copy of Immich originals.** `rclone-backup.sh`
+gets a new Backup 5, guarded by `BACKUP_IMMICH_PHOTOS` (default `false`):
+`/Volumes/immich/upload/upload` (~73GB) → R2 `peciulevicius-backups/immich-photos`.
+Excludes `encoded-video/` and `thumbs/` (regenerable by Immich) and `backups/`
+(Immich's own DB snapshot, already redundant with the `pg_dump` of
+`immich_postgres` that Backup 3 ships separately). Left off by default on
+purpose — turning it on hands the next cron run a multi-hour first upload and
+moves the R2 bill from $0 to ~$1/month; the TODO now has the exact commands to
+enable it deliberately, by hand, before it ever reaches a cron run. This is a
+second, complementary offsite layer alongside the existing T5-to-parents'-house
+plan, not a replacement for it.
+
+**Found and fixed a real leak while testing the above.** A `--dry-run` of the
+existing Backup 1 (services configs) showed `.incomplete` partial model blobs
+from `odysseus/data/fastembed_cache/` being swept into the backup — a cache
+directory the existing huggingface/local excludes didn't cover. Added the
+exclude; same regenerable-cache class as the other two, ~97MB.
+
 ## 2026-09-21 — Local model benchmarks, disk cleanup, email runbook
 
 **Models.** Benchmarked all three local models on the same real training

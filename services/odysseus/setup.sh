@@ -32,5 +32,6 @@ fi
 echo ""
 echo -e "${GREEN}✓${NC} Staged. Next:"
 echo "    brew services start ollama    # ⚠️ needs OLLAMA_HOST=0.0.0.0:11434"
-echo "    ollama pull qwen3:4b"
+echo "    ollama pull qwen2.5:7b        # chat default — see README benchmarks"
+echo "    ollama pull llama3.2:3b       # background calls (titles, tagging)"
 echo "    cd $TARGET && docker compose up -d --build"

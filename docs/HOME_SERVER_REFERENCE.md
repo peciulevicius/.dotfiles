@@ -184,7 +184,15 @@ folders, so they are not single-copy, but **do not wipe T7 until they are import
 **Cloud backup (rclone → Cloudflare R2), nightly 5am:**
 - Docker service configs, obsidian vault, Calibre books, DB dumps → R2 `peciulevicius-backups`
 - Script: `~/.dotfiles/services/rclone/rclone-backup.sh`
-- ~1.3GB total (critical-only; photos/audiobooks excluded from R2)
+- ~2.9GB total (critical-only; audiobooks excluded from R2), **$0/month** — under
+  the 10GB free tier
+- **Immich photo originals — opt-in, not yet enabled.** `BACKUP_IMMICH_PHOTOS=true`
+  in `~/services/rclone/.env` adds `/Volumes/immich/upload/upload` (~73GB,
+  encoded-video/thumbs/backups excluded as regenerable or redundant with the
+  DB dump above) as a second offsite copy alongside the T5 drive plan below.
+  Off by default: the first run is a multi-hour upload and moves the bill to
+  ~$1/month. See `services/rclone/README.md` and
+  [HOME_SERVER_TODO.md](HOME_SERVER_TODO.md) "offsite photos" before enabling.
 
 **Local backup (rsync NAS → external drive), MANUAL — no cron:**
 - `~/.dotfiles/scripts/backup/backup-external.sh /Volumes/T7` (or `/Volumes/Backup` for T5)
@@ -199,7 +207,10 @@ Re-download media.
 restore configs from R2.
 
 **The gap:** T7 and T5 currently sit in the same room as the NAS, so nothing survives
-fire/flood/theft. Moving T5 offsite (the parents' house plan) is what makes this 3-2-1.
+fire/flood/theft. Moving T5 offsite (the parents' house plan) is what makes this 3-2-1
+for everything *except* photos. Photo originals additionally have a cloud-based
+offsite option (`BACKUP_IMMICH_PHOTOS=true`, above) that doesn't depend on a trip
+to the parents' house — the two are complementary, not either/or.
 
 ---
 

@@ -148,7 +148,9 @@ nothing. `AUTH_ENABLED=true` regardless.
 
 `data/` is backed up to R2 — **owning the chat history, memories and RAG corpus
 is the entire point.** Excluded as regenerable: `data/huggingface/` (model
-downloads), `data/local/` (Cookbook packages), `logs/`, and `.git/`.
+downloads), `data/local/` (Cookbook packages), `data/fastembed_cache/`
+(embedding model, including `.incomplete` partial downloads — leaking into the
+backup was caught 2026-09-21), `logs/`, and `.git/`.
 
 ## Measured footprint (2026-09-21)
 

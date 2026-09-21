@@ -63,7 +63,40 @@ This syncs existing data from B2 to R2, updates your `.env`, and runs a dry-run 
 ## Cost
 
 - **Cloudflare R2:** 10GB free, $0.015/GB/month after that, **no egress fees**
-- **Backblaze B2 (old):** $0.006/GB/month + $0.01/GB egress
+- **Backblaze B2 (old):** $0.006/GB/month + $0.01/GB egress — the reason this
+  migrated to R2: a full restore off B2 bills egress, a full restore off R2 doesn't
+
+Configs + Obsidian vault + DB dumps + Calibre books run **~2.9GB** — under the
+free tier, **$0/month**. See `BACKUP_IMMICH_PHOTOS` below before enabling it —
+that one is priced differently.
+
+## Immich photo/video backup — opt-in, read before enabling
+
+`BACKUP_IMMICH_PHOTOS=true` in `.env` turns on Backup 5: originals only
+(`/Volumes/immich/upload/upload`, ~73GB), excluding `encoded-video/` and
+`thumbs/` (regenerable by Immich) and `backups/` (Immich's own DB snapshot —
+redundant with Backup 3, which already dumps `immich_postgres` via
+`pg_dump` and ships it to R2 separately).
+
+⚠️ **Off by default on purpose.** Turning it on hands the next 5am cron run a
+~73GB **first** upload — hours, depending on home upload speed — and moves the
+combined R2 bill from $0 to **~$1/month** (73GB − 10GB free tier × $0.015).
+Every run after the first is incremental (rclone only transfers new/changed
+files), so the cost and time only spike once.
+
+Enable it deliberately, ideally by running the script by hand first so you see
+the initial transfer rather than discovering it in tomorrow's cron log:
+
+```bash
+echo 'BACKUP_IMMICH_PHOTOS=true' >> .env
+./rclone-backup.sh --dry-run    # see what would transfer, size and file count
+./rclone-backup.sh              # run the real (large, first) upload
+```
+
+Full reasoning — why originals only, why this is the second offsite layer
+alongside the T5 drive plan — in
+[HOME_SERVER_TODO.md](../../docs/HOME_SERVER_TODO.md), "Get one copy of the
+photos out of the building."
 
 ## What's excluded from backup
 
@@ -71,5 +104,7 @@ This syncs existing data from B2 to R2, updates your `.env`, and runs a dry-run 
 - Database data dirs (`data/postgres/`, `data/prometheus/`)
 - Large media (`jellyfin/data/`, `sonarr-radarr/data/`, `audiobookshelf/audiobooks/`)
 - Obsidian plugins and workspace state (`.obsidian/plugins/`, `.obsidian/workspace*`)
+- Immich `encoded-video/`, `thumbs/`, `backups/` — see above (only with
+  `BACKUP_IMMICH_PHOTOS=true`; Immich itself is excluded entirely by default)
 
 See [docs/HOME_SERVER.md](../../docs/HOME_SERVER.md) for full backup strategy.

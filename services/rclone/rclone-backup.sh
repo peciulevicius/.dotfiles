@@ -80,9 +80,12 @@ SYNC_CMD+=(--exclude "couchdb/data/**")
 SYNC_CMD+=(--exclude "storyteller/data/**")
 # Odysseus: back up data/ — owning the chat history, memories and RAG corpus is
 # the entire point of self-hosting it. Exclude only the regenerable caches:
-# HuggingFace model downloads and Cookbook-installed Python packages.
+# HuggingFace model downloads, Cookbook-installed Python packages, and the
+# embedding-model cache (found leaking .incomplete partial downloads into the
+# backup on 2026-09-21 — same regenerable-cache class as the other two).
 SYNC_CMD+=(--exclude "odysseus/data/huggingface/**")
 SYNC_CMD+=(--exclude "odysseus/data/local/**")
+SYNC_CMD+=(--exclude "odysseus/data/fastembed_cache/**")
 SYNC_CMD+=(--exclude "odysseus/logs/**")
 # Upstream source tree — it is a git clone, re-creatable with setup.sh
 SYNC_CMD+=(--exclude "odysseus/.git/**")
@@ -181,6 +184,36 @@ if [[ -d "$CALIBRE_DIR" ]]; then
 else
   log_err "Calibre books not mounted at $CALIBRE_DIR — NOT backed up (NAS share missing)"
   ((ERRORS++))
+fi
+
+# Backup 5: Immich photo/video originals — opt-in, off until the first sync is
+# run by hand. 74GB vs ~3GB for everything else combined: silently turning
+# this on would hand the 5am cron a multi-hour upload and a new ~$1/month R2
+# bill the first time it fires. Set BACKUP_IMMICH_PHOTOS=true once that first
+# run has been done deliberately. See HOME_SERVER_TODO.md "offsite photos".
+if [[ "${BACKUP_IMMICH_PHOTOS:-false}" == "true" ]]; then
+  IMMICH_DIR="/Volumes/immich/upload/upload"
+  IMMICH_DEST="${RCLONE_REMOTE}:peciulevicius-backups/immich-photos"
+
+  if [[ -d "$IMMICH_DIR" ]]; then
+    log_info "Backing up $IMMICH_DIR → $IMMICH_DEST"
+    IMMICH_CMD=(rclone sync "$IMMICH_DIR" "$IMMICH_DEST")
+    # Same NAS, same SMB turd as the Calibre share.
+    IMMICH_CMD+=(--exclude ".smbdelete*")
+    IMMICH_CMD+=(--exclude "**/.smbdelete*")
+    IMMICH_CMD+=($RCLONE_FLAGS)
+    [[ "$DRY_RUN" == "true" ]] && IMMICH_CMD+=(--dry-run)
+
+    if "${IMMICH_CMD[@]}" 2>&1 | tee -a "$LOG_FILE"; then
+      log_ok "Immich photos backup complete"
+    else
+      log_err "Immich photos backup failed — check $LOG_FILE"
+      ((ERRORS++))
+    fi
+  else
+    log_err "Immich upload dir not mounted at $IMMICH_DIR — NOT backed up (NAS share missing)"
+    ((ERRORS++))
+  fi
 fi
 
 HEARTBEAT_URL="https://status.peciulevicius.com/api/push/1xdUOQNbK4"
