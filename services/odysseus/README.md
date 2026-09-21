@@ -61,11 +61,44 @@ docker exec odysseus-odysseus-1 curl -s http://host.docker.internal:11434/api/ta
 ### 🧑‍🍳 Cookbook: use it to browse, not to serve
 
 Cookbook scores which models fit your hardware and can download and serve them.
-⚠️ **But upstream's own compose says "Inside Docker, 'Local' means the Odysseus
-container"** — so a model it serves "locally" runs CPU-only here, and its
-hardware scan measures the container rather than the M4.
+⚠️ **On this host it is unusable, and it says so itself.** Confirmed 2026-09-21 —
+its Scan tab reports:
 
-Browse and compare with it; serve with native Ollama.
+> **No GPU visible inside Docker** — "Cookbook is scanning hardware from inside
+> the Odysseus container. If your host has a GPU, Docker may not be exposing it
+> to the container, so model recommendations may be CPU-only or too
+> conservative."
+>
+> Detected hardware: `No GPU` · `3.1 / 9.7 GB RAM` · `10 cores` · `cpu_arm`
+
+That is the container's view, not the M4's. The resulting advice is wrong in
+both directions: it rates **1.5B and 861M** models as "PERFECT", while its
+"trending models that fit your hardware" list offers **70GB** downloads.
+
+**Ignore Cookbook's Download and Launch tabs.** Anything it serves runs inside
+the container — CPU-only, no Metal — which is the likely real cause of the
+earlier abandoned attempt.
+
+Serve models with native Ollama instead:
+
+```bash
+ollama pull llama3.2:3b     # fast default, no thinking mode
+ollama pull qwen3:4b        # reasoning model, slower by design
+ollama pull qwen2.5:7b      # step up, still inside the ~8B ceiling
+```
+
+### ⚠️ Reasoning models feel "slow" because they are verbose
+
+Measured on this host, same prompt ("name three benefits of zone 2 training"):
+
+| Model | Output tokens | Speed |
+|---|---|---|
+| `qwen3:4b` | **762** — mostly hidden reasoning, 77 chars visible | 33.5 tok/s |
+| `llama3.2:3b` | **33** | 38.7 tok/s |
+
+The hardware is fine. Qwen3 thinks at length before answering, and Ollama's
+`"think": false` does not suppress it cleanly — the reasoning just leaks into
+the visible reply instead. Use a non-reasoning model as the default.
 
 ## Local overrides
 
