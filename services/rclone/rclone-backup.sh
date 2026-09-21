@@ -71,6 +71,14 @@ SYNC_CMD+=(--exclude "audiobookshelf/data/podcasts/**")
 # Postgres data dirs — back up via pg_dump instead (backup-databases.sh)
 SYNC_CMD+=(--exclude "linkwarden/data/**")
 SYNC_CMD+=(--exclude "immich/data/**")
+# Live SQLite files held open and rewritten by their own container — rclone
+# hashes the file, the write lands mid-upload, R2 rejects the mismatched MD5.
+# Caught 2026-09-21 (BadDigest on both, every run). Regenerable/low-value on
+# their own terms anyway: Celery rebuilds its schedule on startup, and
+# Portainer's real source of truth is the docker-compose files already backed
+# up here, not its UI state.
+SYNC_CMD+=(--exclude "portainer/data/portainer.db")
+SYNC_CMD+=(--exclude "paperless-ngx/data/data/celerybeat-schedule.db")
 # CouchDB is a sync transport, not a source of truth — the vault itself is,
 # and it is backed up separately below. Syncing live .couch files would upload
 # an inconsistent snapshot for data that can simply be re-seeded from the vault.
