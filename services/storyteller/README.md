@@ -104,21 +104,86 @@ the step that wants ~4GB.
 Worth knowing before committing to a long book: a short one proves the pipeline
 end to end in a fraction of the time.
 
-**4. Download the aligned EPUB 3**, then put it where the Kindle can reach it:
+**4. Download the `readaloud` format.** Three are offered:
 
-```bash
-cp ~/Downloads/<aligned>.epub "/Volumes/books/David Goggins/"
-# then in Calibre-Web, or via Calibre, refresh the library
-```
+| Format | What it is |
+|---|---|
+| **`readaloud`** ⭐ | The aligned EPUB 3 with Media Overlays — **this is the output** |
+| `ebook` | Your original EPUB, unchanged |
+| `audiobook` | The audio, unchanged |
+
+⚠️ **It is ~750MB.** The EPUB is assembled *on demand* and embeds the transcoded
+audio — Media Overlays reference audio inside the package, so it cannot be
+small. Nothing sits on disk as a finished `.epub` until you request it.
+
+**5. Get it into Calibre — upload, don't copy.**
+
+Dropping the file into `/Volumes/books/<Author>/` does **not** add it: Calibre
+tracks books in `metadata.db`, and a file the database doesn't know about is
+invisible.
+
+Use **Calibre-Web → Upload** (`books.peciulevicius.com`; uploading is enabled and
+EPUB is an accepted format). It writes through the running app, which is the
+safe way to touch a library that Calibre-Web and the Calibre content server both
+have open. ⚠️ Avoid `calibredb add` against a live library for that reason.
+
+Then edit the title to something like *"Can't Hurt Me (read-along)"* so it is
+obvious which copy is which.
+
+**You will have two entries, and that's intended:** Calibre cannot hold two
+EPUBs on one record. Keep the 8.6MB original for ordinary reading and the 750MB
+read-along for listening — you rarely want to pull 750MB onto the Kindle just to
+read a chapter.
 
 It then appears in the OPDS catalog like any other book, and KOReader downloads
 it over Wi-Fi — no cable, no MTP.
 
-**5. Stop it.**
+**6. Reclaim the space, then stop it.**
+
+A finished book leaves roughly **1.5GB** behind on the internal SSD:
 
 ```bash
+du -sh ~/services/storyteller/data/assets ~/services/storyteller/import
+#   772M  assets   (transcoded audio + transcriptions)
+#   753M  import   (the source EPUB + M4B)
+```
+
+⚠️ **Confirm the read-along EPUB is safely in Calibre first.** Deleting the
+assets means regenerating it costs another overnight run.
+
+Delete the book in Storyteller's UI, then clear the import folder:
+
+```bash
+rm -rf ~/services/storyteller/import/"Can't Hurt Me"
 cd ~/services/storyteller && docker compose down
 ```
+
+The sources are still in their real homes — the EPUB in Calibre, the M4B in
+Audiobookshelf on the NAS — so nothing is lost.
+
+### Backup implication
+
+`/Volumes/books` is synced to R2 by `rclone-backup.sh`, so a 750MB read-along
+EPUB roughly **doubles** the current ~1.3GB cloud backup. That is the right
+trade: R2 is cheap, and the alternative is re-running a night of CPU
+transcription to get it back.
+
+### How it actually aligned (2026-09-20)
+
+Better than expected. From `data/assets/<book>/.storyteller/report.json`:
+
+- **23 chapters aligned**
+- **6 unaligned — all front/back matter**: the copyright page, dedication,
+  table of contents, acknowledgments, about-the-author, and one empty file
+- 4 audio files unaligned: the first two and last two, i.e. the publisher's
+  intro and the closing credits
+
+So **every chapter of actual book content aligned**. The warning below was more
+pessimistic than reality — narrated prose tracks well even from a narrator who
+ad-libs, because the ad-libs cluster in the intro/outro rather than mid-chapter.
+
+Reading `report.json` after each book is the quickest way to judge quality
+before committing the output to the library.
 
 ### ⚠️ Expect this particular book to align imperfectly
 
