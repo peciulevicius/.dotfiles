@@ -40,6 +40,32 @@ sections. Older detail moved under "Detail and standing items". Refreshed the
 SSD section (it had hit 15GiB/92%, not the 29GB recorded) and added the
 warning that `docker image prune -a` would delete Storyteller.
 
+## 2026-09-21 (final) — Fixed live drift instead of just flagging it, caught a stale setup guide
+
+**Went back and actually fixed what the drift sweep found**, rather than
+leaving it as a footnote. `jellyfin`, `transmission` and `sonarr-radarr`'s live
+`docker-compose.yml` still defaulted `MEDIA_DIR` to `/Volumes/T7/media` (dead —
+`.env` already overrides it to the NAS on all three, confirmed before touching
+anything) — re-staged from the repo, which already had the right default.
+**Immich's live config used a hardcoded `TZ: Europe/Vilnius` env var** where
+the repo bind-mounts `/etc/localtime:ro` (portable, follows the host
+automatically). Applied the repo version, recreated `immich_server`, and
+verified the container's clock still matches the host exactly post-recreate.
+
+**Found `HOME_SERVER.md` describes an architecture that stopped existing on
+2026-08-04.** It's the linked "set up a new Mac mini from scratch" guide, and
+it still tells a reader to `mkdir -p /Volumes/T7/media`, point Immich's
+Postgres/upload/model-cache at a T7 volume, and put Calibre books on T7 — the
+pre-NAS-migration setup, when T7 was primary storage instead of a decoupled
+manual backup target. Three other docs (`SERVICES.md` ×2, `UTILITY_SCRIPTS.md`)
+linked to it as "the backup strategy," which meant the actually-current backup
+facts in `HOME_SERVER_REFERENCE.md` weren't where a reader would land. Added a
+banner to the top of `HOME_SERVER.md` making the historical status explicit and
+pointing at current docs, repointed all three stale links, and updated
+`START_HERE.md`'s index row and `.claude/CLAUDE.md`'s file list to match. A full
+rewrite of the ~750-line body against the NAS architecture is tracked as its
+own item in `HOME_SERVER_TODO.md` — too large to do as a drive-by fix.
+
 ## 2026-09-21 (later still) — Offsite photo backup plan, fastembed cache leak fixed
 
 **Added an opt-in cloud offsite copy of Immich originals.** `rclone-backup.sh`

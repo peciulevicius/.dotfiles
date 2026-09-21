@@ -30,7 +30,10 @@ All services accessible via: localhost, Tailscale (`100.81.171.49`), and `*.peci
 - `scripts/setup/setup-cloudflare-tunnel.sh` — creates tunnel + DNS records
 - `services/rclone/rclone-backup.sh` — Cloudflare R2 cloud backup (cron at 5am)
 - `docs/HOME_SERVER_TODO.md` — **active TODO list for the homelab. Start here.**
-- `docs/HOME_SERVER.md` — full setup guide for new Mac mini
+- `docs/HOME_SERVER.md` — ⚠️ **historical**, describes the pre-2026-08-04
+  T7-primary architecture. For setting up a new Mac mini today, use
+  `docs/HOME_SERVER_REFERENCE.md` (current drive layout + backup facts) and
+  `docs/SERVICES.md`, not this file's commands verbatim.
 - `docs/HOME_SERVER_CHANGELOG.md` — completed work. Check before proposing
   anything — several ideas have been tried and reverted already.
 
@@ -163,6 +166,18 @@ all in that guide.
 - **Push after every commit.** The repo is synced across machines via
   `scripts/sync.sh`; unpushed commits mean the others run stale config.
   ⚠️ The repo is **public** — sweep the staged diff for secrets first.
+- ⚠️ **Editing `services/<svc>/docker-compose.yml` or a script under it does
+  NOT change what's running.** `setup-services.sh` **copies** these files into
+  `~/services/<svc>/` — no symlink — so a repo edit sits inert until re-staged.
+  `.env` is the one exception (only created if missing, never overwritten, so
+  it's safe to re-run the installer without clobbering live secrets). Caught
+  2026-09-21: an `rclone-backup.sh` change went untested for an hour because
+  the live copy never picked it up. After editing anything under `services/`
+  that isn't `.env`, either re-copy that one file or re-run
+  `services/setup-services.sh`, then verify with:
+  ```bash
+  diff services/<svc>/docker-compose.yml ~/services/<svc>/docker-compose.yml
+  ```
 
 - Configs must work cross-platform (macOS + Linux)
 - Installers: interactive prompts, backup existing files, clear output

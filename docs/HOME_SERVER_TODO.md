@@ -142,6 +142,14 @@ Running on 7001. Benchmarks in
 
 ### 9. 🧹 Maintenance backlog — no deadline, real value
 
+- [ ] **Rewrite `HOME_SERVER.md` against the NAS architecture.** It's the
+      linked "set up from scratch" guide but still describes the pre-2026-08-04
+      T7-primary setup (Immich/media/books all pointed at T7, no NAS at all).
+      Flagged with a banner 2026-09-21 and its stale "backup strategy" links
+      from `SERVICES.md`/`UTILITY_SCRIPTS.md` repointed at
+      `HOME_SERVER_REFERENCE.md`, but the ~750-line body is still the old
+      narrative — real rewrite work, not a quick edit.
+
 ⚠️ **Pi-hole is the one that matters here:** pinned at `pihole/pihole:2024.07.0`,
 publicly exposed, and it controls DNS for the whole network. A pinned tag never
 moves, so Watchtower being enabled is not evidence anything is current.

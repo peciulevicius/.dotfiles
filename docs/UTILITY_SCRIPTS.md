@@ -336,7 +336,7 @@ crontab -e
 0 3 * * * ~/.dotfiles/services/rclone/rclone-backup.sh >> ~/logs/rclone-cron.log 2>&1
 ```
 
-See [HOME_SERVER.md](./HOME_SERVER.md) for full strategy.
+See [HOME_SERVER_REFERENCE.md](./HOME_SERVER_REFERENCE.md) for the current strategy.
 
 ---
 

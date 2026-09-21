@@ -1,5 +1,23 @@
 # Mac mini Setup Guide
 
+> ⚠️ **Historical — describes the pre-2026-08-04 architecture, not the current
+> one.** This guide was written when a Samsung T7 SSD was the primary photo
+> and media store. Since 2026-08-04 **the NAS is primary**; T7 and T5 are
+> unplugged manual backup targets, not live storage — see
+> [HOME_SERVER_REFERENCE.md](HOME_SERVER_REFERENCE.md) "Drive Layout" for the
+> current facts. **Do not follow the commands below verbatim** — several
+> (`mkdir -p /Volumes/T7/media`, pointing Immich or Calibre at a T7 volume)
+> would rebuild the superseded setup. Kept for the narrative — how photo sync,
+> Time Machine and the original two-drive backup rotation work conceptually
+> still applies, only the primary-storage location changed. A full rewrite
+> against the NAS architecture is tracked in `HOME_SERVER_TODO.md`.
+>
+> **To actually set up a new Mac mini today:** start from
+> [HOME_SERVER_REFERENCE.md](HOME_SERVER_REFERENCE.md) for the current drive
+> layout and backup strategy, [SERVICES.md](SERVICES.md) for the service list,
+> and `services/setup-services.sh` to stage configs — then substitute
+> `/Volumes/<nas-share>` wherever this guide says `/Volumes/T7`.
+
 Your Mac mini M4 is a second desk computer, not a complicated server. With a KVM switch you use the same keyboard, mouse, and monitor for both your MacBook and Mac mini — just press a button to switch.
 
 This guide covers everything: what it's for, how to set it up, how photos work, how backups work, and what to do when things break.

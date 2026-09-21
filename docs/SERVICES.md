@@ -375,7 +375,7 @@ nano .env  # set B2 bucket name, remote name
 ~/.dotfiles/services/rclone/rclone-backup.sh
 ```
 
-See [HOME_SERVER.md](HOME_SERVER.md) for the full backup strategy.
+See [HOME_SERVER_REFERENCE.md](HOME_SERVER_REFERENCE.md) for the current backup strategy.
 
 ### Pi-hole
 
@@ -784,7 +784,7 @@ This enables network-wide ad blocking and local DNS resolution for all devices o
 
 ## Backup Strategy
 
-See [HOME_SERVER.md](HOME_SERVER.md) for the full 3-2-1 backup strategy.
+See [HOME_SERVER_REFERENCE.md](HOME_SERVER_REFERENCE.md) for the current 3-2-1 backup strategy.
 
 ## Troubleshooting
 
