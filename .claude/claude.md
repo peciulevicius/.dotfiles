@@ -128,7 +128,7 @@ Goal: own the chat history, memories and RAG corpus; rent the inference.
 - **Models run natively via Homebrew, never in Docker.** Docker on macOS has no
   GPU passthrough, so containerised Ollama is CPU-only. This is the likely real
   cause of the earlier failed attempt recorded in the changelog.
-- Hardware ceiling is ~8B quantised. 16GB unified, shared with 42 containers.
+- Hardware ceiling is ~8B quantised. 16GB unified, shared with 38 containers.
   Do not propose 30B+ models.
 
 ### Octopus Deploy — ruled out, `docs/guides/OCTOPUS_DEPLOY.md`
