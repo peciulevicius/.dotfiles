@@ -511,6 +511,43 @@ word and turning pages by itself — the experience you were describing.
 - **Install:** download the release zip, copy the `audiobook.koplugin` folder
   into `koreader/plugins/`
 
+### ⚠️ Playback speed does nothing on the Kindle
+
+The 1x/2x button changes nothing when playing a **real narration**. This is an
+upstream limitation, not a misconfiguration — `mediaengine.lua` says so outright:
+
+```lua
+-- aplay / wav-play / Kindle do not support speed control
+```
+
+`setSpeed` is implemented for the mpv, MPlayer, ffmpeg-pipe and generic
+GStreamer backends. The Kindle ones (`KINDLE_GST_PLAY`, `KINDLE_LIPC`) are not
+in that list, and the call sits inside a `pcall`, so it fails silently rather
+than telling you.
+
+The button still works in **TTS mode**, because there speed is a synthesis
+parameter rather than something the player has to do to finished audio.
+
+#### Workaround: speed the audio up *before* aligning
+
+Storyteller aligns whatever audio you hand it, so a pre-stretched file yields a
+read-along that plays at that speed natively:
+
+```sh
+# 1.5x, preserving pitch (atempo caps at 2.0 per pass; chain for more)
+ffmpeg -i "book.m4b" -filter:a "atempo=1.5" -vn "book-1.5x.m4b"
+
+# 2.5x = 2.0 x 1.25
+ffmpeg -i "book.m4b" -filter:a "atempo=2.0,atempo=1.25" -vn "book-2.5x.m4b"
+```
+
+Then align `book-1.5x.m4b` instead of the original. The timings in the SMIL map
+match the faster audio, so highlighting stays in sync.
+
+⚠️ Costs: `brew install ffmpeg` (not currently installed), one alignment run per
+speed, and ~750MB of storage per resulting EPUB. Worth it for a book you will
+listen to a lot; not worth it to sample one.
+
 ### How it differs from Whispersync
 
 | | Amazon Immersion Reading | audiobook.koplugin |

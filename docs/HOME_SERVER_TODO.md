@@ -35,9 +35,15 @@ rather than later — see [guides/DEGOOGLE.md](guides/DEGOOGLE.md).
 - [x] ~~Storyteller alignment~~ — **done 2026-09-20/21.** 23 chapters aligned,
       6 unaligned (all front/back matter). The 733MB read-along EPUB is in
       Calibre as book 41; working files cleared and the container powered down.
-- [ ] **Confirm KOReader actually highlights it.** Pull book 41 over OPDS and
-      check. Media Overlay support in `audiobook.koplugin` is still *work in
-      progress* upstream — verify before aligning a second book.
+- [x] ~~Confirm KOReader highlights the aligned book~~ — **works, 2026-09-21.**
+      Self-hosted Whispersync is running end to end: Storyteller alignment →
+      Calibre-Web → OPDS → KOReader, with word highlighting during real
+      narration.
+- [ ] ⚠️ **Playback speed does nothing on Kindle** — upstream limitation, the
+      Kindle audio backends implement no speed control and the call fails
+      silently. Workaround if it matters: `ffmpeg -filter:a atempo=1.5` the M4B
+      *before* aligning, so the read-along is natively faster. Needs
+      `brew install ffmpeg` and a re-align per speed.
 - [ ] **Clear stuck duplicate files in the Calibre library from the NAS side.**
       Two failed Calibre-Web renames left a 733MB `.smbdelete` orphan plus a
       733MB duplicate EPUB in
