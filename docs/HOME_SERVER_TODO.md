@@ -88,11 +88,13 @@ Full checklist, no secrets: **[CREDENTIAL_MIGRATION.md](CREDENTIAL_MIGRATION.md)
 
 ### 1b. 💾 Disk — cleaned 2026-09-21, watch it
 
-Was **15 GiB free (92% full)**, now **22 GiB**. Freed by `docker builder prune
--af` (6.05 GB) and `brew cleanup --prune=all` (477 MB).
+Was **15 GiB free (92% full)**, now **24 GiB (88%)**. Freed by `docker builder
+prune -af` (6.05 GB), `brew cleanup --prune=all` (477 MB) and deleting applied
+Squirrel/ShipIt update staging (~2.1 GB). `~/Library/Caches` went 6.8 → 4.4 GB.
 
-- [ ] Reclaim the last ~2.1 GB of applied-update staging:
-      `rm -rf ~/Library/Caches/com.microsoft.VSCode.ShipIt ~/Library/Caches/com.bitwarden.desktop.ShipIt ~/Library/Caches/bitwarden-updater`
+- [x] ~~Reclaim applied-update staging~~ — done 2026-09-21. Recurs as the apps
+      update, so it is worth re-checking when disk gets tight:
+      `du -sh ~/Library/Caches/* | sort -rh | head`
 - [ ] Move the Calibre library off SMB onto the internal SSD (1.1 GB)
 - [ ] ~2.3 GB of locked `.smbdelete` duplicates — needs NAS-side deletion
 
