@@ -224,6 +224,53 @@ SMB and Calibre *writes* this database.
 - [ ] Back up `metadata.db` first; a copy is already at
       `~/backups/calibre-repair/`
 
+### Internal SSD is filling — 29GB free of 228GB
+
+Docker dominates and nothing here is on the NAS by mistake; it is simply a lot
+of containers. Measured 2026-09-21:
+
+| What | Size |
+|---|---|
+| Docker (`~/Library/Containers/com.docker.docker`) | **40GB** |
+| `~/services` (service data) | 6.8GB |
+| `~/.Trash` | 2.7GB |
+| `~/Downloads` | 1.1GB |
+| `~/backups` (DB dumps) | 601MB |
+
+Cheap wins first, in order:
+
+- [ ] **Empty the Trash** — 2.7GB, mostly the Storyteller working files and the
+      removed karakeep/readarr data
+- [ ] **`docker system prune -a`** — 3.7GB of reclaimable images. ⚠️ Removes
+      images not backing a running container, so anything stopped (Storyteller)
+      re-pulls on next start.
+- [ ] Clear `~/Downloads` (1.1GB) — the Kindle plugin zips are re-downloadable
+- [ ] Consider whether old DB dumps in `~/backups` need 30 days of retention
+
+⚠️ **Do not move service data to the NAS to save space.** Databases must not
+live on SMB — that rule is why Immich's Postgres is on the SSD, and the Calibre
+library breaking repeatedly on 2026-09-21 is what happens when it is ignored.
+Media belongs on the NAS; databases and app state belong on the SSD.
+
+### ⚠️ Move the Calibre library off SMB onto the SSD
+
+The root cause of a whole day of failures: `metadata.db` is **SQLite on an SMB
+share**, which this setup's own rule forbids. Every symptom traced back to it —
+`disk I/O error` opening a shelf, `Device or resource busy` renaming a book,
+`.smbdelete` duplicate files, and `database disk image is malformed` from a
+stale mount.
+
+**It is affordable now:** the whole library is **1.1GB** and the SSD has 29GB
+free.
+
+- [ ] Stop `calibre`, `calibre-web`, `lazylibrarian`
+- [ ] Copy `/Volumes/books` → `~/services/calibre/library` (internal SSD)
+- [ ] Repoint the `BOOKS_DIR` bind mount in all three compose files
+- [ ] Update `rclone-backup.sh`, which currently syncs `/Volumes/books` to R2
+- [ ] Decide where the large read-along EPUBs live — they are the only big
+      files, and they could stay on the NAS as a separate Calibre library
+- [ ] Verify OPDS still serves to KOReader afterwards
+
 ### Regenerate missing Immich thumbnails
 
 87 assets show "error loading image" — all videos, thumbnails lost while Immich
