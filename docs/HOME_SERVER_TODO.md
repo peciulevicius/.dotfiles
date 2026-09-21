@@ -247,9 +247,13 @@ Cheap wins first, in order:
 
 - [ ] **Empty the Trash** — 2.7GB, mostly the Storyteller working files and the
       removed karakeep/readarr data
-- [ ] **`docker system prune -a`** — 3.7GB of reclaimable images. ⚠️ Removes
-      images not backing a running container, so anything stopped (Storyteller)
-      re-pulls on next start.
+- [x] ~~Prune Docker~~ — done 2026-09-21, **945MB** reclaimed by removing an
+      orphaned `tensorchord/pgvecto-rs` image left from an older Immich.
+      ⚠️ **Do not run `docker system prune -a`**: it deletes every image not
+      backing a *running* container, which on this host means the 2.77GB
+      Storyteller image that is stopped by design. Remove specific images
+      instead, after checking `docker ps -a --format '{{.Names}}\t{{.Image}}'`.
+      The 7 dangling volumes hold 55KB total — not worth the risk of touching.
 - [ ] Clear `~/Downloads` (1.1GB) — the Kindle plugin zips are re-downloadable
 - [ ] Consider whether old DB dumps in `~/backups` need 30 days of retention
 
