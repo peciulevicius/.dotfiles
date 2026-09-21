@@ -71,6 +71,47 @@ attempt through the tunnel produced a Calibre record with no file on disk, a
 folder renamed while the database still pointed at the old name, and a
 733MB `.smbdelete` duplicate. See the SMB section below.
 
+## 🚫 Never rename a book in Calibre-Web
+
+**Renaming a book's title or author in Calibre-Web will corrupt the library
+entry on this setup.** It happened twice on 2026-09-21, both times identically:
+
+1. Calibre-Web renames the folder on disk
+2. It copies the EPUB to the new filename
+3. It tries to delete the original — and **SMB refuses**: *"Device or resource
+   busy"*, because the Calibre content server still holds a handle
+4. It rolls the database back, but **not the folder rename**
+
+You are left with `metadata.db` pointing at the old path, a folder with the new
+name, two copies of a 769MB file, and the book 404ing.
+
+The cause is renaming large files on an **SMB share with the library open by two
+services** — the same class of problem as never putting a database on SMB.
+
+### Repair
+
+```bash
+# Rename the folder back to whatever metadata.db expects:
+sqlite3 /Volumes/books/metadata.db "select path from books where id=<ID>;"
+mv "/Volumes/books/<wrong name>" "/Volumes/books/<path from the DB>"
+```
+
+The duplicate EPUB left behind is usually locked server-side. Stopping the
+containers and remounting the share does **not** always clear it — the lock
+lives on the NAS. Clear it from the NAS's own file manager, or leave it; it is
+excluded from the R2 backup.
+
+### What to do instead
+
+| Want | Do |
+|---|---|
+| **Mark a book as read-along/aligned** | Add a **tag** in Calibre-Web. Tags are metadata-only — no file or folder is touched, and KOReader's OPDS browser can filter by them. |
+| **A different title** | Set it **before** importing, by editing the EPUB's metadata on the Mac: `ebook-meta book.epub --title "Can't Hurt Me (read-along)"`. Calibre reads the title from the file, so it imports correctly and nothing needs renaming afterwards. |
+| Anything else that renames files | Do it from the **Calibre desktop app with the library local**, not over SMB. |
+
+⚠️ Tags are also the answer to *"how do I tell which book is aligned from the
+Kindle?"* — a `read-along` tag shows up as a browsable category in the OPDS feed.
+
 ## SMB leaves `.smbdelete*` files behind
 
 When a file is deleted on an SMB share while a process still holds it open, the

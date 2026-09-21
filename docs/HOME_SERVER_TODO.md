@@ -32,16 +32,24 @@ rather than later — see [guides/DEGOOGLE.md](guides/DEGOOGLE.md).
       `~/.dotfiles/scripts/kindle/sync.sh`, then the one line it prints in
       kTerm. It mirrors, so it also clears the ten stale `lockscreen-*.png`
       left from the earlier numbered attempt.
-- [ ] **Finish the Storyteller alignment** — container is up at
-      `localhost:8087` with `cant-hurt-me.epub` + `.m4b` staged in
-      `~/Downloads/storyteller-input/`. Create the account, upload both, start
-      the job. ⚠️ `docker compose down` in `~/services/storyteller` when done.
-- [ ] **Clear a stuck 733MB `.smbdelete` orphan** in
-      `/Volumes/books/David Goggins/Can't Hurt Me_ ... (41)/`. Container
-      restarts didn't release it; it needs the `books` share unmounted and
-      remounted (stop `calibre`, `calibre-web`, `lazylibrarian` first) or
-      deletion from the NAS UI. Not urgent — it is excluded from the R2 backup
-      — but it is 733MB of duplicate.
+- [x] ~~Storyteller alignment~~ — **done 2026-09-20/21.** 23 chapters aligned,
+      6 unaligned (all front/back matter). The 733MB read-along EPUB is in
+      Calibre as book 41; working files cleared and the container powered down.
+- [ ] **Confirm KOReader actually highlights it.** Pull book 41 over OPDS and
+      check. Media Overlay support in `audiobook.koplugin` is still *work in
+      progress* upstream — verify before aligning a second book.
+- [ ] **Clear stuck duplicate files in the Calibre library from the NAS side.**
+      Two failed Calibre-Web renames left a 733MB `.smbdelete` orphan plus a
+      733MB duplicate EPUB in
+      `/Volumes/books/David Goggins/Can't Hurt Me_ ... (41)/`, and ~1.5GB of
+      `.smbdelete` files at the library root. Stopping every container that
+      touches the share **and** unmounting/remounting it did **not** release
+      them — the lock is held by the NAS's SMB server, so they have to go via
+      the **UGOS file manager** (or an SSH session on the NAS).
+      ~2.3GB. Not urgent: all excluded from the R2 backup.
+- [ ] **Tag the aligned book** `read-along` in Calibre-Web so it is
+      distinguishable over OPDS. ⚠️ Tag it — do **not** rename it; see the
+      rename warning in [HOME_SERVER_REFERENCE.md](HOME_SERVER_REFERENCE.md).
 - [ ] Verify Kindle OTA is blocked ("Check OTA Status" scriptlet)
 - [ ] Stock app → **Share → Searchable PDF** → confirm the mail arrives. This
       is the Obsidian pipeline, and it is the thing most likely to have broken

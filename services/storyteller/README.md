@@ -145,8 +145,14 @@ This applies to anything large: **Immich, Nextcloud and Paperless uploads over
 the public hostnames hit the same 100MB ceiling.** Use the Tailscale address for
 big files.
 
-Then edit the title to something like *"Can't Hurt Me (read-along)"* so it is
-obvious which copy is which.
+⚠️ **Do not rename it in Calibre-Web afterwards.** Renaming over SMB corrupts
+the library entry — see
+[HOME_SERVER_REFERENCE.md](../../docs/HOME_SERVER_REFERENCE.md). Instead:
+
+- **Add a tag** like `read-along` (metadata only, touches no files, and shows up
+  as a browsable category in KOReader's OPDS view), **or**
+- **Set the title before uploading**:
+  `ebook-meta "book (readaloud).epub" --title "Can't Hurt Me (read-along)"`
 
 **You will have two entries, and that's intended:** Calibre cannot hold two
 EPUBs on one record. Keep the 8.6MB original for ordinary reading and the 750MB
