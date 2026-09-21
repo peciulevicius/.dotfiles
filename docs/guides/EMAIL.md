@@ -45,30 +45,44 @@ That gap is the whole reason to buy a mailbox: today mail arrives at
 
 ## 2. What depends on email in this homelab
 
-Audited 2026-09-21 across all 43 containers and every script.
+Audited 2026-09-21. ⚠️ **Three things depend on Gmail, and two of them store
+their SMTP settings in a SQLite database, not in environment variables** — an
+`env`-based check reports a clean bill of health and is wrong.
 
-| Thing | Uses email? | Effect of the migration |
-|---|---|---|
-| `pkm/kindle_sync.py` | ✅ **IMAP — the only one** | 3-line config change |
-| Uptime Kuma | ❌ Discord webhook | none |
-| `scripts/lib/notify.sh` | ❌ Discord webhook | none |
-| Vaultwarden | ❌ no SMTP configured | none |
-| **All other containers** | ❌ **not one has SMTP env set** | none |
+| Thing | Uses email | Stored where | Effect of the migration |
+|---|---|---|---|
+| `pkm/kindle_sync.py` | **IMAP** `imap.gmail.com` | `pkm/config.py` (gitignored) | 3-line change |
+| **Calibre-Web** Send-to-Kindle | **SMTP** `smtp.gmail.com:587` | ⚠️ `/config/app.db` | Re-enter in the UI |
+| **Uptime Kuma** alerts | **SMTP** `smtp.gmail.com` | ⚠️ `/app/data/kuma.db` | Re-enter in the UI |
+| Uptime Kuma Discord alerts | ❌ webhook | — | none |
+| `scripts/lib/notify.sh` | ❌ webhook | — | none |
+| Vaultwarden + 39 others | ❌ none | — | none |
 
-**Nothing in the stack breaks.** This is worth re-verifying before any future
-provider change, because it is easy to assume the opposite:
+🔴 **Revoking the Gmail app password breaks Calibre-Web's Send-to-Kindle and
+Uptime Kuma's email alerts** unless both are repointed first. Kuma also notifies
+over Discord, so it stays audible either way; Calibre-Web has no fallback and
+fails silently.
+
+### How to audit this properly
+
+Environment variables are only half the picture:
 
 ```bash
-# Does any running container send mail?
+# 1. env-configured senders
 for c in $(docker ps --format '{{.Names}}'); do
   e=$(docker exec "$c" sh -c 'env 2>/dev/null | grep -iE "^(SMTP|MAIL)_" | cut -d= -f1' 2>/dev/null)
   [ -n "$e" ] && echo "$c: $e"
 done
+
+# 2. database-configured senders — the ones step 1 misses
+docker exec calibre_web sh -c 'cat /config/app.db' > /tmp/cw.db &&   sqlite3 /tmp/cw.db "select mail_server,mail_port,mail_login from settings;"
+docker exec uptime_kuma sh -c 'cat /app/data/kuma.db' > /tmp/k.db &&   sqlite3 /tmp/k.db "select name,active,config from notification;"
 ```
 
-> 💡 The corollary: services here notify over **Discord**, not email, by design.
-> If you add a service that wants SMTP, point it at Purelymail — but prefer the
-> Discord webhook for consistency with everything else.
+> 💡 Services here notify over **Discord** by preference. When you repoint these
+> two, consider whether they need email at all — Kuma's Discord notification
+> already covers alerting, and Calibre-Web's SMTP exists only to push books to
+> the Kindle, which the jailbreak's OPDS route now largely replaces.
 
 ---
 
@@ -202,8 +216,15 @@ propagate over minutes to hours, and mail sent during the gap can bounce.
 - [ ] **9. Check the SPF/DKIM/DMARC verdict** — mail yourself at Gmail and read
       "Show original", or use <https://www.mail-tester.com> and target 9+/10.
 - [ ] **10. Repoint `kindle_sync.py`** (§9).
-- [ ] **11. Revoke the Gmail app password** at
-      <https://myaccount.google.com/apppasswords>.
+- [ ] **11a. Repoint Calibre-Web** — Admin → Edit E-mail Server Settings →
+      `smtp.purelymail.com:465` (SSL), your Purelymail address + password.
+      Use the **Send test email** button; it fails silently otherwise.
+- [ ] **11b. Repoint Uptime Kuma** — Settings → Notifications → the `smtp` one →
+      same server details, then **Test**. (Its Discord notification is
+      unaffected and keeps working throughout.)
+- [ ] **11c. Revoke the Gmail app password** at
+      <https://myaccount.google.com/apppasswords> — only after 10, 11a and 11b
+      are each tested green.
 - [ ] **12. Set up the Gmail funnel** (§10).
 - [ ] **13. Add to Apple Mail / iPhone** — IMAP `imap.purelymail.com:993` (TLS),
       SMTP `smtp.purelymail.com:465` (TLS).
@@ -349,6 +370,9 @@ Ente Auth or Vaultwarden — see [DEGOOGLE.md](./DEGOOGLE.md).
 | Sent mail lands in spam | SPF/DKIM/DMARC missing or proxied | All 7 records, **grey cloud** |
 | MX record won't save | Cloudflare proxy (orange cloud) on | Mail records are **DNS only** |
 | `kindle_sync.py` stops | Still on the revoked Gmail app password | §9 |
+| Calibre-Web Send-to-Kindle silently fails | SMTP still Gmail, in `app.db` not env | §7 step 11a |
+| Uptime Kuma email alerts stop | SMTP still Gmail, in `kuma.db` not env | §7 step 11b |
+| An `env` audit says "nothing uses email" | Kuma + Calibre-Web store SMTP in SQLite | §2, run **both** checks |
 | Can't find a mailbox for the signup dropdown | Expecting your own domain there | It's the *admin user* (§4) |
 | Storage full fast | Tried to import Gmail Takeout | Keep the archive on disk (§3) |
 | Catch-all flooded | Spammers guessing `admin@`, `info@` | Switch to explicit aliases (§6) |

@@ -9,23 +9,159 @@ Grouped by "what happens if I ignore this", not by number.
 
 ## ▶ Start here — do these in this order
 
-Last worked: **2026-09-19**. Finished work is in
-[HOME_SERVER_CHANGELOG.md](HOME_SERVER_CHANGELOG.md) (see the 2026-09-19 entry).
-The order below matters — each step unblocks the next.
+Last worked: **2026-09-21**. Finished work is in
+[HOME_SERVER_CHANGELOG.md](HOME_SERVER_CHANGELOG.md).
 
-### ✅ Done 2026-09-19 — Gmail app password, and the custom email address
+**The order matters** — each step unblocks or de-risks the next. The reasoning
+is written out so it survives being read cold in a year.
 
-Both cleared. Kindle sync is alive after ~73 days; Uptime Kuma SMTP and
-Calibre-Web Send-to-Kindle were re-pointed at the new app password and tested
-working. Cloudflare Email Routing is live on `peciulevicius.com` with
-`contact@`, `hello@`, `dziugas@` and a **catch-all** — verified by delivering to
-an address that was never created.
+| # | Step | Why it is here and not later |
+|---|---|---|
+| **1** | 🔴 Delete the plaintext vault exports | 212 cleartext passwords sitting in `~/Downloads` |
+| **2** | 🔴 Move TOTP off Google Authenticator | Seeds sync to the account being left — lockout risk |
+| **3** | 🔴 Rotate the Vaultwarden admin token | Leaked into a container config on 2026-09-21 |
+| **4** | 📮 Buy Purelymail + DNS | Everything below depends on the mailbox existing |
+| **5** | 🔁 Repoint the 3 Gmail consumers, then revoke | Two of them fail **silently** |
+| **6** | 🔑 One pass: password + email per service | Same ~14 logins — separating them doubles the work |
+| **7** | 🧩 Vaultwarden Chrome extension | Blocked on the work laptop, not on us |
+| **8** | 🤖 Odysseus model defaults + RAG | Pure upside, nothing depends on it |
+| **9** | 🧹 Pinned images, SMB, wallpapers | Maintenance backlog |
 
-⚠️ Still true: Email Routing **receives only**. Replying goes out as Gmail until
-there is a real mailbox, so this is the argument for doing Purelymail sooner
-rather than later — see [guides/DEGOOGLE.md](guides/DEGOOGLE.md).
+---
 
-### 0. 📌 Quick wins left over from 2026-09-20
+### 1. 🔴 Delete the plaintext vault exports — do this first
+
+Made during the 2026-09-21 Vaultwarden scare, never cleaned up. **Verified
+still present:** `bitwarden_export_20260921133119.json` holds **220 items, 212
+with cleartext passwords**, `encrypted: false`. The `.csv` is the same data.
+
+```bash
+rm ~/Downloads/bitwarden_export_20260921133119.json    ~/Downloads/bitwarden_export_20260921133138.csv
+```
+
+- [ ] Delete the two **unencrypted** exports above
+- [ ] Decide on `bitwarden_encrypted_export_*.json` and the `.zip` — encrypted
+      with the master password, so lower risk, but still a full vault copy.
+      Keep only if deliberately archived somewhere durable.
+- [ ] Empty the Trash afterwards — `rm` to Trash is not deletion
+
+> ⚠️ The vault was never damaged; the real fix was upgrading Vaultwarden
+> 1.35.4 → 1.37.3. These exports are leftover blast radius from the debugging,
+> not a backup anyone needs.
+
+### 2. 🔴 Move TOTP off Google Authenticator — before any password change
+
+**The single highest-risk item in the whole de-Googling effort.** Google
+Authenticator syncs its TOTP seeds to the Google account being abandoned. Every
+service whose 2FA lives there is one account-loss away from being unreachable.
+
+- [ ] Export from Google Authenticator (its built-in transfer QR)
+- [ ] Import into **Ente Auth** or **Vaultwarden** — see
+      [guides/DEGOOGLE.md](guides/DEGOOGLE.md)
+- [ ] Verify a login end-to-end with the new app **before** deleting anything
+- [ ] Keep Google Authenticator installed until every seed is confirmed working
+
+> ⚠️ Do this **before** step 6. Changing passwords across 14 services while 2FA
+> still depends on Google means a single lockout takes all of them at once.
+
+### 3. 🔴 Rotate the Vaultwarden admin token
+
+On 2026-09-21 a throwaway container (`relaxed_ritchie`, vaultwarden 1.35.4) was
+created to run `vaultwarden hash`. **The pre-hash admin token stayed visible in
+its container config for ~4 hours**, readable by anything that could run
+`docker inspect`. The container has been removed, but the token should be
+treated as disclosed.
+
+- [ ] Generate a new `ADMIN_TOKEN`, hash it, update `~/services/vaultwarden/.env`
+- [ ] `docker compose up -d` and confirm `/admin` accepts only the new one
+- [ ] Save it in Vaultwarden itself
+
+> 💡 Lesson: `docker inspect` exposes the full command line of every container,
+> including secrets passed as arguments. Pipe secrets via stdin to a container
+> started with `--rm`, and verify it actually exited.
+
+### 4. 📮 Buy Purelymail and cut DNS over
+
+📘 **Full runbook: [guides/EMAIL.md](guides/EMAIL.md).** Do not improvise this
+from memory — the ordering traps are documented.
+
+- [ ] Sign up ($10/yr). ⚠️ The signup dropdown is the **account admin user's**
+      address, not your mail domain — pick any, use a **long** username
+- [ ] Add `peciulevicius.com`; create `peciulevicius@peciulevicius.com`
+- [ ] ⚠️ **Disable Cloudflare Email Routing first** — two providers claiming the
+      MX makes delivery non-deterministic
+- [ ] Add all seven DNS records, **grey cloud** (proxying breaks mail)
+- [ ] Enable catch-all — this is what makes step 6 cheap
+- [ ] Test both directions; check <https://www.mail-tester.com> for 9+/10
+
+### 5. 🔁 Repoint the three Gmail consumers — then revoke
+
+⚠️ **Three things use Gmail, and two hide their config in SQLite** rather than
+environment variables. An `env`-based audit reports "nothing uses email" and is
+wrong. Full detail in [guides/EMAIL.md](guides/EMAIL.md) §2.
+
+- [ ] **`pkm/kindle_sync.py`** — `IMAP_SERVER`, `EMAIL_ADDRESS`,
+      `EMAIL_PASSWORD` in `pkm/config.py` (gitignored, Mac mini only). Point the
+      Kindle's *Share → Searchable PDF* at `kindle@peciulevicius.com`
+- [ ] **Calibre-Web** — Admin → Edit E-mail Server Settings. 🔴 **Fails silently**
+      and has no fallback. Use its *Send test email* button
+- [ ] **Uptime Kuma** — Settings → Notifications → the `smtp` entry. Its Discord
+      notification is unaffected, so alerting stays audible throughout
+- [ ] **Only then** revoke the Gmail app password at
+      <https://myaccount.google.com/apppasswords>
+- [ ] ⚠️ Also revoke it because it was printed to a terminal on 2026-09-21
+
+### 6. 🔑 One pass per service — password AND email together
+
+Both changes need the same ~14 logins. **Doing them separately means 28.**
+Checklist: [CREDENTIAL_MIGRATION.md](CREDENTIAL_MIGRATION.md).
+
+Per service, one visit: log in → Bitwarden-generated password saved **with the
+autofill URL** → change address to `<service>@peciulevicius.com` → confirm the
+verification mail arrives (this also proves catch-all works) → tick it off.
+
+- [ ] Work down the checklist
+- [ ] ⚠️ **Change Vaultwarden's own address LAST** — it is what recovers all the
+      others; do not move it while still depending on it
+- [ ] Delete `~/credentials-import.md` when the list is exhausted
+
+### 7. 🧩 Vaultwarden Chrome extension on the work laptop
+
+Still broken after the 1.37.3 upgrade fixed iOS. **The extension has never once
+registered with the server** — no device type 2 in the database — which points
+at the corporate network, not at Vaultwarden.
+
+- [ ] Open `https://vault.peciulevicius.com` in a plain tab on that laptop
+      first. If the page does not load, it is network policy and the extension
+      was never going to work
+- [ ] If the page loads, re-check the extension's self-hosted URL field
+
+### 8. 🤖 Odysseus — configuration, not deployment
+
+Running on 7001. Benchmarks in
+[services/odysseus/README.md](https://github.com/peciulevicius/.dotfiles/blob/main/services/odysseus/README.md).
+
+- [ ] Set **`qwen2.5:7b`** as the chat model, **`llama3.2:3b`** for background
+      calls (titles, tagging)
+- [ ] Point **RAG at `~/obsidian-vault`**
+- [ ] Import Claude and ChatGPT history (⚠️ ChatGPT *memories* are not in the
+      export — copy by hand)
+- [ ] Point its IMAP client at Purelymail once step 4 is done
+- [ ] Decide on the Anthropic API key — currently leaning **skip**, since
+      claude.ai on Pro covers general reasoning and local covers the private topics
+
+### 9. 🧹 Maintenance backlog — no deadline, real value
+
+⚠️ **Pi-hole is the one that matters here:** pinned at `pihole/pihole:2024.07.0`,
+publicly exposed, and it controls DNS for the whole network. A pinned tag never
+moves, so Watchtower being enabled is not evidence anything is current.
+
+- [ ] Bump **Pi-hole** first, then work through the other pinned images
+- [ ] Move the **Calibre library off SMB** onto the internal SSD — SQLite over
+      SMB is the root cause of every Calibre-Web failure so far
+- [ ] Delete ~2.3 GB of locked `.smbdelete` duplicates (needs NAS-side access)
+
+#### Quick wins left over from 2026-09-20
 
 - [ ] **Sync the Kindle wallpapers.** Six are ready in `wallpapers/kindle/`
       (two rejects dropped, all renamed descriptively). Run
@@ -61,7 +197,14 @@ rather than later — see [guides/DEGOOGLE.md](guides/DEGOOGLE.md).
       is the Obsidian pipeline, and it is the thing most likely to have broken
       quietly during all the Kindle work.
 
-### 1. 🔑 Credentials into Bitwarden — **start here tomorrow**
+---
+
+## Detail and standing items
+
+Everything above is the ordered path. What follows is background for those
+steps, plus items that sit outside the sequence entirely.
+
+### 🔑 Credentials — detail for step 6
 
 Full checklist, no secrets: **[CREDENTIAL_MIGRATION.md](CREDENTIAL_MIGRATION.md)**.
 4 of ~18 services done.
@@ -86,7 +229,7 @@ Full checklist, no secrets: **[CREDENTIAL_MIGRATION.md](CREDENTIAL_MIGRATION.md)
 > logging into each of the ~14 remaining services. Set the Bitwarden password
 > *and* change the address in one visit, or you do 28 logins instead of 14.
 
-### 1b. 💾 Disk — cleaned 2026-09-21, watch it
+### 💾 Disk — cleaned 2026-09-21, watch it
 
 Was **15 GiB free (92% full)**, now **24 GiB (88%)**. Freed by `docker builder
 prune -af` (6.05 GB), `brew cleanup --prune=all` (477 MB) and deleting applied
@@ -106,7 +249,7 @@ reclaimed 0 B — there is nothing dangling to collect.
 💡 `Docker.raw` is 48 GB and does not shrink on delete; it TRIMs back after a
 prune. Judge free space with `df -h /System/Volumes/Data`, not the file size.
 
-### 2. 🔗 Finish Obsidian LiveSync — the server side is done
+### 🔗 Obsidian LiveSync — the server side is done
 
 CouchDB is up at `https://couchdb.peciulevicius.com`, `obsidian` database
 created, anonymous requests 401 on every path except `/_up`.
@@ -118,13 +261,21 @@ created, anonymous requests 401 on every path except `/_up`.
       answering with an empty device wipes the vault. Snapshot:
       `~/backups/vault-snapshots/`.
 
-### 3. 🛡️ Two-minute jobs that prevent real loss
+### 🛡️ Standing risks — not in the sequence, but real
 
-- [ ] Tailscale key expiry (it silently dropped the tailnet once already)
-- [ ] ⚠️ T5 offsite — iCloud is cancelled, so there is no cloud copy of the
-      photos, only the NAS and two drives in the same room
+Two items sit outside the ordered path and are easy to forget precisely because
+nothing is currently broken. Both are written up in full under
+[Do these first](#do-these-first--you-lose-data-or-access-without-them):
 
-### 4. ✅ Odysseus — running, needs a cloud key
+- 🔴 **Tailscale key expiry — 2027-03-04.** Odysseus, Vaultwarden and all
+  phone access are Tailscale-only. When the key expires, remote access to
+  everything stops at once, and it stops *quietly*. It has happened once already.
+- 🔴 **No offsite copy of the photos.** iCloud is cancelled and R2 excludes the
+  photo library, so Immich's archive is NAS + two drives **in the same room**.
+  RAID survives a dead drive, not a fire. The least replaceable data in the
+  house has the weakest backup.
+
+### ✅ Odysseus — detail for step 8
 
 **Deployed 2026-09-21** on **port 7001** (7000 is AirPlay Receiver). Four
 containers, Tailscale-only at `http://100.81.171.49:7001`, local model working
@@ -323,18 +474,24 @@ release notes and backing up data first — that is why they are pinned, and
 pinning is still the right call. But schedule it; quarterly is enough.
 `docker compose pull` will not help while the tag is fixed.
 
-### Internal SSD is filling — 29GB free of 228GB
+### Internal SSD — 24GiB free of 228GB (88%), after the 2026-09-21 cleanup
 
-Docker dominates and nothing here is on the NAS by mistake; it is simply a lot
-of containers. Measured 2026-09-21:
+⚠️ It had reached **15GiB / 92%** before cleanup, not the 29GB recorded earlier
+— it fills faster than expected. Freed 6.05GB (Docker build cache), 477MB
+(Homebrew) and ~2.1GB (applied Squirrel/ShipIt update staging).
 
 | What | Size |
 |---|---|
-| Docker (`~/Library/Containers/com.docker.docker`) | **40GB** |
-| `~/services` (service data) | 6.8GB |
-| `~/.Trash` | 2.7GB |
-| `~/Downloads` | 1.1GB |
-| `~/backups` (DB dumps) | 601MB |
+| Docker (`Docker.raw`) | **48GB allocated** — TRIMs back after a prune; judge by `df`, not file size |
+| `~/services` (service data) | 6.9GB |
+| `~/.ollama/models` | 6.2GB (2 models) |
+| `~/Library/Caches` | 4.4GB — mostly live browser cache, leave it |
+| `~/dev` | 4.9GB |
+
+⚠️ **Never `docker image prune -a`.** The 2.77GB image it reports as unused is
+**Storyteller**, which is simply stopped most of the time. Dangling-only
+(`docker image prune -f`) reclaims 0B — there is nothing dangling to collect.
+The safe reclaim is `docker builder prune -af`.
 
 Cheap wins first, in order:
 

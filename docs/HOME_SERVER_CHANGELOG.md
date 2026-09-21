@@ -8,6 +8,38 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-21 (later) — Email audit corrected, TODO resequenced
+
+**⚠️ The earlier email audit was wrong.** It checked container *environment
+variables* and concluded only `kindle_sync.py` used email. Two more consumers
+store their SMTP settings in **SQLite**, where an env check cannot see them:
+
+- **Calibre-Web** — `smtp.gmail.com:587` in `/config/app.db`, for Send-to-Kindle
+- **Uptime Kuma** — an active `smtp` notification in `/app/data/kuma.db`,
+  alongside the Discord one
+
+So revoking the Gmail app password breaks both. Calibre-Web has no fallback and
+**fails silently**. `guides/EMAIL.md` now documents all three consumers, carries
+a two-part audit command (env *and* database), and orders the runbook so both
+are repointed and tested before the app password is revoked.
+
+**Removed a stray container.** `relaxed_ritchie` (vaultwarden 1.35.4) was left
+running from the `vaultwarden hash` debugging. ⚠️ **Its pre-hash `ADMIN_TOKEN`
+remained visible in the container config for ~4 hours**, readable by anything
+that could run `docker inspect`. Container and its anonymous volume removed;
+rotating the token is now step 3 of the TODO. Lesson recorded: `docker inspect`
+exposes every container's full command line, so secrets must arrive on stdin to
+a `--rm` container — and you must verify it actually exited.
+
+**Found 212 cleartext passwords in `~/Downloads`** — unencrypted Bitwarden
+exports from the Vaultwarden scare, never cleaned up. Now step 1.
+
+**Resequenced `HOME_SERVER_TODO.md`** into an explicit 1–9 path with a table
+saying *why* each step sits where it does, rather than competing numbered
+sections. Older detail moved under "Detail and standing items". Refreshed the
+SSD section (it had hit 15GiB/92%, not the 29GB recorded) and added the
+warning that `docker image prune -a` would delete Storyteller.
+
 ## 2026-09-21 — Local model benchmarks, disk cleanup, email runbook
 
 **Models.** Benchmarked all three local models on the same real training
