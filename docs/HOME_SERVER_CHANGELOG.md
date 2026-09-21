@@ -8,6 +8,73 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-21 — Odysseus deployed, read-along verified, Calibre repaired
+
+### Odysseus running on 7001
+
+Four containers — odysseus, chromadb, searxng, ntfy — with the local model
+served by **native Homebrew Ollama**, not a container. Verified from inside the
+container: it sees `qwen3:4b` over `host.docker.internal:11434`.
+
+Three things this setup needed that upstream's defaults don't give you:
+
+- **Port 7001, not 7000** — macOS AirPlay Receiver owns 7000, which upstream's
+  own `.env.example` warns about.
+- **`OLLAMA_HOST=0.0.0.0:11434`** — Ollama binds loopback by default, so the
+  container cannot reach it. This is the sort of thing that reads as "the model
+  isn't working" rather than a networking setting.
+- **A compose override dropping SearXNG's host port** — upstream publishes
+  `127.0.0.1:8080`, which collides with Nextcloud. Odysseus talks to it over
+  the compose network, so the mapping was never needed. Kept in
+  `docker-compose.override.yml` so `git pull` cannot clobber it.
+
+**Tailscale-only, deliberately.** It holds health and finance history and its
+agent executes code; the iPhone is already on the tailnet, so a public hostname
+would add exposure and buy nothing.
+
+Measured: ~960MB for the four containers, 686MB image, host headroom down to
+**2.11 GiB**. SearXNG is the first to drop if that bites.
+
+⚠️ **Cookbook caveat worth remembering:** upstream's compose says *"Inside
+Docker, 'Local' means the Odysseus container."* Docker on macOS has no GPU
+passthrough, so anything Cookbook serves "locally" is CPU-only and its hardware
+scan measures the container. That is almost certainly the real cause of the
+2026 entry below recorded as *"Ollama + Open WebUI — removed, not enough RAM."*
+
+### Decided against OpenRouter
+
+The obvious choice for multi-model access, rejected on research: 5.5% top-up
+fee, **1-year credit expiry**, 24-hour refund window buried in fine print,
+Discord-only support, a reported account compromise with ten card charges in 30
+minutes, some providers silently serving quantized models — and its $113M
+Series B was led by **CapitalG, Alphabet's investment arm**, which is a poor
+fit in the middle of a de-Googling project. One direct Anthropic key covers the
+need; Odysseus supports multiple backends natively if that changes.
+
+### Read-along confirmed working
+
+The whole books chain works end to end: Storyteller alignment → Calibre-Web →
+OPDS → KOReader, highlighting words during real narration. Self-hosted
+Whispersync, with Amazon nowhere in it.
+
+⚠️ Playback **speed** does nothing on Kindle — upstream implements `setSpeed`
+for mpv, MPlayer, ffmpeg-pipe and generic GStreamer but not the Kindle
+backends, and the call sits in a `pcall` so it fails silently. Workaround is
+`ffmpeg -filter:a atempo=` on the M4B *before* aligning.
+
+### Calibre library repaired twice, and the cause named
+
+Renaming a book in Calibre-Web corrupted the library entry two separate times:
+it renames the folder, copies the 769MB EPUB, fails to delete the original
+because SMB reports it busy, then rolls back the database without undoing the
+folder rename. Repaired by renaming the folder back to the path `metadata.db`
+expected.
+
+Root cause is `metadata.db` being **SQLite on an SMB share** — the same rule
+that keeps Immich's Postgres on the internal SSD. `disk I/O error` opening a
+shelf, `Device or resource busy` on renames, and `.smbdelete` duplicates are all
+the same problem. Moving the 1.1GB library to the SSD is now a TODO.
+
 ## 2026-09-20 — Kindle Scribe jailbroken, KOReader + read-along
 
 Done with **Vera** on firmware 5.19.6. Earlier than `guides/BOOKS.md` predicted —

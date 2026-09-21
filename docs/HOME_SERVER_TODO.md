@@ -93,11 +93,37 @@ created, anonymous requests 401 on every path except `/_up`.
 - [ ] ⚠️ T5 offsite — iCloud is cancelled, so there is no cloud copy of the
       photos, only the NAS and two drives in the same room
 
-### 4. 🤖 Odysseus
+### 4. ✅ Odysseus — running, needs a cloud key
 
-[guides/SELF_HOSTED_AI.md](guides/SELF_HOSTED_AI.md). Needs an Anthropic or
-OpenRouter API key and a Cloudflare Access policy. ⚠️ **Port 7000 is taken** by
-macOS AirPlay Receiver — map it elsewhere or turn AirPlay Receiver off.
+**Deployed 2026-09-21** on **port 7001** (7000 is AirPlay Receiver). Four
+containers, Tailscale-only at `http://100.81.171.49:7001`, local model working
+through native Ollama. Full notes:
+[services/odysseus/README.md](https://github.com/peciulevicius/.dotfiles/blob/main/services/odysseus/README.md).
+
+- [ ] **Add an Anthropic API key** — `console.anthropic.com`. ⚠️ Billed
+      separately from Claude Pro; a subscription is **not** an API key. Keep a
+      low balance and **auto-top-up off**, so a leaked key or a runaway agent
+      loop cannot drain it.
+- [ ] Save the Odysseus admin password + API key to Vaultwarden
+- [ ] 🔒 **Habit to set: health, finances and journal go to the local model.**
+      Cloud gives sovereignty over the record, not privacy from the provider.
+- [ ] Import **Claude and ChatGPT history** exports. ⚠️ ChatGPT *memories* are
+      not included in the export — copy them by hand.
+- [ ] Point **RAG at `~/obsidian-vault`**
+- [ ] Point the **IMAP client at Purelymail** after the email migration
+- [ ] Try **Cookbook** for browsing models — ⚠️ never let it serve "Local"
+      while Odysseus runs in Docker; that is CPU-only on macOS
+- [ ] Point Odysseus's **Agent (OpenCode)** at Ollama for private or throwaway
+      coding; keep Claude Code for real work
+- [ ] Only if a concrete gap appears: Gemini or OpenAI keys
+- [ ] Try `qwen3:8b` if RAM allows — ⚠️ headroom is now **2.11 GiB**; drop
+      SearXNG first if it bites
+- [ ] `ai.peciulevicius.com` only if a non-Tailscale device ever needs it
+
+**Decided against OpenRouter**, despite being the obvious pick: 5.5% top-up fee,
+1-year credit expiry, 24-hour refund window, Discord-only support, some
+providers serving quantized models — and its Series B was led by **CapitalG,
+Alphabet's investment arm**, a poor fit mid-de-Googling.
 
 ### Not Mac mini work — on the phone, whenever
 
