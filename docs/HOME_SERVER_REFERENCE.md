@@ -12,8 +12,8 @@ Mac mini M4, **16GB unified memory**. Docker VM ceiling is now **10GB** (raised
 from 7.8GB on 2026-07-23), but that is a *ceiling*, not a reservation — the VM
 allocates lazily.
 
-Measured 2026-09-21 with 42 containers, after adding the four-container
-Odysseus stack:
+Measured 2026-09-21 (evening) with 42 containers, after adding the
+four-container Odysseus stack:
 
 | Metric | Value | Reading |
 |---|---|---|
@@ -21,9 +21,15 @@ Odysseus stack:
 | macOS memory free | 30% | tighter; watch it |
 | Swap used | ~3.3 GB of 4 GB | |
 
-⚠️ **This is the tightest the host has been.** The next service to add needs a
-plan for what comes off first — **SearXNG** (~141MB, only powers Odysseus's web
-search) is the designated sacrifice.
+⚠️ **This was the tightest the host had been.** Resolved same night — see below.
+
+**Measured 2026-09-21 (later) with 38 containers**, after removing Mealie (0
+recipes, confirmed unused) and Grafana+Prometheus+node-exporter (Tailscale-only,
+no scripts depended on it, credentials long forgotten):
+
+| Metric | Value | Reading |
+|---|---|---|
+| Containers, total | **5.81 GiB** | ~1.78 GiB reclaimed vs the same-night peak |
 
 Odysseus stack: odysseus ~745MB, searxng ~141MB, ntfy ~45MB, chromadb ~28MB.
 
@@ -43,7 +49,7 @@ Biggest single consumers (2026-09-19): `immich_server` (~839MB), `paperless`
 (~374MB), `stirling_pdf` (~360MB), `flaresolverr` (~302MB), `calibre` (~299MB).
 
 **Containers safe to stop while traveling:**
-`nextcloud`, `nextcloud_db`, `pihole`, `bazarr`, `sonarr`, `radarr`, `prowlarr`, `transmission`, `jellyseerr`, `immich_machine_learning`, `mealie`
+`nextcloud`, `nextcloud_db`, `pihole`, `bazarr`, `sonarr`, `radarr`, `prowlarr`, `transmission`, `jellyseerr`, `immich_machine_learning`
 
 **This is the budget that rules out Octopus Deploy** — its SQL Server dependency
 alone wants 2GB. See [guides/OCTOPUS_DEPLOY.md](guides/OCTOPUS_DEPLOY.md).
@@ -78,6 +84,95 @@ click away rather than something to remember.
 attempt through the tunnel produced a Calibre record with no file on disk, a
 folder renamed while the database still pointed at the old name, and a
 733MB `.smbdelete` duplicate. See the SMB section below.
+
+## ⚠️ Two cloudflared LaunchAgents exist — only one is real
+
+```
+~/Library/LaunchAgents/com.cloudflare.cloudflared.plist   ← the one actually serving traffic
+~/Library/LaunchAgents/sh.brew.cloudflared.plist          ← brew's own agent, inert
+```
+
+`brew services restart cloudflared` restarts the **second one**, silently —
+it reports success either way, and the real tunnel process (started outside
+Homebrew, `PPID 1`, running since whenever it was first set up) never notices
+the config file changed underneath it. Confirmed 2026-09-22: after editing
+`~/.cloudflared/config.yml`, `brew services restart cloudflared` reported
+success but a request to the removed hostname still hung for 15s+ instead of
+404ing — the old process, with the old config already read into memory, was
+still running, untouched.
+
+**To actually reload the tunnel after editing `config.yml`:**
+
+```bash
+launchctl kickstart -k "gui/$(id -u)/com.cloudflare.cloudflared"
+```
+
+Verify it worked by checking the PID and start time changed:
+
+```bash
+ps aux | grep "[c]loudflared tunnel"
+```
+
+`brew services stop cloudflared` is safe to run once, to stop the dead
+duplicate from sitting in `error` state in `brew services list` — it does not
+touch the real tunnel.
+
+## ⚠️ Rotating a password only fixes one side of a connection
+
+Radarr and Sonarr each store their **own separate copy** of Transmission's
+login to talk to it — rotating Transmission's password (done 2026-09-19,
+credential migration) does not touch that copy. Result, not caught until
+2026-09-22: every release either app grabbed silently failed the handoff
+(`Authentication Failure`) for three days, invisible unless you specifically
+opened Radarr's queue and read the error detail — Jellyseerr showed the
+request as accepted, nothing looked broken.
+
+**When rotating any credential a *client* also stores its own copy of**, check
+every consumer, not just the service whose password changed:
+
+| Rotated | Also stored in | Check |
+|---|---|---|
+| Transmission | Radarr, Sonarr (download client settings) | `/api/v3/downloadclient/test` |
+| Vaultwarden's own login | nothing — it's the source of truth | — |
+| Any `*@peciulevicius.com` alias | wherever that alias is the *login*, not just the notify address | per-service |
+
+This is the same class of risk as the [malware release profile](#) below —
+a change that looks complete from the changed service's side can be silently
+broken from a consumer's side. Verify the *consumer*, not just the source.
+
+## 🔴 A fake "movie" release is often a bare `.exe` — check before it finishes
+
+Caught 2026-09-22: a Radarr-grabbed "Resident Evil (2026)" release was a
+single 1.15GB `.exe` file, no video container, already 19% downloaded before
+anyone looked. This is a known piracy-scene scam pattern — a fake release
+with a real-looking name whose payload is a Trojan installer, not media.
+
+**Manual check, if you ever want to look yourself** (Transmission's web UI or
+API, before a download finishes): open the torrent's file list.
+
+- ✅ **Legitimate:** one `.mkv`/`.mp4`/`.avi` as the bulk of the size, optionally
+  with `.srt`/`.nfo`/small `.txt` siblings (YTS-style attribution files are
+  normal and harmless)
+- 🔴 **Fake:** the *only* substantial file is `.exe`/`.scr`/`.msi`/`.bat`/`.zip`,
+  or a video-shaped name that actually resolves to one of those extensions
+
+**Automated, added the same day:** a **release profile** in both Radarr and
+Sonarr (Settings → Custom Formats, or `/api/v3/releaseprofile`) that rejects
+any release whose name contains `.exe .scr .lnk .msi .bat .cmd .vbs .jar`,
+`password.txt`, `setup.exe`, `installer` — **before it ever reaches a download
+client**, not just cleaned up after. This is now a standing, automatic
+protection; nothing to run by hand going forward. Verify it's still there:
+
+```bash
+curl -s "http://localhost:7878/api/v3/releaseprofile" -H "X-Api-Key: <radarr-key>"
+```
+
+⚠️ **It only catches releases naming the bad extension in the release title
+itself** — this specific scam did (`FLUX.exe`), which is why the filter
+works, but a more careful fake could rename the payload after download to
+something less obvious. It raises the bar; it doesn't guarantee zero risk. If
+you ever manually eyeball a torrent's file list and it doesn't look like §
+above, delete it — don't run anything from `/Volumes/media`.
 
 ## 🚫 Never rename a book in Calibre-Web
 

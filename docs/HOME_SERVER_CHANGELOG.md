@@ -40,6 +40,68 @@ sections. Older detail moved under "Detail and standing items". Refreshed the
 SSD section (it had hit 15GiB/92%, not the 29GB recorded) and added the
 warning that `docker image prune -a` would delete Storyteller.
 
+## 2026-09-22 (later) — Download pipeline was silently broken, then served malware
+
+**Root cause of "requested movies never appear in Transmission":** Radarr and
+Sonarr were both still authenticating to Transmission as `admin` with the old
+password. The 2026-09-19 credential migration rotated Transmission to
+`peciulevicius` + a new generated password, but never updated the *other
+side* of that connection — each app stores its own separate copy of the
+download client's login. Every release either app grabbed was silently
+failing at the handoff with `Authentication Failure` / `downloadClientUnavailable`,
+invisible unless you specifically checked Radarr's queue detail. Fixed both
+via the API, verified each connection test passes clean.
+
+🔴 **While confirming the fix, one of the two retried releases turned out to
+be malware.** "Resident Evil (2026) 1080p AMZN WEB-DL DDP5 1 H 264-FLUX" from
+indexer `TorrentDownload (Prowlarr)` was a single 1.15GB `.exe` file — no
+video container, no subtitles, nothing else in the torrent. Already 19%
+downloaded (223MB) by the time it was caught. Real releases are never a bare
+executable.
+
+- Deleted the torrent and its data from Transmission
+- Cleared a `.smbdelete*` remnant it left behind on the NAS (same SMB-can't-
+  delete-an-open-handle issue documented elsewhere in this file)
+- Blocklisted the release in Radarr via `DELETE /api/v3/queue/{id}?blocklist=true`
+  (a raw `POST /api/v3/blocklist` call silently did nothing — the queue
+  endpoint's blocklist flag is the one that actually works)
+- Triggered a fresh search; a legitimate release should replace it
+
+**Added a release profile to both Radarr and Sonarr** rejecting
+`.exe .scr .lnk .msi .bat .cmd .vbs .jar`, `password.txt`, `setup.exe`,
+`installer` in a release name — this class of fake release gets auto-rejected
+before ever reaching a download client, not just cleaned up after the fact.
+
+## 2026-09-22 — Removed Mealie and Grafana/Prometheus, verified the RAM claim
+
+**Mealie:** confirmed 0 real recipes in the data directory despite the folder
+existing — genuinely never used, not just forgotten about. **Grafana +
+Prometheus + node-exporter:** confirmed Tailscale-only (never in
+`~/.cloudflared/config.yml`, so no public exposure existed), zero scripts in
+this repo read its data, and the login itself was already forgotten. Both
+removed: containers stopped, `~/services/{mealie,grafana}` deleted, repo
+entries removed, Glance homepage monitors/bookmarks/networks removed, the
+`recipes.peciulevicius.com` tunnel ingress rule removed and verified (now
+404s instead of hanging on a dead port), the dead `grafana/data/**` rclone
+exclude removed. 42 → 38 containers.
+
+**Found while restarting the tunnel: two competing cloudflared LaunchAgents.**
+`brew services restart cloudflared` reported success but the real
+traffic-serving process — started outside Homebrew, a separate
+`com.cloudflare.cloudflared.plist` — never noticed the config change. Fixed
+with `launchctl kickstart -k gui/$(id -u)/com.cloudflare.cloudflared`,
+verified via PID/start-time change and a live curl to both a working and the
+now-removed hostname. Documented in `HOME_SERVER_REFERENCE.md` so the next
+tunnel edit doesn't lose 20 minutes to the same trap.
+
+**Tested, did not just assume, whether this frees headroom for bigger Odysseus
+models.** Loaded `qwen2.5:7b` before and after: swap still grew to 8.19GB
+total (7.31GB used) post-removal, memory free still 22% — statistically the
+same as the 23%/7.1GB swap measured earlier the same night. **The ~1.78GiB
+reclaimed is a real, permanent baseline improvement, but it does not unlock a
+larger model tier** — something else reabsorbed it. The ~8B ceiling in
+`.claude/CLAUDE.md` stands unchanged.
+
 ## 2026-09-21 (actually final) — Immich offsite backup ran clean
 
 **Flipped `BACKUP_IMMICH_PHOTOS=true` and ran it.** Verified R2 pricing live
