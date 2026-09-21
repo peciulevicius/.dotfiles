@@ -140,6 +140,23 @@ Running on 7001. Benchmarks in
 - [ ] Decide on the Anthropic API key — currently leaning **skip**, since
       claude.ai on Pro covers general reasoning and local covers the private topics
 
+### 8b. 🔒 Cloudflare/R2 security check — added 2026-09-21
+
+Surfaced while reviewing the new Immich backup. Nothing is known-broken, both
+are just unverified.
+
+- [ ] **Check the R2 API token's scope** in the Cloudflare dashboard (R2 →
+      Manage R2 API tokens). The setup docs never directed scoping it to one
+      bucket, so it may currently be account-wide. If so, create a new token
+      scoped to `peciulevicius-backups` only, update
+      `~/services/rclone/.env`, confirm `rclone lsd r2:` still works, then
+      revoke the old token.
+- [ ] **Confirm 2FA is enabled on the Cloudflare account itself** and add it to
+      [CREDENTIAL_MIGRATION.md](CREDENTIAL_MIGRATION.md) explicitly — it
+      wasn't tracked there at all despite controlling DNS, the Tunnel, Email
+      Routing, and now R2. This is arguably the single highest-value account
+      in the whole setup.
+
 ### 9. 🧹 Maintenance backlog — no deadline, real value
 
 - [ ] **Rewrite `HOME_SERVER.md` against the NAS architecture.** It's the
