@@ -16,7 +16,14 @@ services:
       ADMIN_TOKEN: ${ADMIN_TOKEN:?ADMIN_TOKEN required}
       DOMAIN: ${DOMAIN:-https://localhost:8001}
       SIGNUPS_ALLOWED: ${SIGNUPS_ALLOWED:-false}
-      LOG_LEVEL: warn
+      # Overridable so a login problem can actually be diagnosed —
+      # hardcoding this meant LOG_LEVEL in .env was silently ignored.
+      LOG_LEVEL: ${LOG_LEVEL:-warn}
+      EXTENDED_LOGGING: ${EXTENDED_LOGGING:-true}
+      # Behind Cloudflare Tunnel, without this Vaultwarden logs every client as
+      # the same bogus IP, which makes login rate-limiting global and the logs
+      # useless for telling devices apart.
+      IP_HEADER: ${IP_HEADER:-CF-Connecting-IP}
     labels:
       - "com.centurylinklabs.watchtower.enable=true"
 
