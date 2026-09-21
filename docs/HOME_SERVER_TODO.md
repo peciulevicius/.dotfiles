@@ -256,6 +256,34 @@ SMB and Calibre *writes* this database.
 - [ ] Back up `metadata.db` first; a copy is already at
       `~/backups/calibre-repair/`
 
+### ⚠️ 21 pinned images that Watchtower can never update
+
+Watchtower is enabled, which creates a false sense of currency: **a pinned tag
+never moves**, so Watchtower silently does nothing for most of the stack. This
+cost four hours on 2026-09-21 — the Bitwarden iOS app was broken by a bug fixed
+three Vaultwarden releases earlier, and the pin hid it.
+
+Every request logged **200 OK** while the app failed, because the fault was a
+malformed response body, not an error status. **When a client misbehaves against
+a healthy-looking server, compare versions first.**
+
+Oldest and most exposed first:
+
+- [ ] **Pi-hole `2024.07.0`** — over a year old and **publicly reachable** at
+      `pihole.peciulevicius.com`, controlling DNS for the whole network.
+      Highest priority.
+- [ ] **it-tools `2023.11.2`** — public, and the oldest pin here
+- [ ] **Grafana `11.6.0`**, **Jellyfin `10.10.6`**, **Uptime Kuma `1.23.16`**
+- [ ] The rest: audiobookshelf, bazarr, calibre-web, couchdb, freshrss,
+      jellyseerr, linkwarden, mealie, mariadb, redis, sonarr/radarr,
+      stirling-pdf, syncthing, transmission
+- [x] ~~vaultwarden~~ — 1.35.4 → **1.37.3** on 2026-09-21
+
+**Process, not a one-off:** bump deliberately, one service at a time, reading
+release notes and backing up data first — that is why they are pinned, and
+pinning is still the right call. But schedule it; quarterly is enough.
+`docker compose pull` will not help while the tag is fixed.
+
 ### Internal SSD is filling — 29GB free of 228GB
 
 Docker dominates and nothing here is on the NAS by mistake; it is simply a lot
