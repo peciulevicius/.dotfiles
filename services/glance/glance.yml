@@ -158,6 +158,21 @@ pages:
                     url: https://pihole.peciulevicius.com
                     icon: si:pihole
 
+              - title: Direct (no tunnel — for uploads >100MB)
+                links:
+                  - title: Immich
+                    url: http://100.81.171.49:2283
+                    icon: si:immich
+                  - title: Nextcloud
+                    url: http://100.81.171.49:8080
+                    icon: si:nextcloud
+                  - title: Paperless-ngx
+                    url: http://100.81.171.49:8000
+                    icon: si:files
+                  - title: Calibre-Web
+                    url: http://100.81.171.49:8083
+                    icon: si:calibreweb
+
               - title: System
                 links:
                   - title: Storyteller (off by default)

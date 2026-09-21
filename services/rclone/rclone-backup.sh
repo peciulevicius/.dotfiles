@@ -156,6 +156,11 @@ CALIBRE_DEST="${RCLONE_REMOTE}:peciulevicius-backups/calibre-books"
 if [[ -d "$CALIBRE_DIR" ]]; then
   log_info "Backing up $CALIBRE_DIR → $CALIBRE_DEST"
   CALIBRE_CMD=(rclone sync "$CALIBRE_DIR" "$CALIBRE_DEST")
+  # SMB leaves .smbdelete* turds when a file is deleted while still open. They
+  # are byte-identical copies of real books — one was 733MB — and syncing them
+  # would burn cloud storage on garbage.
+  CALIBRE_CMD+=(--exclude ".smbdelete*")
+  CALIBRE_CMD+=(--exclude "**/.smbdelete*")
   CALIBRE_CMD+=($RCLONE_FLAGS)
   [[ "$DRY_RUN" == "true" ]] && CALIBRE_CMD+=(--dry-run)
 

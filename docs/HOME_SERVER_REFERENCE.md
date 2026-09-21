@@ -62,6 +62,34 @@ reachable directly:
 
 Downloads are unaffected — the cap is on request bodies only.
 
+The homepage carries a **"Direct (no tunnel)"** bookmark group with the
+Tailscale URLs for the four upload-heavy services, so the right link is one
+click away rather than something to remember.
+
+⚠️ **A failed large upload can leave the library half-written.** One 750MB
+attempt through the tunnel produced a Calibre record with no file on disk, a
+folder renamed while the database still pointed at the old name, and a
+733MB `.smbdelete` duplicate. See the SMB section below.
+
+## SMB leaves `.smbdelete*` files behind
+
+When a file is deleted on an SMB share while a process still holds it open, the
+server renames it to `.smbdeleteXXXX` instead of removing it. These are
+byte-identical copies of real files — one was **733MB** — and they linger until
+every handle closes.
+
+```bash
+find /Volumes/books -name ".smbdelete*" -exec ls -lh {} \; 2>/dev/null
+find /Volumes/books -name ".smbdelete*" -delete          # "Resource busy" = still held
+```
+
+If they refuse to delete, restarting the containers that touch the share
+(`calibre`, `calibre-web`, `lazylibrarian`) releases most of them. A stubborn
+one needs the share unmounted and remounted, or deletion from the NAS itself.
+
+`rclone-backup.sh` **excludes them** — otherwise a 733MB duplicate would be
+uploaded to R2 as if it were a book.
+
 ---
 
 ## Drive Layout (reference)

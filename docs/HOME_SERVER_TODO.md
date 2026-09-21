@@ -36,6 +36,12 @@ rather than later — see [guides/DEGOOGLE.md](guides/DEGOOGLE.md).
       `localhost:8087` with `cant-hurt-me.epub` + `.m4b` staged in
       `~/Downloads/storyteller-input/`. Create the account, upload both, start
       the job. ⚠️ `docker compose down` in `~/services/storyteller` when done.
+- [ ] **Clear a stuck 733MB `.smbdelete` orphan** in
+      `/Volumes/books/David Goggins/Can't Hurt Me_ ... (41)/`. Container
+      restarts didn't release it; it needs the `books` share unmounted and
+      remounted (stop `calibre`, `calibre-web`, `lazylibrarian` first) or
+      deletion from the NAS UI. Not urgent — it is excluded from the R2 backup
+      — but it is 733MB of duplicate.
 - [ ] Verify Kindle OTA is blocked ("Check OTA Status" scriptlet)
 - [ ] Stock app → **Share → Searchable PDF** → confirm the mail arrives. This
       is the Obsidian pipeline, and it is the thing most likely to have broken
