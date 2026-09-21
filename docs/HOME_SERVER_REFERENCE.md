@@ -42,6 +42,28 @@ alone wants 2GB. See [guides/OCTOPUS_DEPLOY.md](guides/OCTOPUS_DEPLOY.md).
 
 ---
 
+## ⚠️ Cloudflare Tunnel caps uploads at 100MB
+
+The free Cloudflare plan limits request bodies to **100MB**. Anything larger
+fails on the way *in* through `*.peciulevicius.com`, and the error comes from
+the app rather than Cloudflare — Calibre-Web reports *"File size may be too
+big"*, which looks like an app setting and isn't.
+
+Affects any upload: Calibre-Web, Immich, Nextcloud, Paperless.
+
+**Workaround: skip the tunnel for large uploads.** Every service is also
+reachable directly:
+
+| Route | Address | Limit |
+|---|---|---|
+| Public hostname | `https://<svc>.peciulevicius.com` | **100MB** |
+| Tailscale | `http://100.81.171.49:<port>` | none |
+| On the Mac mini | `http://localhost:<port>` | none |
+
+Downloads are unaffected — the cap is on request bodies only.
+
+---
+
 ## Drive Layout (reference)
 
 Since the 2026-08-04 migration the **NAS is primary**. The two Samsung SSDs are

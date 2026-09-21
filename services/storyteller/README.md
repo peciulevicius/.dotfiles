@@ -122,10 +122,28 @@ Dropping the file into `/Volumes/books/<Author>/` does **not** add it: Calibre
 tracks books in `metadata.db`, and a file the database doesn't know about is
 invisible.
 
-Use **Calibre-Web → Upload** (`books.peciulevicius.com`; uploading is enabled and
-EPUB is an accepted format). It writes through the running app, which is the
-safe way to touch a library that Calibre-Web and the Calibre content server both
-have open. ⚠️ Avoid `calibredb add` against a live library for that reason.
+Use **Calibre-Web → Upload**, which writes through the running app — the safe
+way to touch a library that Calibre-Web and the Calibre content server both have
+open. ⚠️ Avoid `calibredb add` against a live library for that reason.
+
+⚠️ **Do not upload through `books.peciulevicius.com`.** Cloudflare's free plan
+caps request bodies at **100MB**, so a 750MB upload fails with
+*"Error: File size may be too big"* — which reads like a Calibre-Web limit but
+is the tunnel rejecting it.
+
+Go direct instead, bypassing Cloudflare entirely:
+
+| From | URL |
+|---|---|
+| On the Mac mini | `http://localhost:8083` |
+| Anywhere on the tailnet | `http://100.81.171.49:8083` |
+
+Downloading the file from Storyteller is unaffected — `100.81.171.49:8087` is
+also off-tunnel.
+
+This applies to anything large: **Immich, Nextcloud and Paperless uploads over
+the public hostnames hit the same 100MB ceiling.** Use the Tailscale address for
+big files.
 
 Then edit the title to something like *"Can't Hurt Me (read-along)"* so it is
 obvious which copy is which.
