@@ -166,6 +166,31 @@ are just unverified.
       Routing, and now R2. This is arguably the single highest-value account
       in the whole setup.
 
+### 8c. 🔌 Power outage recovery — added 2026-09-22
+
+A real outage left the Mac mini fully off; needed a physical power-button
+press to bring it back. Two separate gaps found.
+
+- [ ] Run `sudo pmset -a autorestartatconnect 1` — needs an interactive
+      password, so this is one for you, not something run in a session.
+      `autorestart` (restart after a kernel panic) was already on; this is the
+      *actual* "power on when AC returns" flag, and it was never set at all.
+- [x] ~~Decide: keep FileVault on, or trade it for full unattended
+      recovery?~~ — decided 2026-09-22: **keep it on.** Even with the setting
+      above, FileVault's pre-boot disk password has no unattended-unlock path,
+      so a person is still needed once per outage — but every one of 30+
+      services' `.env` files stays encrypted at rest if the machine is ever
+      stolen. Right trade for a box holding that many live secrets.
+- [ ] 🔴 **Add an external (off this network) dead-man's-switch monitor.**
+      Confirmed 2026-09-22: Uptime Kuma and its Discord alerts run on the same
+      machine that just lost power — when the whole house goes down, nothing
+      can alert about it, because the alerter is also without power. Needs a
+      service like [Healthchecks.io](https://healthchecks.io) (free tier)
+      that expects a periodic ping *from* the Mac mini and alerts when the
+      ping stops arriving — the inverse of how Kuma works today. A simple cron
+      line hitting a Healthchecks.io ping URL every few minutes is the whole
+      implementation; the alert fires on its servers, not this network.
+
 ### 9. 🧹 Maintenance backlog — no deadline, real value
 
 - [ ] **Replace the restart-cron with proper API-key integrations, per service.**

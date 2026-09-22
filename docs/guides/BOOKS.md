@@ -558,6 +558,35 @@ it does now, and you gain an Amazon-free path for everything you read.
 > Revisit KOReader's stylus support in a year — if `pencil-handwriting` matures
 > or the native support lands stably, the last Amazon dependency here goes away.
 
+## No, you can't wipe the Scribe and put a different OS on it — settled 2026-09-22
+
+Researched after watching an e-ink tablet comparison video that made the
+Kindle Scribe's own note-taking look genuinely bad next to Supernote and Boox.
+**No custom Linux distro or Android ROM exists for Kindle Scribe hardware.**
+Boox tablets run stock Android because they use commodity Android SoCs;
+Amazon's e-ink silicon and bootloader are locked down with no alternative OS
+path — this isn't an open project waiting for contributors, MobileRead and XDA
+both treat it as settled. The Vera jailbreak + KOReader-on-top is the ceiling
+for this specific device. **Don't re-research this** — the answer won't
+change without new hardware shipping.
+
+The one real "different OS" device is different hardware entirely: the
+**PocketBook InkPad One** ships Linux natively. That's a purchase, not a
+software change to the Scribe.
+
+**The honest trade-off, if note-taking quality genuinely matters more than
+this project's original goal:** the video's frustration matches what's
+already documented above — Amazon's notebook is fixed-page, no zoom, no
+infinite canvas, and KOReader can't write on the Scribe at all. A **Supernote
+Manta** is a materially better *writing* device by every account, this repo's
+findings included. But it doesn't replace what the Kindle setup already does
+well — Calibre-Web + OPDS + KOReader for EPUBs, `kindle_sync.py`'s IMAP
+pipeline into Obsidian — those would need re-solving on different hardware
+(Supernote does support server sync per its own docs, but that's a fresh
+integration, not a fifteen-minute swap). This is a **buy a second device**
+decision, not a fix to the current one — worth making deliberately, not as a
+side effect of note-taking friction on a device bought for reading.
+
 ---
 
 ## Kindle Scribe + Audible "Read & Listen" — what actually works

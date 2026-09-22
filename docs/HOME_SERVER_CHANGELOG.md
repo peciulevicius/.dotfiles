@@ -8,6 +8,53 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-22 (power outage) — Auto-restart gap found, monitoring gap found, two research questions settled
+
+**Power outage — Mac mini never came back on its own.** `pmset -g` showed
+`autorestart 1` (restart-after-kernel-panic) but **`autorestartatconnect` was
+never set at all** — the actual "power on when AC returns" setting is a
+separate, easy-to-miss flag. Needs `sudo pmset -a autorestartatconnect 1`
+(interactive password, so this is a command for the user, not something run
+in-session).
+
+⚠️ **This alone doesn't give full unattended recovery — FileVault is on.**
+Every cold power-on hits FileVault's pre-boot disk-password screen, which has
+no unattended-unlock path in macOS. **Decided 2026-09-22: keep FileVault on.**
+The trade-off was made deliberately — recovering from an outage still needs a
+person physically present once, but every one of 30+ services' `.env`
+credentials stays encrypted at rest if the machine is ever stolen. The
+alternative (turn off FileVault for full auto-recovery) was rejected as the
+wrong trade for a box holding that many live secrets.
+
+🔴 **Real gap found: Uptime Kuma and Discord alerting run on the same machine
+that lost power.** Confirmed no external (off this network) monitor exists at
+all. When the whole house loses power, nothing can alert about it, because the
+alerter is also without power. Needs a genuinely external heartbeat service
+(e.g. Healthchecks.io free tier) that expects a periodic ping *from* the Mac
+mini and alerts when the ping stops arriving — the inverse of how Kuma
+currently works. Tracked in `HOME_SERVER_TODO.md`.
+
+**Settled, don't re-research: no custom OS exists for Kindle Scribe hardware.**
+Asked after watching an e-ink tablet comparison video. Unlike Boox (commodity
+Android SoC), Amazon's Scribe silicon has no alternative-OS path — the Vera
+jailbreak + KOReader is the ceiling for this device. Full writeup in
+`guides/BOOKS.md`. The honest trade-off if note-taking quality matters more
+than this project's reading goal: a Supernote Manta is a genuinely better
+writing device, but that's a second-device purchase, not a Scribe fix.
+
+**Settled, don't re-research: stay on Paperless-ngx over Papra.** Papra is
+lighter (1 container vs 2, ~524MB vs ~1.5GB) with a nicer UI, but **has no OCR
+at all** — a hard blocker for a document-archive use case. Paperless-ngx also
+has ~8x the community size. Revisit only if Papra ships OCR.
+
+**Self-hosted music: no new service needed.** Checked — Jellyfin has no music
+library configured yet and there's no music folder on the NAS, but Jellyfin
+already natively supports music as a library type. Adding a `/Volumes/media/music`
+folder and pointing Jellyfin at it as a new library is the whole task; no
+Navidrome/Airsonic deployment needed unless a more music-specific UI is
+wanted later.
+
+
 ## 2026-09-21 (later) — Email audit corrected, TODO resequenced
 
 **⚠️ The earlier email audit was wrong.** It checked container *environment
