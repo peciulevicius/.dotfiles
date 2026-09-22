@@ -193,6 +193,22 @@ press to bring it back. Two separate gaps found.
 
 ### 9. 🧹 Maintenance backlog — no deadline, real value
 
+- [x] ~~Try `pencil-handwriting.koplugin`~~ — researched 2026-09-22, **skip
+      it, it's not what it sounds like.** It only draws ink *on top of an
+      already-open PDF/EPUB* — there's no blank canvas, so it can't replace
+      the stock notebook for freeform notes at all. It also has **no sync of
+      any kind** — export is a manual screenshot or a drag-and-drop script,
+      nothing automatic. Keep the stock Amazon notebook as the real pipeline;
+      `kindle_sync.py` needs it regardless. **Unverified, worth a 5-minute
+      look next time:** a separate plugin, `notebook.koplugin` (by pierspad),
+      whose name suggests it's the actual blank-notebook tool this plugin
+      isn't — not checked yet. See `guides/BOOKS.md`.
+- [ ] **Decide: buy a Supernote Manta?** Not urgent, not blocking anything —
+      the current Kindle+Calibre-Web+KOReader reading pipeline is untouched
+      either way. Confirmed 2026-09-22: none of the alternatives (Supernote,
+      Boox, reMarkable) give you everything at once — see the three-way
+      trade-off table in `guides/BOOKS.md`. If bought, it can sync to the
+      **already-running Nextcloud** via WebDAV, no new infrastructure needed.
 - [ ] **Add a music library to Jellyfin.** No new service needed — Jellyfin
       already natively supports music as a library type, same app, same
       login. Create `/Volumes/media/music`, drop files in, add it as a
@@ -999,13 +1015,26 @@ Gmail properly:
 - [ ] Update `IMAP_SERVER` in `pkm/config.py`
 - [ ] Critical accounts first: Apple ID, banks, GitHub, Cloudflare, Stripe
 
-#### Calendar + Contacts — unblocked, ~1 hour
+#### Calendar + Contacts — unblocked, ~1 hour, more urgent than it looked
 
 Nextcloud is already running. Nothing is stopping this.
 
+⚠️ **Corrected 2026-09-22 — this isn't a de-Google migration, it's fixing an
+actual single point of failure.** Contacts and calendar live **only on the
+iPhone itself** — not backed up to Google, and (until this is done) not
+backed up anywhere. A lost, stolen, or bricked phone loses both completely.
+There's no Google `.ics`/`.vcf` export to pull from; the import source is the
+phone's own local data.
+
 - [ ] Enable Nextcloud Calendar + Contacts apps
-- [ ] Import Google `.ics` and `.vcf` exports
+- [ ] On iPhone: Settings → Contacts / Calendar → **export first** (Contacts
+      app → select all → Share → vCard; or use the Nextcloud/CardDAV import
+      flow directly) before touching sync settings — don't let a sync error
+      be the first time a two-way merge runs against your only copy
 - [ ] Add CalDAV + CardDAV accounts on the iPhone, verify two-way sync
+- [ ] Confirm a re-fetch on a second device (or after a fresh CalDAV
+      re-add) actually shows everything — this is the real backup test, not
+      just "the accounts screen shows green"
 
 #### Phone — decision: don't buy a Pixel right now
 

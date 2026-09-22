@@ -700,6 +700,33 @@ Cloudflare Access protects `home.peciulevicius.com` (Glance dashboard) only. Oth
 - **Syncthing** — uses its own device auth
 - **Portainer** — full Docker control, too dangerous to expose publicly
 
+## Mobile Apps — connect to your own server instead of the browser
+
+Researched 2026-09-22. Point each app at its Cloudflare Tunnel hostname (or
+the Tailscale URL for anything not publicly exposed) instead of a browser.
+
+**Well-known, skip the research:** Immich (official app, auto photo backup),
+Vaultwarden (official Bitwarden app, set the self-hosted server URL at
+login), Jellyfin (official app), Audiobookshelf (official app), Nextcloud
+(official app — Files; Calendar/Contacts sync via the phone's own CalDAV/
+CardDAV instead of a dedicated app).
+
+| Service | App(s) | Platform | Notes |
+|---|---|---|---|
+| **Jellyfin (music)** | Finamp (free) or Amperfy (free core, paid extras) | iOS + Android | Streams, doesn't require downloading first |
+| **Paperless-ngx** | Swift Paperless, Paperless Mobile, PaperNext | iOS + Android | All third-party, all actively maintained. Swift Paperless is iOS-native |
+| **Linkwarden** | Official Linkwarden app | iOS 15.1+ / Android | Share-sheet save, offline caching |
+| **FreshRSS** | Reeder, NetNewsWire, ReadKit, Fluent Reader, Unread | mostly iOS | Enable **Google Reader API** access (not Fever — more limited) and set an API password in FreshRSS settings first |
+| **Transmission** | Transmissionic (free), NASCTL | iOS + Android | These are *remote-control* clients against an existing RPC server — Apple restricts download clients, not these |
+| **Syncthing** | Möbius Sync | iOS/iPadOS only | No official iOS app exists at all. Free tier capped at 20MB; $4.99 one-time unlocks unlimited |
+| **Uptime Kuma** | KumaAlert, "Uptime Kuma Manager" | iOS + Android + watchOS/WearOS | No official app; these add push alerts and widgets a bare PWA can't |
+| **Pi-hole** | Pi-hole Remote | iOS/iPadOS/Apple TV/Watch | Toggle blocking, manage lists, widgets, Siri |
+
+⚠️ **`kindle_sync.py`, Calibre-Web (via KOReader's OPDS), and Odysseus don't
+have a meaningful mobile-app story beyond what's already documented in their
+own guides** — Calibre-Web's actual mobile client *is* KOReader over OPDS,
+and Odysseus is a web workspace by design.
+
 ## Post-Deploy Setup
 
 Manual steps after deploying all services on a new machine.

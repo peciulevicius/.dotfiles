@@ -534,9 +534,23 @@ This is the part to get right, because the answer is counterintuitive.
 
 **KOReader's stylus support is not ready.** A pull request adding Kindle Scribe
 stylus events was merged in **March 2026**, proved unstable, and was **reverted**.
-A third-party plugin — **`pencil-handwriting.koplugin`** — targets the Scribe's
-EMR pen specifically with low-latency ink, eraser and per-page persistence, but
-it is early-stage and unofficial.
+
+A third-party plugin — **`pencil-handwriting.koplugin`** — targets the
+Scribe's EMR pen, and it was tried and ruled out 2026-09-22: **it isn't a
+notebook app.** It only draws ink *on top of an already-open PDF or EPUB* —
+there's no blank canvas, so it can't take freeform notes at all. It also has
+**no sync of any kind**: getting a note out means a manual KOReader
+screenshot, a drag-and-drop script, or a self-run export server — nothing
+automatic. Other real limits: no per-stroke edit or recolor (erase removes
+the whole stroke), no pressure sensitivity, and EPUB annotations drift out of
+position after the text reflows (PDF-only is the reliable case). Install, if
+you want to see it for yourself: copy the plugin folder into
+`koreader/plugins/`, fully restart KOReader (plugins only load at startup),
+enable per-document via the Typeset menu.
+
+**Unverified, worth checking next:** a separate plugin, `notebook.koplugin`
+(by pierspad) — its name suggests an actual blank-notebook tool, which
+`pencil-handwriting` isn't. Not evaluated yet.
 
 **Amazon's stock note-taking is materially better:** notebooks, templates,
 sticky notes in books, and — critically — **handwriting OCR** via
