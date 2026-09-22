@@ -67,10 +67,6 @@ pages:
                 url: http://100.81.171.49:7001
                 check-url: http://odysseus-odysseus-1:7000/api/health
                 icon: si:ollama
-              - title: Mealie
-                url: https://recipes.peciulevicius.com
-                check-url: http://mealie:9000/
-                icon: si:mealie
               - title: Stirling PDF
                 url: https://pdf.peciulevicius.com
                 check-url: http://stirling_pdf:8080/
@@ -107,14 +103,6 @@ pages:
                 url: http://100.81.171.49:6767
                 check-url: http://bazarr:6767/
                 icon: di:bazarr
-              - title: Grafana
-                url: http://100.81.171.49:3000
-                check-url: http://grafana:3000/
-                icon: si:grafana
-              - title: Prometheus
-                url: http://100.81.171.49:9090
-                check-url: http://prometheus:9090/
-                icon: si:prometheus
           - type: bookmarks
             groups:
               - title: Main
@@ -149,9 +137,6 @@ pages:
                   - title: Linkwarden
                     url: https://links.peciulevicius.com
                     icon: si:bookstack
-                  - title: Mealie
-                    url: https://recipes.peciulevicius.com
-                    icon: si:mealie
                   - title: Stirling PDF
                     url: https://pdf.peciulevicius.com
                     icon: si:files
@@ -212,9 +197,6 @@ pages:
                   - title: Bazarr
                     url: http://100.81.171.49:6767
                     icon: di:bazarr
-                  - title: Grafana
-                    url: http://100.81.171.49:3000
-                    icon: si:grafana
 
           - type: docker-containers
 

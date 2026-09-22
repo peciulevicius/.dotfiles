@@ -100,7 +100,6 @@ SYNC_CMD+=(--exclude "odysseus/.git/**")
 # Large app installs — reinstallable, not user data
 SYNC_CMD+=(--exclude "nextcloud/data/**")
 SYNC_CMD+=(--exclude "sonarr-radarr/data/**")
-SYNC_CMD+=(--exclude "grafana/data/**")
 SYNC_CMD+=(--exclude "jellyfin/data/**")
 SYNC_CMD+=(--exclude "syncthing/data/**")
 SYNC_CMD+=(--exclude "pihole/data/**")

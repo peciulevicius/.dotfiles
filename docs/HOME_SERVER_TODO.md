@@ -115,6 +115,15 @@ verification mail arrives (this also proves catch-all works) → tick it off.
       others; do not move it while still depending on it
 - [ ] Delete `~/credentials-import.md` when the list is exhausted
 
+⚠️ **After rotating any password, check every OTHER service that stores its own
+copy of that login** — not just the service whose password you changed. Real
+example, 2026-09-22: Transmission's password was rotated 2026-09-19, but
+Radarr, Sonarr *and* LazyLibrarian each keep their own separate stored copy of
+Transmission's login to talk to it. All three silently failed authentication
+for three days — nothing in Transmission itself looked wrong. `grep -rl
+"<old value>" ~/services/` across every service's config after any rotation
+is cheap insurance against this exact class of miss.
+
 ### 7. 🧩 Vaultwarden Chrome extension on the work laptop
 
 Still broken after the 1.37.3 upgrade fixed iOS. **The extension has never once
@@ -159,16 +168,37 @@ are just unverified.
 
 ### 9. 🧹 Maintenance backlog — no deadline, real value
 
-- [ ] **Replace the Jellyfin restart-cron with a proper Connect integration.**
-      Added 2026-09-22 as a stopgap: `scripts/utils/jellyfin-rescan.sh` restarts
-      the container every 30 min because Jellyfin's file watcher doesn't
-      reliably see new files over SMB. The real fix needs one 30-second thing
-      only you can do: Jellyfin dashboard → Admin → **API Keys → +** → copy
-      the key, then tell me and I'll wire it into Radarr's and Sonarr's
-      Settings → Connect as a native Jellyfin notification. That refreshes
-      just the new item instantly, with no restart and no brief playback
-      interruption for anyone streaming — then the cron job and script can be
-      deleted.
+- [ ] **Replace the restart-cron with proper API-key integrations, per service.**
+      Added 2026-09-22 as a stopgap: `scripts/utils/smb-watcher-rescan.sh`
+      restarts Jellyfin + Audiobookshelf every 30 min because neither's file
+      watcher reliably sees new files over SMB. Each real fix needs one
+      30-second thing only you can do:
+      - [ ] **Jellyfin** — dashboard → Admin → **API Keys → +** → send me the
+            key, I'll wire it into Radarr's and Sonarr's Settings → Connect.
+            Instant refresh, no restart, no playback interruption.
+      - [ ] **Audiobookshelf** — same idea (Settings → API Keys), but check
+            whether LazyLibrarian even supports a "notify on import" hook for
+            it first — unconfirmed as of 2026-09-22, unlike Jellyfin's
+            well-documented Connect integration.
+- [ ] 🔴 **Rotate Immich's database password.** Found 2026-09-22 while
+      checking whether other services shared the Transmission credential bug:
+      `~/services/immich/.env`'s `DB_PASSWORD` is still your old, reused
+      personal password (the same one flagged earlier in the credential
+      migration). Internal-only (Postgres isn't exposed outside the Docker
+      network), so not an active exposure, but it's the one password in this
+      whole stack that was never actually replaced with a random one.
+      ⚠️ **Do this carefully, not as a quick edit** — changing `.env` alone
+      will NOT work: Immich's Postgres container already has the OLD password
+      set on the database user, so a mismatched `.env` breaks Immich's DB
+      connection entirely (photos safe on disk, app inaccessible). Correct
+      sequence:
+      ```bash
+      NEW_PASS="$(openssl rand -base64 32)"
+      docker exec immich_postgres psql -U postgres -c "ALTER USER postgres WITH PASSWORD '$NEW_PASS';"
+      # then update DB_PASSWORD in ~/services/immich/.env to match $NEW_PASS
+      docker compose -f ~/services/immich/docker-compose.yml up -d
+      # verify: docker logs immich_server --tail 20 (no auth errors), open the app
+      ```
 - [ ] **Rewrite `HOME_SERVER.md` against the NAS architecture.** It's the
       linked "set up from scratch" guide but still describes the pre-2026-08-04
       T7-primary setup (Immich/media/books all pointed at T7, no NAS at all).

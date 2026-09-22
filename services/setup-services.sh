@@ -33,14 +33,12 @@ SERVICES=(
   it-tools
   audiobookshelf
   linkwarden
-  mealie
   jellyfin
   sonarr-radarr
   lazylibrarian
   transmission
   jellyseerr
   bazarr
-  grafana
   couchdb
   storyteller
   odysseus
@@ -65,14 +63,12 @@ SERVICE_PORTS=(
   "it-tools:8085"
   "audiobookshelf:13378"
   "linkwarden:3005"
-  "mealie:9925"
   "jellyfin:8096"
   "sonarr-radarr:8989,7878,9696"
   "lazylibrarian:5299"
   "transmission:9091"
   "jellyseerr:5055"
   "bazarr:6767"
-  "grafana:3000,9090,9100"
   "couchdb:5984"
   "storyteller:8087"
   "odysseus:7001"

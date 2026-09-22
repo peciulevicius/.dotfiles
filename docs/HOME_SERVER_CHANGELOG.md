@@ -40,6 +40,41 @@ sections. Older detail moved under "Detail and standing items". Refreshed the
 SSD section (it had hit 15GiB/92%, not the 29GB recorded) and added the
 warning that `docker image prune -a` would delete Storyteller.
 
+## 2026-09-22 (later still) — Same credential bug hit a third service, plus a real find
+
+Asked "will this hit other services too" after the Radarr/Sonarr fix — checked
+rather than assumed:
+
+- 🔴 **LazyLibrarian had the identical bug**, and worse: its stored Transmission
+  password was still the user's actual old, reused personal password (the
+  same one flagged earlier in the credential migration project), sitting in a
+  live config file rather than just a doc. Fixed — but the fix didn't stick on
+  the first try: `docker restart` let LazyLibrarian flush its own in-memory
+  config back to disk on shutdown, silently reverting the edit. Second attempt
+  used `docker stop` → edit while fully dead → `docker start`, which held.
+  Also deleted `config.ini.bak`/`.bak2`, which carried the same old password.
+- **Bazarr, Jellyseerr, Prowlarr are unaffected** — confirmed each only stores
+  API keys for Radarr/Sonarr/Jellyfin, never a Transmission login, so nothing
+  in the credential rotation touches them.
+- **Hardened LazyLibrarian's release filter** (`reject_words`) with the same
+  `.exe/.scr/.msi/.bat/.cmd/.vbs/.jar/installer` terms added to Radarr/Sonarr
+  earlier tonight — the malware-disguised-as-media risk applies to ebook/
+  audiobook indexers exactly the same way.
+- **Found a real, separate issue while checking:** `~/services/immich/.env`'s
+  `DB_PASSWORD` is also the same old reused personal password — never rotated
+  during the credential migration. Internal-only (not exposed outside the
+  Docker network), so not fixed tonight at midnight without testing — the
+  correct sequence (ALTER the Postgres user first, then update `.env`, or
+  Immich's DB connection breaks entirely) is written out in
+  `HOME_SERVER_TODO.md`.
+- **Renamed `jellyfin-rescan.sh` → `smb-watcher-rescan.sh`** and extended it to
+  also restart Audiobookshelf, which runs an identical watcher on an
+  identically SMB-mounted library (`/Volumes/audiobooks`) — no confirmed
+  failure yet, added preventively since the root cause is architectural.
+- Added a standing warning to TODO step 6 (the credential migration pass):
+  after rotating any password, grep every service's config for the old value,
+  not just assume the one service you changed is the only consumer.
+
 ## 2026-09-22 (later still) — Finished download didn't appear in Jellyfin
 
 Two separate gaps, not "just needed to wait":

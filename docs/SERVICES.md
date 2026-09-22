@@ -30,7 +30,6 @@ Run your own cloud on a Mac mini (or any Docker host). 26 services covering phot
 | [IT-Tools](#it-tools) | tools.peciulevicius.com | 8085 | Online dev tools |
 | [Audiobookshelf](#audiobookshelf) | listen.peciulevicius.com | 13378 | Audible |
 | [Linkwarden](#linkwarden) | links.peciulevicius.com | 3005 | Pocket / Raindrop |
-| [Mealie](#mealie) | recipes.peciulevicius.com | 9925 | Paprika / online recipes |
 
 ### Media Stack
 
@@ -49,9 +48,6 @@ Run your own cloud on a Mac mini (or any Docker host). 26 services covering phot
 
 | Service | URL | Port | Purpose |
 |---------|-----|------|---------|
-| [Grafana](#grafana-prometheus) | Tailscale only | 3000 | Monitoring dashboards |
-| [Prometheus](#grafana-prometheus) | Tailscale only | 9090 | Metrics collection |
-| [Node Exporter](#grafana-prometheus) | — | 9100 | System metrics (CPU, RAM, disk) |
 
 ## Prerequisites
 
@@ -491,26 +487,6 @@ docker compose up -d
 
 ---
 
-### Mealie
-
-**What:** Recipe manager and meal planner. Import recipes from any URL (auto-extracts ingredients and steps), organize by category, plan weekly meals, generate shopping lists.
-
-**Why:** Save recipes without the blog spam. Share a family recipe book. Plan meals and generate a shopping list.
-
-**How to use:**
-1. Open http://localhost:9925, login (changeme@example.com / MyPassword — change immediately)
-2. Click "Create" → paste a recipe URL → Mealie extracts it
-3. Organize by category (breakfast, dinner, dessert, etc.)
-4. Use the meal planner for weekly planning
-
-```bash
-cd ~/services/mealie
-docker compose up -d
-# Open: http://localhost:9925
-```
-
----
-
 ### Jellyfin
 
 **What:** Self-hosted media server. Stream your movie and TV collection from any device — web, mobile, smart TV, Roku, Fire TV.
@@ -631,26 +607,6 @@ docker compose up -d
 
 ---
 
-### Grafana + Prometheus
-
-**What:** Monitoring and visualization stack. Prometheus collects metrics (CPU, RAM, disk, network), Grafana displays them in dashboards. Node Exporter provides the system metrics.
-
-**Why:** Glance shows current stats, but Grafana shows history — see trends over time, set alerts, catch issues before they become problems.
-
-**How to use:**
-1. Open Grafana at http://localhost:3000 (admin / password from .env)
-2. Add Prometheus as a data source: `http://prometheus:9090`
-3. Import a Node Exporter dashboard (ID: `1860` from grafana.com/dashboards)
-4. You now have CPU, RAM, disk, and network graphs over time
-
-```bash
-cd ~/services/grafana
-docker compose up -d
-# Open: http://localhost:3000
-```
-
----
-
 ## Remote Access (Cloudflare Tunnel)
 
 All services are accessible via HTTPS through a Cloudflare Tunnel. This provides real TLS certificates, no port forwarding, and works from anywhere.
@@ -693,7 +649,6 @@ Every service is accessible three ways: localhost (on the Mac mini), Tailscale (
 | IT-Tools | 8085 | http://100.81.171.49:8085 | https://tools.peciulevicius.com |
 | Audiobookshelf | 13378 | http://100.81.171.49:13378 | https://listen.peciulevicius.com |
 | Linkwarden | 3005 | http://100.81.171.49:3005 | https://links.peciulevicius.com |
-| Mealie | 9925 | http://100.81.171.49:9925 | https://recipes.peciulevicius.com |
 
 **Media:**
 
@@ -713,8 +668,6 @@ Every service is accessible three ways: localhost (on the Mac mini), Tailscale (
 | Prowlarr | 9696 | http://100.81.171.49:9696 |
 | Bazarr | 6767 | http://100.81.171.49:6767 |
 | Transmission | 9091 | http://100.81.171.49:9091 |
-| Grafana | 3000 | http://100.81.171.49:3000 |
-| Prometheus | 9090 | http://100.81.171.49:9090 |
 | LazyLibrarian | 5299 | http://100.81.171.49:5299 |
 **Mobile apps (use Tailscale URLs to bypass Cloudflare Access gate):**
 
@@ -744,7 +697,6 @@ Cloudflare Access protects `home.peciulevicius.com` (Glance dashboard) only. Oth
 **Why media/monitoring services are Tailscale-only:**
 - **Sonarr/Radarr/Prowlarr/Transmission** — media management, set-and-forget
 - **Jellyseerr/Bazarr** — media automation
-- **Grafana/Prometheus** — internal monitoring
 - **Syncthing** — uses its own device auth
 - **Portainer** — full Docker control, too dangerous to expose publicly
 

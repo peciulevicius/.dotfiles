@@ -234,23 +234,33 @@ one needs the share unmounted and remounted, or deletion from the NAS itself.
 `rclone-backup.sh` **excludes them** — otherwise a 733MB duplicate would be
 uploaded to R2 as if it were a book.
 
-## Jellyfin doesn't reliably notice new files on the NAS
+## Services with an SMB-mounted library don't reliably notice new files
 
-Same root cause, different symptom: Jellyfin's real-time file watcher does
-not reliably fire on an SMB-mounted share. Confirmed 2026-09-22 — a Radarr
-import completed, the file sat correctly in `/media/movies/`, and Jellyfin's
-logs showed zero scan activity until the container was **restarted**, which
-forces a full library scan on startup and picked it up immediately.
+A media server's real-time file watcher does not reliably fire on an
+SMB-mounted share. **Confirmed** for Jellyfin (`/Volumes/media`) 2026-09-22 —
+a Radarr import completed, the file sat correctly in `/media/movies/`, and
+Jellyfin's logs showed zero scan activity until the container was
+**restarted**, which forces a full library scan on startup and picked it up
+immediately. **Audiobookshelf** (`/Volumes/audiobooks`) runs the identical
+watcher-on-SMB pattern — no confirmed failure yet, covered preventively since
+the root cause is architectural, not specific to Jellyfin.
 
-**Stopgap, running now:** `scripts/utils/jellyfin-rescan.sh` restarts the
-container every 30 minutes via cron. Brief playback interruption for anyone
-actively streaming at that moment, but new downloads stop needing a manual
-nudge.
+**Stopgap, running now:** `scripts/utils/smb-watcher-rescan.sh` restarts
+both containers every 30 minutes via cron. Brief interruption for anyone
+actively using either at that moment, but new files stop needing a manual
+nudge either way.
 
-**Real fix, needs a person:** generate a Jellyfin API key (dashboard → Admin
-→ API Keys) and wire it into Radarr's and Sonarr's Settings → Connect as a
-native Jellyfin notification — refreshes just the new item the moment import
-finishes, no restart, no interruption. See `HOME_SERVER_TODO.md`.
+**Real fix, needs a person, per service:**
+- **Jellyfin** — generate an API key (dashboard → Admin → API Keys) and wire
+  it into Radarr's and Sonarr's Settings → Connect as a native Jellyfin
+  notification. Refreshes just the new item the moment import finishes, no
+  restart, no interruption.
+- **Audiobookshelf** — no equivalent documented "notify on import" hook from
+  LazyLibrarian as of 2026-09-22. Worth checking Audiobookshelf's own API for
+  a targeted scan-one-folder endpoint before assuming the blunt restart is
+  permanent for this one.
+
+See `HOME_SERVER_TODO.md`.
 
 ---
 

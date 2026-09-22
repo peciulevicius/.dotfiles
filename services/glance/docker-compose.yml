@@ -21,7 +21,6 @@ services:
       - calibre-web
       - linkwarden
       - freshrss
-      - mealie
       - stirling-pdf
       - it-tools
       - pihole
@@ -29,7 +28,6 @@ services:
       - uptime-kuma
       - media
       - lazylibrarian
-      - grafana_default
       - couchdb
       - odysseus_default
 
@@ -53,8 +51,6 @@ networks:
     external: true
   freshrss:
     external: true
-  mealie:
-    external: true
   stirling-pdf:
     external: true
   it-tools:
@@ -68,8 +64,6 @@ networks:
   media:
     external: true
   lazylibrarian:
-    external: true
-  grafana_default:
     external: true
   couchdb:
     external: true
