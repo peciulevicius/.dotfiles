@@ -159,6 +159,16 @@ are just unverified.
 
 ### 9. 🧹 Maintenance backlog — no deadline, real value
 
+- [ ] **Replace the Jellyfin restart-cron with a proper Connect integration.**
+      Added 2026-09-22 as a stopgap: `scripts/utils/jellyfin-rescan.sh` restarts
+      the container every 30 min because Jellyfin's file watcher doesn't
+      reliably see new files over SMB. The real fix needs one 30-second thing
+      only you can do: Jellyfin dashboard → Admin → **API Keys → +** → copy
+      the key, then tell me and I'll wire it into Radarr's and Sonarr's
+      Settings → Connect as a native Jellyfin notification. That refreshes
+      just the new item instantly, with no restart and no brief playback
+      interruption for anyone streaming — then the cron job and script can be
+      deleted.
 - [ ] **Rewrite `HOME_SERVER.md` against the NAS architecture.** It's the
       linked "set up from scratch" guide but still describes the pre-2026-08-04
       T7-primary setup (Immich/media/books all pointed at T7, no NAS at all).
@@ -166,6 +176,33 @@ are just unverified.
       from `SERVICES.md`/`UTILITY_SCRIPTS.md` repointed at
       `HOME_SERVER_REFERENCE.md`, but the ~750-line body is still the old
       narrative — real rewrite work, not a quick edit.
+- [ ] Clear the leftover data directories from tonight's removals:
+      `rm -rf ~/services/mealie ~/services/grafana` (both confirmed
+      empty/unused before removal, nothing to lose)
+- [x] ~~Remove Mealie~~ — done 2026-09-21/22. **0 real recipes** despite the
+      folder existing — confirmed empty, not just "unused." Container, tunnel
+      route (`recipes.peciulevicius.com`), homepage entry and network all
+      removed.
+- [x] ~~Remove Grafana + Prometheus + node-exporter~~ — done 2026-09-21/22.
+      Tailscale-only (never in the tunnel config, so no public exposure to
+      begin with), no script in this repo ever read its data, and the login
+      itself was long forgotten. Reclaimed **~1.78 GiB RAM**. Container, homepage
+      entry and network all removed.
+- [ ] **Decide: Nextcloud — keep or remove?** Only 83MB of real user files in
+      it (the rest is app code + DB engine). Its one non-redundant feature is
+      Calendar/Contacts sync (CalDAV/CardDAV) — nothing else here does that.
+      Depends on where your phone's contacts/calendar actually live today:
+      if it's Google, Nextcloud is the designated de-Google replacement
+      (already on the open gap list in `guides/DEGOOGLE.md`); if it's Apple
+      and you're happy there, Nextcloud is redundant — remove it the same way
+      as Mealie/Grafana above.
+- [ ] **Decide: Paperless-ngx — keep or remove?** Not empty like Mealie was —
+      **14 real scanned documents** exist. Low activity, but not zero. Its job
+      (OCR + searchable archive of scanned paperwork) is different from just
+      uploading a file into an Odysseus chat — Odysseus's upload is ephemeral
+      per-conversation context, not a tagged, dated, full-text-searchable
+      archive across years. Keep if you expect to scan real paperwork
+      (tax/medical/receipts) later; remove if not.
 
 ⚠️ **Pi-hole is the one that matters here:** pinned at `pihole/pihole:2024.07.0`,
 publicly exposed, and it controls DNS for the whole network. A pinned tag never

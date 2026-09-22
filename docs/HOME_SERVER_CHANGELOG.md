@@ -40,6 +40,33 @@ sections. Older detail moved under "Detail and standing items". Refreshed the
 SSD section (it had hit 15GiB/92%, not the 29GB recorded) and added the
 warning that `docker image prune -a` would delete Storyteller.
 
+## 2026-09-22 (later still) — Finished download didn't appear in Jellyfin
+
+Two separate gaps, not "just needed to wait":
+
+1. **Radarr had the file on disk but hadn't registered it** (`hasFile: false`
+   despite the `.mp4` already sitting in `/media/movies/`). Forced with
+   `POST /api/v3/command {"name":"DownloadedMoviesScan"}` — resolved in
+   seconds, so this one likely would have cleared on its own next scheduled
+   check, just not instantly.
+2. **Jellyfin never noticed the new file at all** — confirmed real, not a
+   timing issue: `/Library/Refresh` needs auth (401, no key configured), and
+   even after Radarr's import completed, zero scan/refresh activity appeared
+   in Jellyfin's logs. This is the same class of limitation already
+   documented for other services on this NAS — Jellyfin's real-time file
+   watcher does not reliably see changes on an SMB-mounted share. Restarting
+   the container (forces a full scan on startup) picked it up immediately,
+   confirmed via `ffprobe` running against the exact file in the fresh logs.
+
+**Added `scripts/utils/jellyfin-rescan.sh`**, cron'd every 30 minutes via the
+existing `run-with-notify.sh` wrapper — restarts Jellyfin so this stops being
+a manual step for every future download. This is the blunt fix (a few
+seconds of playback interruption for anyone actively streaming, every 30
+min); the surgical one is a native Radarr/Sonarr → Jellyfin "Connect"
+integration that refreshes just the new item with no restart, gated on one
+thing only a person can do — generate a Jellyfin API key in its dashboard.
+Tracked in `HOME_SERVER_TODO.md`.
+
 ## 2026-09-22 (later) — Download pipeline was silently broken, then served malware
 
 **Root cause of "requested movies never appear in Transmission":** Radarr and

@@ -234,6 +234,24 @@ one needs the share unmounted and remounted, or deletion from the NAS itself.
 `rclone-backup.sh` **excludes them** — otherwise a 733MB duplicate would be
 uploaded to R2 as if it were a book.
 
+## Jellyfin doesn't reliably notice new files on the NAS
+
+Same root cause, different symptom: Jellyfin's real-time file watcher does
+not reliably fire on an SMB-mounted share. Confirmed 2026-09-22 — a Radarr
+import completed, the file sat correctly in `/media/movies/`, and Jellyfin's
+logs showed zero scan activity until the container was **restarted**, which
+forces a full library scan on startup and picked it up immediately.
+
+**Stopgap, running now:** `scripts/utils/jellyfin-rescan.sh` restarts the
+container every 30 minutes via cron. Brief playback interruption for anyone
+actively streaming at that moment, but new downloads stop needing a manual
+nudge.
+
+**Real fix, needs a person:** generate a Jellyfin API key (dashboard → Admin
+→ API Keys) and wire it into Radarr's and Sonarr's Settings → Connect as a
+native Jellyfin notification — refreshes just the new item the moment import
+finishes, no restart, no interruption. See `HOME_SERVER_TODO.md`.
+
 ---
 
 ## Drive Layout (reference)
