@@ -198,11 +198,22 @@ press to bring it back. Two separate gaps found.
       already-open PDF/EPUB* — there's no blank canvas, so it can't replace
       the stock notebook for freeform notes at all. It also has **no sync of
       any kind** — export is a manual screenshot or a drag-and-drop script,
-      nothing automatic. Keep the stock Amazon notebook as the real pipeline;
-      `kindle_sync.py` needs it regardless. **Unverified, worth a 5-minute
-      look next time:** a separate plugin, `notebook.koplugin` (by pierspad),
-      whose name suggests it's the actual blank-notebook tool this plugin
-      isn't — not checked yet. See `guides/BOOKS.md`.
+      nothing automatic.
+- [ ] **Try `notebook.koplugin` (by pierspad) for on-device writing —
+      checked 2026-09-22, genuinely good, still doesn't replace the pipeline.**
+      Real blank-canvas notebook, vector ink with clean erase/undo, multiple
+      page backgrounds, actively developed and specifically optimized for the
+      Scribe (a September 2026 audit measured up to 261× faster input
+      handling on this exact hardware). But: **fixed pages, not infinite
+      canvas** (same as every alternative researched), **no server sync** —
+      only an optional local-Wi-Fi send-to-phone via `localsend.koplugin`,
+      one notebook at a time — and **no search**. Doesn't produce anything
+      `kindle_sync.py` can pick up, so it can't replace Amazon's *Share →
+      Searchable PDF* OCR pipeline into Obsidian — worth using *alongside*
+      the stock notebook for writing you don't need synced, not instead of
+      it. Install: latest release zip → `koreader/plugins/` →
+      `notebook.koplugin` folder → restart KOReader → Menu → Tools → More
+      tools → Notebook. Full writeup: `guides/BOOKS.md`.
 - [ ] **Decide: buy a Supernote Manta?** Not urgent, not blocking anything —
       the current Kindle+Calibre-Web+KOReader reading pipeline is untouched
       either way. Confirmed 2026-09-22: none of the alternatives (Supernote,

@@ -548,9 +548,45 @@ you want to see it for yourself: copy the plugin folder into
 `koreader/plugins/`, fully restart KOReader (plugins only load at startup),
 enable per-document via the Typeset menu.
 
-**Unverified, worth checking next:** a separate plugin, `notebook.koplugin`
-(by pierspad) — its name suggests an actual blank-notebook tool, which
-`pencil-handwriting` isn't. Not evaluated yet.
+**`notebook.koplugin` (by pierspad) — checked 2026-09-22, genuinely better,
+still doesn't solve sync or search.** Unlike `pencil-handwriting`, this one
+*is* a real notebook: an actual blank canvas, vector strokes (clean per-stroke
+erase and undo, unlike Amazon's own eraser), multiple pages with a choice of
+backgrounds (blank/lined/narrow-lined/grid/dot-grid/checklist), and a gallery
+of thumbnails to browse notebooks. It's also under active, Scribe-specific
+development — a September 2026 performance audit rewrote its input handling
+for this exact hardware and measured **up to 261× faster** input processing
+and ~92–94% less redraw time. This is a serious, maintained plugin, not an
+abandoned experiment.
+
+But it still doesn't get you what you actually asked for:
+
+- ❌ **Not infinite canvas** — fixed-size pages, same as everything else
+  researched here (see the [device comparison table](#no-you-cant-wipe-the-scribe-and-put-a-different-os-on-it--settled-2026-09-22) above — only reMarkable has true infinite scroll)
+- ❌ **No server sync** — the only transfer option is an optional companion
+  plugin ([`localsend.koplugin`](https://github.com/kaikozlov/localsend.koplugin))
+  that sends a notebook to a phone over local Wi-Fi, by hand, one at a time.
+  Nothing pushes to Obsidian or anywhere automatically.
+- ❌ **No search** — not mentioned anywhere in its docs; nothing indicates
+  full-text or handwriting search exists.
+- ⚠️ Known rough edges from its own audit: dragging still re-rasterizes the
+  whole stroke per frame (can lag on complex drawings), saving very large
+  notebooks is synchronous (brief hang possible), and the notebook gallery
+  recomputes thumbnails on every paint rather than caching them.
+
+**Verdict: worth trying as a nicer on-device writing experience** — vector
+ink, real erase/undo, and it's specifically tuned for the Scribe's hardware —
+**but it does not replace `kindle_sync.py`'s pipeline.** That pipeline
+depends on Amazon's own *Share → Searchable PDF* OCR export, which this
+plugin has no equivalent of. Using it means either running it *alongside*
+the stock notebook (two note-taking surfaces, more to remember) or losing
+the automatic OCR-into-Obsidian path entirely. Install: download the latest
+release zip, extract into `koreader/plugins/` so you end up with a
+`notebook.koplugin` folder, restart KOReader, find it at
+**Menu → Tools → More tools → Notebook**.
+
+Sources: [pierspad/notebook.koplugin](https://github.com/pierspad/notebook.koplugin) ·
+[2026-09-14 performance audit](https://github.com/pierspad/notebook.koplugin/blob/main/docs/audits/2026-09-14-notebook.md)
 
 **Amazon's stock note-taking is materially better:** notebooks, templates,
 sticky notes in books, and — critically — **handwriting OCR** via
