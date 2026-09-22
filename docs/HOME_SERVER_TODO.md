@@ -193,7 +193,13 @@ press to bring it back. Two separate gaps found.
 
 ### 9. 🧹 Maintenance backlog — no deadline, real value
 
-- [ ] **Replace the restart-cron with proper API-key integrations, per service.**
+- [ ] **Add a music library to Jellyfin.** No new service needed — Jellyfin
+      already natively supports music as a library type, same app, same
+      login. Create `/Volumes/media/music`, drop files in, add it as a
+      library in Jellyfin's admin. Stream-only (no manual download step,
+      works like Spotify) with **Finamp** (free, iOS/Android) or **Amperfy**
+      (iOS, has a paid tier for extras but core streaming is free). Both
+      point at the same Jellyfin server already running.
       Added 2026-09-22 as a stopgap: `scripts/utils/smb-watcher-rescan.sh`
       restarts Jellyfin + Audiobookshelf every 30 min because neither's file
       watcher reliably sees new files over SMB. Each real fix needs one
@@ -244,13 +250,18 @@ press to bring it back. Two separate gaps found.
       itself was long forgotten. Reclaimed **~1.78 GiB RAM**. Container, homepage
       entry and network all removed.
 - [ ] **Decide: Nextcloud — keep or remove?** Only 83MB of real user files in
-      it (the rest is app code + DB engine). Its one non-redundant feature is
-      Calendar/Contacts sync (CalDAV/CardDAV) — nothing else here does that.
-      Depends on where your phone's contacts/calendar actually live today:
-      if it's Google, Nextcloud is the designated de-Google replacement
-      (already on the open gap list in `guides/DEGOOGLE.md`); if it's Apple
-      and you're happy there, Nextcloud is redundant — remove it the same way
-      as Mealie/Grafana above.
+      it (the rest is app code + DB engine). Its non-redundant features:
+      **Calendar/Contacts sync** (CalDAV/CardDAV — nothing else here does
+      that; depends on where your phone's contacts/calendar actually live
+      today — if Google, this is the designated de-Google replacement already
+      on the gap list in `guides/DEGOOGLE.md`; if Apple and happy there,
+      redundant) and — new consideration, 2026-09-22 — **it's the confirmed
+      WebDAV target for a Supernote's own-server note sync** (see
+      `guides/BOOKS.md`), so it gains a second real use only if a Supernote is
+      ever bought. ⚠️ Don't use Nextcloud's own Notes app if you do keep it —
+      per a second creator's own de-Google attempt, it's a genuinely bad app
+      (2.3★, constant disconnects, doesn't stay logged in); Obsidian is
+      already the right notes tool here regardless.
 - [ ] **Decide: Paperless-ngx — keep or remove?** Not empty like Mealie was —
       **14 real scanned documents** exist. Low activity, but not zero. Its job
       (OCR + searchable archive of scanned paperwork) is different from just

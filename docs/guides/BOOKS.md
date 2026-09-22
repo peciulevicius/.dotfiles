@@ -577,15 +577,34 @@ software change to the Scribe.
 **The honest trade-off, if note-taking quality genuinely matters more than
 this project's original goal:** the video's frustration matches what's
 already documented above — Amazon's notebook is fixed-page, no zoom, no
-infinite canvas, and KOReader can't write on the Scribe at all. A **Supernote
-Manta** is a materially better *writing* device by every account, this repo's
-findings included. But it doesn't replace what the Kindle setup already does
-well — Calibre-Web + OPDS + KOReader for EPUBs, `kindle_sync.py`'s IMAP
-pipeline into Obsidian — those would need re-solving on different hardware
-(Supernote does support server sync per its own docs, but that's a fresh
-integration, not a fifteen-minute swap). This is a **buy a second device**
-decision, not a fix to the current one — worth making deliberately, not as a
-side effect of note-taking friction on a device bought for reading.
+infinite canvas, and KOReader can't write on the Scribe at all. But **none of
+the obvious replacements actually give you infinite canvas either** — checked
+2026-09-22, don't re-research:
+
+| Device | Canvas | Writing feel | Own-server sync |
+|---|---|---|---|
+| **reMarkable** | ✅ genuine infinite scroll — the only one that has it | Good | Subscription paywall for search/organize (the exact thing that started this whole comparison) |
+| **Supernote Manta** | ❌ page-by-page, fixed — best writing feel of the three | Best | ✅ **WebDAV**, confirmed working against **self-hosted Nextcloud** — which is already deployed here, so this needs zero new infrastructure if bought |
+| **Boox** (Note Max, Go) | 🟡 *extendable* — a larger fixed canvas, off-screen panning, not truly infinite | Weaker (runs full Android, more battery drain) | Runs Android — anything, since it's just an app |
+
+So it's a real three-way trade, not a clear winner: true infinite canvas
+means accepting reMarkable's subscription wall (the problem this whole
+research started from); the best pure writing feel (Supernote) means giving
+up infinite canvas entirely; Boox splits the difference with a bigger-but-
+still-finite canvas and full Android flexibility at the cost of pen feel and
+battery.
+
+**A Supernote Manta is a materially better *writing* device by every account,
+this repo's findings included** — but it doesn't replace what the Kindle
+setup already does well — Calibre-Web + OPDS + KOReader for EPUBs,
+`kindle_sync.py`'s IMAP pipeline into Obsidian — those would need re-solving
+on different hardware. This is a **buy a second device** decision, not a fix
+to the current one — worth making deliberately, not as a side effect of
+note-taking friction on a device bought for reading.
+
+**Not Lithuanian** — PocketBook (maker of the InkPad One) was founded in Kyiv,
+Ukraine in 2007, HQ'd in Lugano, Switzerland since 2012. Swiss company with
+Ukrainian roots.
 
 ---
 
