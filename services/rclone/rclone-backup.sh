@@ -223,13 +223,16 @@ if [[ "${BACKUP_IMMICH_PHOTOS:-false}" == "true" ]]; then
   fi
 fi
 
-HEARTBEAT_URL="https://status.peciulevicius.com/api/push/1xdUOQNbK4"
+# Uptime Kuma push URL lives in .env — the token in it lets anyone report this
+# backup as healthy, so it must never be in this public repo.
+HEARTBEAT_URL="${HEARTBEAT_URL:-}"
+[[ -z "$HEARTBEAT_URL" ]] && log_warn "HEARTBEAT_URL not set in .env — Uptime Kuma will not be notified"
 
 if [[ $ERRORS -gt 0 ]]; then
   log_err "Backup finished with $ERRORS error(s)"
-  curl -fsS "${HEARTBEAT_URL}?status=down&msg=backup+failed+with+${ERRORS}+error(s)&ping=" > /dev/null 2>&1 || true
+  [[ -n "$HEARTBEAT_URL" ]] && curl -fsS "${HEARTBEAT_URL}?status=down&msg=backup+failed+with+${ERRORS}+error(s)&ping=" > /dev/null 2>&1 || true
   exit 1
 fi
 
 log_ok "All backups complete"
-curl -fsS "${HEARTBEAT_URL}?status=up&msg=OK&ping=" > /dev/null 2>&1 || true
+[[ -n "$HEARTBEAT_URL" ]] && curl -fsS "${HEARTBEAT_URL}?status=up&msg=OK&ping=" > /dev/null 2>&1 || true

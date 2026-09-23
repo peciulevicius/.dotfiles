@@ -8,6 +8,23 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-23 — Public-repo secret audit
+
+Ran `gitleaks` over all 492 commits (no leaks) and separately searched full
+history for every specific secret value seen during recent sessions —
+Transmission, Gmail app password, Vaultwarden admin token, the old reused
+personal password, all *arr API keys, the R2 access key, the Discord webhook.
+**None have ever been committed.**
+
+One real find: the **Uptime Kuma push token** was hardcoded in
+`rclone-backup.sh` (`HEARTBEAT_URL`). Anyone holding it can report the nightly
+backup as healthy, which would hide a real failure. Moved to
+`~/services/rclone/.env` (gitignored), placeholder in `.env.example`, script
+now skips the ping with a warning if unset. ⚠️ The old token is still in git
+history — **regenerate it in Uptime Kuma** (the backup push monitor → reset
+token) and update `.env`; that makes the leaked one worthless without
+rewriting history.
+
 ## 2026-09-22 (power outage) — Auto-restart gap found, monitoring gap found, two research questions settled
 
 **Power outage — Mac mini never came back on its own.** `pmset -g` showed
