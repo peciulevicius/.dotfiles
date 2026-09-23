@@ -45,8 +45,8 @@ function Build-Bar([int]$pct, [int]$width) {
     $empty  = $width - $filled
 
     $barColor = if ($pct -ge 90) { $red }
-                elseif ($pct -ge 70) { $yellow }
-                elseif ($pct -ge 50) { $orange }
+                elseif ($pct -ge 70) { $orange }
+                elseif ($pct -ge 50) { $yellow }
                 else { $green }
 
     $filledStr = [string]::new([char]0x25CF, $filled)  # bullet

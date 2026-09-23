@@ -65,8 +65,8 @@ build_bar() {
     # Color based on usage level
     local bar_color
     if [ "$pct" -ge 90 ]; then bar_color="$red"
-    elif [ "$pct" -ge 70 ]; then bar_color="$yellow"
-    elif [ "$pct" -ge 50 ]; then bar_color="$orange"
+    elif [ "$pct" -ge 70 ]; then bar_color="$orange"
+    elif [ "$pct" -ge 50 ]; then bar_color="$yellow"
     else bar_color="$green"
     fi
 
