@@ -156,7 +156,19 @@ all in that guide.
 - **Never commit a secret.** This repo is **public** — no password, token or
   webhook URL may ever land in it, not even in documentation. Real values belong
   in `~/services/<svc>/.env` (gitignored), `~/.config/homelab/` or Vaultwarden.
-  Sweep the staged diff before every commit.
+  Sweep the staged diff before every commit. A **gitleaks pre-commit hook**
+  (`.githooks/pre-commit`, rules in `.gitleaks.toml`) blocks commits with
+  secrets — enabled per clone via `git config core.hooksPath .githooks`
+  (`install.sh` does it). Never bypass it with `--no-verify`; if it flags a
+  false positive, add the fingerprint to `.gitleaksignore`.
+- **Use the project skills** in `.claude/skills/` — they encode steps that
+  were missed repeatedly:
+  - `homelab-service` — any add/remove/change of a service (staging, Glance,
+    tunnel, backups, credentials, docs)
+  - `credential-rotation` — any password/key/email change; checks every
+    service that keeps its own copy
+  - `homelab-audit` — health/security audit; runs
+    `scripts/utils/homelab-audit.sh` (also cron'd weekly → Discord)
 
 - **Adding or removing a service? Update the homepage too.** `services/glance/glance.yml`
   drives `home.peciulevicius.com` — add a monitor (with `check-url`) *and* a
