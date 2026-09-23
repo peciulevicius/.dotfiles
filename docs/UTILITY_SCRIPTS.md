@@ -21,7 +21,9 @@ This dotfiles repository includes several utility scripts to help maintain and m
 | `backup/backup-databases.sh` | Dumps PostgreSQL + MariaDB databases from Docker | Weekly via cron |
 | `backup/restore.sh` | Restores service data from Backblaze B2 | When needed |
 | `services/setup-services.sh` | Stages Docker Compose stacks to `~/services/` | After fresh install |
-| `services/rclone/rclone-backup.sh` | Backs up `~/services/` to Backblaze B2 via rclone | Nightly via cron |
+| `services/rclone/rclone-backup.sh` | Backs up `~/services/`, Obsidian, DB dumps, Calibre, Immich originals to Cloudflare R2 (cron runs the staged copy in `~/services/rclone/`) | Nightly via cron |
+| `scripts/utils/homelab-audit.sh` | Drift, container health, backup freshness, disk, recent-commit secret scan | Weekly via cron |
+| `scripts/utils/smb-watcher-rescan.sh` | Restarts Jellyfin + Audiobookshelf so new NAS files appear | Every 30 min via cron |
 
 ---
 

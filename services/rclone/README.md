@@ -47,7 +47,10 @@ nano .env
 ```bash
 crontab -e
 # Add:
-0 5 * * * /Users/dziugaspeciulevicius/.dotfiles/services/rclone/rclone-backup.sh >> /Users/dziugaspeciulevicius/logs/rclone-cron.log 2>&1
+0 5 * * * ~/.dotfiles/scripts/utils/run-with-notify.sh "Cloud backup (R2)" ~/services/rclone/rclone-backup.sh >> ~/logs/rclone-backup.log 2>&1
+# ⚠️ Run the STAGED copy in ~/services/rclone/ — the script reads .env from its
+# own directory, and the real .env lives there. Pointing cron at the repo copy
+# silently used a different .env (Immich backup was off there, 2026-09-23).
 ```
 
 ## Migrate from B2 to R2

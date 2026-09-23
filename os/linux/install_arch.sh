@@ -45,6 +45,7 @@ DEVELOPER_CLI=(
   tldr                     # Simplified man pages with examples
   httpie                   # Better curl for testing APIs
   jq                       # JSON processor - essential for API work
+  gitleaks                 # Secret scanner - powers the .githooks/pre-commit guard
   git-delta                # Better git diff with syntax highlighting
 )
 

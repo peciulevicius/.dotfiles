@@ -25,6 +25,7 @@ is written out so it survives being read cold in a year.
 | **6** | 🔑 One pass: password + email per service | Same ~14 logins — separating them doubles the work |
 | **7** | 🧩 Vaultwarden Chrome extension | Blocked on the work laptop, not on us |
 | **8** | 🤖 Odysseus model defaults + RAG | Pure upside, nothing depends on it |
+| **8a** | 🔐 Regenerate the leaked Kuma push token, enable the hook on the MacBook | Token was public since May |
 | **9** | 🧹 Pinned images, SMB, wallpapers | Maintenance backlog |
 
 ---
@@ -148,6 +149,36 @@ Running on 7001. Benchmarks in
 - [ ] Point its IMAP client at Purelymail once step 4 is done
 - [ ] Decide on the Anthropic API key — currently leaning **skip**, since
       claude.ai on Pro covers general reasoning and local covers the private topics
+
+### 8a. 🔐 Public-repo hygiene — added 2026-09-23
+
+Full secret audit done (gitleaks over all 492 commits + a targeted search for
+every known credential): only one leak ever — the Uptime Kuma backup push
+token, public since **2026-05-09**. Removed from the tree; the pre-commit hook
+and weekly audit now guard against a repeat.
+
+- [ ] 🔴 **Regenerate the Kuma backup push token** — Uptime Kuma → the backup
+      push monitor → reset token → put the new URL in
+      `~/services/rclone/.env` as `HEARTBEAT_URL=`. Until then the leaked
+      token (still in git history) can mark the nightly backup healthy. Then
+      add its gitleaks fingerprint to `.gitleaksignore` so full-history scans
+      stop flagging a dead token.
+- [ ] **Enable the hook on the MacBook's clone too** — `core.hooksPath` is
+      per-clone: `git -C ~/.dotfiles config core.hooksPath .githooks` and
+      `brew install gitleaks`. (The statusline commit on 2026-09-23 came from
+      a clone without it.)
+- [x] ~~Pre-commit secret hook~~ — `.githooks/pre-commit` + `.gitleaks.toml`
+      (adds a Kuma push-token rule the defaults lacked), tested blocking a
+      fake token. `install.sh` enables it; installers install gitleaks.
+- [x] ~~Weekly automated audit~~ — `scripts/utils/homelab-audit.sh`, Sundays
+      9AM via `run-with-notify.sh` → Discord on failure.
+- [x] ~~Project skills~~ — `homelab-service`, `credential-rotation`,
+      `homelab-audit` in `.claude/skills/`.
+- [ ] Optional: **import the homelab skills into Odysseus** — it reads the
+      same `SKILL.md` format natively and can import from a public GitHub
+      URL (this repo). Useful mainly as reference inside Odysseus chats; its
+      local 7B model won't execute multi-step shell checklists the way Claude
+      Code does.
 
 ### 8b. 🔒 Cloudflare/R2 security check — added 2026-09-21
 
@@ -527,8 +558,10 @@ time only spike once, on the first run.
       ```bash
       rclone copy r2:peciulevicius-backups/immich-photos/<some-file> /tmp/restore-test/
       ```
-- [x] ~~Let the nightly cron pick it up~~ — no further change needed, the flag
-      being `true` is the whole switch
+- [x] ~~Let the nightly cron pick it up~~ — ⚠️ it didn't at first: cron ran
+      the repo copy, which read a different `.env` without the flag. Fixed
+      2026-09-23 (cron now runs `~/services/rclone/`); first confirmed nightly
+      run is the next 05:00. See changelog.
 - [ ] Re-check yearly that it's still running: `rclone size` should track the
       library's growth, not stay flat
 

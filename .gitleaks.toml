@@ -1,0 +1,14 @@
+# gitleaks config for this public repo. Extends the default ruleset with
+# patterns the defaults don't know about — added after a real miss.
+title = "dotfiles"
+
+[extend]
+useDefault = true
+
+# Caught by hand 2026-09-23, not by gitleaks: an Uptime Kuma push URL embeds a
+# token that lets anyone report a monitored job (the nightly backup) healthy.
+[[rules]]
+id = "uptime-kuma-push-token"
+description = "Uptime Kuma push monitor URL containing a real token"
+regex = '''/api/push/[A-Za-z0-9]{8,}'''
+keywords = ["api/push/"]

@@ -202,6 +202,13 @@ install_modern_cli_tools() {
         print_success "jq installed"
     fi
 
+    # gitleaks - secret scanner behind the repo's .githooks/pre-commit guard
+    if ! command -v gitleaks &> /dev/null; then
+        print_step "Installing gitleaks (secret scanner)..."
+        sudo apt install -y gitleaks || print_warning "gitleaks not in apt here — install from github.com/gitleaks/gitleaks/releases"
+        print_success "gitleaks step done"
+    fi
+
     # delta - better git diff
     if ! command -v delta &> /dev/null; then
         print_step "Installing git-delta (better git diff)..."

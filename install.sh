@@ -60,5 +60,13 @@ main() {
     esac
 }
 
+# Every clone of this PUBLIC repo gets the secret-scanning pre-commit hook.
+# core.hooksPath is per-clone config, so it has to be set on each machine.
+enable_repo_hooks() {
+    git -C "$DOTFILES_DIR" config core.hooksPath .githooks \
+        && echo "✓ Secret-scanning pre-commit hook enabled (.githooks/pre-commit)"
+}
+
 # Start the script
 main
+enable_repo_hooks

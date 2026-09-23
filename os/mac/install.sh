@@ -27,6 +27,7 @@ CORE_FORMULAS=(
   tlrc        # tldr command examples client
   httpie      # Friendly HTTP client (http)
   jq          # JSON parser and transformer
+  gitleaks    # Secret scanner — powers the .githooks/pre-commit guard
   git-delta   # Better git diff output
   nvm         # Node version manager
   pnpm        # Fast Node package manager

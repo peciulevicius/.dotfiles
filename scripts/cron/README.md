@@ -21,8 +21,16 @@ stdin (`crontab < file` or `cat file | crontab -`) and always verify with
 | When | Job | Log |
 |---|---|---|
 | Sunday 04:00 | Database dumps → `~/backups/` | `~/logs/db-backup.log` |
-| Daily 05:00 | rclone → Cloudflare R2 | `~/logs/rclone-backup.log` |
+| Daily 05:00 | rclone → Cloudflare R2 (runs `~/services/rclone/rclone-backup.sh`) | `~/logs/rclone-backup.log` |
 | Hourly | Kindle Scribe → Obsidian vault | `~/logs/kindle-sync.log` |
+| Every 30 min | Restart Jellyfin + Audiobookshelf so they see new NAS files (`smb-watcher-rescan.sh`) | `~/logs/smb-rescan.log` |
+| Sunday 09:00 | Homelab audit — drift, containers, backups, disk, secrets (`homelab-audit.sh`) | `~/logs/homelab-audit.log` |
+
+⚠️ **The backup job runs the staged copy in `~/services/rclone/`, and reads
+`~/services/rclone/.env`** — the same place every service keeps its `.env`.
+Until 2026-09-23 cron pointed at the repo copy instead, which read a second,
+stale `.env`: the Immich photo backup was enabled in one file and silently off
+in the one cron used. One script path, one `.env`.
 
 The Kindle sync is hourly on purpose: Amazon's share links expire after 7 days,
 so a slow poll loses exports.

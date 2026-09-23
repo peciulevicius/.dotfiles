@@ -306,7 +306,7 @@ folders, so they are not single-copy, but **do not wipe T7 until they are import
 
 **Cloud backup (rclone → Cloudflare R2), nightly 5am:**
 - Docker service configs, obsidian vault, Calibre books, DB dumps → R2 `peciulevicius-backups`
-- Script: `~/.dotfiles/services/rclone/rclone-backup.sh`
+- Script: cron runs the staged copy `~/services/rclone/rclone-backup.sh`, config in `~/services/rclone/.env` (one script path, one `.env` — two copies silently dropped the Immich step once)
 - ~2.9GB total (critical-only; audiobooks excluded from R2), **$0/month** — under
   the 10GB free tier
 - **Immich photo originals — enabled 2026-09-21.** `/Volumes/immich/upload/upload`

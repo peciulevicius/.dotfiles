@@ -8,6 +8,56 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-23 (later still) — Nightly backup had silently dropped the Immich photos
+
+⚠️ **Corrects the 2026-09-21 entry that said "let the nightly cron pick it up,
+no further change needed" — that was wrong.** Cron ran
+`~/.dotfiles/services/rclone/rclone-backup.sh` (the repo copy), and the script
+loads `.env` from its own directory — a second, stale `.env` that never got
+`BACKUP_IMMICH_PHOTOS=true`. The flag had been set in `~/services/rclone/.env`,
+which only the manual runs read. So after the one manual 72GB upload, every
+nightly run backed up everything *except* new photos while reporting "All
+backups complete". Same trap would have hit today's `HEARTBEAT_URL` move.
+
+Fix: cron now runs the staged copy (`~/services/rclone/rclone-backup.sh`),
+matching every other service; the stale repo-side `.env` (a strict subset,
+gitignored, never committed) was moved out to
+`~/services/rclone/.env.retired-repo-copy`. Dry-run of the exact cron command
+confirms the Immich step and heartbeat are active. No photos lost — rclone is
+incremental, so the next run uploads the gap.
+
+`homelab-audit.sh` now also fails if Immich backup is enabled but didn't run
+in the last day, since "All backups complete" alone can't tell.
+
+## 2026-09-23 (later) — Automation: pre-commit secret hook, weekly audit, project skills
+
+Built so the recurring misses from this week stop depending on anyone
+remembering them.
+
+- **`.githooks/pre-commit`** runs gitleaks on staged changes and blocks the
+  commit on a hit. `.gitleaks.toml` extends the default rules with an Uptime
+  Kuma push-token rule — the defaults missed the real leak; the new rule
+  finds it in history (committed 2026-05-09). Tested by staging a fake token:
+  blocked, nothing committed. `install.sh` sets `core.hooksPath` on every
+  clone; all three installers now install gitleaks. The hook warns and
+  allows if gitleaks is missing, rather than bricking commits on a fresh
+  machine.
+- **`scripts/utils/homelab-audit.sh`** — repo-vs-live drift, containers down
+  or unhealthy (skipping `restart: no` on-demand services), R2 backup success
+  in the last day, DB dump age, disk usage, gitleaks on the last 8 days of
+  commits, hook enabled. Cron'd Sundays 9AM through `run-with-notify.sh`, so
+  a failure reaches Discord. First run: all green.
+- **Project skills in `.claude/skills/`** (load only in this repo, not in
+  other projects): `homelab-service` (add/remove checklist — staging, Glance,
+  tunnel, backups, credentials, docs), `credential-rotation` (find and test
+  every consumer; stop→edit→start for apps like LazyLibrarian; ALTER USER
+  before `.env` for Postgres), `homelab-audit` (runs the script, then the
+  judgment checks: full-history secrets, pinned images, stale credentials,
+  docs vs reality).
+- **Odysseus reads the same `SKILL.md` format natively** (`data/skills/<category>/<name>/SKILL.md`,
+  plus a GitHub-URL importer), so these can be imported there. Claude Code
+  agents have no direct Odysseus equivalent.
+
 ## 2026-09-23 — Public-repo secret audit
 
 Ran `gitleaks` over all 492 commits (no leaks) and separately searched full
