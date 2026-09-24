@@ -185,10 +185,11 @@ and weekly audit now guard against a repeat.
       token (still in git history) can mark the nightly backup healthy. Then
       add its gitleaks fingerprint to `.gitleaksignore` so full-history scans
       stop flagging a dead token.
-- [ ] **Enable the hook on the MacBook's clone too** — `core.hooksPath` is
-      per-clone: `git -C ~/.dotfiles config core.hooksPath .githooks` and
-      `brew install gitleaks`. (The statusline commit on 2026-09-23 came from
-      a clone without it.)
+- [ ] **Enable the hook on the MacBook's clone too** — since 2026-09-24
+      `scripts/sync.sh` sets `core.hooksPath` on every run, so just run
+      `~/.dotfiles/scripts/sync.sh` there once, then `brew install gitleaks`
+      (sync warns if it is missing). (The statusline commit on 2026-09-23
+      came from a clone without it.)
 - [x] ~~Pre-commit secret hook~~ — `.githooks/pre-commit` + `.gitleaks.toml`
       (adds a Kuma push-token rule the defaults lacked), tested blocking a
       fake token. `install.sh` enables it; installers install gitleaks.
@@ -782,8 +783,11 @@ The nightly cron was removed on 2026-09-05 (the drives are not permanently
 connected, so it failed every night). T5 had silently drifted seven weeks out of
 date before anyone noticed.
 
-- [ ] Set a recurring reminder, or check the drive's newest file against the NAS
-      before trusting it
+- [x] ~~Set a recurring reminder~~ — done 2026-09-24: `backup-external.sh`
+      stamps `~/logs/external-backup-<drive>.last`, and the weekly
+      `homelab-audit.sh` fails (→ Discord) once a stamp passes 30 days. The
+      first audit after this lands will flag "no external-drive backup
+      recorded" until a run to T7 writes the first stamp — that is intended
 - [ ] Decide what T5 is *for* — once it lives offsite it can never be the
       routine local target
 

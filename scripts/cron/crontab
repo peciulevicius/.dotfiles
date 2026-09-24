@@ -7,8 +7,18 @@ PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin
 # Weekly database dumps (Sunday 4am)
 0 4 * * 0 ~/.dotfiles/scripts/utils/run-with-notify.sh "DB backup" ~/.dotfiles/scripts/backup/backup-databases.sh >> ~/logs/db-backup.log 2>&1
 
-# rclone backup nightly at 5AM, after Immich and DB backups
-0 5 * * * ~/.dotfiles/scripts/utils/run-with-notify.sh "Cloud backup (R2)" ~/.dotfiles/services/rclone/rclone-backup.sh >> ~/logs/rclone-backup.log 2>&1
+# rclone backup nightly at 5AM, after Immich and DB backups.
+# ⚠️ Runs the STAGED copy in ~/services/rclone/ so it reads ~/services/rclone/.env
+# — the repo copy read a second, stale .env and silently skipped the Immich
+# photo backup until 2026-09-23. See README.md.
+0 5 * * * ~/.dotfiles/scripts/utils/run-with-notify.sh "Cloud backup (R2)" ~/services/rclone/rclone-backup.sh >> ~/logs/rclone-backup.log 2>&1
 
 # Kindle Scribe → Obsidian: check for new export emails every hour
 0 * * * * ~/.dotfiles/scripts/utils/run-with-notify.sh "Kindle sync" ~/.dotfiles/pkm/.venv/bin/python3 ~/.dotfiles/pkm/kindle_sync.py >> ~/logs/kindle-sync.log 2>&1
+
+# Jellyfin + Audiobookshelf miss new files on SMB — restart them every 30 min.
+# Delete once the Jellyfin API key is wired into Radarr/Sonarr → Connect.
+*/30 * * * * ~/.dotfiles/scripts/utils/run-with-notify.sh "SMB rescan" ~/.dotfiles/scripts/utils/smb-watcher-rescan.sh >> ~/logs/smb-rescan.log 2>&1
+
+# Weekly homelab audit (Sunday 9am) — drift, containers, backups, disk, secrets
+0 9 * * 0 ~/.dotfiles/scripts/utils/run-with-notify.sh "Homelab audit" ~/.dotfiles/scripts/utils/homelab-audit.sh >> ~/logs/homelab-audit.log 2>&1

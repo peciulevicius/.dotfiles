@@ -22,6 +22,10 @@ DB_DUMPS="$HOME/backups"          # weekly pg_dump output (internal SSD)
 
 LOG_DIR="$HOME/logs"
 LOG_FILE="$LOG_DIR/external-backup-$(basename "$TARGET")-$(date +%Y%m%d).log"
+# Epoch of the last successful run to this drive. homelab-audit.sh reads it
+# weekly and complains past 30 days — the reminder that replaced the nightly
+# cron removed on 2026-09-05, after T5 went seven weeks stale unnoticed.
+STAMP_FILE="$LOG_DIR/external-backup-$(basename "$TARGET").last"
 
 GREEN='\033[0;32m'; RED='\033[0;31m'; YELLOW='\033[1;33m'; CYAN='\033[0;36m'; NC='\033[0m'
 
@@ -54,6 +58,13 @@ for m in "$NAS_IMMICH" "$NAS_AUDIOBOOKS" "$NAS_BOOKS"; do
     exit 1
   fi
 done
+
+if [[ -f "$STAMP_FILE" ]]; then
+  last_days=$(( ($(date +%s) - $(cat "$STAMP_FILE")) / 86400 ))
+  log_info "Last successful backup to $(basename "$TARGET"): $last_days day(s) ago"
+else
+  log_warn "No previous successful backup recorded for $(basename "$TARGET")"
+fi
 
 ERRORS=0
 
@@ -102,6 +113,7 @@ sync_dir "$NAS_BOOKS" "$TARGET/calibre-books" "Calibre books"
 # Immich regenerates them from the originals in minutes.
 
 if [[ $ERRORS -eq 0 ]]; then
+  [[ "$DRY_RUN" == "false" ]] && date +%s > "$STAMP_FILE"
   log_ok "Backup to $TARGET complete"
   exit 0
 else
