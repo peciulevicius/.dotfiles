@@ -867,18 +867,11 @@ only outstanding work again.
 - [x] `nas.peciulevicius.com` → UGOS Pro web UI, via existing cloudflared tunnel on Mac mini (ingress: `http://192.168.1.73:9999`). No Docker needed on NAS.
 - [x] UGREENlink remote access active (backup access: https://ug.link/dh4300plus-dp)
 
-**Still to do (pre-drives):**
-- [ ] **NEXT SESSION:** Reserve 192.168.1.73 for NAS in router DHCP settings — if IP changes, nas.peciulevicius.com breaks. Steps:
-  1. Open http://192.168.1.1 in browser, log in (admin password often on router sticker)
-  2. Find the DHCP section — usually under *LAN*, *Network*, or *Advanced → DHCP Server*. The feature is called **"Address Reservation"**, **"Static Lease"**, **"DHCP Binding"**, or **"Reserved IP"** depending on brand
-  3. Add entry: MAC `6c:1f:f7:a9:39:e9` → IP `192.168.1.73` (device may appear in a connected-clients list as DH4300PLUS-DP — can often click it and hit "reserve")
-  4. Save/apply. No NAS reboot needed — reservation kicks in at next DHCP renewal
-  5. Verify: NAS Control Panel → Network still shows 192.168.1.73
-- [ ] Enable SSH (Control Panel → Terminal; set "Shut down automatically" to never)
-- [ ] Enable "Auto power-on when power is supplied" + WOL (Hardware & Power → Power)
-- [ ] Set up 2FA on admin account (Security → Account security)
-- [ ] Enable DoS protection (Security → Security)
-- [ ] Change custom domain name from "localhost" to "nas" (Device Connection → LAN)
+**Still to do (pre-drives):** moved to `HOME_SERVER_TODO.md` → "NAS — remaining
+follow-ups" (the NAS UI settings) and "Router DHCP reservation for the NAS"
+(MAC `6c:1f:f7:a9:39:e9`). Tracked there, not here — this file is finished
+work only. The reservation is no longer load-bearing: everything addresses the
+NAS by mDNS (`DH4300PLUS-DP.local`) since 2026-09-05.
 
 **Migration done (2026-08-04)** ✅
 - [x] RAID 5 pool created (3× 6TB IronWolf Pro = ~11TiB usable), Btrfs
