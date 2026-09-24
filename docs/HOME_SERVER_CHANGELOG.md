@@ -8,6 +8,16 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-24 — cleanup.sh no longer prunes the homelab's stopped services
+
+`scripts/cleanup.sh` ran `docker container prune`, `image prune -a` and
+`volume prune` on every host. On the Mac mini that deletes Storyteller (stopped
+by design, `restart: "no"`) and its 2.77GB image, and any volume not attached
+to a running container — the exact commands HOME_SERVER_TODO.md says never to run
+there. It now detects the homelab host (compose files in `~/services`) and
+only removes the build cache and dangling images; `DOCKER_FULL_PRUNE=1`
+restores the full prune.
+
 ## 2026-09-24 — Cloud PRs triaged: #34/#35 merged, #36/#40 closed with cherry-picks
 
 A cloud Claude session opened six PRs. Each was reviewed against the live

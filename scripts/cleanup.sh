@@ -185,25 +185,48 @@ fi
 # Docker Cleanup (All OS)
 # ═══════════════════════════════════════════════════════
 
+# On the homelab host (services staged in ~/services) the full prune is
+# destructive: some services are stopped by design (Storyteller has
+# restart: "no"), so `container prune` deletes them, `image prune -a` deletes
+# their images, and `volume prune` deletes any volume not attached to a
+# running container. There, only the build cache and dangling images are
+# removed — the reclaim documented as safe in HOME_SERVER_TODO.md.
+# DOCKER_FULL_PRUNE=1 forces the full prune anyway.
+is_homelab_host() {
+    compgen -G "$HOME/services/*/docker-compose.yml" > /dev/null
+}
+
 if command -v docker &> /dev/null; then
     print_header "Docker Cleanup"
 
-    echo "Removing stopped containers..."
-    docker container prune -f
+    if is_homelab_host && [[ "${DOCKER_FULL_PRUNE:-0}" != "1" ]]; then
+        print_warning "Homelab host detected (~/services) — keeping stopped containers, images and volumes"
 
-    echo "Removing unused images..."
-    docker image prune -a -f
+        echo "Removing dangling images..."
+        docker image prune -f
 
-    echo "Removing unused volumes..."
-    docker volume prune -f
+        echo "Removing build cache..."
+        docker builder prune -a -f
 
-    echo "Removing unused networks..."
-    docker network prune -f
+        print_success "Docker build cache cleaned"
+    else
+        echo "Removing stopped containers..."
+        docker container prune -f
 
-    echo "Removing build cache..."
-    docker builder prune -a -f
+        echo "Removing unused images..."
+        docker image prune -a -f
 
-    print_success "Docker cleaned"
+        echo "Removing unused volumes..."
+        docker volume prune -f
+
+        echo "Removing unused networks..."
+        docker network prune -f
+
+        echo "Removing build cache..."
+        docker builder prune -a -f
+
+        print_success "Docker cleaned"
+    fi
 fi
 
 # ═══════════════════════════════════════════════════════
@@ -342,7 +365,11 @@ if [[ "$OS" == "Linux" ]]; then
 fi
 
 if command -v docker &> /dev/null; then
-    echo "  ✓ Docker (containers, images, volumes)"
+    if is_homelab_host && [[ "${DOCKER_FULL_PRUNE:-0}" != "1" ]]; then
+        echo "  ✓ Docker (build cache, dangling images)"
+    else
+        echo "  ✓ Docker (containers, images, volumes)"
+    fi
 fi
 
 if command -v npm &> /dev/null; then
