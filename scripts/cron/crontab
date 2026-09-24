@@ -16,6 +16,10 @@ PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin
 # Kindle Scribe → Obsidian: check for new export emails every hour
 0 * * * * ~/.dotfiles/scripts/utils/run-with-notify.sh "Kindle sync" ~/.dotfiles/pkm/.venv/bin/python3 ~/.dotfiles/pkm/kindle_sync.py >> ~/logs/kindle-sync.log 2>&1
 
+# R2 restore spot-check (1st of the month, 6am, after the 5am backup) —
+# downloads one random file per backup set and byte-compares it with the original
+0 6 1 * * ~/.dotfiles/scripts/utils/run-with-notify.sh "R2 restore check" ~/.dotfiles/scripts/backup/r2-verify.sh >> ~/logs/r2-verify.log 2>&1
+
 # Jellyfin + Audiobookshelf miss new files on SMB — restart them every 30 min.
 # Delete once the Jellyfin API key is wired into Radarr/Sonarr → Connect.
 */30 * * * * ~/.dotfiles/scripts/utils/run-with-notify.sh "SMB rescan" ~/.dotfiles/scripts/utils/smb-watcher-rescan.sh >> ~/logs/smb-rescan.log 2>&1

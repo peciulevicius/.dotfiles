@@ -22,6 +22,7 @@ stdin (`crontab < file` or `cat file | crontab -`) and always verify with
 |---|---|---|
 | Sunday 04:00 | Database dumps → `~/backups/` | `~/logs/db-backup.log` |
 | Daily 05:00 | rclone → Cloudflare R2 (runs `~/services/rclone/rclone-backup.sh`) | `~/logs/rclone-backup.log` |
+| Monthly, 1st 06:00 | R2 restore spot-check + size history (`scripts/backup/r2-verify.sh`) | `~/logs/r2-verify.log` |
 | Hourly | Kindle Scribe → Obsidian vault | `~/logs/kindle-sync.log` |
 | Every 30 min | Restart Jellyfin + Audiobookshelf so they see new NAS files (`smb-watcher-rescan.sh`) | `~/logs/smb-rescan.log` |
 | Sunday 09:00 | Homelab audit — drift, containers, backups, disk, secrets (`homelab-audit.sh`) | `~/logs/homelab-audit.log` |
