@@ -21,3 +21,7 @@ pkm/.processed_ids
 
 # Backup logs
 logs/
+
+# Python bytecode
+__pycache__/
+*.pyc
