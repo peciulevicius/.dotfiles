@@ -7,7 +7,7 @@
 
 set -e
 
-DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 CLAUDE_DIR="$HOME/.claude"
 CLAUDE_CONFIG_DIR="$DOTFILES_DIR/config/claude"
 
@@ -231,11 +231,15 @@ setup_commands() {
         return
     fi
 
+    # README.md documents the folder; linking it creates a bogus /README command
+    [ -L "$commands_dst/README.md" ] && rm "$commands_dst/README.md"
+
     local count=0
     for cmd_file in "$commands_src"/*.md; do
         [ -f "$cmd_file" ] || continue
         local name
         name=$(basename "$cmd_file")
+        [ "$name" = "README.md" ] && continue
         local dst_file="$commands_dst/$name"
 
         [ -L "$dst_file" ] && rm "$dst_file"
@@ -244,6 +248,29 @@ setup_commands() {
     done
 
     print_success "Installed $count commands (symlinked from dotfiles)"
+}
+
+# ---- Dead-link cleanup ----
+# Removing or renaming a file in config/claude/ leaves a dangling symlink in
+# ~/.claude/, which Claude Code then lists as a broken command. Only prune links
+# that point back into this dotfiles repo — never touch links the user made.
+prune_dead_links() {
+    local removed=0 dir link target
+    for dir in agents skills rules commands hooks; do
+        [ -d "$CLAUDE_DIR/$dir" ] || continue
+        for link in "$CLAUDE_DIR/$dir"/*; do
+            [ -L "$link" ] && [ ! -e "$link" ] || continue
+            target=$(readlink "$link")
+            case "$target" in
+                "$CLAUDE_CONFIG_DIR"/*)
+                    rm "$link"
+                    removed=$((removed + 1))
+                    ;;
+            esac
+        done
+    done
+    [ "$removed" -gt 0 ] && print_success "Removed $removed dead symlink(s) to deleted dotfiles"
+    return 0
 }
 
 # ---- Hooks ----
@@ -380,6 +407,7 @@ run_mode() {
             setup_rules
             setup_commands
             setup_hooks
+            prune_dead_links
             setup_global_claude_md
             print_summary
             ;;
@@ -391,6 +419,7 @@ run_mode() {
             setup_rules
             setup_commands
             setup_hooks
+            prune_dead_links
             setup_global_claude_md
             print_success "Claude Code config synced"
             ;;

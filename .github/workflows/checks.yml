@@ -1,0 +1,52 @@
+name: checks
+
+# Runs on every push to every branch — this repo is committed to directly from
+# several machines, so waiting for a PR would miss most commits. Checks attach
+# to the commit, so they show on PRs too.
+on:
+  push:
+
+permissions:
+  contents: read
+
+jobs:
+  # Server-side backstop for the gitleaks pre-commit hook. The hook is
+  # per-clone (core.hooksPath) and silently skips when gitleaks is not
+  # installed; a commit from a hook-less clone reached this PUBLIC repo on
+  # 2026-09-23. This catches it within minutes of the push instead of at the
+  # next weekly homelab-audit. Scans only the pushed commits, so the one old
+  # (dead) token still in history doesn't fail every run.
+  secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Errors only: the warning level flags ~40 intentional patterns (rclone
+  # flags split on purpose, git's @{u}), and a check that is always red gets
+  # ignored. Errors are the "this line cannot work" class.
+  shellcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: shellcheck (errors only)
+        run: git ls-files -z '*.sh' '.githooks/*' | xargs -0 shellcheck -S error
+
+  # docs-pages.yml only builds after a push to main, so a broken link or nav
+  # entry would surface only once it had landed. Same strict build here, on
+  # every branch.
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install docs dependencies
+        run: pip install mkdocs mkdocs-material pymdown-extensions
+      - name: Build docs (strict)
+        run: mkdocs build --strict

@@ -1,773 +1,353 @@
-# Mac mini Setup Guide
+# Mac mini Homelab — Setup & Recovery Guide
 
-> ⚠️ **Historical — describes the pre-2026-08-04 architecture, not the current
-> one.** This guide was written when a Samsung T7 SSD was the primary photo
-> and media store. Since 2026-08-04 **the NAS is primary**; T7 and T5 are
-> unplugged manual backup targets, not live storage — see
-> [HOME_SERVER_REFERENCE.md](HOME_SERVER_REFERENCE.md) "Drive Layout" for the
-> current facts. **Do not follow the commands below verbatim** — several
-> (`mkdir -p /Volumes/T7/media`, pointing Immich or Calibre at a T7 volume)
-> would rebuild the superseded setup. Kept for the narrative — how photo sync,
-> Time Machine and the original two-drive backup rotation work conceptually
-> still applies, only the primary-storage location changed. A full rewrite
-> against the NAS architecture is tracked in `HOME_SERVER_TODO.md`.
->
-> **To actually set up a new Mac mini today:** start from
-> [HOME_SERVER_REFERENCE.md](HOME_SERVER_REFERENCE.md) for the current drive
-> layout and backup strategy, [SERVICES.md](SERVICES.md) for the service list,
-> and `services/setup-services.sh` to stage configs — then substitute
-> `/Volumes/<nas-share>` wherever this guide says `/Volumes/T7`.
+> **Rewritten 2026-09-24 for the NAS-primary architecture.** The previous
+> version described the pre-2026-08-04 setup where a T7 SSD was primary
+> storage; it's preserved in git history. Facts here come from
+> [HOME_SERVER_REFERENCE.md](HOME_SERVER_REFERENCE.md), [NAS.md](NAS.md),
+> [SERVICES.md](SERVICES.md) and the scripts themselves — when this guide and
+> one of those disagree, **those win**, and this file should be fixed.
 
-Your Mac mini M4 is a second desk computer, not a complicated server. With a KVM switch you use the same keyboard, mouse, and monitor for both your MacBook and Mac mini — just press a button to switch.
-
-This guide covers everything: what it's for, how to set it up, how photos work, how backups work, and what to do when things break.
+This is the from-scratch guide: set up a new Mac mini and bring the whole
+homelab back, or understand how it fits together. For day-to-day facts (RAM,
+paths, gotchas) use the reference doc; for what's outstanding, the TODO.
 
 ---
 
-## What It's Actually For
+## 1. What it is
 
-The Mac mini is most useful as:
+```
+                    Internet
+                       │
+          ┌────────────┴────────────┐
+   Cloudflare Tunnel            Tailscale (private)
+   *.peciulevicius.com          100.81.171.49 + phone/laptop
+   (outbound-only, no           (Tailscale-only services,
+    open ports, free plan)       SSH, large uploads)
+          └────────────┬────────────┘
+                       │
+              Mac mini M4 (16GB)  ── computes
+              Docker Desktop, ~38 containers
+              databases + configs on internal SSD
+                       │  SMB (mDNS: DH4300PLUS-DP.local)
+              UGREEN DH4300 Plus  ── stores
+              RAID 5, ~11TiB: media, immich, audiobooks, books, unsorted
+                       │
+              Cloudflare R2  ── offsite (nightly rclone)
+```
 
-| Role | What that means |
-|------|----------------|
-| **Photo hub** | Your phone backs up photos to it wirelessly and automatically — your own Google Photos, no subscription |
-| **MacBook backup target** | Your MacBook backs up to it automatically via Time Machine |
-| **Second workstation** | Always-on machine you can leave long jobs running on |
-| **Remote access** | SSH in from anywhere if you need to check something |
+| Layer | Role | Key rule |
+|---|---|---|
+| **Mac mini** | Runs every service in Docker, native Ollama for local AI | Databases live on the **internal SSD**, never on SMB — they corrupt over network mounts |
+| **NAS** | All bulk data, mounted at `/Volumes/<share>` | Address it by **`DH4300PLUS-DP.local`**, never an IP — its IP drifted three times |
+| **Cloudflare Tunnel** | Public HTTPS for services that should be public | No port forwarding; outbound connection, so a changing home IP doesn't matter (no DDNS needed). **100MB upload cap** on the free plan |
+| **Tailscale** | Private access from anywhere | Admin/automation services (the *arr stack, Portainer, Syncthing, Transmission) are Tailscale-only |
+| **R2** | Offsite backup, ~$1/month | Configs, Obsidian, DB dumps, Calibre books, Immich originals |
+| **T7 / T5 SSDs** | **Manual** backup targets, normally **unplugged** | Not primary storage any more — any `/Volumes/T7` path means "once you plug it in" |
 
-That's it. You don't need to run databases, AI models, or anything else on it unless a specific need comes up.
+The full service list with ports and URLs is in [SERVICES.md](SERVICES.md).
 
 ---
 
-## Things You Need to Understand First
+## 2. Prerequisites
 
-### Does the Mac mini need Time Machine?
+Have these before starting a rebuild:
 
-No. Time Machine is for your MacBook — it backs up **to** the Mac mini. The Mac mini's own data (photos) is protected separately by a nightly copy to the second SSD.
+| Need | Why | Where it lives |
+|---|---|---|
+| Access to **Vaultwarden** (phone app's offline cache works) | Every service's secrets | The phone/laptop Bitwarden app keeps a cached copy even if the server is down |
+| **Cloudflare** login (with 2FA) | Tunnel, DNS, R2 tokens | — |
+| **Tailscale** login | Private network | — |
+| NAS admin login | SMB account `macmini`, shares | Vaultwarden |
+| This repo | Everything else | `github.com/peciulevicius/.dotfiles` (public — no secrets in it) |
 
-Think of it this way:
-- **MacBook** → Time Machine → **Mac mini's 500GB SSD** (MacBook is backed up)
-- **Mac mini photos on 1TB** → rsync every night → **Mac mini's 500GB SSD** (photos are backed up)
-
-The Mac mini itself doesn't need backing up. If it dies, you reinstall macOS and set it up again — the photos and MacBook backup are on the SSDs, untouched.
-
-### Sleep vs Locked — what's the difference?
-
-These look the same from the outside (screen is off) but are completely different:
-
-| State | What's happening | SSH works? | Immich syncs? | Backup runs? |
-|-------|-----------------|-----------|--------------|-------------|
-| **Sleeping** | Machine is off | ❌ No | ❌ No | ❌ No |
-| **Screen locked** | Fully running, screen just off | ✅ Yes | ✅ Yes | ✅ Yes |
-
-When you walk away and the screen goes black, the Mac mini is still fully running — that's screen lock, not sleep. Everything keeps working. Sleep is a separate state that shuts down the processor to save power.
-
-**Should you prevent sleep?** Only if you want:
-- Phone photos to sync automatically while you're asleep
-- Nightly 3am backup to actually run
-- SSH to work when you're not home
-
-If you're only using the Mac mini when you're sitting at your desk, sleep is fine. But as a photo backup hub, preventing sleep makes more sense.
-
-### What is Docker and why use it?
-
-Docker runs services like Immich in isolated containers instead of installing them directly on macOS.
-
-Without Docker, installing a complex app like Immich would mean: installing Postgres, Redis, Python dependencies — all directly on your Mac, writing files everywhere, conflicting with other things, being a mess to update or remove.
-
-With Docker, each service runs in its own self-contained box. One command to start it. One command to stop it. One command to wipe it and start fresh. Completely isolated from the rest of your system.
-
-You don't need to understand Docker deeply to use it. You just run `docker compose up -d` and it works.
-
-### How do phone photos work with Immich?
-
-No cables involved. It works like this:
-
-1. Install Immich on your phone
-2. Enter your Mac mini's address
-3. Enable automatic backup in the app
-
-After that, whenever your phone is connected to home WiFi, Immich silently uploads any new photos in the background. You don't do anything. You open the Immich web interface on any device and your photos are all there — searchable, organised by date, with face recognition and map view.
-
-When you're away from home, Immich syncs over Tailscale (your private network) when you open the app.
+⚠️ **The chicken-and-egg:** Vaultwarden runs *on* the Mac mini you're
+rebuilding. Its data is in the R2 backup, but you need R2 credentials to pull
+it — which are in Vaultwarden. Break the loop with the phone's cached vault,
+or create a **new** R2 API token in the Cloudflare dashboard (scope it to the
+`peciulevicius-backups` bucket only).
 
 ---
 
-## Your Storage Setup
+## 3. Step by step
 
-You have two external SSDs. Both stay permanently connected to the Mac mini.
+### 3.1 macOS basics
 
-| Drive | Size | What goes on it |
-|-------|------|-----------------|
-| T7 (1TB) | Primary | Immich photos + Time Machine (both MacBook and Mac mini) |
-| T5 (500GB) | Backup | Nightly copy of Immich photos from the T7 |
+| Setting | Command / place | Why |
+|---|---|---|
+| Never sleep | `scripts/setup/mac-mini.sh sleep off` (or `sudo pmset -a sleep 0 disksleep 0`) | A sleeping Mac mini runs nothing — no sync, no backups, no SSH |
+| Restart after a crash | `sudo pmset -a autorestart 1` | Kernel-panic recovery (already on) |
+| **Power on when AC returns** | `sudo pmset -a autorestartatconnect 1` | A *separate* flag from `autorestart`; it was missing during the 2026-09-22 outage and the Mac stayed off |
+| Remote Login (SSH) | System Settings → General → Sharing, or `scripts/setup/mac-mini.sh ssh on` | `ssh macmini` from the laptop (`config/ssh/config` has the `Host macmini` entry) |
+| FileVault | **Keep it on** (decided 2026-09-22) | Trade-off below |
 
-**Why this split?**
+⚠️ **FileVault vs unattended recovery.** With FileVault on, every cold boot
+stops at a pre-boot password screen — so after a power outage someone has to
+be there once, even with `autorestartatconnect`. The alternative (FileVault
+off) would leave every service's `.env` secrets readable on a stolen disk.
+The decision is to accept the one manual step.
 
-The backup drive (T5) must hold a copy of your photos. Using the smaller drive (T5) as the backup and the larger drive (T7) as primary means:
-- T7 handles active data — photos grow here over time
-- T5 can back up up to 500GB of photos. When your library exceeds that, you'll need a larger backup drive.
-
-Time Machine for both machines lives on T7 because it's the larger drive and can accommodate both system backups alongside the Immich library (APFS volumes share space dynamically — no fixed partitions needed).
-
-**The one risk you accept:** both drives are in the same room. Fire or theft would lose both. For a personal photo library that's a reasonable tradeoff. If you ever want a cloud copy, Backblaze can be added later.
-
----
-
-## Before You Touch the Drives
-
-You said you have photos on both drives. **Do not format anything yet.**
-
-Get all photos onto the 1TB first, verify they're there, then format the 500GB.
-
-### Step 1 — See what's on each drive
+### 3.2 Dotfiles + tools
 
 ```bash
-ls /Volumes/
-```
-
-This shows all connected drives by name.
-
-### Step 2 — Check how much space each drive is using
-
-```bash
-df -h /Volumes/<drive-name>
-# Run for each drive
-```
-
-### Step 3 — Copy everything from the 500GB to the 1TB
-
-```bash
-rsync -av --progress /Volumes/<500gb-drive-name>/ /Volumes/<1tb-drive-name>/
-```
-
-This copies every file. The `--progress` flag shows you what's happening. Wait until it finishes completely.
-
-### Step 4 — Verify the copy
-
-```bash
-# Count files on 500GB
-find /Volumes/<500gb-drive-name> -type f | wc -l
-
-# Count files on 1TB
-find /Volumes/<1tb-drive-name> -type f | wc -l
-```
-
-The 1TB count should be equal to or higher than the 500GB count. Also open Finder and browse both drives to spot-check that folders look right.
-
-### Step 5 — Only now format the 500GB
-
-Once you're confident everything is safely on the 1TB, you can format the 500GB.
-
----
-
-## Setup — Step by Step
-
-Run these in order. The whole thing takes about an hour.
-
-Replace `youruser` with your macOS username throughout (check it with `whoami`).
-
----
-
-### Step 1 — Prepare the drives
-
-**T7 (1TB) — add a TimeMachine volume without touching existing files**
-
-T7 already has your photos. With APFS you can add a new volume to the same drive without erasing anything — volumes share the pool of space dynamically.
-
-Open **Disk Utility** (Spotlight → Disk Utility):
-- Select **T7** in the left sidebar (the container, not the volume)
-- Click **+** (Add Volume) in the toolbar — do NOT click Erase
-- Name: `TimeMachine`, Format: `APFS`
-- Leave size limits blank (APFS shares space dynamically)
-- Click **Add**
-
-Your existing files on T7 are untouched. You now have two APFS volumes on T7: the original (with your photos) and the new `TimeMachine`.
-
-Create the Immich folder on T7 (use the existing volume name):
-```bash
-ls /Volumes/   # check what T7's existing volume is named
-mkdir -p /Volumes/<T7-volume-name>/immich
-mkdir -p ~/services/immich
-mkdir -p ~/logs
-```
-
-**T5 (500GB) — format as ImmichBackup**
-
-T5 is empty, so format it cleanly:
-- Select **T5** in the left sidebar
-- Click **Erase**
-- Name: `ImmichBackup`, Format: `APFS`
-- Click **Erase**
-
----
-
-### Step 2 — Prevent sleep (recommended)
-
-If you want Immich to sync phone photos overnight and backups to run at 3am, the Mac mini needs to stay awake.
-
-```bash
-sudo pmset -a sleep 0 disksleep 0 displaysleep 10
-```
-
-What each part does:
-- `sleep 0` — machine never goes to sleep
-- `disksleep 0` — drives never spin down
-- `displaysleep 10` — screen turns off after 10 minutes (saves power, nothing else is affected)
-
-The Mac mini still uses very little power in this mode. It's not the same as your MacBook with the screen on — it's sitting there doing nothing with the screen off, using maybe 6-10W.
-
-To revert to normal sleep behaviour later:
-```bash
-sudo pmset -a sleep 1
-```
-
-**Auto-restart after a power cut** (so it comes back on by itself):
-```bash
-sudo systemsetup -setrestartpowerfailure on
-```
-
----
-
-### Step 3 — Tailscale
-
-Tailscale creates a private encrypted network between all your devices — Mac mini, MacBook, and phone — that works anywhere in the world. No router configuration, no exposed ports.
-
-Without Tailscale, your phone can only reach Immich when you're home on the same WiFi. With Tailscale, it works from anywhere.
-
-**On the Mac mini:**
-```bash
-brew install --cask tailscale
-open /Applications/Tailscale.app
-```
-
-Sign in with Google or GitHub. This creates your private network (called a tailnet).
-
-**On your MacBook:** go to [tailscale.com/download](https://tailscale.com/download), install, sign in with the same account.
-
-**On your phone:** install Tailscale from the App Store, sign in with the same account.
-
-All three devices are now on the same private network. Get the Mac mini's private IP — you'll use this everywhere:
-
-```bash
-tailscale ip -4
-# e.g. 100.64.0.12 — write this down
-```
-
-Verify it works from your MacBook (can be on any network, including mobile hotspot):
-```bash
-ping <tailscale-ip>
-# Should get responses
-```
-
----
-
-### Step 4 — SSH
-
-SSH lets you open a terminal on the Mac mini from anywhere. Useful when something needs fixing or you want to check on services.
-
-**Enable on Mac mini:**
-`System Settings → General → Sharing → Remote Login` → turn On
-
-**Add a shortcut on your MacBook** so you can type `ssh macmini` instead of the full IP. Edit `~/.ssh/config` on your MacBook:
-
-```
-Host macmini
-  HostName <tailscale-ip>
-  User youruser
-```
-
-**Copy your SSH key** so you never need a password:
-```bash
-ssh-copy-id macmini
-```
-
-**Test it:**
-```bash
-ssh macmini
-# Should connect without asking for a password
-exit
-```
-
----
-
-### Step 5 — Docker
-
-Immich runs inside Docker containers. Docker is already installed by the dotfiles installer.
-
-Open **Docker Desktop** (it installs as a cask via Homebrew) and let it start. Verify:
-```bash
-docker --version
-docker compose version
-```
-
-Docker starts automatically when you log in and restarts containers after a reboot.
-
-**Important — network pool config:** The dotfiles installer copies `config/docker/daemon.json` to `~/.docker/daemon.json`. This sets Docker to allocate `/24` subnets instead of the default `/16`. Without this, Docker exhausts the `172.16.0.0/12` range after ~15 networks, and new containers get `192.168.x.x` subnets that Docker Desktop can't proxy correctly (ports appear open but HTTP traffic doesn't flow). If you hit this issue on an existing install, restart Docker Desktop after the config is in place, then recreate affected services with `docker compose down && docker compose up -d`.
-
----
-
-### Step 6 — Immich
-
-Immich is your self-hosted Google Photos. It runs in Docker on the Mac mini and stores photos on the 1TB SSD.
-
-**Create the service files:**
-
-```bash
-mkdir -p ~/services/immich
-cd ~/services/immich
-```
-
-Create `~/services/immich/docker-compose.yml`:
-
-```yaml
-name: immich
-
-services:
-  immich-server:
-    container_name: immich_server
-    image: ghcr.io/immich-app/immich-server:release
-    volumes:
-      - /Volumes/<T7-volume-name>/immich/upload:/usr/src/app/upload
-      - /etc/localtime:/etc/localtime:ro
-    env_file:
-      - .env
-    ports:
-      - 2283:2283
-    depends_on:
-      - redis
-      - database
-    restart: always
-
-  immich-machine-learning:
-    container_name: immich_machine_learning
-    image: ghcr.io/immich-app/immich-machine-learning:release
-    volumes:
-      - /Volumes/<T7-volume-name>/immich/model-cache:/cache
-    env_file:
-      - .env
-    restart: always
-
-  redis:
-    container_name: immich_redis
-    image: docker.io/redis:6.2-alpine
-    restart: always
-
-  database:
-    container_name: immich_postgres
-    image: docker.io/tensorchord/pgvecto-rs:pg14-v0.2.0
-    env_file:
-      - .env
-    environment:
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_USER: ${DB_USERNAME}
-      POSTGRES_DB: ${DB_DATABASE_NAME}
-    volumes:
-      - /Volumes/<T7-volume-name>/immich/postgres:/var/lib/postgresql/data
-    restart: always
-```
-
-Create `~/services/immich/.env`:
-
-```env
-DB_PASSWORD=changeme
-DB_USERNAME=postgres
-DB_DATABASE_NAME=immich
-REDIS_HOSTNAME=redis
-```
-
-**Start Immich:**
-```bash
-cd ~/services/immich
-docker compose up -d
-```
-
-Wait about 30 seconds for everything to start. Check it's running:
-```bash
-docker ps
-# Should show 4 containers: immich_server, immich_machine_learning, immich_redis, immich_postgres
-```
-
-**Open the web interface:**
-
-Go to `http://<tailscale-ip>:2283` in your browser and create your admin account.
-
----
-
-### Step 7 — Set up phone backup
-
-This is the main value of Immich. Once set up, you never think about photo backup again.
-
-1. Install **Immich** from the App Store on your iPhone
-2. Open it → tap **Login**
-3. Server URL: `http://<tailscale-ip>:2283`
-4. Sign in with the account you created
-5. Tap your profile picture → **App Settings** → **Background Backup** → enable it
-
-**What happens after this:**
-- Phone on home WiFi → Immich silently uploads new photos in the background
-- Phone anywhere else → syncs over Tailscale when you open the app
-- No cables, no manual export, no iCloud needed
-- Open `http://<tailscale-ip>:2283` on any device and all photos are there
-
-**Import your existing photo library:**
-
-Your existing photos are already on the 1TB SSD (from the migration earlier). Import them into Immich:
-
-Option A — drag and drop in the web UI:
-Go to `http://<tailscale-ip>:2283` → click the upload icon → drag your photo folders in
-
-Option B — CLI for large imports (faster for thousands of photos):
-```bash
-npm install -g @immich/cli
-immich login http://<tailscale-ip>:2283 <your-email>
-immich upload --recursive /Volumes/Storage/
-```
-
----
-
-### Step 8 — Nightly photo backup
-
-Photos now live on the NAS, and the external drives are only occasionally
-plugged in, so this is a **manual** copy rather than a nightly cron job. Run it
-whenever a drive is connected:
-```bash
-# Preview first
-~/.dotfiles/scripts/backup/backup-external.sh /Volumes/T7 --dry-run
-# Then for real
-~/.dotfiles/scripts/backup/backup-external.sh /Volumes/T7
-```
-
-If it runs without errors, schedule it:
-```bash
-crontab -e
-```
-
-There is deliberately **no cron entry for the external-drive backup** — the
-drives are not permanently connected, so a nightly job would fail every night
-(the old `backup-t5.sh` did exactly that for a month before being removed).
-Run it by hand when a drive is plugged in.
-
-Save and close. Check it ran the next morning:
-```bash
-cat ~/logs/immich-backup.log
-```
-
----
-
-### Step 9 — Time Machine (MacBook + Mac mini)
-
-The `TimeMachine` APFS volume on T7 backs up both machines. One volume, two sources — macOS handles it.
-
-**Mac mini Time Machine (backs up the Mac mini itself):**
-1. `System Settings → General → Time Machine`
-2. Click **Add Backup Disk**
-3. Select the `TimeMachine` volume on T7
-4. Done — Mac mini backs up its own system data to T7
-
-**MacBook Time Machine (backs up over the network):**
-
-On the Mac mini first:
-1. `System Settings → General → Sharing → File Sharing` → turn On
-2. Click `+` under Shared Folders → navigate to the `TimeMachine` volume on T7 → add it
-3. Click **Options** → check **Share as Time Machine backup destination**
-
-On your MacBook:
-1. `System Settings → General → Time Machine`
-2. Click **Add Backup Disk**
-3. Select the Mac mini's `TimeMachine` share
-4. Done — MacBook backs up automatically whenever it's on the same network (home WiFi or Tailscale)
-
----
-
-### Step 10 — Verify everything
-
-```bash
-# Docker containers running
-docker ps
-# Should show 4 Immich containers
-
-# Tailscale connected
-tailscale status
-# Should show all your devices
-
-# SSH works
-ssh macmini echo "connected"
-
-# Immich web UI
-open http://<tailscale-ip>:2283
-
-# Backup script works (external drive must be plugged in)
-~/.dotfiles/scripts/backup/backup-external.sh /Volumes/T7 --dry-run
-```
-
----
-
-### Step 11 — Deploy remaining services
-
-With Immich running, deploy everything else. See [SERVICES.md](SERVICES.md) for what each service does (23 services total).
-
-```bash
-cd ~/.dotfiles
-
-# Stage all services to ~/services/
-./services/setup-services.sh
-
-# Deploy core services:
-for svc in watchtower portainer uptime-kuma syncthing vaultwarden nextcloud freshrss homarr paperless-ngx calibre-web; do
-  cd ~/services/$svc
-  nano .env          # fill in passwords/settings (generate secrets with: openssl rand -base64 32)
-  docker compose up -d
-  cd -
-done
-
-# Deploy utility services:
-for svc in pihole stirling-pdf it-tools audiobookshelf linkwarden mealie; do
-  cd ~/services/$svc
-  nano .env
-  docker compose up -d
-  cd -
-done
-
-# Deploy media stack:
-mkdir -p /Volumes/T7/media/{movies,tv,downloads}
-for svc in transmission sonarr-radarr jellyfin; do
-  cd ~/services/$svc
-  nano .env
-  docker compose up -d
-  cd -
-done
-```
-
-For Calibre-Web — books on T7:
-```bash
-mkdir -p /Volumes/T7/calibre-books
-cd ~/services/calibre-web
-# Set BOOKS_DIR=/Volumes/T7/calibre-books in .env
-docker compose up -d
-```
-
-Deploy everything, stop containers later if not needed:
-```bash
-docker stop <container_name>  # stop a service
-docker start <container_name> # start it again
-```
-
-### Step 11b — Pi-hole DNS setup
-
-Pi-hole provides ad blocking + local DNS. Local DNS means `*.peciulevicius.com` resolves directly to the Mac mini when you're on home WiFi (instead of going through Cloudflare).
-
-```bash
-cd ~/services/pihole
-nano .env          # set PIHOLE_PASSWORD, LOCAL_IP
-docker compose up -d
-```
-
-**Add local DNS records** (Pi-hole admin → Settings → Local DNS → DNS Records):
-
-Add an entry for each subdomain pointing to the Mac mini's local IP:
-```
-home.peciulevicius.com       → 192.168.1.100
-vault.peciulevicius.com      → 192.168.1.100
-photos.peciulevicius.com     → 192.168.1.100
-cloud.peciulevicius.com      → 192.168.1.100
-... (all subdomains — see .env.example for full list)
-```
-
-**Router configuration:**
-1. Log into your router admin panel
-2. Set DNS servers to:
-   - Primary: Mac mini local IP (e.g. 192.168.1.100)
-   - Secondary: 1.1.1.1 (fallback if Mac mini is down)
-3. All devices on the network now use Pi-hole for DNS
-
----
-
-### Step 12 — Cloudflare Tunnel (HTTPS for all services)
-
-This gives every service a real HTTPS URL like `https://vault.peciulevicius.com`. Required for the Bitwarden app (which rejects HTTP).
-
-```bash
-~/.dotfiles/scripts/setup/setup-cloudflare-tunnel.sh
-```
-
-The script will:
-1. Open your browser to authenticate with Cloudflare
-2. Create a tunnel named "macmini"
-3. Create DNS records for all service subdomains
-4. Start the tunnel as a background service (auto-starts on boot)
-
-After it finishes, all services are live at:
-
-| Service | URL |
-|---------|-----|
-| Dashboard | https://home.peciulevicius.com |
-| Vaultwarden | https://vault.peciulevicius.com |
-| Immich | https://photos.peciulevicius.com |
-| Nextcloud | https://cloud.peciulevicius.com |
-| Paperless | https://papers.peciulevicius.com |
-| FreshRSS | https://rss.peciulevicius.com |
-| Uptime Kuma | https://status.peciulevicius.com |
-| Calibre-Web | https://books.peciulevicius.com |
-
-**Bitwarden app:** set server URL to `https://vault.peciulevicius.com` — works on all devices with no certificate warnings.
-
----
-
-## If Something Breaks
-
-### Immich not loading
-
-```bash
-cd ~/services/immich
-docker compose ps          # check container status
-docker compose logs -f     # see what's wrong
-docker compose restart     # restart everything
-```
-
-### T7 fails — photo recovery
-
-Immich goes offline. Photos are on the T5 `ImmichBackup` volume from last night.
-
-```bash
-# Edit the docker-compose.yml to point at the backup
-nano ~/services/immich/docker-compose.yml
-```
-
-Find these lines and update them to point at ImmichBackup:
-```
-/Volumes/<T7-volume-name>/immich/upload:/usr/src/app/upload
-/Volumes/<T7-volume-name>/immich/postgres:/var/lib/postgresql/data
-/Volumes/<T7-volume-name>/immich/model-cache:/cache
-```
-
-Change each to `/Volumes/ImmichBackup/immich/...`, then:
-```bash
-cd ~/services/immich
-docker compose down
-docker compose up -d
-```
-
-Immich is back with yesterday's photos. Buy a replacement drive, copy data back, repoint Immich.
-
-Note: Time Machine also lives on T7, so MacBook and Mac mini backups stop too. Replace T7 first priority.
-
-### T5 fails
-
-Photos on T7 are completely unaffected. Immich keeps running. Nightly backup stops. Buy a replacement, format it as `ImmichBackup`, re-add the cron job.
-
-### Immich app on phone can't connect
-
-- Check Tailscale is running on phone and Mac mini
-- Try opening `http://<tailscale-ip>:2283` in mobile Safari — if that works, the issue is the app config
-- On Mac mini: `docker ps` to confirm containers are running
-
----
-
-## Day-to-Day Maintenance
-
-### Update Immich (do this occasionally)
-
-```bash
-cd ~/services/immich
-docker compose pull
-docker compose up -d
-```
-
-Immich updates frequently and improvements are worth having.
-
-### Update everything else
-
-```bash
-scripts/update.sh
-```
-
-### Check what's running
-
-```bash
-docker ps
-```
-
----
-
-## New Machine Setup — TL;DR
-
-Complete checklist for setting up a new Mac mini from scratch:
-
-```bash
-# 1. Clone dotfiles and run installer
 git clone https://github.com/peciulevicius/.dotfiles.git ~/.dotfiles
-cd ~/.dotfiles && ./install.sh
-
-# 2. Prepare drives (see steps 1-2 above for details)
-# - T7: add TimeMachine APFS volume, create /Volumes/T7/immich
-# - T5: format as ImmichBackup
-# - Prevent sleep: sudo pmset -a sleep 0 disksleep 0 displaysleep 10
-
-# 3. Set up networking
-# - Install Tailscale, sign in
-# - Enable SSH: System Settings → General → Sharing → Remote Login
-
-# 4. Deploy all services
-./services/setup-services.sh                            # stage configs to ~/services/
-mkdir -p /Volumes/T7/media/{movies,tv,downloads}
-for svc in immich watchtower portainer uptime-kuma syncthing \
-           vaultwarden nextcloud freshrss homarr paperless-ngx calibre-web \
-           pihole stirling-pdf it-tools audiobookshelf linkwarden mealie \
-           transmission sonarr-radarr jellyfin; do
-  cd ~/services/$svc
-  nano .env          # fill in secrets (openssl rand -base64 32)
-  docker compose up -d
-  cd -
-done
-
-# 5. Set up Cloudflare Tunnel (HTTPS for all services)
-~/.dotfiles/scripts/setup/setup-cloudflare-tunnel.sh
-
-# 6. Set up backups
-crontab -e
-# Add:
-# 0 4 * * 0 ~/.dotfiles/scripts/backup/backup-databases.sh >> ~/logs/db-backup.log 2>&1
-
-# 7. Set up Time Machine (see step 9 above)
-
-# 8. Verify
-docker ps                    # all containers running
-tailscale status             # devices connected
-curl https://vault.peciulevicius.com  # tunnel working
+cd ~/.dotfiles && ./install.sh     # Homebrew, CLI tools, gitleaks, pre-commit hook
+scripts/setup/setup-claude.sh      # Claude Code config (optional for the server itself)
 ```
 
-## Quick Reference
+`install.sh` also enables the repo's secret-scanning pre-commit hook
+(`git config core.hooksPath .githooks`). The repo is public — never commit a
+secret, never bypass the hook.
+
+### 3.3 NAS mounts
+
+1. NAS side (nas.peciulevicius.com or the local web UI): SMB account
+   **`macmini`** with R/W on `media`, `immich`, `audiobooks`, `books`,
+   `unsorted`. (The human admin account `Džiugas` can't be used for SMB — the
+   non-ASCII name breaks it.)
+2. Store the `macmini` SMB password in the macOS login keychain (first manual
+   mount via Finder → ⌘K → `smb://DH4300PLUS-DP.local` and tick "remember").
+3. Mount everything: `bash ~/.dotfiles/scripts/utils/mount-nas.sh`
+4. Make it automatic — three LaunchAgents keep this self-healing:
+
+| Agent | Script | Does |
+|---|---|---|
+| `com.peciulevicius.mount-nas` | `scripts/utils/mount-nas.sh` | Mounts shares at login |
+| `com.peciulevicius.nas-watchdog` | `scripts/utils/nas-watchdog.sh` | Every 5 min: remount missing shares, then restart NAS-backed containers |
+| `com.peciulevicius.docker-watchdog` | `scripts/utils/docker-watchdog.sh` | Every 5 min: Docker Desktop down/hung |
+
+⚠️ **Only the docker-watchdog plist is in the repo** (`os/mac/`). The
+mount-nas and nas-watchdog plists currently exist only in
+`~/Library/LaunchAgents/` on the Mac mini — on a rebuild, check whether they
+were added to the repo since; if not, recreate them from the script headers.
+
+Verify: `ls /Volumes/media /Volumes/immich /Volumes/books /Volumes/audiobooks`.
+Details and troubleshooting: [NAS.md](NAS.md).
+
+### 3.4 Docker Desktop
+
+- Install Docker Desktop, set **Resources → Memory to 10 GB** (the ceiling
+  used since 2026-07-23 — a ceiling, not a reservation). Lowering it is the
+  lever if you ever want a bigger local model in Ollama; see the RAM section
+  of the reference doc.
+- Start Docker **after** the NAS is mounted. A container started while its
+  bind path is missing gets an empty folder on the internal SSD and runs
+  pointing at nothing.
+
+### 3.5 Stage services and fill secrets
 
 ```bash
-# SSH into Mac mini from anywhere
-ssh macmini
-
-# Check all containers
-docker ps
-
-# Restart a service
-cd ~/services/<service> && docker compose restart
-
-# Update a service
-cd ~/services/<service> && docker compose pull && docker compose up -d
-
-# Run photo backup manually (to whichever drive is plugged in)
-~/.dotfiles/scripts/backup/backup-external.sh /Volumes/T7
-
-# Dump databases
-~/.dotfiles/scripts/backup/backup-databases.sh
-
-# Check Tailscale status
-tailscale status
-
-# Service URLs (23 total — see SERVICES.md for full list)
-# https://home.peciulevicius.com      (dashboard)
-# https://photos.peciulevicius.com    (Immich)
-# https://vault.peciulevicius.com     (Vaultwarden)
-# https://cloud.peciulevicius.com     (Nextcloud)
-# https://watch.peciulevicius.com     (Jellyfin)
-# https://recipes.peciulevicius.com   (Mealie)
-# https://pihole.peciulevicius.com    (Pi-hole)
-# ... and more — see SERVICES.md
+~/.dotfiles/services/setup-services.sh   # copies every services/<svc>/ into ~/services/<svc>/
 ```
+
+⚠️ **`~/services/` is a copy, not a symlink.** Editing
+`~/.dotfiles/services/<svc>/…` changes nothing that's running until you
+re-copy the file and recreate the container. `.env` is the exception:
+`setup-services.sh` creates it from `.env.example` only if it's missing and
+never overwrites it.
+
+For each service: fill `~/services/<svc>/.env` from Vaultwarden, then
+`cd ~/services/<svc> && docker compose up -d`. Storage paths live only in
+`.env` (`MEDIA_DIR=/Volumes/media`, `UPLOAD_LOCATION=/Volumes/immich/upload`,
+`BOOKS_DIR=/Volumes/books`, `AUDIOBOOKS_DIR=/Volumes/audiobooks`); databases
+stay under `./data/` on the SSD. The full table is in [NAS.md](NAS.md).
+
+Odysseus is the one service built from source: run
+`services/odysseus/setup.sh` (clones upstream into `~/services/odysseus`).
+
+**Order that avoids surprises:** Vaultwarden first (restore it, §3.8, so you
+can read everything else) → Immich → the rest → Glance last (it joins every
+service's Docker network, so those networks must exist).
+
+The `homelab-service` Claude skill (`.claude/skills/homelab-service/`) has the
+full add/remove/change checklist for any single service.
+
+### 3.6 Cloudflare Tunnel
+
+```bash
+brew install cloudflared
+scripts/setup/setup-cloudflare-tunnel.sh   # creates the tunnel + DNS routes
+```
+
+Public hostnames and their local ports are in `~/.cloudflared/config.yml`
+(the list mirrors [SERVICES.md](SERVICES.md)). Tunnel credentials are
+`~/.cloudflared/*.json` — secret, not in the repo; recreating the tunnel with
+the script is simpler than restoring them.
+
+⚠️ **Reloading the tunnel after editing `config.yml`:** use
+`launchctl kickstart -k "gui/$(id -u)/com.cloudflare.cloudflared"`. There is
+also a Homebrew agent (`sh.brew.cloudflared`); `brew services restart
+cloudflared` restarts *that* one and silently does nothing. Verify the PID
+changed: `ps aux | grep "[c]loudflared tunnel"`.
+
+Only expose services that need it — admin tools stay Tailscale-only.
+
+### 3.7 Tailscale
+
+Install Tailscale on the Mac mini, NAS (runs in Docker there), phone and
+laptop. **Disable key expiry** for the Mac mini and NAS in the Tailscale admin
+console — an expired key silently drops the machine off the tailnet (it
+happened once). The Mac mini's Tailscale IP has been `100.81.171.49`; it
+changes if the node is re-registered, so update docs/bookmarks if it does.
+
+### 3.8 Restore data
+
+**Pull configs back from R2** (needs an rclone remote named `r2`, created with
+`rclone config` → S3 → Cloudflare, credentials from Vaultwarden or a fresh R2
+token):
+
+```bash
+rclone lsd r2:peciulevicius-backups                  # services, obsidian-vault, db-dumps, calibre-books, immich-photos
+~/.dotfiles/scripts/backup/restore.sh list           # uses ~/services/rclone/.env
+~/.dotfiles/scripts/backup/restore.sh service vaultwarden
+~/.dotfiles/scripts/backup/restore.sh all
+```
+
+(`restore.sh`'s header still says "Backblaze B2"; it reads `RCLONE_REMOTE` and
+`BACKUP_DEST` from `~/services/rclone/.env`, so with that file restored it
+works against R2.) `.env` files are **not** in the backup by design — secrets
+come from Vaultwarden.
+
+**Databases.** Postgres/MariaDB data dirs are excluded from the file backup;
+weekly `pg_dump`s are what's backed up:
+
+```bash
+rclone copy r2:peciulevicius-backups/db-dumps ~/backups
+~/.dotfiles/scripts/backup/restore.sh db ~/backups/<svc>-<date>.sql <container> <user>
+```
+
+**Immich.** Two parts — the database (albums, people, faces, favourites) from
+the newest `immich-*.sql` dump as above, and the photo/video originals:
+
+- If the NAS survived: nothing to do — originals are on `/Volumes/immich/upload`.
+- If the NAS is lost: `rclone copy r2:peciulevicius-backups/immich-photos
+  /Volumes/immich/upload/upload`. Transcodes and thumbnails aren't backed up;
+  Immich regenerates them.
+
+**Obsidian vault:** `rclone copy r2:peciulevicius-backups/obsidian-vault ~/obsidian-vault`.
+**Calibre books:** `rclone copy r2:peciulevicius-backups/calibre-books /Volumes/books`.
+
+### 3.9 Cron jobs
+
+Every job runs through `scripts/utils/run-with-notify.sh`, which posts to
+Discord when a job starts failing and when it recovers (webhook in
+`~/.config/homelab/notify.env`, outside the repo).
+
+| When | Job | Script |
+|---|---|---|
+| Sun 04:00 | DB dumps → `~/backups/` | `scripts/backup/backup-databases.sh` |
+| Daily 05:00 | R2 backup | `~/services/rclone/rclone-backup.sh` (**staged copy** — it reads `.env` from its own directory) |
+| Hourly | Kindle Scribe → Obsidian | `pkm/kindle_sync.py` |
+| Every 30 min | Restart Jellyfin + Audiobookshelf so they see new NAS files | `scripts/utils/smb-watcher-rescan.sh` |
+| Sun 09:00 | Homelab audit | `scripts/utils/homelab-audit.sh` |
+
+Install from `scripts/cron/crontab` (the schedule's source of truth) and read
+it back:
+
+```bash
+crontab < ~/.dotfiles/scripts/cron/crontab
+crontab -l
+```
+
+⚠️ Check `scripts/cron/crontab` matches the table above before installing — the
+live crontab was changed on 2026-09-23 (backup path, two new jobs). See
+[scripts/cron/README.md](https://github.com/peciulevicius/.dotfiles/blob/main/scripts/cron/README.md)
+for the `crontab <file>` pitfall on macOS.
+
+### 3.10 Homepage, monitoring, phone
+
+- **Glance** (`home.peciulevicius.com`) — one monitor + bookmark per service.
+- **Uptime Kuma** (`status.peciulevicius.com`) — monitors + the backup push
+  heartbeat (`HEARTBEAT_URL` in `~/services/rclone/.env`).
+- **Phone:** Immich app with background backup, Bitwarden pointed at the
+  self-hosted URL, Tailscale. The per-service app list is in
+  [SERVICES.md](SERVICES.md) → Mobile Apps.
+
+### 3.11 Verify
+
+```bash
+~/.dotfiles/scripts/utils/homelab-audit.sh   # drift, containers, backups, disk, secrets
+docker ps --format '{{.Names}}\t{{.Status}}'
+tailscale status
+curl -s -o /dev/null -w '%{http_code}\n' https://home.peciulevicius.com
+```
+
+---
+
+## 4. Photos: how the phone backup works
+
+1. Immich app on the phone → server URL → sign in → enable background backup.
+2. At home, new photos upload in the background; away, over Tailscale when the
+   app opens. Large uploads through the public hostname hit the 100MB tunnel
+   cap — use the Tailscale URL.
+3. Originals land on the NAS (`/Volumes/immich/upload`); the database and
+   thumbnails stay on the Mac mini's SSD; R2 gets the originals nightly.
+
+Old archives (the year folders on T7) are **not yet imported** into Immich —
+don't wipe T7 until they are (tracked in the TODO).
+
+---
+
+## 5. Backups at a glance
+
+| Copy | What | How often |
+|---|---|---|
+| NAS RAID 5 | Everything bulk | Live (survives one disk failure — not a backup on its own) |
+| Cloudflare R2 | Configs, Obsidian, DB dumps, Calibre books, **Immich originals** | Nightly, automatic |
+| T7 / T5 | Immich originals + transcodes, DB dumps, audiobooks, books | **Manual** — plug in, run `scripts/backup/backup-external.sh /Volumes/T7` (`--dry-run` first) |
+
+Deliberately **not** backed up offsite: movies/TV (re-downloadable),
+audiobooks and books beyond Calibre (re-acquirable), Immich
+transcodes/thumbnails (regenerable).
+
+**Time Machine:** the old setup used a `TimeMachine` APFS volume on T7. With
+T7 unplugged, check whether any Time Machine target is currently active
+before relying on it (a NAS-based target is an open TODO).
+
+---
+
+## 6. Day-to-day
+
+| Task | How |
+|---|---|
+| Health check | `scripts/utils/homelab-audit.sh` (also runs Sundays, alerts Discord) |
+| Add/remove/change a service | `homelab-service` skill checklist |
+| Rotate a password or key | `credential-rotation` skill — every service that keeps its own copy of it must be updated and tested |
+| Updates | Watchtower handles `:latest` images; **pinned tags never move** — review them (Pi-hole first) |
+| Disk space | `df -h /System/Volumes/Data`; safe reclaim: `docker builder prune -af`. ⚠️ Never `docker image prune -a` — stopped services like Storyteller lose their image |
+| Put files on the NAS | Finder → ⌘K → `smb://DH4300PLUS-DP.local`, or nas.peciulevicius.com |
+
+---
+
+## 7. If something breaks
+
+| Scenario | What to do |
+|---|---|
+| **A service can't see its files** | [NAS.md](NAS.md) ladder: mount gone? → `mount-nas.sh`; NAS reachable? `nc -z DH4300PLUS-DP.local 445`; wrong path in `.env`? container started before the mount? → `docker compose restart` |
+| **New movie/audiobook not appearing** | SMB file watchers miss changes. Wait for the 30-min rescan or `docker restart jellyfin audiobookshelf`. Radarr/Sonarr queue shows `downloadClientUnavailable`? → credentials to Transmission are stale (see `credential-rotation`) |
+| **Power outage** | Mac mini powers back on (if `autorestartatconnect` is set) but stops at the **FileVault password** — someone types it once. Then shares mount via LaunchAgent and watchdogs restart containers. Uptime Kuma runs on the same box, so **nothing alerts during a whole-house outage** — an external dead-man's switch (Healthchecks.io) is an open TODO |
+| **NAS down** | Shares vanish; NAS-backed services stop seeing data (the watchdog remounts once it's back). Check power, then nas.peciulevicius.com → Storage |
+| **One NAS disk fails** | RAID 5 keeps running degraded — replace the disk promptly; a second failure loses the array |
+| **NAS lost entirely** | Photos: R2 `immich-photos` + T7/T5. DB dumps: R2 + drives. Books: R2 `calibre-books`. Media: re-download. Rebuild shares, then §3.8 |
+| **Mac mini dead** | Data is safe on the NAS. New machine: §3.1–3.11, restore configs and DB dumps from R2 |
+| **External drive dead** | Buy a replacement, run `backup-external.sh` against it |
+| **Docker hung** | `docker-watchdog` restarts it within ~5 min; otherwise quit/reopen Docker Desktop |
+| **Tunnel down / hostname 404s** | `ps aux \| grep "[c]loudflared tunnel"`; reload with the `launchctl kickstart` command in §3.6 |
+| **Lost remote access** | Tailscale key expired? Log into the admin console; disable key expiry |
+
+Deeper fixes and known traps (Calibre-Web renames over SMB, `.smbdelete`
+files, live SQLite files failing the R2 upload, the two cloudflared agents)
+are in [HOME_SERVER_REFERENCE.md](HOME_SERVER_REFERENCE.md).
+
+---
+
+## 8. Where things are documented
+
+| Need | File |
+|---|---|
+| What to do next | [HOME_SERVER_TODO.md](HOME_SERVER_TODO.md) |
+| What was done and why | [HOME_SERVER_CHANGELOG.md](HOME_SERVER_CHANGELOG.md) |
+| Facts, paths, RAM, gotchas | [HOME_SERVER_REFERENCE.md](HOME_SERVER_REFERENCE.md) |
+| Services, ports, mobile apps | [SERVICES.md](SERVICES.md) |
+| NAS, mounts, watchdogs | [NAS.md](NAS.md) |
+| Scripts | [UTILITY_SCRIPTS.md](UTILITY_SCRIPTS.md) |
+| Checklists for Claude Code | `.claude/skills/` — `homelab-service`, `credential-rotation`, `homelab-audit` |

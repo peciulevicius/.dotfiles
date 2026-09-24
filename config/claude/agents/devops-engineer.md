@@ -110,31 +110,36 @@ done
 docker ps --format "table {{.Names}}\t{{.Status}}"
 ```
 
-Key services: Immich, Vaultwarden, Nextcloud, Jellyfin, Sonarr/Radarr, Pi-hole, Uptime Kuma, Grafana/Prometheus, Paperless-NGX, Cloudflared tunnel.
+Key services: Immich, Vaultwarden, Nextcloud, Jellyfin, Sonarr/Radarr, Pi-hole, Uptime Kuma, Paperless-NGX, Odysseus, Cloudflared tunnel. Full list: `~/.dotfiles/docs/SERVICES.md`.
+
+⚠️ `~/services/<svc>/` is a **copy** of `~/.dotfiles/services/<svc>/` — re-copy and recreate after editing the repo, or nothing changes. In the dotfiles repo, follow the `homelab-service` project skill.
 
 ## Cloudflare Tunnel (homelab)
 
 ```bash
 # Tunnel routes traffic from *.peciulevicius.com → Mac mini
-# Config: ~/services/cloudflared/config.yml
+# Config: ~/.cloudflared/config.yml
 cloudflared tunnel list
 cloudflared tunnel info <id>
 
-# Restart tunnel
-brew services restart cloudflared
+# Reload after editing config.yml — NOT `brew services restart cloudflared`:
+# that restarts an inert duplicate agent and silently changes nothing.
+launchctl kickstart -k "gui/$(id -u)/com.cloudflare.cloudflared"
 ```
 
 ## Monitoring
 
-- **Uptime Kuma**: `http://localhost:3001` — service up/down alerts
-- **Grafana**: `http://localhost:3000` — dashboards (node-exporter + cAdvisor)
-- **Prometheus**: `http://localhost:9090` — metrics scraping
+- **Uptime Kuma**: `http://localhost:3001` — service up/down alerts → Discord
+- **Glance**: `http://localhost:7575` — homepage, live container status
+- **Weekly audit**: `~/.dotfiles/scripts/utils/homelab-audit.sh` (cron, Sundays) — drift, containers, backups, disk, secrets
+- Grafana/Prometheus were removed 2026-09-21 (unused). For history, check logs directly.
 
 ## Backup
 
 ```bash
-# Nightly at 5am — services + vault + db-dumps + calibre books → R2
-~/.dotfiles/services/rclone/rclone-backup.sh
+# Nightly at 5am — services + vault + db-dumps + calibre + Immich originals → R2
+# Cron runs the STAGED copy; it reads ~/services/rclone/.env
+~/services/rclone/rclone-backup.sh
 
 # Weekly Sunday 4am — Postgres/MariaDB dumps
 ~/.dotfiles/scripts/backup/backup-databases.sh
@@ -148,4 +153,5 @@ brew services restart cloudflared
 - `.env` files never committed
 - Secrets via `vercel env` / `wrangler secret` / Docker `env_file`
 - Cloudflare Access on admin-only services (Glance dashboard)
-- Tailscale for internal services (Grafana, Portainer, etc.)
+- Tailscale for internal services (Portainer, the *arr stack, Syncthing, Transmission)
+- gitleaks pre-commit hook in the dotfiles repo (public) — never `--no-verify`

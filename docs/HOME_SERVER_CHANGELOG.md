@@ -8,6 +8,69 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-24 — Odysseus memories and skills repaired
+
+- **Memory re-import.** The 2026-09-23 import ran on qwen2.5:7b with a 4k
+  context — it saw part of the export, merged ~40 facts into one blob (later
+  deleted), saved skill descriptions as memories; **none of the export
+  survived**. Rewritten as 130 atomic facts directly through `MemoryManager`
+  inside the container (no model involved), 12 pinned; vector index rebuilt
+  (startup only rebuilds an *empty* index). 3 → 131 memories; 15-fact
+  spot-check matched the export.
+- **Skills.** Removed 32 nested ownerless `SKILL.md` copies that `app.py`
+  would have adopted into `general/` on every restart; pruned the 29 dev
+  skills plus one extractor draft — only the homelab skills remain (coding
+  stays in Claude Code).
+- **Background model.** Task + utility models were empty (fell back to the
+  4k local model); now `claude-sonnet-5` (API-billed). Default chat stays
+  `claude-opus-5-5`.
+- Backups: `data/{memory,settings}.json.bak-2026-09-24`. Scratch files holding
+  personal facts removed from container and host `/tmp`.
+
+## 2026-09-24 — CI on every push: secrets, shellcheck, docs
+
+`.github/workflows/checks.yml` runs on every push to every branch:
+
+- **gitleaks** over the pushed commits — the server-side backstop for the
+  pre-commit hook, which is per-clone and silently skips when gitleaks isn't
+  installed (how the 2026-09-23 commit got in from the MacBook). Pushed
+  commits only, so the one dead token still in history doesn't fail every run.
+- **`shellcheck -S error`** on every tracked script. Errors only: the warning
+  level flags ~40 intentional patterns, and an always-red check gets ignored.
+  The one existing error (`scripts/utils/utils.sh` had no shell directive — it
+  is sourced, never run) is fixed.
+- **`mkdocs build --strict`** — `docs-pages.yml` only built after a push to
+  `main`, so a docs break surfaced after it had landed.
+
+## 2026-09-24 — Claude config: setup-claude.sh was silently linking nothing
+
+- **`setup-claude.sh` had linked nothing since the scripts reorg (31dbaa2)** —
+  `DOTFILES_DIR` resolved to `scripts/`, so it looked for a nonexistent
+  `scripts/config/claude`. That's why dead command symlinks piled up and
+  `/dotfiles` never got linked. Fixed the depth; it now also prunes dead
+  symlinks pointing into `config/claude` (removed 7).
+- Removed duplicate `check`/`debug`/`review`/`standup` commands — the skills
+  remain and are invoked the same way (the deletions landed in the
+  HOME_SERVER.md commit by accident; same intent). `check` now uses gitleaks;
+  `debug` reports root cause / fix / prevention and commits only if asked.
+- Devops agent: dropped the removed Grafana/Prometheus stack and the
+  ineffective `brew services restart cloudflared` (→ `launchctl kickstart`).
+- New global skills: `personal-finance` (IBKR connector, read-only by
+  default), `pkm-notes`, `testing` (Vitest/Playwright + Angular + xUnit). No
+  personal data in them — details come from Odysseus memory at runtime.
+
+## 2026-09-24 — HOME_SERVER.md rewritten for the NAS architecture
+
+The linked "set up from scratch" guide still described the pre-2026-08-04
+T7-primary setup. Rewritten (773 → 353 lines) against the current facts in
+`HOME_SERVER_REFERENCE.md`, `SERVICES.md`, `NAS.md` and the live compose files:
+architecture, prerequisites (incl. getting into Vaultwarden when it's what
+you're rebuilding), step-by-step rebuild with the pmset/FileVault, copy-not-
+symlink staging and real-cloudflared-agent caveats, R2/DB-dump/Immich restores,
+cron, and an if-something-breaks table. The old narrative stays in git history.
+Unverified spots are marked "check" rather than guessed (whether a Time Machine
+target is still active; whether the tunnel setup script reuses a tunnel).
+
 ## 2026-09-24 — Repo crontab had fallen behind; audit now checks it
 
 `scripts/cron/crontab` is documented as the authoritative schedule, but it

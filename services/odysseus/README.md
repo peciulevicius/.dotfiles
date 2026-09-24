@@ -144,6 +144,56 @@ nothing. `AUTH_ENABLED=true` regardless.
 
 ⚠️ 7000 is macOS **AirPlay Receiver**; upstream's own docs warn about it.
 
+## Memory & skills
+
+| What | Where | Notes |
+|---|---|---|
+| Memories | `data/memory.json` (+ vectors in the `chromadb` container) | Owner-scoped (`peciulevicius`). Categories: identity, preference, fact, contact, project, goal |
+| Skills | `data/skills/<category>/<name>/SKILL.md` (+ `_usage.json`) | Same `SKILL.md` format as Claude Code |
+| Model settings | `data/settings.json` | default = `claude-opus-5-5`; **task + utility = `claude-sonnet-5`** (set 2026-09-24) |
+
+⚠️ **Never bulk-import memories through a small local model.** On 2026-09-23
+an import ran on `qwen2.5:7b` with a 4096-token context: it saw only part of a
+15KB export, merged ~40 facts into one blob (later deleted), saved skill
+descriptions as memories, and switched to Chinese mid-session — **none of the
+export survived**. Fixed 2026-09-24 by writing 130 atomic facts directly
+through `MemoryManager` inside the container (no LLM), then rebuilding the
+vector index. To repeat that kind of import:
+
+```bash
+docker exec -i -u odysseus -w /app odysseus-odysseus-1 python3 - <<'PY'
+from src.memory import MemoryManager
+m = MemoryManager("/app/data"); entries = m.load_all_for_update()
+entries.append(m.add_entry("<one fact>", source="import", category="fact", owner="peciulevicius"))
+m.save(entries)
+PY
+# then rebuild vectors — startup only rebuilds when the index is EMPTY:
+docker exec -i -u odysseus -w /app odysseus-odysseus-1 python3 -c \
+  "from src.memory import MemoryManager as M; from src.memory_vector import MemoryVectorStore as V; V('/app/data').rebuild(M('/app/data').load_all())"
+docker restart odysseus-odysseus-1
+```
+
+Always run `docker exec` as `-u odysseus`, not root. The task/utility model
+used to be empty, so background work (titles, memory tidy/extraction) fell
+back to whatever the chat used — including the 4k-context local model. It is
+now Sonnet on the Anthropic endpoint: **API-billed**, separate from any Claude
+subscription.
+
+⚠️ **Skill import bug — nested copies duplicate on restart.** Importing from a
+repo URL whose `SKILL.md` isn't at the folder root (e.g. a whole dotfiles
+repo) also copies the original *nested* `SKILL.md` into the skill folder,
+without an `owner`. On the next container start, `app.py` (~L1186-1206)
+adopts every ownerless skill for the admin and writes it to
+`data/skills/general/<name>/`, so each skill appears twice, and again on
+every restart. Import only from a URL pointing at a folder with `SKILL.md` at
+its root, or afterwards delete anything below the top-level `SKILL.md`:
+`find data/skills -mindepth 3 -name SKILL.md`. Fixed 2026-09-24: 32 nested
+copies removed before any restart.
+
+Only life-relevant skills live here (homelab + coaching/finance). The coding
+skills stay in Claude Code; 29 of them were pruned from Odysseus 2026-09-24
+through `SkillsManager.delete_skill`, which also cleans `_usage.json`.
+
 ## Backup
 
 `data/` is backed up to R2 — **owning the chat history, memories and RAG corpus
