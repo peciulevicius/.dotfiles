@@ -180,7 +180,7 @@ Worth trying, in order:
 
 1. **Send AZW3 rather than EPUB.** AZW3 carries the cover in a form the Kindle
    reads directly, with no conversion step to lose it. Much of the library
-   already has AZW3/AZW8 alongside EPUB from the DeDRM work.
+   already has AZW3/AZW8 alongside EPUB from the earlier library import.
 2. **Embed the cover into the file first** — in Calibre, select the book →
    *Polish books* → **Update metadata in book files**. EPUBs that merely have a
    cover in Calibre's database, rather than inside the file, lose it in transit.

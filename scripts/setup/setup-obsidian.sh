@@ -39,7 +39,7 @@ mkdir -p "$VAULT_PATH"
 # Folder structure
 FOLDERS=(
   "⚡ Capture"
-  "🏢 Visma"
+  "🏢 Work"
   "🚀 Build"
   "📚 Books & Learning/Book Notes"
   "🏊 Training & Health"
@@ -69,7 +69,7 @@ cat > "$VAULT_PATH/HOME.md" <<'EOF'
 | Develop an idea seriously | 🚀 Build/Ventures & Business Models.md |
 | Note something from a book | 📚 Books & Learning/Currently Reading.md |
 | Save a great quote | 📚 Books & Learning/Quotes & Principles.md |
-| Log a work meeting / task | 🏢 Visma/[relevant file] |
+| Log a work meeting / task | 🏢 Work/[relevant file] |
 | Plan a race | 🏊 Training & Health/Race Planning.md |
 | Track budget / spending | 💰 Finance/Budget & Overview.md |
 | Plan a trip | ✈️ Travel/[Trip name].md |
@@ -96,10 +96,9 @@ Clear every Sunday — move what matters, delete the rest.
 <!-- paste anything below this line, don't organise while capturing -->
 EOF
 
-# 🏢 Visma
-for file in VFS Gweb VCDM; do
-cat > "$VAULT_PATH/🏢 Visma/$file.md" <<EOF
-# $file
+# 🏢 Work
+cat > "$VAULT_PATH/🏢 Work/Projects.md" <<'EOF'
+# Projects
 
 ## Notes
 -
@@ -110,10 +109,9 @@ cat > "$VAULT_PATH/🏢 Visma/$file.md" <<EOF
 ## Archive
 -
 EOF
-done
 
-cat > "$VAULT_PATH/🏢 Visma/1on1 Justas D.md" <<'EOF'
-# 1:1 Justas D.
+cat > "$VAULT_PATH/🏢 Work/1on1 Notes.md" <<'EOF'
+# 1:1 notes
 
 ## Running notes
 
@@ -121,19 +119,6 @@ cat > "$VAULT_PATH/🏢 Visma/1on1 Justas D.md" <<'EOF'
 **Topics:**
 -
 **Actions:**
-- [ ]
-EOF
-
-cat > "$VAULT_PATH/🏢 Visma/Young Professionals Program 25-26.md" <<'EOF'
-# Young Professionals Program 25/26
-
-## Notes
--
-
-## Key dates
--
-
-## Actions
 - [ ]
 EOF
 
@@ -539,7 +524,7 @@ cat > "$VAULT_PATH/📦 Archive/README.md" <<'EOF'
 # Archive
 
 Nothing gets deleted — just moved here.
-Dead business ideas, old Visma notes, past courses, outdated research.
+Dead business ideas, old work notes, past courses, outdated research.
 EOF
 
 log_ok "Vault structure created at $VAULT_PATH"

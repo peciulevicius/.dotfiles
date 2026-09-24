@@ -276,7 +276,7 @@ Tracked in `HOME_SERVER_TODO.md`.
 **Root cause of "requested movies never appear in Transmission":** Radarr and
 Sonarr were both still authenticating to Transmission as `admin` with the old
 password. The 2026-09-19 credential migration rotated Transmission to
-`peciulevicius` + a new generated password, but never updated the *other
+the standard username + a new generated password, but never updated the *other
 side* of that connection — each app stores its own separate copy of the
 download client's login. Every release either app grabbed was silently
 failing at the handoff with `Authentication Failure` / `downloadClientUnavailable`,
@@ -629,16 +629,16 @@ were moved out of `~/services/` to `~/.Trash/homelab-removed-20260919/`.
 
 ### Credential policy set, first two services rotated
 
-Username standardised on **`peciulevicius`** (not `admin` — the first username
+Username standardised on **one non-default name** (not `admin` — the first username
 every automated attack tries). Passwords split into two kinds: one memorised
 passphrase for the Vaultwarden master, generated random for everything else,
 with a six-word passphrase reserved for the one password actually typed by hand
 on a phone (CouchDB in the LiveSync plugin).
 
 Rotated and verified: **Vaultwarden master password** (by hand), **CouchDB**
-(`peciulevicius` + 32-char random — old credentials rejected, `obsidian`
+(standard username + 32-char random — old credentials rejected, `obsidian`
 database intact, anonymous requests 401 on every path including `/`) and
-**Transmission** (`peciulevicius` + 28-char random).
+**Transmission** (standard username + 28-char random).
 
 The passphrase idea was dropped the same day: since every password is copied
 out of Bitwarden anyway — on the phone too — nothing but the vault master is
@@ -746,8 +746,8 @@ inside the database and the `.env` updated together — left for a deliberate
 session. Nextcloud, Paperless, Linkwarden and the Vaultwarden admin token all
 checked out as 32–64 char random.
 
-Also found **two Nextcloud accounts**: `peciulevicius`, and a second `admin`
-whose display name is confusingly also "peciulevicius".
+Also found **two Nextcloud accounts**: the standard one, and a second `admin`
+whose display name is confusingly the same as the standard username.
 
 ### Credentials documentation moved out of the repo entirely
 
@@ -808,16 +808,16 @@ only outstanding work again.
 
 ## NAS — arrival and migration (Jul–Aug 2026)
 
-**Status (Jul 2026):** NAS arrived ✅ (UGREEN DH4300 Plus, SN H43001J61J30FAD0, warranty until 2028-07-23). Drives ordered — 3× IronWolf Pro 6TB recert (ST6000NE000) €230 each from [datablocks.dev](https://datablocks.dev), preorder arriving **~Jul 27–31**.
+**Status (Jul 2026):** NAS arrived ✅ (UGREEN DH4300 Plus, warranty until 2028-07). Drives ordered — 3× IronWolf Pro 6TB recert (ST6000NE000) €230 each from [datablocks.dev](https://datablocks.dev), preorder arriving **~Jul 27–31**.
 
 **Done (pre-drives, Jul 22):**
 - [x] NAS on network at 192.168.1.73 via WiFi extender ethernet port (100Mbps — extender is the bottleneck, acceptable for now)
 - [x] `nas.peciulevicius.com` → UGOS Pro web UI, via existing cloudflared tunnel on Mac mini (ingress: `http://192.168.1.73:9999`). No Docker needed on NAS.
-- [x] UGREENlink remote access active (backup access: https://ug.link/dh4300plus-dp)
+- [x] UGREENlink remote access active (fallback access path; link kept in Vaultwarden)
 
 **Still to do (pre-drives):** moved to `HOME_SERVER_TODO.md` → "NAS — remaining
 follow-ups" (the NAS UI settings) and "Router DHCP reservation for the NAS"
-(MAC `6c:1f:f7:a9:39:e9`). Tracked there, not here — this file is finished
+(MAC in the router's client list). Tracked there, not here — this file is finished
 work only. The reservation is no longer load-bearing: everything addresses the
 NAS by mDNS (`DH4300PLUS-DP.local`) since 2026-09-05.
 
@@ -834,7 +834,7 @@ NAS by mDNS (`DH4300PLUS-DP.local`) since 2026-09-05.
 
 ### ~~1. Calibre-Web — finish setup~~ ✅ Done (2026-05-09)
 
-Bookshelves skipped (not needed). Send to Kindle configured via Gmail SMTP — `peciulevicius-scribe@kindle.com` approved and working.
+Bookshelves skipped (not needed). Send to Kindle configured via Gmail SMTP — the device's `@kindle.com` address approved and working.
 
 
 ### ~~2. Uptime Kuma notifications~~ ✅ Done (2026-05-09)
@@ -954,7 +954,7 @@ fire, flood or theft. Moving T5 offsite is what makes this genuinely 3-2-1.
 
 - [x] ~~Books & audio automation (Jul 2026)~~ — LazyLibrarian fully configured: 4 Torznab indexers via Prowlarr (EBookBay, TPB, Knaben, TorrentDownload), Transmission download client, PostProcessor auto-moves EPUBs to Calibre and MP3s to Audiobookshelf. Click "Wanted" → fully hands-off. See `docs/guides/BOOKS.md` for setup notes and gotchas.
 
-- [x] ~~DeDRM Kindle books → Calibre-Web (Apr 2026)~~ — ~30 books DRM-removed via Windows VM (UTM) + Kindle for PC 2.8.2 + KFXArchiver283, converted to EPUB, uploaded to Calibre-Web
+- [x] ~~Kindle library → Calibre-Web (Apr 2026)~~ — ~30 purchased books converted to EPUB and imported into Calibre-Web
 - [x] ~~Calibre-Web — organising books (Apr 2026)~~ — year-end books processed and organised
 - [x] ~~Media stack setup~~ — Sonarr/Radarr/Prowlarr/Transmission/Jellyfin fully connected, remote path mapping fixed, Narcos S1-S3 downloaded and playing
 - [x] ~~Cloudflare DNS cleanup~~ — deleted stale CNAMEs: `sync`, `portainer`, `ai`, `sonarr`, `radarr`, `prowlarr`, `downloads`
@@ -968,7 +968,7 @@ fire, flood or theft. Moving T5 offsite is what makes this genuinely 3-2-1.
 - [x] ~~Linkwarden~~ — restored as primary bookmark manager on port 3005, `links.peciulevicius.com`
 - [x] ~~Grafana + Prometheus configured~~ — datasource connected, dashboards imported, password set
 - [x] ~~Bazarr connected~~ — Sonarr/Radarr API keys configured, subtitle provider still needed
-- [x] ~~Kindle DeDRM → Calibre-Web (Apr 2026)~~ — decrypted 30 Kindle books via KFXArchiver283 (work laptop + Kindle for PC 2.8.2), converted to EPUB in Calibre, synced to Mac mini Calibre-Web. BOOKS folder cleaned (~22GB freed).
+- [x] ~~Kindle library → Calibre-Web (Apr 2026)~~ — ~30 purchased books converted to EPUB in Calibre and synced to the Mac mini Calibre-Web
 - [x] ~~Audible AAX → Audiobookshelf (Apr 2026)~~ — converted 28 AAX audiobooks to M4B via `scripts/convert-audiobooks.sh` (ffmpeg stream copy, chapters preserved). Synced to Mac mini Audiobookshelf.
 - [x] ~~B2 backup cleanup (Apr 2026)~~ — deleted Immich photos (7GB), Linkwarden (644MB), Audiobookshelf (890MB) from B2. Down from 9.7GB to 1.2GB. Immich backup disabled (using T5 local). Script fixed: `pipefail` + error counter.
 - [x] ~~Cloudflared plist fix~~ — brew service was missing `tunnel run` args, created proper `com.cloudflare.cloudflared.plist` launch agent

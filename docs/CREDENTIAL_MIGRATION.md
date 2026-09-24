@@ -13,7 +13,7 @@ Status: **4 of ~18 services done.** Started 2026-09-19.
 
 ## The rule
 
-- **Username `peciulevicius`** everywhere the app allows it. Not `admin` — that
+- **One standard username** (stored in Vaultwarden, not written here) everywhere the app allows it. Not `admin` — that
   is the first username every automated attack tries.
 - **One memorised passphrase**: the Vaultwarden master, and nothing else.
 - **Everything else generated random** in Vaultwarden, copy-pasted when needed —
@@ -42,8 +42,8 @@ Doing this later means a second pass through all eighteen.
 | Service | URL | Username | Notes |
 |---|---|---|---|
 | Vaultwarden | `https://vault.peciulevicius.com` | email | Master password changed 2026-09-19 |
-| CouchDB | `https://couchdb.peciulevicius.com` | `peciulevicius` | 32-char random, `.env`-backed |
-| Transmission | `http://100.81.171.49:9091` | `peciulevicius` | 28-char random, `.env`-backed |
+| CouchDB | `https://couchdb.peciulevicius.com` | `<username>` | 32-char random, `.env`-backed |
+| Transmission | `http://100.81.171.49:9091` | `<username>` | 28-char random, `.env`-backed |
 | Pi-hole | `https://pihole.peciulevicius.com` | *(password only)* | 32-char random. Old one was **5 characters** on a public panel controlling DNS — assume exposed |
 
 ---
@@ -54,23 +54,23 @@ Generate in Vaultwarden first, then run the command, then save.
 
 | Service | URL | Username |
 |---|---|---|
-| Nextcloud | `https://cloud.peciulevicius.com` | `peciulevicius` |
-| Paperless-ngx | `https://papers.peciulevicius.com` | `peciulevicius` |
-| FreshRSS | `https://rss.peciulevicius.com` | `peciulevicius` |
+| Nextcloud | `https://cloud.peciulevicius.com` | `<username>` |
+| Paperless-ngx | `https://papers.peciulevicius.com` | `<username>` |
+| FreshRSS | `https://rss.peciulevicius.com` | `<username>` |
 | Grafana | `http://100.81.171.49:3000` | `admin` |
 
 ```bash
 # Nextcloud
 OC_PASS='NEW_PASSWORD' docker exec -u www-data -e OC_PASS nextcloud \
-  php occ user:resetpassword --password-from-env peciulevicius
+  php occ user:resetpassword --password-from-env <username>
 
 # Paperless-ngx  (interactive prompt)
 docker exec -it paperless python3 /usr/src/paperless/src/manage.py \
-  changepassword peciulevicius
+  changepassword <username>
 
 # FreshRSS
 docker exec freshrss php /var/www/FreshRSS/cli/update-user.php \
-  --user peciulevicius --password 'NEW_PASSWORD'
+  --user '<username>' --password 'NEW_PASSWORD'
 
 # Grafana
 docker exec grafana grafana cli admin reset-admin-password 'NEW_PASSWORD'
@@ -85,14 +85,14 @@ docker exec grafana grafana cli admin reset-admin-password 'NEW_PASSWORD'
 | Immich | `https://photos.peciulevicius.com` | email → switch to an alias |
 | Linkwarden | `https://links.peciulevicius.com` | email → switch to an alias |
 | Mealie | `https://recipes.peciulevicius.com` | email → switch to an alias |
-| Calibre-Web | `https://books.peciulevicius.com` | `peciulevicius` |
-| Jellyfin | `https://watch.peciulevicius.com` | `peciulevicius` |
-| Audiobookshelf | `https://listen.peciulevicius.com` | `peciulevicius` |
-| Uptime Kuma | `https://status.peciulevicius.com` | `peciulevicius` |
-| Portainer | `https://portainer.peciulevicius.com` | `peciulevicius` |
-| Syncthing | `http://100.81.171.49:8384` | `peciulevicius` |
-| Bazarr | `http://100.81.171.49:6767` | `peciulevicius` |
-| LazyLibrarian | `http://100.81.171.49:5299` | `peciulevicius` |
+| Calibre-Web | `https://books.peciulevicius.com` | `<username>` |
+| Jellyfin | `https://watch.peciulevicius.com` | `<username>` |
+| Audiobookshelf | `https://listen.peciulevicius.com` | `<username>` |
+| Uptime Kuma | `https://status.peciulevicius.com` | `<username>` |
+| Portainer | `https://portainer.peciulevicius.com` | `<username>` |
+| Syncthing | `http://100.81.171.49:8384` | `<username>` |
+| Bazarr | `http://100.81.171.49:6767` | `<username>` |
+| LazyLibrarian | `http://100.81.171.49:5299` | `<username>` |
 | Jellyseerr | `http://100.81.171.49:5055` | via Jellyfin |
 | NAS (UGOS) | `https://nas.peciulevicius.com` | `Džiugas` |
 | NAS SMB service account | *(macOS Keychain)* | `macmini` |
@@ -148,8 +148,8 @@ kind you are dealing with saves guessing:
 - **Immich's Postgres password is the old reused personal password.**
   Internal-only, but changing it needs `ALTER USER` inside Postgres *and* the
   `.env` updated together, or Immich loses its database. Deliberate session.
-- **Nextcloud has two accounts** — `peciulevicius`, and a second `admin` whose
-  display name is confusingly also "peciulevicius". Pick one, delete the other.
+- **Nextcloud has two accounts** — the standard username, and a second `admin` whose
+  display name is confusingly the same as the standard username. Pick one, delete the other.
 - **Retire the old reused personal password** everywhere it still appears.
 - **`.env` files are excluded from the R2 backup.** A restore gives you configs
   with **no secrets** — Vaultwarden is the only copy. Keep an emergency export

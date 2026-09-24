@@ -34,7 +34,7 @@ crashes. Check `pgrep -fl <script>` first.
 3. **Stage and start** — run `services/setup-services.sh` (it never overwrites
    an existing `.env`), fill `~/services/<svc>/.env`, `docker compose up -d`.
 4. **Secrets** — generate the password in Vaultwarden (username
-   `peciulevicius`, entry has the URL for autofill). Add a row to
+   the standard username, entry has the URL for autofill). Add a row to
    `docs/CREDENTIAL_MIGRATION.md` — **no values**, repo is public.
 5. **Homepage (Glance)** — in `services/glance/glance.yml` add a monitor with
    `check-url` **and** a bookmark; add the service's Docker network to

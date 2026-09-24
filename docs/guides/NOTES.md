@@ -18,12 +18,9 @@ Personal knowledge management with Obsidian, synced across devices with Syncthin
 ├── HOME.md                          ← root dashboard, open on startup
 ├── ⚡ Capture/
 │   └── Quick Capture.md
-├── 🏢 Visma/
-│   ├── VFS.md
-│   ├── Gweb.md
-│   ├── 1on1 Justas D.md
-│   ├── Young Professionals Program 25-26.md
-│   └── VCDM.md
+├── 🏢 Work/
+│   ├── Projects.md
+│   └── 1on1 Notes.md
 ├── 🚀 Build/
 │   ├── Ideas & Brainstorm.md
 │   ├── SaaS Stack & Research.md
@@ -107,7 +104,7 @@ Excluded from backup: `.obsidian/workspace*`, `.obsidian/plugins/`, `.DS_Store`,
 
 | Notebook name contains | Paste into |
 |---|---|
-| VFS / Gweb / Justas / VCDM / Young Prof | 🏢 Visma/[matching file] |
+| 1on1 / project / work | 🏢 Work/[matching file] |
 | Ideas / SaaS / Ventures / Writing | 🚀 Build/[matching file] |
 | Book / Reading / Quotes | 📚 Books & Learning/[matching file] |
 | Training / Swim / Bike / Run / Race | 🏊 Training & Health/[matching file] |

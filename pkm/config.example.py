@@ -7,10 +7,10 @@ Fill in VAULT_PATH and IMAP credentials before first run.
 VAULT_PATH = ""  # e.g. "/Users/yourname/obsidian-vault"
 
 # IMAP credentials — use an app password if your provider requires it
-IMAP_SERVER = "imap.gmail.com"   # change to imap.fastmail.com etc. when switching
+IMAP_SERVER = "imap.purelymail.com"   # or imap.gmail.com, imap.fastmail.com, ...
 IMAP_PORT = 993
-EMAIL_ADDRESS = "dziugaspeciulevicius@gmail.com"
-EMAIL_PASSWORD = ""  # Gmail app password (myaccount.google.com/apppasswords)
+EMAIL_ADDRESS = ""  # e.g. "kindle@example.com"
+EMAIL_PASSWORD = ""  # mailbox password, or an app password where the provider requires one
 
 # Optional features
 GIT_AUTOPUSH = False   # set True to git commit + push after every sync
@@ -20,13 +20,10 @@ GIT_AUTOPUSH = False   # set True to git commit + push after every sync
 # Paths ending in "/" are folders — file will be named YYYY-MM-DD_NotebookName.md inside.
 # Paths ending in ".md" are appended to that specific file.
 ROUTING_RULES: dict[str, str] = {
-    # Work — Visma
-    "vfs":          "🏢 Visma/VFS.md",
-    "gweb":         "🏢 Visma/Gweb.md",
-    "justas":       "🏢 Visma/1on1 Justas D.md",
-    "vcdm":         "🏢 Visma/VCDM.md",
-    "young prof":   "🏢 Visma/Young Professionals Program 25-26.md",
-    "visma":        "🏢 Visma/",
+    # Work
+    "1on1":         "🏢 Work/1on1 Notes.md",
+    "project":      "🏢 Work/Projects.md",
+    "work":         "🏢 Work/",
     # Build
     "ideas":        "🚀 Build/Ideas & Brainstorm.md",
     "saas":         "🚀 Build/SaaS Stack & Research.md",

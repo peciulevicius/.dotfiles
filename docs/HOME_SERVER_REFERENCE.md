@@ -300,8 +300,8 @@ copy.
 | Obsidian vault | Internal SSD | `~/obsidian-vault` |
 | Docker data | Internal SSD | `~/Library/Containers/com.docker.docker` |
 
-**Still on T7 and not yet in Immich:** the year folders (`2002`–`2024`, `Močiutė`,
-`from iphone`) — ~140GB of archives, see TODO #20. T5 holds copies of the same
+**Still on T7 and not yet in Immich:** the year folders (`2002`–`2024`, plus a few named and
+unsorted folders) — ~140GB of archives, see TODO #20. T5 holds copies of the same
 folders, so they are not single-copy, but **do not wipe T7 until they are imported**.
 
 **Cloud backup (rclone → Cloudflare R2), nightly 5am:**

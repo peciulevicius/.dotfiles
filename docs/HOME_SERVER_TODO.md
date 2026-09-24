@@ -602,7 +602,7 @@ Vaultwarden.** The working checklist, with a row per service, is
 from the R2 backup. A restore from R2 gives you configs with no secrets.
 **Vaultwarden is the only copy.**
 
-**Decision 2026-09-19 — username `peciulevicius` everywhere, and two kinds of
+**Decision 2026-09-19 — one non-default username everywhere, and two kinds of
 password:** one memorised passphrase for the Vaultwarden master, generated
 random for every service.
 
@@ -804,7 +804,7 @@ Run a backup with:
 No longer load-bearing — everything addresses the NAS as `DH4300PLUS-DP.local`
 (mDNS) since 2026-09-05, which absorbs IP drift. Still worth pinning.
 
-- [ ] OpenWrt (`192.168.1.1`) → static lease, MAC `6c:1f:f7:a9:39:e9`
+- [ ] OpenWrt (`192.168.1.1`) → static lease for the NAS (MAC from the router's client list)
 
 ---
 
@@ -860,7 +860,7 @@ configured devices use it.
 
 - `/Volumes/T7/2002` → `/Volumes/T7/2024` — ~130GB of photos going back years
 - `/Volumes/T7/from iphone (reikia surušiuoti)` — 9.2GB unsorted iPhone photos
-- Notable: `/Volumes/T7/2024` (99GB) contains Barcelona F1 + Zakopane trips with both iPhone and camera shots
+- Notable: `/Volumes/T7/2024` (99GB) holds trip folders with both iPhone and camera shots
 
 - [ ] Check if any of these are already in Immich (avoid duplicates)
 - [ ] Import via Immich CLI or bulk upload through the web UI
@@ -1171,7 +1171,7 @@ your own key.
     this month. GrapheneOS drops devices when firmware updates stop.
 - [ ] **Check first, in this order:** does Google Wallet still refuse to run on
       GrapheneOS (tap-to-pay would stop working — the biggest daily friction);
-      do your banks and Revolut survive hardware attestation; is HeliBoard's
+      do your banking apps survive hardware attestation; is HeliBoard's
       Lithuanian swipe typing good enough.
 - [ ] Note the 10a is ~6.3" — **no modern Pixel is small**. You chose a *mini*.
 - [x] ~~Does Mullvad work on GrapheneOS?~~ Yes — GrapheneOS's FAQ recommends it,
