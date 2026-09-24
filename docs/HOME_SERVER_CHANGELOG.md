@@ -522,7 +522,7 @@ way it blocks the Obsidian LiveSync plugin. So the intended setup works as
 designed.
 
 The recommendations, with reasoning about what to skip, are in
-[guides/BOOKS.md](guides/BOOKS.md#what-to-install-after-the-jailbreak).
+[guides/BOOKS.md](guides/BOOKS.md#packages).
 
 ---
 

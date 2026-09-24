@@ -1,640 +1,90 @@
-# Jailbroken Kindle — setup guide
+# Kindle setup (jailbroken)
 
-Turning a jailbroken Kindle Scribe into a reader for **your own** self-hosted
-library, with Amazon out of the loop for reading while keeping its handwriting
-stack intact.
+Configuration of a jailbroken Kindle Scribe as a reader for a self-hosted
+Calibre-Web library, with the stock handwriting features kept intact.
 
-Written for a **Kindle Scribe on firmware 5.19.6, jailbroken with Vera
-(2026-09-20)**, paired with a self-hosted [Calibre-Web](../SERVICES.md) library.
-Most of it applies to any jailbroken Kindle; device-specific caveats are called
-out.
+Written for a **Kindle Scribe on firmware 5.19.6, jailbroken with Vera on
+2026-09-20**. Most steps apply to any Kindle jailbroken with an `hdnext`-based
+jailbreak; device-specific caveats are noted.
 
-> **Companion docs:** [BOOKS.md](BOOKS.md) for *why* this setup exists and how
-> the acquisition pipeline works · [NOTES.md](NOTES.md) for the Scribe →
-> Obsidian handwriting sync.
+Related: [BOOKS.md](BOOKS.md) (library and acquisition pipeline, design
+decisions) · [NOTES.md](NOTES.md) (handwritten notes into Obsidian).
 
 ---
 
-## The one rule that matters
+## Principles
 
-**The jailbreak is additive. Do not replace the stock reader for handwriting.**
-
-KOReader's Scribe stylus support was merged in March 2026 and then reverted as
-unstable. So:
-
-| Task | Use |
-|---|---|
-| Reading EPUBs from your own library | **KOReader** |
-| Handwritten notes + OCR export | **Stock Kindle software** |
-
-The notes pipeline (`pkm/kindle_sync.py`) depends on *Share → Searchable PDF*,
-which is stock-only. Breaking that breaks the vault sync.
+1. **The jailbreak is additive.** KOReader handles reading; the stock software
+   keeps handling handwriting. KOReader's Scribe stylus support was merged in
+   March 2026 and reverted as unstable, and the notes pipeline
+   (`pkm/kindle_sync.py`) depends on the stock *Share → Searchable PDF* export.
+2. **Wi-Fi stays on.** The Searchable PDF export goes through Amazon to email.
+   Updates are blocked by the jailbreak instead of by airplane mode.
+3. **Check firmware compatibility before installing anything.** Several
+   projects do not support 5.19.x and fail silently rather than refusing to
+   start.
 
 ---
 
-## Housekeeping right after jailbreaking
+## After jailbreaking
 
-### Verify OTA updates are blocked
+### Confirm OTA updates are blocked
 
-A firmware update removes the jailbreak. Modern `hdnext`-stack jailbreaks block
-updates automatically, but **verify rather than assume** — run the
-**"Check OTA Status"** scriptlet.
+A firmware update removes the jailbreak. Vera blocks OTA updates itself (the
+legacy "Universal Hotfix" / HotfixUpdater is not needed); confirm it with the
+**Check OTA Status** scriptlet.
 
-Once confirmed, normal Wi-Fi use is fine. Wi-Fi is in fact *required* here: the
-Searchable PDF export routes through Amazon to email, which is what feeds the
-Obsidian vault. Permanent airplane mode is not an option for this setup.
+### Stray `.bin` files
 
-### About `.bin` files — probably nothing to do
+The KindleModding wiki recommends removing leftover firmware images (`*.bin`)
+from the root of the Kindle's USB storage, since the device may try to install
+them. Check with kTerm:
 
-The KindleModding wiki advises removing stray `.bin` update files from the
-**Kindle's USB storage root** — the drive that appears when you plug it into a
-computer. These would be firmware images left behind by the jailbreak process;
-if one is present, the device may try to install it.
-
-Two clarifications, because this is easy to misread:
-
-- ⚠️ **KOReader's `bin` folder is unrelated.** That holds KOReader's own
-  binaries. Leave it alone.
-- **With no computer to hand, there is nothing to browse** — the Kindle has no
-  built-in file manager. Either check next time you connect over USB, or install
-  `kterm` and run `ls /mnt/us/*.bin`.
-
-If the jailbreak completed and OTA is blocked, this is housekeeping, not urgent.
-
----
-
-## KPM — the package manager
-
-Packages are installed with **KPM**, which came with the jailbreak. Two ways to
-invoke it, and which one your build accepts varies:
-
-```
-;kpm install <package>          # typed into the Kindle's SEARCH BAR
-kpm -S <package>                # inside kterm, or where the wiki documents it
+```sh
+ls /mnt/us/*.bin
 ```
 
-Both appear in current documentation. Try the search-bar form first; if the
-scriptlet doesn't respond, install `kterm` and use the `-S` form there.
+KOReader's own `bin` folder is unrelated and must be left alone.
 
-Useful commands:
+---
+
+## How software is installed
+
+| Mechanism | How | Used for |
+|---|---|---|
+| **KPM** | `;kpm install <name>` in the search bar, or `kpm -S <name>` in kTerm | Packages in the KPM repositories — try this first |
+| **KOReader plugin** | Extract a `*.koplugin` folder into `koreader/plugins/`, then restart KOReader | Anything named `*.koplugin` |
+| **Scriptlet** | Extract under `/mnt/us`; a `.sh` file in `documents/` appears in the library and runs when tapped | Most other tools |
+
+### KPM
 
 ```
 ;kpm update                     # refresh package lists
+;kpm install <package>
+;kpm uninstall <package>
 ;kpm add-repo <url>             # add a third-party repository
-;kpm list-repo                  # show configured repositories
-```
-
-Directory of everything available:
-[KindleTweaks/Awesome-Kindle](https://github.com/KindleTweaks/Awesome-Kindle) ·
-[KPM wiki](https://kpmwiki.vercel.app)
-
----
-
-## 1. KOReader + your own library over OPDS
-
-This is the payoff: reading your Calibre-Web EPUBs on the Kindle with no
-Send-to-Kindle round trip through Amazon.
-
-### Install
-
-```
-;kpm install koreader
-```
-
-A new scriptlet appears once it finishes.
-
-### Point it at Calibre-Web
-
-In KOReader:
-
-1. Tap the **top of the screen** to open the menu
-2. Go to the **magnifying glass / search icon** → **OPDS catalog**
-3. Tap **+** (add catalog) — usually top-left, or via the ☰ menu
-4. Fill in:
-
-| Field | Value |
-|---|---|
-| **Catalog name** | `Calibre-Web` (anything you like) |
-| **Catalog URL** | `https://books.peciulevicius.com/opds` |
-| **Username** | your Calibre-Web login |
-| **Password** | your Calibre-Web password |
-
-5. Save, then tap the catalog to browse. Tap a book → choose **EPUB** → it
-   downloads to the device and opens in KOReader.
-
-### Why this works
-
-Verified 2026-09-20: that endpoint answers with **HTTP Basic auth**
-(`WWW-Authenticate: Basic`), which KOReader's OPDS client speaks natively.
-
-⚠️ It is deliberately **not** behind Cloudflare Access. An Access policy that
-challenges the browser also blocks KOReader, which cannot complete an
-interactive login — the same constraint that applies to the Obsidian LiveSync
-plugin. If you ever put Access in front of Calibre-Web, OPDS breaks.
-
-### What you gain over Send-to-Kindle
-
-| | Send to Kindle | KOReader + OPDS |
-|---|---|---|
-| Amazon sees your library | ✅ yes | ❌ no |
-| Reads EPUB | converts server-side | natively |
-| Page numbers | usually unavailable (no APNX) | real pagination |
-| Covers | often a generic placeholder | the EPUB's own cover |
-
-### Finding your books — and taming the file browser
-
-KOReader's file browser opens on the Kindle's **storage root** (`/mnt/us/`), so
-the first thing you see is the device's own plumbing:
-
-```
-audible/  documents/  fonts/  kmc/  koreader/  libkh/
-lost+found/  screenshots/  system/  voice/  privesc_marker
-```
-
-Only two of those matter to you:
-
-| Folder | What's in it |
-|---|---|
-| **`documents/`** | **Your books.** Where the stock Kindle keeps them, and where Send-to-Kindle deposits them. |
-| `screenshots/` | Yes — screenshots. Tap two **diagonally opposite corners** at the same time. KOReader can also bind it to a gesture. |
-
-The rest is firmware, fonts, the jailbreak's own files (`libkh/`,
-`privesc_marker`) and KOReader itself. **Leave them alone.**
-
-#### Make it usable, once
-
-1. **Set a home directory.** Long-press `documents/` (or a dedicated `books/`
-   folder you create) → **Set as HOME directory**. The home button then always
-   lands there instead of the root.
-2. **Hide the noise.** In the file browser, open the **☰ menu → Settings** and
-   turn **off** *Show unsupported files*. Firmware clutter stops appearing.
-   Leave *Show hidden files* off too.
-3. **Send OPDS downloads to the same place.** The first time you download from
-   the catalog, KOReader asks where to save — choose your home folder so
-   everything lands together rather than scattering.
-4. **Use History and Favorites** rather than browsing. The ☰ menu has both;
-   long-press any book → *Add to favorites*. For a real library, collections
-   beat folder navigation.
-
-A dedicated `books/` folder at the root is worth it if you want your own library
-kept clearly apart from whatever Amazon has put in `documents/`.
-
-### Books do not sync automatically
-
-OPDS is **pull**: open KOReader, browse, tap to download. There is no background
-sync. To push instead, see *SSH over USB* below.
-
----
-
-## 2. Custom lockscreens
-
-```
-;kpm add-repo https://kpm.andrecheng.com/kpm.json
 ;kpm list-repo
-;kpm update
-;kpm install custom-screensaver
 ```
-
-Then drop **PNG** files into `/screensavers/` on the Kindle's storage. Any
-filename works, images are scaled automatically, and they rotate alphabetically.
-It needs neither KOReader nor KUAL.
-
-⚠️ **Untested on the Scribe.** Its author lists Kindle 12th gen, Paperwhite 5 and
-Paperwhite 6 on firmware 5.18.6–5.19.6. The firmware range matches the Scribe,
-but the panel is 10.2" instead of ~6–7", so scaling is what to watch.
-
-**Fallback if it misbehaves** — KOReader's own sleep screen, which only covers
-sleep *from within KOReader*:
-
-> gear icon → **Screen** → **Sleep screen** → **Wallpaper** → point at a folder
-> of images
-
-Source: [chengandre/kindle-custom-screensaver](https://github.com/chengandre/kindle-custom-screensaver)
-
----
-
-## 3. KindleFetch — grabbing a book with no computer
-
-Searches **Anna's Archive** and downloads straight to the device. Genuinely
-useful when you want a book immediately and aren't near a computer.
-
-Two versions — **prefer the KOReader plugin**, since you already have KOReader
-and it keeps everything in one app:
-
-| Version | Install | Notes |
-|---|---|---|
-| **KOReader plugin** ⭐ | [william-spongberg/KindleFetch.koplugin](https://github.com/william-spongberg/KindleFetch.koplugin) | Search and download without leaving KOReader. Also covers Library Genesis. |
-| CLI | `;kpm install kindlefetch` | Launch via kTerm or a scriptlet — **not KUAL**, which Vera does not support. [justrals/KindleFetch](https://github.com/justrals/KindleFetch) |
-
-**How it fits with the self-hosted stack:** it doesn't replace it. LazyLibrarian
-→ Calibre-Web remains the library — everything catalogued, backed up to R2, and
-readable on every device. KindleFetch is the quick path when you're away from a
-computer. Books grabbed this way live only on the Kindle unless you add them to
-Calibre-Web later, so treat it as a shortcut rather than the front door.
-
-Anna's Archive indexes copyrighted material; what you download is your call.
-
----
-
-## 4. SSH over USB — push books instead of pulling
-
-```
-;kpm install usbnetlite
-```
-
-Gives the Kindle an SSH server over the USB cable. That unblocks a push script
-(`scripts/kindle/push-books.sh`, not yet written) to `scp` new EPUBs across in
-bulk rather than tapping through OPDS one at a time.
-
-Do OPDS first — it needs nothing and works over Wi-Fi from anywhere. This is the
-upgrade once the library is big enough for one-at-a-time to annoy.
-
----
-
-## 5. HotfixUpdater — ⚠️ not needed on Vera
-
-Skip it. The "Universal Hotfix" belongs to the **legacy** jailbreak chain
-(WinterBreak, SpringBreak, LanguageBreak, Sanctuary), where blocking OTA updates
-was a separate manual step. **Vera blocks OTA by itself**, so there is no hotfix
-to keep current and `HotfixUpdater` has nothing to act on.
-
-Verify the block once with the **"Check OTA Status"** scriptlet and move on.
-
----
-
-## Read-along: which books actually highlight, and which don't
-
-`audiobook.koplugin` does two quite different things, and the difference decides
-whether you get highlighting and page turns.
-
-| Mode | Where the audio comes from | Highlights + turns pages? |
-|---|---|---|
-| **TTS** | Synthesised on-device from the text | ✅ **Always** |
-| **Audiobook playback** | An [Audiobookshelf](https://www.audiobookshelf.org/) server | ❌ **No** — it's a player |
-| **Media Overlay EPUB** | Narration embedded in the book, pre-aligned | ✅ (support is *work in progress*) |
-
-**Why TTS always works:** the plugin generates the speech from the very words it
-is highlighting, so it knows the position exactly. Nothing to align.
-
-**Why real narration doesn't:** an Audiobookshelf audiobook is just an audio
-file. Nothing in it says "this second corresponds to that word", so the plugin
-plays it and the page sits still. You get a good audiobook player with your
-library synced — but not read-along.
-
-### Getting real narration to highlight: EPUB 3 Media Overlays
-
-The standard for read-along is **EPUB 3 Media Overlays** — a SMIL map embedded
-in the book pairing text fragments with audio timestamps. Amazon's Whispersync
-is their proprietary equivalent, built from Audible's alignment data, which is
-why it only works on matched Kindle+Audible editions you bought from them.
-
-The plugin's README lists *"Storyteller compatibility; EPUB 3 Media Overlays
-support (work in progress)"* — so this path exists but is not finished. Check
-the release notes before relying on it.
-
-### Storyteller — self-hosted Whispersync
-
-[Storyteller](https://storyteller-platform.dev/) takes an ebook **and** its
-audiobook, transcribes the audio, uses **forced alignment** to match it
-sentence-by-sentence against the text, and outputs a single **EPUB 3 with Media
-Overlays**. Self-hosted, Docker, and the resulting file works in any reader that
-supports Media Overlays.
-
-It fits this stack unusually well — the audiobooks are already in Audiobookshelf
-and the ebooks already in Calibre-Web.
-
-**Deployed here as `services/storyteller/`, port 8087** (8001 is Vaultwarden),
-with `restart: "no"` so it never comes back on its own. Setup and usage:
-[services/storyteller/README.md](https://github.com/peciulevicius/.dotfiles/blob/main/services/storyteller/README.md).
-
-⚠️ **RAM.** Storyteller wants **~4GB**, which is roughly the entire Docker
-headroom left on the Mac mini and the same budget earmarked for Odysseus — the
-constraint that ruled out [Octopus Deploy](OCTOPUS_DEPLOY.md). Alignment is a
-**batch job**, not a permanent service, so the realistic pattern is: bring it up,
-process a book, take it down. Don't leave it running.
-
-### ⚠️ What happens with narrator asides
-
-This is the honest limitation of any alignment tool, including Storyteller and
-Whispersync.
-
-Forced alignment maps **audio to text that exists in the book**. When a narrator
-ad-libs, chats between chapters, or adds commentary that isn't in the manuscript
-— David Goggins being the obvious example — there is no text for those words to
-align to. Expect the highlight to **stall or drift** during those passages and
-pick up again when the narration returns to the written text.
-
-Books where the narration follows the manuscript closely align well. Heavily
-ad-libbed audiobooks are the worst case for this technology, not a bug in the
-tool.
-
-## Audiobooks: LARK doesn't fit this device (yet)
-
-**LARK** is a Libre Audiobook Player for Kindle — MP3 and M4B over Bluetooth,
-which is appealing given the Scribe has Bluetooth and you already run
-Audiobookshelf.
-
-Three findings, checked 2026-09-20, and together they rule it out for now:
-
-1. 🔴 **Firmware.** The project states *"Only Firmware <5.19 supported right
-   now"*. The Scribe here is on **5.19.6**, so it is outside the supported
-   range. Upstream is "working on a solution for newer devices".
-2. 🔴 **No read-along.** It has **no text/audio synchronisation, no word
-   highlighting** — listening history, chapters, bookmarks and metadata only.
-   What you may be thinking of is Amazon's **Immersion Reading / Whispersync for
-   Voice**, which highlights narrated words in a matched Kindle+Audible edition.
-   That is an Amazon feature requiring both editions of the same title; no
-   third-party Kindle player reproduces it.
-3. 🟠 **No streaming.** LARK plays **local files only**, so it would not replace
-   Audiobookshelf — you would copy M4B files onto the Kindle's limited storage
-   by hand, losing Audiobookshelf's progress sync across devices.
-
-**Recommendation:** keep using Audiobookshelf on the phone for audiobooks. Revisit
-LARK if it gains 5.19+ support and you specifically want one device for both.
-
-Sources: [kbarni/LARKPlayer](https://github.com/kbarni/LARKPlayer) ·
-[Teknoist/BARKPlayer](https://github.com/Teknoist/BARKPlayer) (an updated fork —
-worth checking whether it has moved past the 5.19 limit)
-
----
-
-## How installs actually work
-
-Three different mechanisms, and knowing which one a tool uses saves most of the
-confusion — **`;kpm install` does not work for most things on the list.**
-
-| Method | How | Which tools |
-|---|---|---|
-| **KPM** | `;kpm install <name>` in the search bar, or `kpm -S <name>` in kterm | More than the wiki's package page lists — `kterm` installs this way even though it isn't on it. **Always try KPM first.** |
-| **KOReader plugin** | Unzip a `*.koplugin` folder into `koreader/plugins/` | Anything ending `.koplugin` |
-| **Manual scriptlet** | Unzip somewhere under `/mnt/us`, then drop a `.sh` into `documents/` — it appears in the library as a tappable "book". ⚠️ Not `extensions/`: that is the old KUAL layout and doesn't exist on Vera. | Most of the rest |
-
-The [KPM wiki](https://kpmwiki.vercel.app/packages) lists `blockamazon`,
-`gnomegames`, `hello`, `hyprpad`, `kanki`, `kindlefetch`, `kwordle`, `make` and
-`musl` — but that page is **incomplete**: `kterm` and `koreader` both install
-through KPM without appearing on it. Try `;kpm install <name>` before assuming
-a manual install is needed.
-
-> **KindleForge** is a GUI app store for Kindles and sounds like the obvious
-> shortcut, but skip it here: it targets AdBreak/WinterBreak/LanguageBreak
-> jailbreaks (not Vera), and its author has it in **maintenance mode pending a
-> rewrite on top of KPM**. Use KPM directly.
-
----
-
-## What each KPM package is
-
-The official repo is small. As of 2026-09:
-
-| Package | What it is | Verdict here |
-|---|---|---|
-| `kindlefetch` | Download books from Anna's Archive on-device | ⭐ **Install** |
-| `blockamazon` | Blocks Amazon domains via `/etc/hosts` to disable the Kindle store | ⚠️ **Careful** — see below |
-| `hyprpad` | Simple on-device text editor, e-ink optimised | Optional |
-| `kanki` | Anki-style flashcards | Optional — [RAnki](https://github.com/crazy-electron/ranki) syncs with real Anki, this doesn't |
-| `gnomegames` | Chess (decent AI) + Minesweeper | Fun |
-| `kwordle` | Wordle | Fun |
-| `hello` | A hello-world test package | Skip — it exists to verify KPM works |
-| `make` | The `make` build tool | **Dependency**, pulled in when something needs it |
-| `musl` | The musl C library | **Dependency**, same |
-
-`make` and `musl` are libraries other packages depend on — install them only when
-something asks, not on their own.
-
-### ⚠️ `blockamazon` could break the notes pipeline
-
-It works by blocking Amazon domains in `/etc/hosts` to kill the store. The
-project does **not** document which domains, and this device depends on Amazon
-for one thing that matters: *Share → Searchable PDF* routes the handwriting OCR
-**through Amazon to email**, which is what feeds `kindle_sync.py` into the
-Obsidian vault.
-
-If you want it:
-
-1. Install it, then **immediately test a Searchable PDF export** and confirm the
-   mail arrives
-2. If it doesn't, unblock it. The upstream extension exposes unblock **through
-   KUAL**, which Vera does not have — so before installing, confirm the KPM
-   package offers an unblock path of its own. Worst case it is an `/etc/hosts`
-   edit you can undo in kTerm:
-   `cp /etc/hosts /etc/hosts.bak` first, and restore that file to reverse it.
-
-Don't install it and discover three weeks later that notes stopped syncing.
-
----
-
-## Going through Awesome-Kindle, annotated
-
-Every entry from [the list](https://github.com/KindleTweaks/Awesome-Kindle),
-with a verdict for **this** setup — a Scribe used for reading a self-hosted
-library and taking handwritten notes.
-
-### Install these
-
-| Tool | What it does | How |
-|---|---|---|
-| [KOReader](https://koreader.rocks/) ✅ | The reason for jailbreaking. EPUB natively, real pagination, OPDS. | `;kpm install koreader` — **done** |
-| [KindleFetch](https://github.com/justrals/KindleFetch) | Download books from Anna's Archive on-device, no computer. | `;kpm install kindlefetch`, or better the [KOReader plugin](https://github.com/william-spongberg/KindleFetch.koplugin) |
-| [kTerm](https://github.com/bfabiszewski/kterm) | E-ink terminal. How you install everything else without a computer. | `;kpm install kterm` — **done** |
-| [UsbNetLite](https://github.com/notmarek/kindle-usbnetlite) | SSH over USB. Unblocks the `scp` push script instead of pulling one book at a time. | Manual |
-
-### Worth considering
-
-| Tool | Verdict |
-|---|---|
-| [Kreate](https://github.com/Foskya/Kreate) | Drawing app. The Scribe has the best stylus of any Kindle, so this is the one "fun" tool that actually suits the hardware. ⚠️ Won't replace stock handwriting for the notes pipeline. |
-| [Textadept](https://github.com/kbarni/textadept-kindle) | Real text editor, Bluetooth keyboard support. Interesting as a distraction-free writing device — though notes belong in the Obsidian vault, not stranded on the Kindle. |
-| [RAnki](https://github.com/crazy-electron/ranki) / [KAnki](https://github.com/crizmo/KAnki) | Flashcards. RAnki uses the real Anki backend and **syncs**, so it's the one to pick if you want this at all. KAnki is `;kpm install kanki`. |
-| [ScreenControl](https://kindlemodshelf.me/screencontrol.html) | Mirrors the screen over the network with input. Genuinely useful for demoing or debugging without hovering over the device. |
-| [Alpine](https://github.com/schuhumi/alpine_kindle) | Full Linux on the Kindle. A project in itself, not a tool. |
-
-### Blocked or not applicable here
-
-| Tool | Why not |
-|---|---|
-| [LARK](https://github.com/kbarni/LARKPlayer) 🔴 | Firmware **<5.19** only; this Scribe is 5.19.6. Also no read-along and no streaming — see the audiobooks section below. |
-| [KinAMP](https://github.com/kbarni/KinAMP) | Bluetooth music player by the same author, so expect the same firmware ceiling. You carry a phone. |
-| [SOX Media Player](https://www.mobileread.com/forums/showthread.php?t=368945) | Bluetooth audio + internet radio. Same reasoning. |
-| [Disable ADs](https://scriptlets.notmarek.com/scriptlets/disable_ads.sh) | No ad-supported Scribe variant exists. |
-| [Android on Kindles](https://github.com/Ooonana/Guide-to-installing-android-on-kindle) | ❌ Would destroy the stock handwriting stack the notes pipeline depends on. Not on this device. |
-| [KindleForge](https://github.com/KindleTweaks/KindleForge) | Targets other jailbreaks, and in maintenance mode pending a KPM rewrite. |
-
-### Games — harmless, unrelated
-
-[KWordle](https://github.com/crizmo/KWordle) ·
-[IllusionChess](https://github.com/penguins184/IllusionChess) ·
-[Gnome Chess & Minesweeper](https://github.com/crazy-electron/GnomeGames4Kindle)
-(`;kpm install gnomegames`) ·
-[Gambatte-K2](https://github.com/crazy-electron/gambatte-k2) (Game Boy emulator) ·
-[Crossword](https://github.com/roygbyte/crossword.koplugin) (a KOReader plugin) ·
-[Tetris](https://kindlemodshelf.me/tetris.html) ·
-[KindleKraft](https://github.com/penguins184/KindleKraft) /
-[KindleCraft](https://github.com/gingrspacecadet/bareiron) (Minecraft servers) ·
-[KShips](https://github.com/LOT-Projects/KShips) ·
-[KPomo](https://github.com/crizmo/KPomo) (Pomodoro timer)
-
-A 10.2" e-ink Game Boy emulator is a funny thing to own. None of it affects the
-reading or notes setup.
-
-### Where to look when this list goes stale
-
-- [KindleModding Wiki](https://kindlemodding.org/) — the authoritative guide
-- [KindleModShelf](https://kindlemodshelf.me/) — catalog with per-project pages
-- [Penguins' Mesquite Wiki](https://github.com/penguins184/Penguins-Kindle-Wiki)
-- [KindleModding Discord](https://discord.kindlemodding.org)
-
-⚠️ **Check firmware compatibility before installing anything.** This Scribe is on
-**5.19.6**, which is newer than several projects support — LARK is the worked
-example. A tool that assumes an older firmware can fail quietly or misbehave
-rather than refusing to start.
-
----
-
-## Read-aloud with word highlighting — this exists, and it isn't LARK
-
-**LARK cannot do this.** It plays pre-recorded MP3/M4B audiobook *files*. It has
-no connection to whatever book is open, no text synchronisation and no
-highlighting — and it is blocked on 5.19.6 anyway.
-
-What does do it: **[audiobook.koplugin](https://github.com/stradichenko/audiobook.koplugin)**,
-a KOReader plugin providing *"text-to-speech with synchronized word
-highlighting, automatic page turns, and Bluetooth audio support."*
-
-Open a book in KOReader, start it, and it reads aloud while highlighting each
-word and turning pages by itself — the experience you were describing.
-
-- **TTS engines:** espeak-ng (light), **Piper** (neural, far more natural),
-  sanoTTS
-- **Fully offline** — no network needed for synthesis; Piper voice models are
-  downloaded once from HuggingFace
-- **Bluetooth**: device scanning and pairing, plus headset media-button control
-- **Install:** download the release zip, copy the `audiobook.koplugin` folder
-  into `koreader/plugins/`
-
-### ⚠️ Playback speed does nothing on the Kindle
-
-The 1x/2x button changes nothing when playing a **real narration**. This is an
-upstream limitation, not a misconfiguration — `mediaengine.lua` says so outright:
-
-```lua
--- aplay / wav-play / Kindle do not support speed control
-```
-
-`setSpeed` is implemented for the mpv, MPlayer, ffmpeg-pipe and generic
-GStreamer backends. The Kindle ones (`KINDLE_GST_PLAY`, `KINDLE_LIPC`) are not
-in that list, and the call sits inside a `pcall`, so it fails silently rather
-than telling you.
-
-The button still works in **TTS mode**, because there speed is a synthesis
-parameter rather than something the player has to do to finished audio.
-
-#### Workaround: speed the audio up *before* aligning
-
-Storyteller aligns whatever audio you hand it, so a pre-stretched file yields a
-read-along that plays at that speed natively:
-
-```sh
-# 1.5x, preserving pitch (atempo caps at 2.0 per pass; chain for more)
-ffmpeg -i "book.m4b" -filter:a "atempo=1.5" -vn "book-1.5x.m4b"
-
-# 2.5x = 2.0 x 1.25
-ffmpeg -i "book.m4b" -filter:a "atempo=2.0,atempo=1.25" -vn "book-2.5x.m4b"
-```
-
-Then align `book-1.5x.m4b` instead of the original. The timings in the SMIL map
-match the faster audio, so highlighting stays in sync.
-
-⚠️ Costs: `brew install ffmpeg` (not currently installed), one alignment run per
-speed, and ~750MB of storage per resulting EPUB. Worth it for a book you will
-listen to a lot; not worth it to sample one.
-
-### How it differs from Whispersync
-
-| | Amazon Immersion Reading | audiobook.koplugin |
-|---|---|---|
-| Voice | Human narrator (Audible) | Synthesised (Piper is good, not human) |
-| Needs | Matched Kindle + Audible editions, bought | Any book you can open |
-| Highlighting | ✅ | ✅ |
-| Works with your own EPUBs | ❌ | ✅ |
-
-Amazon's **VoiceView** screen reader is also on the device and reads aloud over
-Bluetooth, but it is an accessibility tool narrating the whole interface rather
-than a reading companion. The plugin is the better fit.
-
----
-
-## Install walkthrough, in order
-
-Everything below is done **on the Kindle, with no computer**, using kTerm.
-
-### Step 1 — KPM packages ✅
-
-```
-;kpm update
-;kpm install kterm
-;kpm install kindlefetch
-```
-
-More is in KPM than the wiki's package page lists — **kterm installs via KPM
-too.** When in doubt, just try `;kpm install <name>`; if it isn't there, fall
-back to a manual install.
-
-### Step 2 — Using KindleFetch (the CLI you installed) ✅
-
-#### ⚠️ There is no KUAL, and you should not install one
-
-**KUAL is obsolete and does not work with Vera.** It was the old launcher for
-pre-`hdnext` jailbreaks. Vera replaces it with **scriptlets** — so any
-instruction that says "open KUAL" (including KindleFetch's own docs, and the KPM
-wiki) predates this jailbreak. Ignore it.
-
-A **scriptlet** is just a `.sh` file in `documents/`. It shows up in the Kindle
-library looking like a book; tapping it runs the script. That is the whole
-mechanism.
-
-#### Where KPM actually puts things
-
-Not `extensions/` — that is the **old KUAL layout** and does not exist on a Vera
-install. KPM uses:
 
 | Path | Contents |
 |---|---|
-| `/mnt/us/kpm/packages/` | installed packages |
-| `/mnt/us/kpm/packages/bin/` | their executables |
-| `/usr/local/bin/kpm` | KPM itself |
-| `/etc/kpm` | configuration |
+| `/mnt/us/kpm/packages/` | Installed packages |
+| `/mnt/us/kpm/packages/bin/` | Executables (on `PATH` via `/etc/profile`) |
+| `/usr/local/bin/kpm` | KPM |
+| `/etc/kpm` | Configuration |
 
-`/mnt/us/kpm/packages/bin` is added to `PATH` via `/etc/profile`, so in kTerm the
-package name alone should work.
+The [KPM wiki package list](https://kpmwiki.vercel.app/packages) is incomplete:
+`kterm` and `koreader` install through KPM without appearing on it.
+Third-party repositories are the least reliable part of KPM; if an install from
+one fails, use the project's zip release instead.
 
-#### Launching KindleFetch
+### No KUAL
 
-**Try this first** in kTerm:
+KUAL is the launcher for pre-`hdnext` jailbreaks and does not work with Vera.
+Instructions that say "open KUAL" or refer to `extensions/` as a launcher
+location predate Vera. Use scriptlets instead.
 
-```sh
-kindlefetch
-```
-
-If the shell can't find it, look rather than guess:
-
-```sh
-ls /mnt/us/kpm/packages/
-ls /mnt/us/kpm/packages/bin/
-```
-
-And if it's somewhere else entirely, search for it:
-
-```sh
-find /mnt/us -iname '*kindlefetch*' 2>/dev/null
-```
-
-Then run whatever that turns up — e.g.
-`sh /mnt/us/kpm/packages/kindlefetch/run.sh`.
-
-#### Make it tappable instead of terminal-only
-
-Once you know the working command, wrap it in a **scriptlet** so it opens from
-the library:
+Any command can be made tappable from the library with a scriptlet:
 
 ```sh
 cat > /mnt/us/documents/KindleFetch.sh <<'EOF'
@@ -644,363 +94,336 @@ EOF
 chmod +x /mnt/us/documents/KindleFetch.sh
 ```
 
-Replace `kindlefetch` with the full path if the bare name didn't work.
-**KindleFetch** then appears in your library next to your books — tap to launch.
-Restart the device if it doesn't show up.
+The library only rescans on boot; restart the device if the entry does not
+appear.
 
-The same wrapper gives any KPM package a launcher.
+### Transferring files to the device
 
-#### Using it
+- **On-device HTTPS downloads fail.** The Kindle's `wget` is a busybox applet
+  whose TLS support cannot negotiate with GitHub's download CDN; the typical
+  error is `wget: error getting response: Connection reset by peer`. KPM is
+  unaffected because it handles its own transport.
+- **USB does not mount on macOS.** Kindles from about 2022 onward, the Scribe
+  included, use MTP rather than USB mass storage, and macOS has no native MTP
+  support. (OpenMTP is an open-source client if needed.)
+- **Plain HTTP over the LAN works.** Serve files from the Mac mini and fetch
+  them with `wget` in kTerm.
 
-Type a title, author or keyword → browse results → tap to download. Books land
-in `documents/`, so they appear in both the stock library and KOReader.
-
-**CLI vs the KOReader plugin — you can run both**, they don't conflict. The CLI
-is standalone; the plugin puts the same search inside KOReader so you never
-leave the reader. You have the CLI; add the plugin later only if switching apps
-starts to annoy.
-
-### Finding anything on the device
-
-Two commands worth remembering, because upstream docs frequently describe paths
-from older jailbreaks that don't exist here:
-
-```sh
-find /mnt/us -maxdepth 2 -iname '*<name>*' 2>/dev/null   # where did it install?
-ls /mnt/us/kpm/packages/bin/                             # what can I run?
-```
-
-`/mnt/us/kpm/packages/bin` is on `PATH`, so anything listed there runs by name.
-
-### Step 3 — Why on-device downloading fails, and when to stop
-
-The Kindle's `wget` is a busybox applet with limited TLS. Against GitHub it
-typically dies with:
-
-```
-wget: error getting response: Connection reset by peer
-```
-
-That is a **TLS handshake failure**, not a network or path problem, and no
-amount of retrying fixes it. GitHub redirects release downloads to a CDN whose
-modern TLS the applet cannot negotiate.
-
-⚠️ There is a second reason not to fight this: **the read-aloud plugin is 232 MB
-unpacked** — it bundles the Piper (123 MB) and espeak-ng (71 MB) speech engines.
-That is not a comfortable download over a sleepy Kindle Wi-Fi connection even if
-TLS worked.
-
-**Use a computer for the plugins.** KPM packages still install fine on-device;
-it is only direct downloads that break.
-
-### ⚠️ Why USB does not work on macOS either
-
-Plug a modern Kindle into a Mac and it shows:
-
-> *"If your Kindle is not listed on your computer or you're using macOS, go to
-> amazon.com/connectmykindle for additional help and macOS software support."*
-
-Kindles from roughly 2022 onward — the **Scribe included** — present themselves
-over **MTP** rather than as a USB mass-storage drive, and **macOS has no native
-MTP support**. The volume never mounts, so there is nothing to drag files into.
-
-You could install an MTP client (OpenMTP is the open-source one; Android File
-Transfer is Google's and unmaintained), but there is a better route that needs
-no software at all.
-
-### Step 4 — Serve the files over the LAN instead
-
-The Kindle can't do **HTTPS**, but plain **HTTP** is fine. So serve the files
-from the Mac mini over the local network and `wget` them on the device.
-
-#### On the Mac mini
+On the Mac mini:
 
 ```sh
 ~/.dotfiles/scripts/kindle/sync.sh --dir ~/Downloads/kindle-plugins
 ```
 
-It serves `~/Downloads/kindle-plugins` and prints the exact `wget` line for each
-file it finds, with the right LAN IP already filled in. Leave it running.
+This serves the folder and prints the exact `wget` commands, with the LAN IP
+filled in. Both devices must be on the same network. Stop the server with
+Ctrl-C afterwards.
 
-Pass a different folder or port as arguments:
-`serve-to-kindle.sh ~/some/dir 9000`
-
-#### On the Kindle, in kTerm
-
-Type the commands it printed — roughly:
+On the Kindle, in kTerm:
 
 ```sh
 cd /mnt/us
-wget -O ab.zip http://<mac-mini-ip>:8765/audiobook-koplugin-v0.2.2.zip
-wget -O kf.zip http://<mac-mini-ip>:8765/kindlefetch.koplugin.zip
+wget -O plugin.zip http://<mac-mini-ip>:8765/<file>.zip
+cd /mnt/us/koreader/plugins && unzip /mnt/us/plugin.zip && rm /mnt/us/plugin.zip
 ```
 
-Both devices must be on the **same Wi-Fi**. Then unpack into place:
+---
+
+## KOReader and the OPDS library
+
+### Install
+
+```
+;kpm install koreader
+```
+
+### Add the Calibre-Web catalogue
+
+In KOReader: tap the top of the screen → search icon → **OPDS catalog** → **+**.
+
+| Field | Value |
+|---|---|
+| Catalog name | `Calibre-Web` |
+| Catalog URL | `https://books.peciulevicius.com/opds` |
+| Username / Password | Calibre-Web login |
+
+Open the catalogue, select a book, choose **EPUB**; it downloads and opens in
+KOReader.
+
+The endpoint uses HTTP Basic authentication, which KOReader supports. It must
+not be placed behind Cloudflare Access: KOReader cannot complete Access's
+interactive login.
+
+| | Send to Kindle | KOReader + OPDS |
+|---|---|---|
+| Amazon sees the library | Yes | No |
+| EPUB | Converted server-side | Read natively |
+| Page numbers | Usually unavailable (no APNX) | Native pagination |
+| Covers | Often a placeholder | The EPUB's own cover |
+
+OPDS is pull-based; nothing syncs in the background.
+
+### File browser
+
+KOReader opens on the storage root (`/mnt/us/`), which also contains firmware,
+fonts, the jailbreak's files (`libkh/`, `privesc_marker`) and KOReader itself.
+Only `documents/` (books) and `screenshots/` are relevant.
+
+1. Long-press `documents/` (or a dedicated `books/` folder) → **Set as HOME
+   directory**.
+2. File browser ☰ → **Settings** → turn off *Show unsupported files* (and leave
+   *Show hidden files* off).
+3. On the first OPDS download, choose the home folder as the destination.
+4. Use **History** and **Favorites** (long-press a book → *Add to favorites*)
+   rather than folder browsing.
+
+Screenshots: tap two diagonally opposite corners at the same time.
+
+---
+
+## Read-aloud: audiobook.koplugin
+
+[audiobook.koplugin](https://github.com/stradichenko/audiobook.koplugin)
+provides text-to-speech with synchronised word highlighting, automatic page
+turns and Bluetooth audio. It is offline; voice models are downloaded once.
+
+| Mode | Audio source | Highlighting and page turns |
+|---|---|---|
+| Text-to-speech | Synthesised on device (espeak-ng, **Piper**, sanoTTS) | Yes |
+| Audiobook playback | An Audiobookshelf server | No — plays audio only |
+| Media Overlay EPUB | Narration embedded in the book (e.g. from Storyteller) | Yes (upstream support marked as work in progress) |
+
+Text-to-speech always highlights because the speech is generated from the text
+being highlighted. A plain audiobook file carries no mapping from audio to
+words, so it plays without highlighting.
+
+**Install:** the release unpacks to about 232MB (Piper 123MB, espeak-ng 71MB),
+so transfer it over the LAN rather than on-device. Extract into
+`koreader/plugins/`, restart KOReader fully, then **Tools → Audiobook
+Read-Along → Voice settings → Piper**.
+
+### Playback speed
+
+The speed control has no effect on recorded narration on the Kindle. The
+plugin's `mediaengine.lua` implements `setSpeed` for mpv, MPlayer, ffmpeg and
+generic GStreamer, but not for the Kindle backends (`KINDLE_GST_PLAY`,
+`KINDLE_LIPC`), and the call fails silently. Speed does work in text-to-speech
+mode, where it is a synthesis parameter.
+
+Workaround for Media Overlay books: speed up the audio before alignment, so the
+aligned book plays at that speed natively.
 
 ```sh
-cd /mnt/us/koreader/plugins
-unzip /mnt/us/ab.zip
-unzip /mnt/us/kf.zip
-
-rm /mnt/us/ab.zip /mnt/us/kf.zip
-ls /mnt/us/koreader/plugins/     # expect audiobook.koplugin + kindlefetch.koplugin
+# 1.5x with pitch preserved (atempo is limited to 2.0 per pass; chain for more)
+ffmpeg -i "book.m4b" -filter:a "atempo=1.5" -vn "book-1.5x.m4b"
+ffmpeg -i "book.m4b" -filter:a "atempo=2.0,atempo=1.25" -vn "book-2.5x.m4b"   # 2.5x
 ```
 
-Stop the server on the Mac with Ctrl-C when you're done.
+Each speed needs its own alignment run and about 750MB per resulting EPUB.
+Requires `brew install ffmpeg`.
 
-⚠️ The read-aloud plugin is **232 MB**, so that one takes a while even over LAN.
+---
 
-#### Then, on the Kindle
+## Read-along with recorded narration
 
-- **Fully quit and relaunch KOReader** — not a page refresh
-- **Tools → Audiobook Read-Along → Voice settings** → choose **Piper**
-- KindleFetch is in the ☰ book menu
+EPUB 3 **Media Overlays** pair text fragments with audio timestamps through an
+embedded SMIL map; Amazon's Whispersync is a proprietary equivalent limited to
+matched Kindle and Audible editions.
 
-### Step 5 — Drop the broken CLI
+[Storyteller](https://storyteller-platform.dev/) produces Media Overlay EPUBs
+from an ebook and its audiobook by transcription and forced alignment. It runs
+here as `services/storyteller/` (port 8087, `restart: "no"`), and the result is
+added to Calibre-Web and read over OPDS. End-to-end read-along with word
+highlighting was confirmed on 2026-09-21.
+
+- Storyteller needs about 4GB of memory. Start it for a batch, then stop it.
+- Forced alignment can only match audio to text that is in the book. Narrator
+  asides and ad-libbed passages have nothing to align to, so highlighting
+  stalls there and resumes when the narration returns to the text.
+
+Setup and usage: [services/storyteller/README.md](https://github.com/peciulevicius/.dotfiles/blob/main/services/storyteller/README.md).
+
+---
+
+## Custom lockscreens
+
+### Install
+
+The KPM route (`;kpm add-repo https://kpm.andrecheng.com/kpm.json`, then
+`;kpm install custom-screensaver`) frequently fails with *failed to install
+packages*. Install from the zip release instead; it ships a Vera-compatible
+scriptlet:
 
 ```
-;kpm uninstall kindlefetch
+documents/Custom Screensaver.sh          # launcher (scriptlet)
+extensions/custom-screensaver/...        # code
 ```
 
-The KOReader plugin replaces it, and needs no launcher — which is what made the
-CLI awkward without KUAL.
-
-### Step 6 — Custom lockscreens
-
-#### ⚠️ The KPM route often fails
-
-`;kpm add-repo …` followed by `;kpm install custom-screensaver` frequently ends
-in **"failed to install packages"**. Third-party repos are the least reliable
-part of KPM. Don't fight it — the manual install is straightforward and needs no
-KUAL, because the package ships a **scriptlet**.
-
-Inside the zip:
-
-```
-documents/Custom Screensaver.sh          <- the launcher (a Vera scriptlet)
-extensions/custom-screensaver/...        <- the code
-```
-
-That `.sh` in `documents/` is exactly Vera's launcher mechanism, so the package
-works on this jailbreak even though its docs predate it.
-
-#### Install it over the LAN
-
-**On the Mac mini** — the file is already in `~/Downloads/kindle-plugins`:
-
-```sh
-~/.dotfiles/scripts/kindle/sync.sh --dir ~/Downloads/kindle-plugins
-```
-
-**On the Kindle, in kTerm:**
+Serve `custom-screensaver-0.3.0-kindlehf.zip` with `scripts/kindle/sync.sh`,
+then in kTerm:
 
 ```sh
 cd /mnt/us
 wget -O ss.zip http://<mac-mini-ip>:8765/custom-screensaver-0.3.0-kindlehf.zip
-unzip ss.zip
-rm ss.zip
-```
-
-Unzipping at `/mnt/us` merges `documents/` and `extensions/` into the existing
-folders — expected, not a mistake.
-
-**"Custom Screensaver"** then appears in your library as a tappable entry. Open
-it to toggle the screensaver on.
-
-> There is also a `.kpkg` in the release, which KPM may be able to install from
-> a local file. The zip is the route verified to contain a working scriptlet, so
-> prefer it.
-
-#### What happens when you tap it
-
-The library entry is a **toggle**, not an app. Tapping it runs
-`extensions/custom-screensaver/toggle.sh`, which switches the custom screensaver
-**on or off** and then returns you to the library. There is no interface and no
-picker — it either takes over the sleep screen or hands it back to Amazon.
-
-So the sequence is: **add images first, then tap to enable.** With an empty
-`/mnt/us/screensavers/` there is nothing to show, and you'll see either Amazon's
-default or a blank screen. Tap it again any time to turn it off.
-
-#### Add your images
-
-
-```sh
+unzip ss.zip && rm ss.zip
 mkdir -p /mnt/us/screensavers
 ```
 
-PNGs go there — any filename, rotating alphabetically, scaled automatically.
+Unzipping at `/mnt/us` merges into the existing `documents/` and `extensions/`
+folders, which is expected.
 
-**Where the images come from is up to you** — the package ships none. You pick
-them on the Mac, where you can see them properly, and push only the ones you
-want. Good sources:
+### Usage
 
-| Source | Why |
-|---|---|
-| **Your own photos, via Immich** | `photos.peciulevicius.com` — already yours, and a favourite shot in high-contrast greyscale looks superb on e-ink |
-| [Unsplash](https://unsplash.com) / [Pexels](https://pexels.com) | Free, high resolution. Search "black and white" or "minimal". |
-| Book covers, maps, typography | Line art and strong shapes suit e-ink far better than busy photos |
+The **Custom Screensaver** library entry is a toggle, not an app: tapping it
+turns the custom sleep screen on or off and returns to the library. Add images
+before enabling it. PNG files in `/mnt/us/screensavers/` are used in
+alphabetical order and scaled automatically.
 
-Preview and cull in Finder first — the Kindle is the worst place to discover an
-image looks wrong.
+### Images
 
-**One command does everything:**
+Lockscreen sources live in `wallpapers/kindle/` in this repository.
 
 ```sh
 ~/.dotfiles/scripts/kindle/sync.sh
 ```
 
-It reads `wallpapers/kindle/` in this repo, converts each image to 1860 × 2480
-greyscale (letterboxed, never cropped), then serves them and prints the single
-line to run in kTerm.
+The script converts each image to 1860 × 2480 greyscale (letterboxed, not
+cropped), warns about sources under ~1200px, serves the files, and prints the
+single kTerm command to run. **The device is mirrored to the folder**: deleting
+an image from `wallpapers/kindle/` and syncing removes it from the Kindle.
 
-⚠️ **This is a mirror.** The Kindle ends up matching `wallpapers/kindle/`
-exactly — which is how you remove one you don't like: delete the source image
-and sync again.
-
-Small sources get upscaled and look soft on a 300 ppi panel; the script warns
-about anything under ~1200 px.
-
-Then tap the **Custom Screensaver** entry in your library to enable it.
-
-**Sizing** — the Scribe's panel is **1860 × 2480 px** (10.2", 300 ppi):
+Manual conversion for the Scribe's 1860 × 2480 (300 ppi) panel:
 
 ```sh
 magick input.jpg -colorspace Gray -resize 1860x2480^ \
   -gravity center -extent 1860x2480 -quality 92 lockscreen-01.png
 ```
 
-Greyscale and high contrast: it is e-ink, and low-contrast images look muddy.
+High-contrast images work best on e-ink.
 
-#### If it misbehaves on the Scribe
-
-⚠️ The author tested Paperwhite 5/6 and 12th-gen, **not** the Scribe's larger
-panel. Fallback is KOReader's own sleep screen, which only applies while
-KOReader is running:
-
-> gear icon → **Screen** → **Sleep screen** → **Wallpaper** → point at a folder
-
-### Step 7 — UsbNetLite (optional)
-
-Only worth it when tapping through OPDS one book at a time starts to grate;
-it enables a bulk `scp` push from the Mac mini.
-[notmarek/kindle-usbnetlite](https://github.com/notmarek/kindle-usbnetlite)
-
-### Verify nothing broke
-
-- [ ] Open a book from the OPDS catalog — still works
-- [ ] **Stock app: write a note → Share → Searchable PDF** → confirm the email
-      arrives. This is what feeds `kindle_sync.py`; check it after *every* round
-      of installs.
+The package was tested by its author on Kindle 12th gen and Paperwhite 5/6, not
+on the Scribe. If it misbehaves, KOReader's sleep screen is the fallback
+(settings → **Screen** → **Sleep screen** → **Wallpaper**), which applies only
+while KOReader is running.
 
 ---
 
-## KindleFetch: "no books found"
+## Package reference
 
-Not your setup — it's upstream. **Anna's Archive throttles scraping behind
-Cloudflare**, which breaks the plugin's search. Tracked as
-[issue #24](https://github.com/william-spongberg/KindleFetch.koplugin/issues/24)
-against v0.3.
+### KPM official repository (as of 2026-09)
 
-Worth trying:
+| Package | Description | Recommendation |
+|---|---|---|
+| `kterm` | E-ink terminal | Installed; needed to install most other tools |
+| `koreader` | Reader | Installed |
+| `kindlefetch` | On-device book search and download (CLI) | Superseded by the KOReader plugin; uninstall |
+| `blockamazon` | Blocks Amazon domains via `/etc/hosts` | Use with care — see below |
+| `hyprpad` | E-ink text editor | Optional |
+| `kanki` | Flashcards | Optional; RAnki syncs with Anki, KAnki does not |
+| `gnomegames`, `kwordle` | Games | Optional |
+| `hello` | KPM test package | Not needed |
+| `make`, `musl` | Build tool and C library | Dependencies only |
 
-- Check for a release newer than v0.3
-- Delete the plugin folder, reinstall, and clear KOReader's cache
-- The alternative plugin [fischer-hub/annas.koplugin](https://github.com/fischer-hub/annas.koplugin)
-  has the same upstream problem but is worth a look
+### Other tools
 
-Meanwhile the self-hosted pipeline is unaffected: **LazyLibrarian → Calibre-Web
-→ OPDS** doesn't touch Anna's Archive, and the OPDS catalog in KOReader keeps
-working regardless. KindleFetch was always the convenience shortcut, not the
-library.
+| Tool | Assessment |
+|---|---|
+| [KindleFetch.koplugin](https://github.com/william-spongberg/KindleFetch.koplugin) | On-device search and download inside KOReader. Search is currently broken upstream because the source site rate-limits scraping ([issue #24](https://github.com/william-spongberg/KindleFetch.koplugin/issues/24), v0.3). A convenience only; the library remains LazyLibrarian → Calibre-Web. |
+| [UsbNetLite](https://github.com/notmarek/kindle-usbnetlite) | SSH over USB; would enable a bulk `scp` push from the Mac mini. Optional. |
+| [ScreenControl](https://kindlemodshelf.me/screencontrol.html) | Screen mirroring with input over the network; useful for debugging. |
+| [Kreate](https://github.com/Foskya/Kreate) | Drawing app suited to the Scribe's stylus. Does not replace stock handwriting for the notes pipeline. |
+| [Textadept](https://github.com/kbarni/textadept-kindle) | Text editor with Bluetooth keyboard support. |
+| [RAnki](https://github.com/crazy-electron/ranki) / [KAnki](https://github.com/crizmo/KAnki) | Flashcards; RAnki syncs with Anki. |
+| [Alpine](https://github.com/schuhumi/alpine_kindle) | Full Linux userland on the Kindle; a project in itself. |
+| [LARK](https://github.com/kbarni/LARKPlayer) | Not compatible (see below). |
+| KinAMP, SOX Media Player | Bluetooth audio players; likely the same firmware limitation as LARK. |
+| Disable ADs | Not applicable; the Scribe has no ad-supported variant. |
+| Android on Kindles | Not applicable; would remove the handwriting stack. |
+| KindleForge | Targets other jailbreaks and is in maintenance mode pending a KPM rewrite. |
+
+Games are listed in [Awesome-Kindle](https://github.com/KindleTweaks/Awesome-Kindle).
+
+### `blockamazon` and the notes pipeline
+
+`blockamazon` blocks Amazon domains in `/etc/hosts` and does not document which
+ones. The *Share → Searchable PDF* export depends on Amazon's servers.
+
+1. Back up the hosts file first: `cp /etc/hosts /etc/hosts.bak`.
+2. After installing, immediately test a Searchable PDF export and confirm the
+   email arrives.
+3. If it does not, restore `/etc/hosts.bak`. The upstream unblock option is
+   exposed through KUAL, which Vera does not have.
+
+### LARK (audiobook player)
+
+Evaluated 2026-09-20 and not used:
+
+1. Supports firmware below 5.19 only; the Scribe runs 5.19.6.
+2. No text/audio synchronisation or highlighting.
+3. Local files only; it would not replace Audiobookshelf's streaming and
+   cross-device progress.
+
+Revisit if it gains 5.19 support. [BARKPlayer](https://github.com/Teknoist/BARKPlayer)
+is an updated fork worth checking.
 
 ---
 
 ## Troubleshooting
 
-### A command prints nothing at all
+**A command prints nothing.** The binary is usually missing. Check with
+`which curl wget unzip`. `wget` and `unzip` are busybox applets; if a bare name
+is not found, `busybox wget …` reaches the same binary. `curl` is often absent.
 
-Usually the binary is missing rather than the command succeeding quietly —
-`curl` in particular is often absent. See what you actually have:
+**`wget: error getting response: Connection reset by peer`.** TLS failure; see
+[Transferring files to the device](#transferring-files-to-the-device).
 
-```sh
-which curl wget unzip
-```
-
-`wget` and `unzip` normally exist as part of busybox, the toolset the Kindle's
-userland is already built from — **not something you install**. If a bare name
-isn't found, `busybox wget …` reaches the same binary.
-
-### `wget: error getting response: Connection reset by peer`
-
-A **TLS failure**, not a network fault. Busybox's `wget` cannot negotiate the
-TLS that GitHub's download CDN requires, so release downloads fail on-device
-however many times you retry.
-
-Use a computer for anything that has to be downloaded as a file. KPM packages
-are unaffected — `;kpm install …` keeps working, because KPM handles its own
-transport.
-
-### `;kpm install X` says it worked but nothing runs
-
-KPM installs to `/mnt/us/kpm/packages/`, with executables in
-`/mnt/us/kpm/packages/bin/` (on `PATH` via `/etc/profile`). Check what actually
-landed:
+**A KPM install reports success but nothing runs.** Check what was installed:
 
 ```sh
 ls /mnt/us/kpm/packages/ /mnt/us/kpm/packages/bin/
-find /mnt/us -iname '*<name>*' 2>/dev/null
+find /mnt/us -maxdepth 2 -iname '*<name>*' 2>/dev/null
 ```
 
-Not every package ships something runnable by name — some are libraries
-(`make`, `musl`), and some expect a launcher that only KUAL provided.
+Some packages are libraries (`make`, `musl`), and some expect a KUAL launcher;
+wrap the command in a scriptlet.
 
-### Nothing appears in the library after adding a scriptlet
+**A scriptlet does not appear in the library.** Check `chmod +x` and restart the
+device.
 
-A `.sh` in `documents/` should show as a "book". If it doesn't: check
-`chmod +x`, then restart the device — the library index only rescans on boot.
+**Downloads fail while on Wi-Fi.** The Kindle's Wi-Fi sleeps aggressively. Wake
+the screen, load a page in the stock browser, and retry immediately.
 
-### Downloads fail but the device is on Wi-Fi
-
-Kindle Wi-Fi sleeps aggressively. Wake the screen, load any page in the stock
-browser to bring the radio up, then retry immediately.
-
-### When to stop debugging and use the cable
-
-If two attempts at an on-device download fail, plug into a computer. Every
-remaining install is "unzip a folder into `koreader/plugins/`", which takes
-minutes over USB and needs no working `curl`, no typed URLs and no guessing at
-paths. ⚠️ Eject before unplugging.
+**Repeated on-device download failures.** After two failed attempts, transfer
+the files over the LAN (or USB from a machine with MTP support). Every plugin
+install is an extraction into `koreader/plugins/`.
 
 ---
 
 ## Recovery
 
-The jailbreak is **reversible**: `renametobin` *Restore* → factory reset →
-allow the firmware update. Worth knowing for a warranty claim — EU statutory
-warranty is **2 years**, to roughly October 2027.
+The jailbreak is reversible: `renametobin` → *Restore* (re-enables updates) →
+factory reset → install current firmware. Restore to stock before any warranty
+claim; the EU statutory two-year guarantee applies alongside Amazon's one-year
+warranty.
 
-⚠️ Never take a firmware update while jailbroken unless you intend to lose it.
+Never install a firmware update while jailbroken unless the jailbreak is meant
+to be removed.
 
 ---
 
-## Setup checklist
+## Setup status
 
-- [x] ~~Jailbreak (Vera, firmware 5.19.6)~~ — 2026-09-20
-- [x] ~~`;kpm install koreader`~~
-- [x] ~~Add the OPDS catalog pointing at Calibre-Web~~
-- [ ] Set a HOME directory in KOReader + hide unsupported files
-- [ ] Verify OTA blocked ("Check OTA Status" scriptlet)
-- [x] ~~kTerm~~ — `;kpm install kterm`
-- [x] ~~KOReader + OPDS catalog~~
-- [x] ~~`audiobook.koplugin`~~ — Tools → Audiobook Read-Along, Audiobookshelf connected
-- [x] ~~`kindlefetch.koplugin`~~ — installed (search broken upstream, not your setup)
-- [ ] **Over the LAN** (`scripts/kindle/sync.sh` on the Mac mini, then
-      `wget` in kTerm): `audiobook.koplugin` + `kindlefetch.koplugin` into
-      `koreader/plugins/`. ⚠️ USB doesn't work — the
-      Scribe is MTP and macOS can't mount it. HTTPS doesn't work either.
-- [ ] `;kpm uninstall kindlefetch` — the CLI, superseded by the plugin
-- [ ] Custom screensavers (`;kpm`, no download needed) + PNGs in `/screensavers/`
-- [ ] UsbNetLite (optional — enables the push script)
-- [ ] Check for stray `.bin` files in the USB root, next time you connect
-- [ ] Confirm stock handwriting + *Share → Searchable PDF* still works
+| Item | Status |
+|---|---|
+| Jailbreak (Vera, 5.19.6) | Done, 2026-09-20 |
+| KOReader + OPDS catalogue | Done |
+| kTerm | Done |
+| audiobook.koplugin (Audiobookshelf connected) | Done |
+| KindleFetch.koplugin | Installed; search broken upstream |
+| KOReader home directory, hide unsupported files | To do |
+| OTA block confirmed (*Check OTA Status*) | To do |
+| Uninstall the `kindlefetch` CLI | To do |
+| Custom screensavers + images | To do |
+| UsbNetLite | Optional |
+| Check for stray `.bin` files | To do |
+| Stock handwriting + Searchable PDF export still working | Re-check after every round of installs |
