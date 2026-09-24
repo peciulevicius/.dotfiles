@@ -2,11 +2,11 @@
 
 This dotfiles repository includes modern, improved CLI tools that significantly enhance your terminal experience. These tools are faster, more user-friendly, and provide better output than their traditional counterparts.
 
-## 🚀 Overview
+## Overview
 
 All of these tools are installed automatically when you run the installation scripts. They're available on macOS, Arch Linux, and Ubuntu/Debian.
 
-## 📦 Installed Tools
+## Installed Tools
 
 ### bat - Better `cat`
 
@@ -390,7 +390,7 @@ git log -p                       # Log with patches
 
 ---
 
-## 🎯 Quick Reference
+## Quick Reference
 
 | Traditional | Modern Alternative | Purpose |
 |------------|-------------------|---------|
@@ -405,7 +405,7 @@ git log -p                       # Log with patches
 | Parse JSON | `jq` | JSON processing |
 | `git diff` | Uses `delta` | Git diffs |
 
-## 💡 Pro Tips
+## Tips
 
 ### Combine Tools
 
@@ -448,7 +448,7 @@ alias clean-modules='fd -H "^node_modules$" -t d -x rm -rf'
 alias glog='git log --oneline | fzf --preview "git show {1}"'
 ```
 
-## 📚 Learn More
+## Learn More
 
 - [bat](https://github.com/sharkdp/bat)
 - [eza](https://github.com/eza-community/eza)

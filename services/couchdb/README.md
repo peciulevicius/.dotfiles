@@ -69,7 +69,7 @@ between them. If you want a browser view of the raw database, Fauxton is at
 Anonymous requests get a **401 on every path, including `/`** — so if you saw
 the welcome JSON, your browser was already authenticated.
 
-⚠️ **Deliberately *not* behind Cloudflare Access.** An Access policy that
+**Warning:** Deliberately *not* behind Cloudflare Access. An Access policy that
 challenges the browser also blocks the Obsidian plugin, which cannot complete an
 interactive login. The gate is CouchDB's own auth: `require_valid_user = true`
 plus a 32-character random password, and anonymous requests get a 401 on every
@@ -86,7 +86,7 @@ the plugin sends as custom headers.
    (already created)
 3. Turn **End-to-End Encryption** on and set a passphrase — the same one
    everywhere. Without it the server sees your notes in the clear.
-4. ⚠️ Start on the **Mac mini**, the device holding the real vault, and let it
+4. Start on the **Mac mini**, the device holding the real vault, and let it
    finish uploading before connecting anything else. LiveSync asks which side is
    the source of truth on first connect; answering with an empty device wipes
    the vault. A snapshot is in `~/backups/vault-snapshots/` if that happens.
@@ -107,7 +107,7 @@ tar -czf ~/backups/vault-snapshots/obsidian-vault-$(date +%Y%m%d-%H%M).tar.gz \
 The `[cors]` block in `local.ini` is not optional — mobile Obsidian runs from
 the `app://obsidian.md` origin and cannot connect without it.
 
-⚠️ **Do not bind-mount `local.ini` straight into `/opt/couchdb/etc/local.d/`.**
+**Warning:** Do not bind-mount `local.ini` straight into `/opt/couchdb/etc/local.d/`.
 The stock entrypoint runs
 
 ```bash

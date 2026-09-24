@@ -1,260 +1,177 @@
-# Storyteller — self-hosted Whispersync
+# Storyteller
 
-Takes an **ebook** and its **audiobook**, transcribes the audio, force-aligns it
-sentence-by-sentence against the text, and outputs a single **EPUB 3 with Media
-Overlays** — a book that highlights each word as the narrator speaks it and
-follows along across devices.
+Aligns an **ebook** with its **audiobook** and produces an **EPUB 3 with Media
+Overlays**: a book that highlights text as the narration plays. It is the
+self-hosted equivalent of Amazon's Whispersync / Immersion Reading.
 
-**Port:** 8087 (8001 is Vaultwarden) · **Source:**
-<https://gitlab.com/storyteller-platform/storyteller> · MIT
+| | |
+|---|---|
+| Port | 8087 |
+| Source | <https://gitlab.com/storyteller-platform/storyteller> (MIT) |
+| Access | `http://localhost:8087` on the Mac mini, or over Tailscale while running |
+| Runs | On demand (`restart: "no"`) |
 
-## Why it exists here
+## Purpose
 
-KOReader's `audiobook.koplugin` can play audiobooks from Audiobookshelf, but it
-**cannot highlight text during real narration** — an audio file carries no map
-between seconds and words. Only a book with Media Overlays can do that, and
-Storyteller is what produces one.
+KOReader's `audiobook.koplugin` can play Audiobookshelf audiobooks but cannot
+highlight text during recorded narration: an audio file carries no mapping
+between time and words. A Media Overlay EPUB contains that mapping, and
+Storyteller generates it by transcription and forced alignment.
 
-Amazon's Whispersync solves the same problem with Audible's alignment data, on
-books you bought from them. This does it for books you already own.
+## Operating model
 
-## ⚠️ Run it as a batch job, not a service
-
-`restart: "no"` is deliberate. Alignment wants **~4GB of RAM**, which is most of
-the Mac mini's remaining Docker headroom, on a host already swapping. It is also
-transcription-heavy, so it will use the CPU hard while working.
+`restart: "no"` is deliberate. Alignment needs about **4GB of memory** (most of
+the remaining Docker headroom) and saturates the CPU during transcription.
+Start it for a batch and stop it afterwards; left running it competes with
+Odysseus for the same memory.
 
 ```bash
 cd ~/services/storyteller
-docker compose up -d        # align a book at http://localhost:8087
-docker compose down         # as soon as you're done
+docker compose up -d
+# … align at http://localhost:8087 …
+docker compose down
 ```
-
-Leaving it running competes directly with Odysseus for the same headroom — see
-[SELF_HOSTED_AI.md](../../docs/guides/SELF_HOSTED_AI.md).
 
 ## Setup
 
 ```bash
 ~/.dotfiles/services/setup-services.sh storyteller
 cd ~/services/storyteller
-
-openssl rand -hex 32        # paste into STORYTELLER_SECRET_KEY
+openssl rand -hex 32        # value for STORYTELLER_SECRET_KEY in .env
 nano .env
-
 docker compose up -d
-open http://localhost:8087
 ```
 
-## Importing from disk, not the browser
+On first visit, create the (local) account with a real password.
 
-`./import` is bind-mounted to **`/import`** in the container, and Storyteller
-can import from a server path — so a 744MB audiobook never has to go through a
-browser upload.
+## Importing from disk
 
-Three rules that decide whether it works:
+`./import` is mounted at `/import` in the container, so large audiobooks never
+go through a browser upload.
 
-1. **Every book needs its own folder.** `/import/Can't Hurt Me/` holding both
-   the EPUB and the M4B. Loose files at the top level are not picked up.
-2. **Originals are neither copied nor moved.** Storyteller reads them where they
-   are, so `./import` is the canonical location for anything queued — deleting a
-   folder there removes the source.
-3. **Don't overlap folders.** A top-level auto-import folder *and* a
-   per-collection one covering the same path gives you duplicate books.
+1. **Each book needs its own folder** containing both the EPUB and the audio,
+   for example `import/<Title>/book.epub` and `import/<Title>/book.m4b`. Loose
+   files at the top level are ignored.
+2. **Files are read in place**, not copied. Deleting a folder in `./import`
+   removes the source Storyteller uses.
+3. **Do not overlap import folders.** A global auto-import folder and a
+   per-collection folder on the same path produce duplicate books.
 
-Configure it at **Settings → auto-import folder → `/import`**, or per-collection
-if you'd rather books land in a collection than in *Uncollected*.
+Set the folder under **Settings → auto-import folder → `/import`**, or per
+collection so books land in that collection.
 
-⚠️ This folder lives on the **internal SSD** and audiobooks are large. Clear out
-books once aligned; the SSD had ~30GB free when this was written.
+`./import` is on the internal SSD; clear books out once they are aligned.
 
-## Worked example — *Can't Hurt Me*
+## Procedure
 
-Both halves were already on the server, so this is the shape of every future
-alignment.
+1. **Stage the files** in `import/<Title>/`: the EPUB from Calibre and the
+   M4B from Audiobookshelf.
+2. **Create the read-along** in the web UI. The book appears with its metadata
+   filled in. The add-book wizard still requires selecting the EPUB before
+   *Next* is enabled; this is a file picker, not an upload. Click **Create
+   readaloud**.
+3. **Wait.** Storyteller transcribes the whole audiobook, then aligns. Docker on
+   macOS has no GPU passthrough, so transcription runs on the CPU at roughly
+   real time or slower: a 13.6-hour audiobook takes many hours. Align a short
+   book first to verify the pipeline.
+4. **Check the report** at `data/assets/<book>/.storyteller/report.json` before
+   keeping the result.
+5. **Download the `readaloud` format.**
 
-**1. Start it and drop the files into the import folder** (done 2026-09-20):
+   | Format | Content |
+   |---|---|
+   | `readaloud` | The aligned EPUB 3 with Media Overlays (the output) |
+   | `ebook` | The original EPUB |
+   | `audiobook` | The original audio |
 
-```bash
-cd ~/services/storyteller && docker compose up -d
-ls "import/Can't Hurt Me/"
-#   cant-hurt-me.epub   9.0M   (from Calibre, /Volumes/books)
-#   cant-hurt-me.m4b    744M   (from Audiobookshelf, /Volumes/audiobooks)
-```
+   The read-along embeds the transcoded audio, so it is large (about 750MB for
+   a 13.6-hour book). It is assembled when requested.
+6. **Add it to Calibre through Calibre-Web → Upload.** Copying a file into the
+   library folder does not register it in `metadata.db`, and `calibredb add`
+   against a library that Calibre-Web and the content server hold open is
+   unsafe.
+7. **Clean up** (see below) and stop the container.
 
-**2. In the browser** at <http://localhost:8087>:
+### Uploading large files
 
-- Create an account on first run — it is local-only, but set a real password
-- **Settings → auto-import folder → `/import`** (or set it per-collection, so
-  books land in a collection instead of *Uncollected*)
-- The book appears with cover, author, narrator and blurb already filled in
-- ⚠️ The add-book wizard still makes you **select the EPUB** before *Next*
-  becomes active. That is a picker, not an upload — the file stays in
-  `/import`, and the page afterwards shows both paths plus an *Asset folder*.
-- Hit **Create readaloud** to start transcription and alignment
+Upload through the direct address, not `books.peciulevicius.com`: Cloudflare's
+free plan limits request bodies to 100MB, and the failure appears as
+*"File size may be too big"* from Calibre-Web.
 
-**3. Wait — properly.** It transcribes the entire audiobook first, then aligns.
-
-⚠️ **Docker on macOS has no GPU passthrough**, so transcription is CPU-only.
-For *Can't Hurt Me* that is **13 hr 38 min of audio**, and CPU transcription
-tends to run at roughly real-time or slower. Plan for this to take **many
-hours** — start it before bed rather than expecting it over coffee. This is also
-the step that wants ~4GB.
-
-Worth knowing before committing to a long book: a short one proves the pipeline
-end to end in a fraction of the time.
-
-**4. Download the `readaloud` format.** Three are offered:
-
-| Format | What it is |
+| From | Address |
 |---|---|
-| **`readaloud`** ⭐ | The aligned EPUB 3 with Media Overlays — **this is the output** |
-| `ebook` | Your original EPUB, unchanged |
-| `audiobook` | The audio, unchanged |
+| The Mac mini | `http://localhost:8083` |
+| The tailnet | `http://100.81.171.49:8083` |
 
-⚠️ **It is ~750MB.** The EPUB is assembled *on demand* and embeds the transcoded
-audio — Media Overlays reference audio inside the package, so it cannot be
-small. Nothing sits on disk as a finished `.epub` until you request it.
+The same limit applies to Immich, Nextcloud and Paperless uploads over the
+public hostnames.
 
-**5. Get it into Calibre — upload, don't copy.**
+### Naming in Calibre
 
-Dropping the file into `/Volumes/books/<Author>/` does **not** add it: Calibre
-tracks books in `metadata.db`, and a file the database doesn't know about is
-invisible.
+Calibre stores one EPUB per record, so the original and the read-along are two
+entries. Keep both: the small original for reading and the read-along for
+listening.
 
-Use **Calibre-Web → Upload**, which writes through the running app — the safe
-way to touch a library that Calibre-Web and the Calibre content server both have
-open. ⚠️ Avoid `calibredb add` against a live library for that reason.
+Do not rename the read-along in Calibre-Web while the library is on SMB (see
+[HOME_SERVER_REFERENCE.md](../../docs/HOME_SERVER_REFERENCE.md)). Instead:
 
-⚠️ **Do not upload through `books.peciulevicius.com`.** Cloudflare's free plan
-caps request bodies at **100MB**, so a 750MB upload fails with
-*"Error: File size may be too big"* — which reads like a Calibre-Web limit but
-is the tunnel rejecting it.
+- add a tag such as `read-along` (metadata only; shown as a category in OPDS), or
+- set the title before uploading:
+  `ebook-meta "book (readaloud).epub" --title "<Title> (read-along)"`
 
-Go direct instead, bypassing Cloudflare entirely:
+The book is then available over OPDS, and KOReader downloads it over Wi-Fi.
 
-| From | URL |
-|---|---|
-| On the Mac mini | `http://localhost:8083` |
-| Anywhere on the tailnet | `http://100.81.171.49:8083` |
+### Cleanup
 
-Downloading the file from Storyteller is unaffected — `100.81.171.49:8087` is
-also off-tunnel.
-
-This applies to anything large: **Immich, Nextcloud and Paperless uploads over
-the public hostnames hit the same 100MB ceiling.** Use the Tailscale address for
-big files.
-
-⚠️ **Do not rename it in Calibre-Web afterwards.** Renaming over SMB corrupts
-the library entry — see
-[HOME_SERVER_REFERENCE.md](../../docs/HOME_SERVER_REFERENCE.md). Instead:
-
-- **Add a tag** like `read-along` (metadata only, touches no files, and shows up
-  as a browsable category in KOReader's OPDS view), **or**
-- **Set the title before uploading**:
-  `ebook-meta "book (readaloud).epub" --title "Can't Hurt Me (read-along)"`
-
-**You will have two entries, and that's intended:** Calibre cannot hold two
-EPUBs on one record. Keep the 8.6MB original for ordinary reading and the 750MB
-read-along for listening — you rarely want to pull 750MB onto the Kindle just to
-read a chapter.
-
-It then appears in the OPDS catalog like any other book, and KOReader downloads
-it over Wi-Fi — no cable, no MTP.
-
-**6. Reclaim the space, then stop it.**
-
-A finished book leaves roughly **1.5GB** behind on the internal SSD:
+A finished book leaves about 1.5GB on the internal SSD:
 
 ```bash
 du -sh ~/services/storyteller/data/assets ~/services/storyteller/import
-#   772M  assets   (transcoded audio + transcriptions)
-#   753M  import   (the source EPUB + M4B)
+#   ~770M  assets   (transcoded audio and transcriptions)
+#   ~750M  import   (source EPUB and M4B)
 ```
 
-⚠️ **Confirm the read-along EPUB is safely in Calibre first.** Deleting the
-assets means regenerating it costs another overnight run.
-
-Delete the book in Storyteller's UI, then clear the import folder:
+Confirm the read-along is in Calibre first; regenerating it takes another long
+run. Then delete the book in Storyteller's UI and remove its import folder:
 
 ```bash
-rm -rf ~/services/storyteller/import/"Can't Hurt Me"
+rm -rf ~/services/storyteller/import/"<Title>"
 cd ~/services/storyteller && docker compose down
 ```
 
-The sources are still in their real homes — the EPUB in Calibre, the M4B in
-Audiobookshelf on the NAS — so nothing is lost.
+The sources remain in Calibre and Audiobookshelf.
 
-### Backup implication
+## Alignment quality
 
-`/Volumes/books` is synced to R2 by `rclone-backup.sh`, so a 750MB read-along
-EPUB roughly **doubles** the current ~1.3GB cloud backup. That is the right
-trade: R2 is cheap, and the alternative is re-running a night of CPU
-transcription to get it back.
+Forced alignment can only match audio to text that exists in the book. Narrator
+asides, ad-libbed commentary and publisher intros have nothing to align to, so
+the highlight pauses there and resumes when the narration returns to the text.
+Books read close to the manuscript align well.
 
-### How it actually aligned (2026-09-20)
+First run (2026-09-20, a 13.6-hour narrated non-fiction book with frequent
+narrator asides):
 
-Better than expected. From `data/assets/<book>/.storyteller/report.json`:
+- 23 chapters aligned.
+- 6 sections unaligned, all front or back matter (copyright, dedication,
+  contents, acknowledgements, about the author, one empty file).
+- 4 audio files unaligned: the publisher intro and closing credits.
 
-- **23 chapters aligned**
-- **6 unaligned — all front/back matter**: the copyright page, dedication,
-  table of contents, acknowledgments, about-the-author, and one empty file
-- 4 audio files unaligned: the first two and last two, i.e. the publisher's
-  intro and the closing credits
+Every chapter of the book's content aligned; the asides were concentrated
+outside the chapters.
 
-So **every chapter of actual book content aligned**. The warning below was more
-pessimistic than reality — narrated prose tracks well even from a narrator who
-ad-libs, because the ad-libs cluster in the intro/outro rather than mid-chapter.
+## Storage and backup
 
-Reading `report.json` after each book is the quickest way to judge quality
-before committing the output to the library.
+- `./data` holds the SQLite database and working files on the **internal SSD**
+  (SQLite must not live on SMB).
+- Process one book at a time and clear finished books; disk space on the SSD
+  is limited.
+- `./data` is **excluded from the R2 backup**: it contains regenerable working
+  files. The output lives in Calibre, which is backed up (a 750MB read-along
+  noticeably increases the size of the Calibre backup; re-running alignment
+  would cost far more).
 
-### ⚠️ Expect this particular book to align imperfectly
+## Homepage
 
-*Can't Hurt Me* is close to the worst case: Goggins talks **between** chapters,
-and those "challenge" segments are not in the manuscript. Forced alignment has
-no text to attach them to, so the highlight will stall or drift through them and
-recover when he returns to the written text.
-
-The chapters themselves should track well. If you want a clean first test of
-whether the whole pipeline works, align a **straight-read novel** first and try
-this one second — otherwise a poor result won't tell you whether the tooling is
-broken or the book is simply hard.
-
-## Storage
-
-`./data` holds the SQLite database plus uploaded and generated files, on the
-**internal SSD** — never the NAS, because SQLite over SMB corrupts.
-
-⚠️ Audiobooks are large and the SSD had **~34GB free** when this was written.
-Process one book at a time and clear finished uploads out of the web UI. If this
-becomes routine, moving the *finished* EPUBs to the NAS and keeping only the
-working set locally is the way to go.
-
-## ⚠️ Narrator asides break alignment
-
-Forced alignment matches audio to **text that exists in the book**. When a
-narrator ad-libs or talks between chapters — David Goggins is the standard
-example — there is no text for those words to attach to, so the highlight stalls
-or drifts until the narration returns to the manuscript.
-
-Books narrated close to the text align well. Heavily ad-libbed audiobooks are
-the worst case for this technique, in Storyteller and Whispersync alike.
-
-## On the homepage, as a link only
-
-`home.peciulevicius.com` carries a **bookmark** for it under System, labelled
-*"Storyteller (off by default)"*, pointing at `http://100.81.171.49:8087`.
-
-Deliberately **not a monitor with a `check-url`**: the service is stopped almost
-all the time, so a monitor would sit permanently red and train you to ignore
-the dashboard. The repo rule is that a service missing from the homepage
-effectively doesn't exist — a link satisfies that without the false alarms.
-
-No public tunnel hostname either. Reach it on the Mac mini at `localhost:8087`,
-or over Tailscale while it is up.
-
-## Backup
-
-Excluded from the R2 backup: it holds regenerable working files, and the audio
-is bulky. The **outputs** belong in Calibre-Web, which is backed up.
+The Glance homepage has a **bookmark** for Storyteller under System ("off by
+default"), not a monitor: a monitor on a service that is stopped most of the
+time would always be red. There is no public tunnel hostname.

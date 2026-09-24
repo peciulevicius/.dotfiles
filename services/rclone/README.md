@@ -48,7 +48,7 @@ nano .env
 crontab -e
 # Add:
 0 5 * * * ~/.dotfiles/scripts/utils/run-with-notify.sh "Cloud backup (R2)" ~/services/rclone/rclone-backup.sh >> ~/logs/rclone-backup.log 2>&1
-# ⚠️ Run the STAGED copy in ~/services/rclone/ — the script reads .env from its
+# Run the STAGED copy in ~/services/rclone/ — the script reads .env from its
 # own directory, and the real .env lives there. Pointing cron at the repo copy
 # silently used a different .env (Immich backup was off there, 2026-09-23).
 ```
@@ -99,7 +99,7 @@ that one is priced differently.
 redundant with Backup 3, which already dumps `immich_postgres` via
 `pg_dump` and ships it to R2 separately).
 
-⚠️ **Off by default on purpose.** Turning it on hands the next 5am cron run a
+**Warning:** Off by default on purpose. Turning it on hands the next 5am cron run a
 ~73GB **first** upload — hours, depending on home upload speed — and moves the
 combined R2 bill from $0 to **~$1/month** (73GB − 10GB free tier × $0.015).
 Every run after the first is incremental (rclone only transfers new/changed

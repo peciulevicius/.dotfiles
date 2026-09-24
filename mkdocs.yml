@@ -1,5 +1,5 @@
 site_name: Džiugas' Dotfiles
-site_description: Cross-platform dotfiles — macOS, Linux, and Windows. Claude Code setup, modern CLI tools, and development environment.
+site_description: Cross-platform dotfiles for macOS, Linux and Windows, and documentation for a self-hosted homelab.
 site_url: https://docs.peciulevicius.com
 
 repo_name: peciulevicius/.dotfiles
@@ -35,40 +35,43 @@ markdown_extensions:
   - pymdownx.details
   - pymdownx.tabbed:
       alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
 
 nav:
   - Start Here: START_HERE.md
 
   - Setup:
       - How to Install: HOW_TO_INSTALL.md
-      - Mac mini Setup: HOME_SERVER.md
+      - Mac mini setup (historical): HOME_SERVER.md
 
   - Homelab:
-      - TODO (outstanding work): HOME_SERVER_TODO.md
-      - Changelog (done, and why): HOME_SERVER_CHANGELOG.md
-      - Reference (RAM, drives, paths): HOME_SERVER_REFERENCE.md
+      - Outstanding work: HOME_SERVER_TODO.md
+      - Changelog: HOME_SERVER_CHANGELOG.md
+      - Reference: HOME_SERVER_REFERENCE.md
       - NAS: NAS.md
       - Credential migration: CREDENTIAL_MIGRATION.md
+      - Email: guides/EMAIL.md
 
   - Claude Code:
-      - Claude Code Guide: CLAUDE_CODE_GUIDE.md
-      - Claude Workflow: guides/CLAUDE_WORKFLOW.md
+      - Claude Code guide: CLAUDE_CODE_GUIDE.md
+      - Workflow: guides/CLAUDE_WORKFLOW.md
 
   - Tools:
-      - Modern CLI Tools: MODERN_CLI_TOOLS.md
-      - Utility Scripts: UTILITY_SCRIPTS.md
+      - Modern CLI tools: MODERN_CLI_TOOLS.md
+      - Utility scripts: UTILITY_SCRIPTS.md
       - Tutorials: tutorials/TOOL_TUTORIALS.md
 
   - Self-Hosted:
-      - Services Overview: SERVICES.md
-      - Notes & Obsidian: guides/NOTES.md
-      - Books & Reading: guides/BOOKS.md
-      - Kindle setup (jailbroken): guides/KINDLE_SETUP.md
-      - Degoogle Guide: guides/DEGOOGLE.md
-      - Degoogle Alternatives: guides/DEGOOGLE_ALTERNATIVES.md
-      - Self-Hosted AI: guides/SELF_HOSTED_AI.md
-      - Octopus Deploy (ruled out): guides/OCTOPUS_DEPLOY.md
+      - Services: SERVICES.md
+      - Notes: guides/NOTES.md
+      - Books and audiobooks: guides/BOOKS.md
+      - Kindle setup: guides/KINDLE_SETUP.md
+      - De-Googling: guides/DEGOOGLE.md
+      - De-Google alternatives: guides/DEGOOGLE_ALTERNATIVES.md
+      - Self-hosted AI: guides/SELF_HOSTED_AI.md
+      - Octopus Deploy (evaluated): guides/OCTOPUS_DEPLOY.md
 
   - Reference:
-      - Config Guide: CONFIG_GUIDE.md
+      - Configuration: CONFIG_GUIDE.md
       - Symlinks: SYMLINKS.md

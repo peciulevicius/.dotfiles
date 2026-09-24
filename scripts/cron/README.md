@@ -11,7 +11,7 @@ crontab < ~/.dotfiles/scripts/cron/crontab
 crontab -l          # always read it back
 ```
 
-⚠️ **`crontab <file>` silently fails on macOS** when the file sits outside your
+**Warning:** `crontab <file>` silently fails on macOS when the file sits outside your
 home directory — it exits 0 and installs an *empty* crontab. Always pipe via
 stdin (`crontab < file` or `cat file | crontab -`) and always verify with
 `crontab -l` afterwards.
@@ -27,7 +27,7 @@ stdin (`crontab < file` or `cat file | crontab -`) and always verify with
 | Every 30 min | Restart Jellyfin + Audiobookshelf so they see new NAS files (`smb-watcher-rescan.sh`) | `~/logs/smb-rescan.log` |
 | Sunday 09:00 | Homelab audit — drift, containers, backups, disk, secrets (`homelab-audit.sh`) | `~/logs/homelab-audit.log` |
 
-⚠️ **Check before reinstalling.** Until 2026-09-24 this file had fallen
+**Warning:** Check before reinstalling. Until 2026-09-24 this file had fallen
 behind the live schedule — it still pointed the backup at the repo copy and was
 missing the two bottom jobs. Reinstalling it would have silently reverted the
 2026-09-23 fix. `homelab-audit.sh` now diffs `crontab -l` against this file
@@ -42,8 +42,8 @@ External drives have **no** cron job — they aren't permanently plugged in.
 Instead `backup-external.sh` stamps `~/logs/external-backup-<drive>.last` on
 success and the weekly audit fails once a drive's stamp is over 30 days old.
 
-⚠️ **The backup job runs the staged copy in `~/services/rclone/`, and reads
-`~/services/rclone/.env`** — the same place every service keeps its `.env`.
+**Note:** The backup job runs the staged copy in `~/services/rclone/` and reads
+`~/services/rclone/.env` — the same place every service keeps its `.env`.
 Until 2026-09-23 cron pointed at the repo copy instead, which read a second,
 stale `.env`: the Immich photo backup was enabled in one file and silently off
 in the one cron used. One script path, one `.env`.

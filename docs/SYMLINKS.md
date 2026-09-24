@@ -2,11 +2,11 @@
 
 A comprehensive guide to how symlinks work in this dotfiles repository.
 
-## 🔗 What is a Symlink?
+## What is a Symlink?
 
 A **symlink** (symbolic link) is like a shortcut or pointer to another file. Instead of copying files, we create links that point to the original.
 
-**Think of it like:**
+**Comparison:**
 - **Regular copy:** Two separate files that can get out of sync
 - **Symlink:** A pointer that always points to the source file
 
@@ -18,7 +18,7 @@ Symlink:
 ~/.zshrc  →  points to  →  ~/.dotfiles/config/zsh/.zshrc  →  [actual content here]
 ```
 
-## 📂 How It Works in This Repo
+## How It Works in This Repo
 
 ### Before Installing Dotfiles
 
@@ -59,7 +59,7 @@ The installer:
         └── .ideavimrc  [ACTUAL file - the source]
 ```
 
-## 🎯 Why Use Symlinks?
+## Why Use Symlinks?
 
 ### 1. **Single Source of Truth**
 
@@ -72,7 +72,7 @@ git push
 
 # On Machine 2
 git pull
-cp ~/.dotfiles/config/zsh/.zshrc ~/.zshrc  # Manual copy - easy to forget!
+cp ~/.dotfiles/config/zsh/.zshrc ~/.zshrc  # Manual copy - easy to forget.
 ```
 
 With symlinks (this repo):
@@ -84,7 +84,7 @@ git push
 
 # On Machine 2
 git pull
-# That's it! Changes are live immediately (it's a symlink)
+# Changes apply immediately (the file is a symlink)
 ```
 
 ### 2. **Automatic Sync**
@@ -92,11 +92,11 @@ git pull
 When you edit `~/.zshrc`, you're actually editing `~/.dotfiles/config/zsh/.zshrc`:
 
 ```bash
-# These are the SAME file (symlink!)
+# These are the same file (symlink)
 vim ~/.zshrc                              # Edit via symlink
 vim ~/.dotfiles/config/zsh/.zshrc        # Edit directly
 
-# Both edit the same content!
+# Both edit the same content.
 ```
 
 ### 3. **Easy to Track Changes**
@@ -122,7 +122,7 @@ cd ~/.dotfiles && git pull
 # Changes are immediately live! (no copying needed)
 ```
 
-## 🔍 Seeing Symlinks in Action
+## Seeing Symlinks in Action
 
 ### Check if a file is a symlink
 
@@ -156,7 +156,7 @@ find ~ -maxdepth 1 -type l ! -exec test -e {} \; -print
 # Shows symlinks that point to non-existent files
 ```
 
-## 📝 What the Installer Does
+## What the Installer Does
 
 Let's walk through exactly what happens when you run `./install.sh`:
 
@@ -192,7 +192,7 @@ ln -sf "$source_file" "$target_file"
 echo "Created symlink: ~/.zshrc → ~/.dotfiles/config/zsh/.zshrc"
 ```
 
-## 🔄 Workflow with Symlinks
+## Workflow with Symlinks
 
 ### Editing Config Files
 
@@ -207,7 +207,7 @@ vim ~/.dotfiles/config/zsh/.zshrc
 
 # Method 3: Use your IDE
 code ~/.zshrc                            # Opens the source file
-code ~/.dotfiles/config/zsh/.zshrc      # Same file!
+code ~/.dotfiles/config/zsh/.zshrc      # Same file.
 ```
 
 **All three methods edit the same file!**
@@ -234,7 +234,7 @@ git pull
 source ~/.zshrc     # Reload shell to apply changes
 ```
 
-## 🔧 Managing Symlinks
+## Managing Symlinks
 
 ### Recreating Symlinks
 
@@ -279,7 +279,7 @@ for file in ~/.zshrc ~/.gitconfig ~/.ideavimrc ~/.tmux.conf; do
 done
 ```
 
-## 🎨 Visual Representation
+## Visual Representation
 
 ### Traditional Approach (No Symlinks)
 
@@ -292,7 +292,7 @@ Machine 1:
   config/zsh/.zshrc [Content A - DUPLICATE]
   config/git/.gitconfig [Content B - DUPLICATE]
 
-Problem: Edit ~/.zshrc → Must manually copy to repo → Easy to forget!
+Problem: Edit ~/.zshrc → Must manually copy to repo → Easy to forget.
 ```
 
 ### Symlink Approach (This Repo)
@@ -306,10 +306,10 @@ Machine 1:
   config/zsh/.zshrc [ONLY COPY - single source of truth]
   config/git/.gitconfig [ONLY COPY - single source of truth]
 
-Benefit: Edit ~/.zshrc → Automatically edits the repo file!
+Benefit: Edit ~/.zshrc → Automatically edits the repo file.
 ```
 
-## 📋 Complete List of Symlinks Created
+## Complete List of Symlinks Created
 
 The installer creates these symlinks:
 
@@ -326,7 +326,7 @@ The installer creates these symlinks:
 | `~/.curlrc` | `~/.dotfiles/config/curl/.curlrc` | Curl preferences |
 | `~/.editorconfig` | `~/.dotfiles/config/.editorconfig` | EditorConfig |
 
-## ⚠️ Important Notes
+## Important Notes
 
 ### What Happens When You Edit ~/.zshrc
 
@@ -347,9 +347,9 @@ git push
 
 ### Symlinks Survive System Updates
 
-- ✅ OS updates won't break symlinks
-- ✅ Symlinks persist across reboots
-- ✅ Safe to use in home directory
+- OS updates won't break symlinks
+- Symlinks persist across reboots
+- Safe to use in home directory
 
 ### Symlinks Don't Copy Content
 
@@ -357,7 +357,7 @@ git push
 - Editing the symlink = editing the source
 - Deleting the symlink ≠ deleting the source file
 
-## 🚀 Advantages of This Approach
+## Advantages of This Approach
 
 ### 1. Version Control
 
@@ -403,10 +403,10 @@ git push  # Backed up to GitHub
 
 # Restore on new machine
 git clone https://github.com/you/.dotfiles ~/.dotfiles
-./install.sh  # Symlinks created, you're back!
+./install.sh  # Symlinks recreated
 ```
 
-## 💡 Testing Your Symlinks
+## Testing Your Symlinks
 
 Try this to see symlinks in action:
 
@@ -422,15 +422,15 @@ echo "# Test comment" >> ~/.zshrc
 tail -1 ~/.dotfiles/config/zsh/.zshrc
 # Should show: # Test comment
 
-# 4. They're the same file!
+# 4. They're the same file.
 diff ~/.zshrc ~/.dotfiles/config/zsh/.zshrc
-# No output = identical (because it's the same file!)
+# No output = identical (it is the same file)
 
 # 5. Remove test
 sed -i '' '$ d' ~/.zshrc  # Remove last line
 ```
 
-## 🔍 Troubleshooting Symlinks
+## Troubleshooting Symlinks
 
 ### Symlink appears broken
 
@@ -458,7 +458,7 @@ cp ~/.dotfiles/config/zsh/.zshrc ~/.zshrc
 # Now ~/.zshrc is a real file, not tracked
 ```
 
-## 📚 See Also
+## See Also
 
 - [HOW_TO_INSTALL.md](./HOW_TO_INSTALL.md) - Installation guide
 - [CONFIG_GUIDE.md](./CONFIG_GUIDE.md) - What each config file does
@@ -466,9 +466,9 @@ cp ~/.dotfiles/config/zsh/.zshrc ~/.zshrc
 ---
 
 **TL;DR:**
-- 🔗 **Symlinks are pointers** to files (like shortcuts)
-- 📝 **Editing ~/.zshrc** = editing ~/.dotfiles/config/zsh/.zshrc (same file)
-- ✅ **Single source of truth** in the git repo
-- 🔄 **Automatic sync** - git pull = instant updates
-- 💾 **Original backed up** as .backup files
-- 🚀 **Easy to manage** - all configs in one git repo
+- **Symlinks are pointers** to files (like shortcuts)
+- **Editing ~/.zshrc** = editing ~/.dotfiles/config/zsh/.zshrc (same file)
+- **Single source of truth** in the git repo
+- **Automatic sync** - git pull = instant updates
+- **Original backed up** as .backup files
+- **Easy to manage** - all configs in one git repo

@@ -33,7 +33,7 @@ cd ~/.dotfiles
 
 # 3. Follow prompts
 # 4. Log out and back in
-# 5. Done!
+# 5. Done.
 ```
 
 ### Existing Dotfiles Setup
@@ -77,16 +77,16 @@ Enter choice (1 or 2, default=1):
 
 ### Step 3: What Gets Installed (Minimal)
 
-✅ **Automatically installed:**
+**Automatically installed:**
 - Homebrew (if not present)
 - Git
 - GitHub CLI (gh)
 
-✅ **Prompts you for:**
+**Prompts you for:**
 - SSH key generation (say yes)
 - GitHub authentication (say yes)
 
-✅ **Dotfiles linked:**
+**Dotfiles linked:**
 - `~/.gitconfig` → Git config with 40+ aliases
 - `~/.zshrc` → Shell config (includes Starship prompt)
 - `~/.ideavimrc` → Vim keybindings for WebStorm/IntelliJ
@@ -198,11 +198,11 @@ Or run directly:
 The installer will:
 
 #### Phase 1: Essentials (Automatic)
-✅ Installs without asking:
+Installs without asking:
 - git, github-cli, curl, wget, base-devel, openssh
 
 #### Phase 2: Development Tools (Automatic)
-✅ Installs without asking:
+Installs without asking:
 - docker, docker-compose
 - nodejs, npm
 - zsh
@@ -236,7 +236,7 @@ Install all GUI applications? (y/n)
 **Say yes** to install:
 - Google Chrome
 - VS Code
-- Claude Code (automated!)
+- Claude Code (automated)
 - Bitwarden
 - Figma
 - Notion
@@ -256,7 +256,7 @@ Install JetBrains Toolbox (for WebStorm)? (y/n)
 Say yes to what you use.
 
 #### Phase 9: Dotfiles (Automatic)
-✅ Automatically:
+Automatically:
 - Clones dotfiles repo (if not present)
 - Creates symlinks for all configs
 - Backs up any existing files
@@ -274,7 +274,7 @@ Authenticate with GitHub now? (y/n)
 **Say yes**, follow the prompts
 
 #### Phase 12: Docker & Zsh (Automatic)
-✅ Automatically:
+Automatically:
 - Enables docker service
 - Adds you to docker group
 - Sets zsh as default shell
@@ -512,18 +512,18 @@ git push
 ```bash
 cd ~/.dotfiles
 git pull
-# Settings update immediately via symlinks!
+# Settings update immediately via symlinks.
 source ~/.zshrc  # Reload shell if needed
 ```
 
 ### What Gets Synced
-✅ **Automatically via symlinks:**
+**Automatically via symlinks:**
 - Git config and aliases
 - Zsh config
 - IdeaVim config
 - Starship config
 
-❌ **Manually sync:**
+**Manual sync required:**
 - GUI app settings (Bitwarden, etc.)
 - WebStorm settings (use built-in sync)
 - Claude Code settings (see config/claude/README.md)
@@ -606,9 +606,9 @@ starship preset -l
 
 ## Next Steps After Installation
 
-1. ✅ Read CONFIG_GUIDE.md for configuration details
-2. ✅ Customize ~/.zshrc.local for machine-specific settings
-3. ✅ Run `git aliases` to see all available git shortcuts
+1. Read CONFIG_GUIDE.md for configuration details
+2. Customize ~/.zshrc.local for machine-specific settings
+3. Run `git aliases` to see all available git shortcuts
 
 ---
 
