@@ -8,6 +8,31 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-24 — Repo crontab had fallen behind; audit now checks it
+
+`scripts/cron/crontab` is documented as the authoritative schedule, but it
+still ran the backup from the **repo** copy (`~/.dotfiles/services/rclone/…`)
+— the exact path the 2026-09-23 fix moved away from — and was missing the
+`smb-watcher-rescan.sh` and `homelab-audit.sh` jobs. The next
+`crontab < scripts/cron/crontab` would have silently re-broken the Immich
+photo backup and dropped two jobs. File brought in line with
+`scripts/cron/README.md`. ⚠️ The two added lines were reconstructed from the
+docs, not copied from the live crontab — the first audit run shows any
+difference.
+
+Three gaps closed in the same pass, all "nothing notices" failures:
+
+- **`homelab-audit.sh` diffs `crontab -l` against the repo file**, so the two
+  can't drift apart unnoticed again.
+- **External-drive staleness.** `backup-external.sh` writes
+  `~/logs/external-backup-<drive>.last` on success and reports the previous
+  run's age at start; the audit fails past 30 days. Replaces the nightly cron
+  removed 2026-09-05 (drives aren't always connected), after which T5 went
+  seven weeks stale unnoticed.
+- **`scripts/sync.sh` enables the gitleaks pre-commit hook** on every run and
+  warns if gitleaks is missing. `core.hooksPath` is per-clone and `install.sh`
+  runs once per machine, so older clones (the MacBook) never got it.
+
 ## 2026-09-23 (later still) — Nightly backup had silently dropped the Immich photos
 
 ⚠️ **Corrects the 2026-09-21 entry that said "let the nightly cron pick it up,
