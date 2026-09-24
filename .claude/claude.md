@@ -158,7 +158,10 @@ all in that guide.
   (`.githooks/pre-commit`, rules in `.gitleaks.toml`) blocks commits with
   secrets — enabled per clone via `git config core.hooksPath .githooks`
   (`install.sh` does it). Never bypass it with `--no-verify`; if it flags a
-  false positive, add the fingerprint to `.gitleaksignore`.
+  false positive, add the fingerprint to `.gitleaksignore`. CI
+  (`.github/workflows/checks.yml`) re-runs gitleaks on every push as a
+  backstop for clones without the hook, plus `shellcheck -S error` and a
+  strict `mkdocs build` — a red check on a push is a real problem, fix it.
 - **Use the project skills** in `.claude/skills/` — they encode steps that
   were missed repeatedly:
   - `homelab-service` — any add/remove/change of a service (staging, Glance,
