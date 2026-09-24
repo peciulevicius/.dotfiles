@@ -20,7 +20,7 @@ This dotfiles repository includes several utility scripts to help maintain and m
 | `setup/setup-cloudflare-tunnel.sh` | Sets up Cloudflare Tunnel for HTTPS on all services | Once per machine |
 | `backup/backup-databases.sh` | Dumps PostgreSQL + MariaDB databases from Docker | Weekly via cron |
 | `backup/r2-verify.sh` | Restores one random file per R2 backup set and byte-compares it with the original; tracks bucket size month to month | Monthly via cron |
-| `backup/restore.sh` | Restores service data from Backblaze B2 | When needed |
+| `backup/restore.sh` | Restores from Cloudflare R2 into `~/services-restore/` — service configs, or a whole set (`set vault\|dumps\|books\|photos`); loads Postgres or MariaDB dumps back with `db` | When needed |
 | `services/setup-services.sh` | Stages Docker Compose stacks to `~/services/` | After fresh install |
 | `services/rclone/rclone-backup.sh` | Backs up `~/services/`, Obsidian, DB dumps, Calibre, Immich originals to Cloudflare R2 (cron runs the staged copy in `~/services/rclone/`) | Nightly via cron |
 | `scripts/utils/homelab-audit.sh` | Drift, container health, backup freshness (R2, DB dumps, external drives), disk, recent-commit secret scan, live crontab vs `scripts/cron/crontab` | Weekly via cron |
@@ -46,7 +46,7 @@ scripts/
 ├── setup/setup-gpg.sh  # Set up GPG commit signing
 ├── setup/setup-cloudflare-tunnel.sh  # Set up Cloudflare Tunnel for HTTPS
 ├── backup/backup-databases.sh  # Dump databases from Docker containers
-├── backup/restore.sh   # Restore service data from B2
+├── backup/restore.sh   # Restore from R2 (configs, vault, dumps, books, photos)
 ├── docs.sh             # Serve or build MkDocs docs site
 ├── setup/mac-mini.sh   # Mac mini: sleep toggle + Immich setup (Mac mini only)
 ├── utils/utils.sh      # Shared print functions used by Linux + Windows installers

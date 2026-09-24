@@ -314,9 +314,16 @@ folders, so they are not single-copy, but **do not wipe T7 until they are import
   (encoded-video/thumbs/backups excluded as regenerable or redundant with the
   DB dump above). Second offsite copy alongside the T5 drive plan below.
   Total R2 bill is now ~$1/month. See `services/rclone/README.md`.
+- **Verified monthly** by `scripts/backup/r2-verify.sh` (one random file per
+  set restored and byte-compared; size history in `~/logs/r2-size-history.tsv`)
+- **Restore:** `scripts/backup/restore.sh list | service <name> | set
+  <vault|dumps|books|photos>`, always into `~/services-restore/`; `restore.sh db`
+  loads a dump back into its container
 
 **Local backup (rsync NAS → external drive), MANUAL — no cron:**
 - `~/.dotfiles/scripts/backup/backup-external.sh /Volumes/T7` (or `/Volumes/Backup` for T5)
+- Each successful run stamps `~/logs/external-backup-<drive>.last`; the weekly
+  `homelab-audit.sh` fails once a drive is over 30 days stale
 - Covers: Immich originals + transcoded video, **database dumps**, audiobooks, Calibre books
 - Skips: media (movies/TV — too large, re-downloadable), Immich thumbnails (regenerable)
 - Both drives verified 1:1 against the NAS on 2026-09-05

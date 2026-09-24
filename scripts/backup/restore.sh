@@ -1,11 +1,26 @@
 #!/bin/bash
-# Restore service data from Backblaze B2 via rclone
+# Restore from the Cloudflare R2 backup (rclone-backup.sh) via rclone
 #
 # Usage:
-#   ./restore.sh list                    # list what's in B2
-#   ./restore.sh service <name>          # restore a single service
-#   ./restore.sh all                     # restore everything
-#   ./restore.sh db <file.sql> <container> <user>  # restore a database dump
+#   ./restore.sh list                    # list the service configs in R2
+#   ./restore.sh service <name>          # restore a single service's config/data
+#   ./restore.sh all                     # restore every service
+#   ./restore.sh set <vault|dumps|books|photos>   # restore one of the other backup sets
+#   ./restore.sh db <file.sql> <container> [user] # load a dump back into a database
+#
+# Everything restores into ~/services-restore/ — nothing live is overwritten
+# except by `db`, which asks first.
+#
+# Backup sets, matching rclone-backup.sh (keep the two in step):
+#   services  ${BACKUP_DEST}                          configs + app data, no .env
+#   vault     ${OBSIDIAN_DEST}                        Obsidian vault
+#   dumps     <remote>:peciulevicius-backups/db-dumps weekly pg_dumpall / mariadb-dump
+#   books     <remote>:peciulevicius-backups/calibre-books
+#   photos    <remote>:peciulevicius-backups/immich-photos  (~73GB — Immich originals)
+#
+# ⚠️ .env files are never backed up. Secrets come back from Vaultwarden.
+# ⚠️ Photos without the matching immich dump are 6,600 anonymous UUID files —
+#    restore `dumps` too and load immich's with `db`.
 
 set -uo pipefail
 
@@ -29,8 +44,9 @@ if [[ -f "$RCLONE_ENV" ]]; then
   source "$RCLONE_ENV"
 fi
 
-RCLONE_REMOTE="${RCLONE_REMOTE:-b2-backup}"
-BACKUP_DEST="${BACKUP_DEST:-${RCLONE_REMOTE}:my-backup-bucket/services}"
+RCLONE_REMOTE="${RCLONE_REMOTE:-r2}"
+BACKUP_DEST="${BACKUP_DEST:-${RCLONE_REMOTE}:peciulevicius-services-backup/services}"
+OBSIDIAN_DEST="${OBSIDIAN_DEST:-${RCLONE_REMOTE}:peciulevicius-services-backup/obsidian-vault}"
 RESTORE_DIR="$HOME/services-restore"
 
 if ! command -v rclone &>/dev/null; then
@@ -73,8 +89,39 @@ cmd_all() {
   [[ "$confirm" != "y" ]] && echo "Cancelled." && exit 0
 
   mkdir -p "$RESTORE_DIR"
-  rclone sync "$BACKUP_DEST" "$RESTORE_DIR" --progress
+  # copy, not sync: sync would delete sets already restored alongside
+  # (~/services-restore/{vault,dumps,books,photos}).
+  rclone copy "$BACKUP_DEST" "$RESTORE_DIR" --progress
   log_ok "Restored to $RESTORE_DIR"
+}
+
+cmd_set() {
+  local set="$1" src
+  case "$set" in
+    vault)  src="$OBSIDIAN_DEST" ;;
+    dumps)  src="${RCLONE_REMOTE}:peciulevicius-backups/db-dumps" ;;
+    books)  src="${RCLONE_REMOTE}:peciulevicius-backups/calibre-books" ;;
+    photos) src="${RCLONE_REMOTE}:peciulevicius-backups/immich-photos" ;;
+    *) log_err "Unknown set '$set' — use vault, dumps, books or photos"; exit 1 ;;
+  esac
+  local dest="$RESTORE_DIR/$set"
+
+  log_info "Restoring $src → $dest"
+  log_info "Size: $(rclone size "$src" 2>/dev/null | tr '\n' ' ')"
+  [[ "$set" == photos ]] && log_warn "Photos are ~73GB — make sure $RESTORE_DIR has room"
+  echo ""
+
+  read -r -p "Continue? (y/n) " confirm
+  [[ "$confirm" != "y" ]] && echo "Cancelled." && exit 0
+
+  mkdir -p "$dest"
+  rclone copy "$src" "$dest" --progress
+  log_ok "Restored to $dest"
+  if [[ "$set" == books ]]; then
+    echo ""
+    echo "To use: stop calibre, calibre-web, lazylibrarian; point BOOKS_DIR in their"
+    echo ".env files at $dest (or copy it into place); docker compose up -d."
+  fi
 }
 
 cmd_db() {
@@ -100,7 +147,15 @@ cmd_db() {
   [[ "$confirm" != "yes" ]] && echo "Cancelled." && exit 0
 
   log_info "Restoring database..."
-  cat "$file" | docker exec -i "$container" psql -U "$user" 2>&1
+  # backup-databases.sh writes two formats: pg_dumpall for Postgres, and
+  # mariadb-dump --all-databases for Nextcloud. Pick the client by the header.
+  if head -5 "$file" | grep -qiE 'MariaDB dump|MySQL dump'; then
+    docker exec -i "$container" sh -c 'mariadb -u root -p"$MYSQL_ROOT_PASSWORD"' < "$file" 2>&1
+  else
+    # pg_dumpall output recreates its own databases, so connect to the
+    # maintenance db rather than one named after the user.
+    docker exec -i "$container" psql -U "$user" -d postgres < "$file" 2>&1
+  fi || { log_err "Restore reported errors — read the output above"; exit 1; }
   log_ok "Database restored"
 }
 
@@ -109,14 +164,16 @@ usage() {
   echo "Usage: restore.sh <command>"
   echo ""
   echo "Commands:"
-  echo "  list                              List what's in B2 backup"
+  echo "  list                              List the service configs in R2"
   echo "  service <name>                    Restore a single service (e.g. immich)"
   echo "  all                               Restore all services"
+  echo "  set <vault|dumps|books|photos>    Restore one of the other backup sets"
   echo "  db <file.sql> <container> [user]  Restore a database dump into a container"
   echo ""
   echo "Examples:"
   echo "  restore.sh list"
   echo "  restore.sh service immich"
+  echo "  restore.sh set dumps"
   echo "  restore.sh db ~/backups/immich-20260318.sql immich_postgres postgres"
   echo ""
 }
@@ -125,6 +182,7 @@ case "${1:-}" in
   list)    cmd_list ;;
   service) cmd_service "${2:?Service name required}" ;;
   all)     cmd_all ;;
+  set)     cmd_set "${2:?Set required: vault, dumps, books or photos}" ;;
   db)      cmd_db "${2:?SQL file required}" "${3:?Container name required}" "${4:-postgres}" ;;
   *)       usage ;;
 esac

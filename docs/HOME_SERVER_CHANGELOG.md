@@ -33,6 +33,17 @@ Three gaps closed in the same pass, all "nothing notices" failures:
   warns if gitleaks is missing. `core.hooksPath` is per-clone and `install.sh`
   runs once per machine, so older clones (the MacBook) never got it.
 
+### `restore.sh` can now restore everything that is backed up
+
+It could only restore the service-config set. The vault, DB dumps, Calibre
+library and Immich originals, which are the irreplaceable parts, had no restore
+path, so a disaster would have meant writing rclone commands from memory.
+Added `restore.sh set <vault|dumps|books|photos>`. `db` now detects MariaDB
+dumps (Nextcloud's) instead of piping them into `psql`, and connects to the
+`postgres` maintenance database for `pg_dumpall` output. `all` uses
+`rclone copy` rather than `sync`, so it can't delete sets already restored
+next to it. Defaults now say R2, not B2.
+
 ### Calibre-off-SMB migration scripted (not yet run)
 
 `scripts/utils/migrate-calibre-to-ssd.sh` moves the whole library (1.1GB) to
