@@ -8,6 +8,21 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-24 — CI on every push: secrets, shellcheck, docs
+
+`.github/workflows/checks.yml` runs on every push to every branch:
+
+- **gitleaks** over the pushed commits — the server-side backstop for the
+  pre-commit hook, which is per-clone and silently skips when gitleaks isn't
+  installed (how the 2026-09-23 commit got in from the MacBook). Pushed
+  commits only, so the one dead token still in history doesn't fail every run.
+- **`shellcheck -S error`** on every tracked script. Errors only: the warning
+  level flags ~40 intentional patterns, and an always-red check gets ignored.
+  The one existing error (`scripts/utils/utils.sh` had no shell directive — it
+  is sourced, never run) is fixed.
+- **`mkdocs build --strict`** — `docs-pages.yml` only built after a push to
+  `main`, so a docs break surfaced after it had landed.
+
 ## 2026-09-24 — Claude config: setup-claude.sh was silently linking nothing
 
 - **`setup-claude.sh` had linked nothing since the scripts reorg (31dbaa2)** —
