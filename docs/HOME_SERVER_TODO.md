@@ -40,6 +40,28 @@ Made during the 2026-09-21 Vaultwarden scare (212 cleartext passwords,
 > 1.35.4 → 1.37.3. These exports were leftover blast radius from the
 > debugging, not a backup anyone needed.
 
+### ⚡ Batch 2026-09-24 — one-day push (subagents in parallel)
+
+👤 = needs you. Everything else runs in parallel.
+
+- [ ] 👤 **Reset Odysseus 2FA** (TOTP + backup codes) — exposed in a session
+      transcript 2026-09-23 while auditing `data/auth.json`
+- [ ] 👤 Reset the Uptime Kuma backup push token → `~/services/rclone/.env`
+- [x] ~~**Odysseus repair**~~ — done: 131 memories (12 pinned), dup-skill bug
+      removed, dev skills pruned, task/utility model = Sonnet
+- [ ] **Email cutover** — 👤 Purelymail domain + `dziugas@` mailbox + Cloudflare
+      API token; then DNS switch (replace SPF, MX, DKIM×3, DMARC, ownership),
+      catch-all, tests, repoint kindle_sync / Calibre-Web / Kuma SMTP, 👤 revoke
+      Gmail app password, 👤 iPhone Apple Mail + Sieve filters, 👤 Gmail forward
+- [ ] **AI coach** — `adaptive-endurance-coach` skill (Claude Code + Odysseus),
+      `trainingpeaks-mcp` service (👤 TP cookie), Strava MCP for Odysseus
+      (👤 Strava API app), 👤 Garmin→TP Daily Health Stats toggle,
+      `~/.training/` backed up to R2
+- [x] ~~**Claude config**~~ — done (setup-claude.sh fixed, 3 new skills)
+- [x] ~~HOME_SERVER.md rewrite~~ — done
+- [ ] Local models: no bigger model (RAM ceiling ~8B); optional later — OpenCode
+      + `qwen2.5-coder:7b` for offline snippets only
+
 ### 2. 🔴 Move TOTP off Google Authenticator — before any password change
 
 **The single highest-risk item in the whole de-Googling effort.** Google
@@ -289,13 +311,8 @@ press to bring it back. Two separate gaps found.
       docker compose -f ~/services/immich/docker-compose.yml up -d
       # verify: docker logs immich_server --tail 20 (no auth errors), open the app
       ```
-- [ ] **Rewrite `HOME_SERVER.md` against the NAS architecture.** It's the
-      linked "set up from scratch" guide but still describes the pre-2026-08-04
-      T7-primary setup (Immich/media/books all pointed at T7, no NAS at all).
-      Flagged with a banner 2026-09-21 and its stale "backup strategy" links
-      from `SERVICES.md`/`UTILITY_SCRIPTS.md` repointed at
-      `HOME_SERVER_REFERENCE.md`, but the ~750-line body is still the old
-      narrative — real rewrite work, not a quick edit.
+- [x] ~~Rewrite `HOME_SERVER.md` against the NAS architecture~~ — done 2026-09-24
+      (773 → 353 lines, every path re-based on the NAS; old version in git history)
 - [ ] Clear the leftover data directories from tonight's removals:
       `rm -rf ~/services/mealie ~/services/grafana` (both confirmed
       empty/unused before removal, nothing to lose). Until then

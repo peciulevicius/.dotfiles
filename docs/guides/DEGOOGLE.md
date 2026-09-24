@@ -26,7 +26,7 @@ files, passwords, notes and bookmarks.
 | Photos | Immich | Done |
 | Domain and remote access | `*.peciulevicius.com` via Cloudflare Tunnel, Tailscale, Cloudflare Access | Done |
 | News / RSS | FreshRSS | Done |
-| AI | Odysseus + native Ollama | Done (see [SELF_HOSTED_AI.md](SELF_HOSTED_AI.md)) |
+| AI | Odysseus (cloud and local models) | Done (see [SELF_HOSTED_AI.md](SELF_HOSTED_AI.md)) |
 | 2FA codes | Ente Auth or Vaultwarden | **Not started — highest priority** |
 | Email | Purelymail on the own domain | In progress — see [EMAIL.md](EMAIL.md) |
 | Calendar and contacts | Nextcloud (CalDAV/CardDAV) | Not started |

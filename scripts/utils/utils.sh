@@ -1,3 +1,5 @@
+# shellcheck shell=bash
+# Shared print helpers — sourced by install_arch.sh and install_wsl.sh, never run.
 #==================================
 # Print
 #==================================

@@ -113,7 +113,7 @@ Full guide: [CLAUDE_CODE_GUIDE.md](./CLAUDE_CODE_GUIDE.md)
 | Outstanding work | [HOME_SERVER_TODO.md](./HOME_SERVER_TODO.md) |
 | Completed work and the reasons behind it | [HOME_SERVER_CHANGELOG.md](./HOME_SERVER_CHANGELOG.md) — check before proposing changes; several approaches were tried and reverted |
 | Memory, drive layout, container paths, backups | [HOME_SERVER_REFERENCE.md](./HOME_SERVER_REFERENCE.md) |
-| Setting up a Mac mini from scratch | [HOME_SERVER_REFERENCE.md](./HOME_SERVER_REFERENCE.md) and [SERVICES.md](./SERVICES.md). [HOME_SERVER.md](./HOME_SERVER.md) describes the pre-NAS architecture and is historical. |
+| Setting up a Mac mini from scratch, or recovering after a failure | [HOME_SERVER.md](./HOME_SERVER.md); facts in [HOME_SERVER_REFERENCE.md](./HOME_SERVER_REFERENCE.md) |
 | Services and ports | [SERVICES.md](./SERVICES.md) |
 | NAS storage and mounts | [NAS.md](./NAS.md) |
 | Scripts | [UTILITY_SCRIPTS.md](./UTILITY_SCRIPTS.md) |
@@ -131,7 +131,7 @@ before reopening the topic.
 | De-Googling | [guides/DEGOOGLE.md](./guides/DEGOOGLE.md), [alternatives](./guides/DEGOOGLE_ALTERNATIVES.md) | Mostly complete; remaining: 2FA, email, calendar/contacts |
 | Notes | [guides/NOTES.md](./guides/NOTES.md) | Vault and Kindle import running; mobile sync setup pending |
 | Books and Kindle | [guides/BOOKS.md](./guides/BOOKS.md), [Kindle setup](./guides/KINDLE_SETUP.md) | Kindle jailbroken; KOReader, OPDS and read-along working |
-| Self-hosted AI | [guides/SELF_HOSTED_AI.md](./guides/SELF_HOSTED_AI.md) | Odysseus running on port 7001 with native Ollama |
+| Self-hosted AI | [guides/SELF_HOSTED_AI.md](./guides/SELF_HOSTED_AI.md) | Odysseus running on port 7001; cloud models via the Anthropic API, local models via native Ollama |
 | Octopus Deploy | [guides/OCTOPUS_DEPLOY.md](./guides/OCTOPUS_DEPLOY.md) | Not deployed (insufficient memory) |
 
 ### Automation and repository safety

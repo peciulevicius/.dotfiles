@@ -11,9 +11,9 @@ config/claude/
 ├── settings.example.json  # Reference copy
 ├── statusline.sh          # 3-line status display (model, tokens, usage bars)
 ├── agents/                # 19 specialist sub-agents
-├── skills/                # 23 reusable skill packs
+├── skills/                # 32 reusable skill packs
 ├── rules/                 # 10 rule files (loaded on demand via @rules/)
-├── commands/              # 8 slash commands (/pr, /debug, etc.)
+├── commands/              # 2 slash commands (/new-project, /dotfiles)
 └── hooks/                 # Shell hooks (notify-done.sh, etc.)
 ```
 
@@ -64,26 +64,41 @@ All files are symlinked to `~/.claude/` by `scripts/setup/setup-claude.sh`.
 | `support-engineer` | Troubleshooting, docs |
 | `technical-writer` | READMEs, guides |
 
-## Skills (23)
+## Skills (32)
 
-| Skill | Trigger |
+Invoke with `/name`, or Claude triggers them when the task matches (skills
+marked *manual* have `disable-model-invocation: true`).
+
+**Workflow**
+
+| Skill | What it does |
+|-------|---------|
+| `check` | *manual* — pre-commit checks: lint, types, tests, gitleaks, audit |
+| `commit` | *manual* — conventional commit from the staged diff |
+| `debug` | *manual* — reproduce → locate → hypothesise → verify → fix |
+| `develop` | Implement a GitHub issue end-to-end, open a PR |
+| `jira` | Implement a pasted Jira ticket |
+| `review` | *manual* — review local changes or a PR by number |
+| `standup` | *manual* — standup summary from recent git activity |
+| `testing` | Vitest/RTL, Playwright, Angular, xUnit/.NET — write and fix tests |
+| `security-audit` | *manual* — OWASP checklist, RLS, secrets, webhooks |
+
+**Stack**
+
+| Skill | Covers |
 |-------|---------|
 | `analytics-tracking` | PostHog, Sentry, Chartmogul |
 | `angular` | Angular + TypeScript (work) |
 | `animations` | Framer Motion, Reanimated |
 | `astro` | Astro sites, content collections |
 | `cloudflare` | Pages, R2, Workers, Turnstile |
-| `commit` | `/commit` — smart git commit |
 | `csharp` | C# / .NET / ASP.NET Core (work) |
 | `email-marketing` | Resend + Loops.so |
 | `expo-mobile` | React Native + Expo |
 | `landing-page` | High-converting SaaS pages |
-| `market-research` | Competitor analysis, positioning |
 | `nextjs` | Next.js App Router patterns |
-| `product-spec` | PRDs, feature specs |
 | `revenuecat` | Mobile in-app subscriptions |
 | `saas-patterns` | Multi-tenancy, billing, auth |
-| `security-audit` | OWASP checklist |
 | `seo-content` | Metadata, Core Web Vitals |
 | `sql` | PostgreSQL queries (work) |
 | `stripe` | Stripe payments, webhooks |
@@ -91,6 +106,25 @@ All files are symlinked to `~/.claude/` by `scripts/setup/setup-claude.sh`.
 | `sveltekit` | SvelteKit, Cloudflare Pages |
 | `turborepo` | Monorepo setup |
 | `ui-design` | UI components, Tailwind, a11y |
+
+**Product**
+
+| Skill | What it does |
+|-------|---------|
+| `market-research` | *manual* — competitor analysis, positioning |
+| `product-spec` | *manual* — PRDs, feature specs |
+
+**Life** (no personal data in these files — facts come from live tools or
+private memory at runtime)
+
+| Skill | What it does |
+|-------|---------|
+| `personal-finance` | Budget tables, investing principles, read-only IBKR portfolio review, Lithuanian tax basics |
+| `pkm-notes` | Obsidian + Kindle Scribe → `kindle_sync.py` pipeline, capture-first triage, reading list |
+
+Project-only skills for the homelab (`homelab-service`, `credential-rotation`,
+`homelab-audit`) live in the repo's own `.claude/skills/`, not here — they load
+only when working inside `~/.dotfiles`.
 
 ## Rules (10)
 
@@ -109,20 +143,19 @@ Loaded on demand via `@rules/` references in `CLAUDE.md`:
 | `performance.md` | React rendering, bundles, images, caching |
 | `env.md` | Environment variables, validation, secrets |
 
-## Commands (8)
+## Commands (2)
 
-See `commands/README.md` for usage. Type `/` in Claude Code to see the full list.
+See `commands/README.md`. Type `/` in Claude Code to see everything invocable.
 
 | Command | What it does |
 |---------|-------------|
 | `/new-project` | Scaffold `.claude/` config for a new project |
-| `/pr` | Create a GitHub PR with conventional title + body |
-| `/review` | Review local changes or a PR by number |
-| `/standup` | Generate standup from yesterday's git activity |
-| `/debug` | Systematic debugging — root cause analysis |
-| `/docs` | Generate or update documentation |
-| `/deploy` | Deploy to production |
-| `/check` | Run health check on project |
+| `/dotfiles` | Pull latest dotfiles, check status, optionally run update.sh |
+
+`/review`, `/debug`, `/check` and `/standup` used to exist as both commands and
+skills — the command copies were removed 2026-09-24; they're skills now and
+invoke the same way. `/pr`, `/docs` and `/deploy` were deleted earlier.
+`setup-claude.sh update` now prunes symlinks left behind by deleted files.
 
 ## Hooks
 

@@ -127,11 +127,13 @@ relevant, or when it is invoked with `/<name>`.
 The skills cover three areas:
 
 - **Workflows:** `develop`, `review`, `commit`, `check`, `debug`, `standup`,
-  `jira`
+  `jira`, `testing` (Vitest, Playwright, Angular, xUnit)
 - **Frameworks and platforms:** Next.js, SvelteKit, Astro, Angular, Expo,
   Supabase, Stripe, RevenueCat, Cloudflare, Turborepo, C#/.NET, SQL
 - **Product work:** landing pages, SEO, analytics, email marketing, market
   research, product specifications, UI design, security audits, SaaS patterns
+- **Personal:** `personal-finance` (read-only by default), `pkm-notes`
+  (Obsidian and the Kindle import)
 
 Create a skill:
 
@@ -198,11 +200,10 @@ holds the text typed after the command.
 | Command | Purpose |
 |---|---|
 | `/new-project` | Discovery session that writes a project's `.claude/` configuration |
-| `/review` | Review local changes or a pull request |
-| `/check` | Type checks, lint, tests and a secret scan |
-| `/debug` | Structured root-cause investigation |
-| `/standup` | Summary of recent git activity |
-| `/dotfiles` | Work on this repository |
+| `/dotfiles` | Status and maintenance of this repository |
+
+`/check`, `/debug`, `/review` and `/standup` are skills (see above); they are
+invoked the same way.
 
 ```bash
 cat > ~/.dotfiles/config/claude/commands/my-command.md <<'EOF'

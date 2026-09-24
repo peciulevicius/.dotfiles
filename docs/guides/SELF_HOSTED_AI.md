@@ -13,9 +13,9 @@ Outstanding work: [HOME_SERVER_TODO.md](../HOME_SERVER_TODO.md).
 | Component | State |
 |---|---|
 | Workspace | **Odysseus**, deployed 2026-09-21, port 7001, Tailscale only |
-| Local inference | **Ollama**, native via Homebrew |
-| Chat model | `qwen2.5:7b` |
-| Background model (titles, tagging) | `llama3.2:3b` |
+| Default chat model | `claude-opus-5-5` (Anthropic API) |
+| Task and utility model (titles, memory extraction) | `claude-sonnet-5` (Anthropic API, set 2026-09-24) |
+| Local models (sensitive topics) | `qwen2.5:7b` for chat, `llama3.2:3b` for light tasks, via native Ollama |
 | Data | `~/services/odysseus/data` on the internal SSD, backed up to R2 |
 | Authentication | `AUTH_ENABLED=true` with TOTP |
 
@@ -112,8 +112,8 @@ access, and then behind Cloudflare Access.
 
 ## Cloud API keys
 
-An Anthropic API key is billed separately from a Claude subscription; a
-subscription does not include API access. If a key is added:
+Odysseus uses an Anthropic API key for its default and background models. API
+usage is billed separately from a Claude subscription. For the key:
 
 - Store it in `~/services/odysseus/.env` (gitignored) and in Vaultwarden.
 - Keep a low prepaid balance with automatic top-up disabled, so a leaked key or
@@ -136,8 +136,10 @@ serving quantised models.
 5. Keep the raw exports on the NAS under `/Volumes/unsorted/ai-exports/` as the
    source of truth, and include that path in the R2 backup.
 
-Use a cloud model with a large context for memory extraction from long
-exports; small local models with a 4K context merge or drop facts.
+Do not bulk-import memories through a small local model. An import on
+`qwen2.5:7b` with a 4K context (2026-09-23) merged and dropped facts; the
+repair on 2026-09-24 wrote atomic facts directly through Odysseus's
+`MemoryManager`. The procedure is in the Odysseus README.
 
 ---
 

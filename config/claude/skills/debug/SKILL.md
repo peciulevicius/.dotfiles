@@ -38,10 +38,18 @@ pnpm typecheck 2>/dev/null || pnpm tsc --noEmit 2>/dev/null
 pnpm test:run 2>/dev/null || echo "no tests"
 ```
 
-### 7. Commit
-```bash
-git commit -m "fix(scope): short description of what was wrong"
+### 7. Report
 ```
+## Root Cause
+[1-2 sentences — what was actually wrong]
+
+## Fix
+[what changed and why it works]
+
+## How to prevent
+[a test, a rule, a type — anything that stops this class of bug recurring]
+```
+Commit only if the user asked (conventional message, e.g. `fix(scope): …`).
 
 ## Common patterns to check first
 - `undefined` access → missing null check, wrong async/await, race condition

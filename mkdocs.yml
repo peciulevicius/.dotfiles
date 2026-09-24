@@ -43,7 +43,7 @@ nav:
 
   - Setup:
       - How to Install: HOW_TO_INSTALL.md
-      - Mac mini setup (historical): HOME_SERVER.md
+      - Mac mini setup: HOME_SERVER.md
 
   - Homelab:
       - Outstanding work: HOME_SERVER_TODO.md
