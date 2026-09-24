@@ -443,7 +443,7 @@ created, anonymous requests 401 on every path except `/_up`.
 
 Two items sit outside the ordered path and are easy to forget precisely because
 nothing is currently broken. Both are written up in full under
-[Do these first](#do-these-first--you-lose-data-or-access-without-them):
+"Do these first — you lose data or access without them" below:
 
 - 🔴 **Tailscale key expiry — 2027-03-04.** Odysseus, Vaultwarden and all
   phone access are Tailscale-only. When the key expires, remote access to
@@ -507,8 +507,8 @@ de-Google effort: its TOTP seeds sync to the account being left.
 
 Key expires **2027-03-04**. When it does, the Mac mini silently drops off the
 tailnet: no `ssh macmini` from away, and every Tailscale-only service
-(Sonarr, Radarr, Prowlarr, Transmission, Syncthing, Jellyseerr, Bazarr, Grafana,
-Prometheus, LazyLibrarian, Karakeep) becomes unreachable. This already happened
+(Sonarr, Radarr, Prowlarr, Transmission, Syncthing, Jellyseerr, Bazarr,
+LazyLibrarian, Odysseus) becomes unreachable. This already happened
 once and was only noticed on 2026-09-05, during an outage, from home.
 
 - [ ] Tailscale admin console → Machines → `macmini` → ⋯ → **Disable key expiry**
@@ -685,9 +685,10 @@ Oldest and most exposed first:
       `pihole.peciulevicius.com`, controlling DNS for the whole network.
       Highest priority.
 - [ ] **it-tools `2023.11.2`** — public, and the oldest pin here
-- [ ] **Grafana `11.6.0`**, **Jellyfin `10.10.6`**, **Uptime Kuma `1.23.16`**
+- [ ] **Jellyfin `10.10.6`**, **Uptime Kuma `1.23.16`** (Grafana was removed
+      2026-09-22)
 - [ ] The rest: audiobookshelf, bazarr, calibre-web, couchdb, freshrss,
-      jellyseerr, linkwarden, mealie, mariadb, redis, sonarr/radarr,
+      jellyseerr, linkwarden, mariadb, redis, sonarr/radarr,
       stirling-pdf, syncthing, transmission
 - [x] ~~vaultwarden~~ — 1.35.4 → **1.37.3** on 2026-09-21
 
@@ -899,7 +900,9 @@ re-researched. Revisit only if it gets its own machine.
 Kindle sync all exist and go unused. The problem is capture friction, not the
 tool — swapping Obsidian for something else reproduces the same failure later.
 
-- [ ] **Stand up CouchDB + Self-hosted LiveSync** — self-hosted Obsidian sync,
+- [ ] **Stand up CouchDB + Self-hosted LiveSync** — ✅ CouchDB side done
+      2026-09-19; what remains is the plugin on each device (see "Obsidian
+      LiveSync" above). Self-hosted Obsidian sync,
       works on iOS/Android/desktop, real-time, E2E, no subscription, no Apple
       dependency. `services/couchdb/`, data on the **internal SSD** (database —
       never SMB), exposed at `couchdb.peciulevicius.com` via the existing tunnel

@@ -155,26 +155,34 @@ advance.
 You have ~400MB of RAM sitting in containers your own changelog says were
 removed. From `HOME_SERVER_TODO.md`:
 
-- [ ] Stop `karakeep` + `karakeep-chrome` + `karakeep-meilisearch` — reverted to
-      Linkwarden, still running. Three containers, headless Chrome included.
-- [ ] Stop `actual-budget` — replaced by Wallet by Budget Bakers, still running.
+- [x] ~~Stop `karakeep` + `karakeep-chrome` + `karakeep-meilisearch`~~ —
+      removed 2026-09-19 (containers and images; see changelog)
+- [x] ~~Stop `actual-budget`~~ — removed 2026-09-19
 
 That reconciliation was already on the list. Doing it now funds the workspace.
 
 ### Steps
 
-- [ ] Free RAM (above)
-- [ ] Read the Odysseus repo README; confirm macOS/ARM64 status
-- [ ] `services/odysseus/docker-compose.yml` + `.env.example`, per repo convention
-- [ ] Store data on the **internal SSD**, not the NAS — it's SQLite/Postgres-backed
-      and databases must never live on an SMB mount (same rule as Immich)
+> ✅ **Deployed 2026-09-21** — on **port 7001** (7000 is macOS AirPlay),
+> Tailscale-only. Live configuration work is tracked in
+> `HOME_SERVER_TODO.md` step 8 and `services/odysseus/README.md`; the list
+> below is the original plan, ticked against what shipped.
+
+- [x] ~~Free RAM (above)~~
+- [x] ~~Read the Odysseus repo README; confirm macOS/ARM64 status~~
+- [x] ~~`services/odysseus/`~~ — upstream's own compose via `setup.sh` +
+      `.env.example`, rather than a hand-written compose file
+- [x] ~~Store data on the **internal SSD**~~ — `~/services/odysseus/data`
 - [ ] Add an Anthropic or OpenRouter API key as the first backend
-- [ ] Expose at `ai.peciulevicius.com` via the existing cloudflared tunnel (app runs on **port 7000**)
-- [ ] Keep **`AUTH_ENABLED=true`** *and* put it behind **Cloudflare Access** —
-      this will hold your entire conversational history and memories, and the
-      agent can execute code. Do not leave it on the open internet.
-- [ ] Add the data directory to `rclone-backup.sh` so memories reach R2
-- [ ] Add a Glance tile and an Uptime Kuma check
+- [x] ~~Expose at `ai.peciulevicius.com`~~ — **decided against for now**: it is
+      Tailscale-only. Public exposure only if a non-Tailscale device ever
+      needs it, and then behind Cloudflare Access
+- [x] ~~Keep **`AUTH_ENABLED=true`**~~ — set in `.env.example`, with TOTP 2FA.
+      This holds the whole conversational history and the agent can execute
+      code; do not put it on the open internet.
+- [x] ~~Add the data directory to `rclone-backup.sh`~~ — `odysseus/data/`
+      minus the regenerable model caches
+- [x] ~~Glance tile~~ — done. [ ] Uptime Kuma check — not confirmed
 
 ---
 
@@ -182,9 +190,13 @@ That reconciliation was already on the list. Doing it now funds the workspace.
 
 Once the workspace is up, add a local backend for the sensitive-data column.
 
-- [ ] `brew install ollama && brew services start ollama` — **native, not Docker**
-- [ ] Point the workspace at `http://host.docker.internal:11434`
-- [ ] Start with a 4B model (~2.5GB) and only move up if it's comfortable
+- [x] ~~`brew install ollama && brew services start ollama`~~ — native, 2026-09-21
+- [x] ~~Point the workspace at `http://host.docker.internal:11434`~~ —
+      `OLLAMA_BASE_URL` in `.env.example`
+- [x] ~~Start with a 4B model~~ — `qwen3:4b` was tried and removed (slower end
+      to end than the 7B and far wordier); **`qwen2.5:7b`** for chat and
+      **`llama3.2:3b`** for background calls. Benchmarks in
+      `services/odysseus/README.md`
 
 Realistic for 16GB shared with 40+ containers:
 

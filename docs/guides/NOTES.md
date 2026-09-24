@@ -178,16 +178,23 @@ the database over HTTPS so mobile Obsidian can reach it — is already solved:
 **the cloudflared tunnel is running.** It's one more container plus one more
 subdomain.
 
-- [ ] `services/couchdb/docker-compose.yml` + `.env.example`, per repo convention
-- [ ] Data dir on the **internal SSD**, not the NAS — it's a database, and
-      databases must not live on an SMB mount (same rule as Immich Postgres)
-- [ ] Expose at `couchdb.peciulevicius.com` via the existing tunnel —
+> ✅ **Server side done 2026-09-19** (see changelog). What is left is the
+> per-device plugin setup.
+
+- [x] ~~`services/couchdb/docker-compose.yml` + `.env.example`~~
+- [x] ~~Data dir on the **internal SSD**~~
+- [x] ~~Expose at `couchdb.peciulevicius.com` via the existing tunnel~~ —
       **mobile Obsidian requires HTTPS**, plain HTTP will not work
-- [ ] Put it behind Cloudflare Access, or keep it Tailscale-only
+- [x] ~~Put it behind Cloudflare Access, or keep it Tailscale-only~~ —
+      **neither**: Access's interactive login blocks the plugin, and the phone
+      needs it off-tailnet. CouchDB's own auth guards it; anonymous requests 401
 - [ ] Install the **Self-hosted LiveSync** community plugin on every device;
       enable E2E encryption and set a passphrase
-- [ ] Add the CouchDB data dir to `rclone-backup.sh`
-- [ ] Add a Glance tile + Uptime Kuma check
+- [x] ~~Add the CouchDB data dir to `rclone-backup.sh`~~ — **deliberately
+      excluded**: CouchDB is a sync transport, the vault is the source of truth
+      and is backed up directly. Live `.couch` files would upload inconsistent
+      snapshots
+- [x] ~~Glance tile~~ — done. [ ] Uptime Kuma check — not confirmed
 
 ⚠️ **Do a one-way first sync.** LiveSync's initial setup asks which device is
 the source of truth — get this wrong and it can overwrite a vault. Back the
