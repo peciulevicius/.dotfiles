@@ -8,6 +8,23 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-24 — Claude config: setup-claude.sh was silently linking nothing
+
+- **`setup-claude.sh` had linked nothing since the scripts reorg (31dbaa2)** —
+  `DOTFILES_DIR` resolved to `scripts/`, so it looked for a nonexistent
+  `scripts/config/claude`. That's why dead command symlinks piled up and
+  `/dotfiles` never got linked. Fixed the depth; it now also prunes dead
+  symlinks pointing into `config/claude` (removed 7).
+- Removed duplicate `check`/`debug`/`review`/`standup` commands — the skills
+  remain and are invoked the same way (the deletions landed in the
+  HOME_SERVER.md commit by accident; same intent). `check` now uses gitleaks;
+  `debug` reports root cause / fix / prevention and commits only if asked.
+- Devops agent: dropped the removed Grafana/Prometheus stack and the
+  ineffective `brew services restart cloudflared` (→ `launchctl kickstart`).
+- New global skills: `personal-finance` (IBKR connector, read-only by
+  default), `pkm-notes`, `testing` (Vitest/Playwright + Angular + xUnit). No
+  personal data in them — details come from Odysseus memory at runtime.
+
 ## 2026-09-24 — HOME_SERVER.md rewritten for the NAS architecture
 
 The linked "set up from scratch" guide still described the pre-2026-08-04
