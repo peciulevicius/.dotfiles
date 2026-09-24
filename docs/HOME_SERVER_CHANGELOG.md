@@ -8,6 +8,19 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-24 — Pinned images get a quarterly review
+
+`scripts/utils/check-image-updates.py` reads each pinned tag from
+`services/*/docker-compose.yml`, lists the registry's tags (Docker Hub, GHCR —
+`lscr.io` resolves there — and GitLab) and reports the newest release of the
+same shape (`16-alpine` only against `NN-alpine`; date-style versions only
+against date-style), classed patch/minor/major, with database majors flagged
+as data migrations. Legacy tags that merely look newer (LinuxServer's
+Calibre-Web once carried Calibre's 5.x versions) are excluded per image.
+Report-only; a quarterly cron job posts the list to Discord. Kept out of the
+weekly audit on purpose: with most pins behind at any given time it would be
+permanently red, and a check that is always red gets ignored.
+
 ## 2026-09-24 — cleanup.sh no longer prunes the homelab's stopped services
 
 `scripts/cleanup.sh` ran `docker container prune`, `image prune -a` and
