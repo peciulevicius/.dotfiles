@@ -25,6 +25,7 @@ stdin (`crontab < file` or `cat file | crontab -`) and always verify with
 | Monthly, 1st 06:00 | R2 restore spot-check + size history (`scripts/backup/r2-verify.sh`) | `~/logs/r2-verify.log` |
 | Hourly | Kindle Scribe → Obsidian vault | `~/logs/kindle-sync.log` |
 | Every 30 min | Restart Jellyfin + Audiobookshelf so they see new NAS files (`smb-watcher-rescan.sh`) | `~/logs/smb-rescan.log` |
+| Every 5 min | Heartbeat to Healthchecks.io (`heartbeat.sh`) — alerts from outside when pings stop, or when Docker is unresponsive | `~/logs/heartbeat.log` |
 | Sunday 09:00 | Homelab audit — drift, containers, backups, disk, secrets (`homelab-audit.sh`) | `~/logs/homelab-audit.log` |
 | Quarterly, 1st 10:00 | Pinned images with a newer upstream release (`check-image-updates.py`) — a reminder, not an auto-update | `~/logs/image-updates.log` |
 
@@ -84,6 +85,29 @@ four database dumps had **never once** succeeded. Both wrote their errors
 faithfully to log files that nobody reads.
 
 Note that exit codes only catch a job that *ran and failed*. A job that stops
-being scheduled at all — cron wiped, machine asleep — is silent either way. For
-that, add **Uptime Kuma push monitors**: Kuma alerts when the job stops checking
-in. Not set up yet.
+being scheduled at all — cron wiped, machine off — is silent either way, and so
+is everything on this machine when the power goes. That is what the heartbeat
+covers: `heartbeat.sh` pings **Healthchecks.io** every 5 minutes, and
+Healthchecks alerts (email, phone, Discord) from its own servers when the pings
+stop. It pings `/fail` instead when Docker is unresponsive, since Uptime Kuma is
+a container and goes blind at the same moment.
+
+### Setting up the heartbeat (once)
+
+1. Create a free account at <https://healthchecks.io> and add a check:
+   period **5 minutes**, grace **10 minutes**.
+2. Add a notification channel there — email at minimum; the Discord webhook
+   works too, since Healthchecks sends it from outside the house.
+3. On the Mac mini:
+   ```bash
+   mkdir -p ~/.config/homelab
+   echo 'HEARTBEAT_PING_URL=https://hc-ping.com/<uuid>' > ~/.config/homelab/heartbeat.env
+   chmod 600 ~/.config/homelab/heartbeat.env
+   ~/.dotfiles/scripts/utils/heartbeat.sh --test     # expect "sent: ok"
+   ```
+4. Reinstall the crontab (above). Healthchecks shows the check go green.
+
+The ping URL is a credential — anyone holding it can keep the check green. It
+lives only in `~/.config/homelab/`; a gitleaks rule blocks it from being
+committed. The weekly audit fails while the file is missing or the last
+successful ping is over an hour old.
