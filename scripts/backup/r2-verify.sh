@@ -30,6 +30,8 @@ ENV_FILE="$HOME/services/rclone/.env"
 [[ -f "$ENV_FILE" ]] && source "$ENV_FILE"
 
 RCLONE_REMOTE="${RCLONE_REMOTE:-r2}"
+# Same lookup as rclone-backup.sh: calibre's .env is the source of truth.
+CALIBRE_DIR="${CALIBRE_DIR:-$(sed -n 's/^BOOKS_DIR=//p' "$HOME/services/calibre/.env" 2>/dev/null)}"
 HISTORY="$HOME/logs/r2-size-history.tsv"
 SHRINK_LIMIT_PCT=5
 PROBLEMS=0

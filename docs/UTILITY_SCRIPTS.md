@@ -24,6 +24,7 @@ This dotfiles repository includes several utility scripts to help maintain and m
 | `services/setup-services.sh` | Stages Docker Compose stacks to `~/services/` | After fresh install |
 | `services/rclone/rclone-backup.sh` | Backs up `~/services/`, Obsidian, DB dumps, Calibre, Immich originals to Cloudflare R2 (cron runs the staged copy in `~/services/rclone/`) | Nightly via cron |
 | `scripts/utils/homelab-audit.sh` | Drift, container health, backup freshness (R2, DB dumps, external drives), disk, recent-commit secret scan, live crontab vs `scripts/cron/crontab` | Weekly via cron |
+| `scripts/utils/migrate-calibre-to-ssd.sh` | One-off: moves the Calibre library from the NAS to `~/services/calibre/library`, verified by checksum, with rollback | Once |
 | `scripts/utils/smb-watcher-rescan.sh` | Restarts Jellyfin + Audiobookshelf so new NAS files appear | Every 30 min via cron |
 
 ---
