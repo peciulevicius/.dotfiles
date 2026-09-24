@@ -82,7 +82,7 @@ the plugin sends as custom headers.
 
 1. Install **Self-hosted LiveSync** from Community Plugins on each device
 2. Server URI `https://couchdb.peciulevicius.com`, the username/password from
-   `~/services/couchdb/.env` (user `peciulevicius`), database `obsidian`
+   `~/services/couchdb/.env` (`COUCHDB_USER`), database `obsidian`
    (already created)
 3. Turn **End-to-End Encryption** on and set a passphrase — the same one
    everywhere. Without it the server sees your notes in the clear.

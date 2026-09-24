@@ -196,7 +196,7 @@ VAULT_PATH=/Volumes/SSD/notes ~/.dotfiles/scripts/setup/setup-obsidian.sh
 ~/obsidian-vault/
 ├── HOME.md              # Root dashboard — open on startup
 ├── ⚡ Capture/           # Quick capture inbox
-├── 🏢 Visma/            # Work notes (VFS, Gweb, 1on1, VCDM, YPP)
+├── 🏢 Work/             # Work notes (projects, 1:1s)
 ├── 🚀 Build/            # Business ideas, SaaS research, writing
 ├── 📚 Books & Learning/ # Currently reading, quotes, book notes
 ├── 🏊 Training & Health/# Training log, races, gear, health

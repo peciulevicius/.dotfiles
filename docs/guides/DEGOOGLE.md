@@ -117,7 +117,7 @@ Worth stating plainly, because "delete Google" sounds like the goal:
 
 - Deleting it **breaks every remaining "Sign in with Google" account**, often
   irrecoverably
-- It frees `dziugaspeciulevicius@gmail.com` for someone else to register — who
+- It frees the old `@gmail.com` address for someone else to register — who
   could then attempt password resets on accounts you forgot to migrate
 - It costs you nothing to keep a dormant, logged-out account
 
@@ -649,7 +649,7 @@ regular app with no special system privileges.
 | **iMessage / FaceTime** | Gone. Less painful here than in the US — Lithuania runs on WhatsApp, Messenger and Telegram, which are all cross-platform. |
 | **AirDrop, Handoff, Continuity with your Macs** | Gone. You'd lean on Syncthing and Nextcloud instead — which you already run. |
 | **Find My** | Gone. |
-| **Some banking apps** | Those doing hardware attestation may refuse. **Check your specific Lithuanian banks and Revolut before buying.** |
+| **Some banking apps** | Those doing hardware attestation may refuse. **Check your specific banking apps before buying.** |
 | **Swipe keyboard** | He hit this exactly — no open-source swipe keyboard with his languages. For you that's Lithuanian + English. HeliBoard is the FOSS option; **verify Lithuanian swipe quality before buying**. Otherwise you're back on Google's or Microsoft's internet-connected keyboard. |
 | **Phone size** | You deliberately chose a *mini*. The 13 mini is 5.4"; the 10a is ~6.3". **No modern Pixel is small.** If you like the mini form factor, this is a real, permanent downgrade — and it's the one nobody warns you about. |
 

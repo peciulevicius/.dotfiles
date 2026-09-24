@@ -2,9 +2,6 @@
 config/nvim/plugin/packer_compiled.lua
 site/
 
-# claude settings
-.claude/settings.local.json
-
 # Self-hosted services — never commit secrets or data
 services/**/.env
 services/**/.env.deployed
@@ -12,7 +9,7 @@ services/**/data/
 services/**/library/
 
 # Claude Code — machine-specific permissions
-.claude/settings.local.json
+**/.claude/settings.local.json
 
 # Obsidian vault has its own repo
 obsidian-vault/
