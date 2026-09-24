@@ -26,6 +26,7 @@ stdin (`crontab < file` or `cat file | crontab -`) and always verify with
 | Hourly | Kindle Scribe → Obsidian vault | `~/logs/kindle-sync.log` |
 | Every 30 min | Restart Jellyfin + Audiobookshelf so they see new NAS files (`smb-watcher-rescan.sh`) | `~/logs/smb-rescan.log` |
 | Sunday 09:00 | Homelab audit — drift, containers, backups, disk, secrets (`homelab-audit.sh`) | `~/logs/homelab-audit.log` |
+| Quarterly, 1st 10:00 | Pinned images with a newer upstream release (`check-image-updates.py`) — a reminder, not an auto-update | `~/logs/image-updates.log` |
 
 ⚠️ **Check before reinstalling.** Until 2026-09-24 this file had fallen
 behind the live schedule — it still pointed the backup at the repo copy and was

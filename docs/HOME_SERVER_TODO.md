@@ -716,6 +716,15 @@ release notes and backing up data first — that is why they are pinned, and
 pinning is still the right call. But schedule it; quarterly is enough.
 `docker compose pull` will not help while the tag is fixed.
 
+**Scheduled since 2026-09-24:** `scripts/utils/check-image-updates.py`
+compares every pinned tag with the registry (patch/minor/major, database
+majors flagged as needing a data migration) and runs quarterly from cron,
+posting the list to Discord. Run it any time with `--outdated`. First run,
+2026-09-24: 25 of 26 pins behind — patch-level and safe to take first:
+couchdb 3.5.2, sonarr 4.0.20, calibre-web 0.6.27; the big ones are Pi-hole
+(2024.07 → 2026.09, v6 config migration), Uptime Kuma 1 → 2, Syncthing 1 → 2,
+Radarr 5 → 6, Prowlarr 1 → 2, Paperless 2 → 3, Stirling PDF 0.36 → 2.x.
+
 ### Internal SSD — 24GiB free of 228GB (88%), after the 2026-09-21 cleanup
 
 ⚠️ It had reached **15GiB / 92%** before cleanup, not the 29GB recorded earlier

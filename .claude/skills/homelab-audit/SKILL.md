@@ -32,10 +32,13 @@ embedded in URLs — and add a rule to `.gitleaks.toml` when you find a new
 pattern.
 
 **Outdated images.** Pinned tags never move, so Watchtower being on proves
-nothing. Compare pinned images against upstream releases:
+nothing. List every pinned image with a newer upstream release:
 ```bash
-grep -rh "image:" ~/services/*/docker-compose.yml | grep -v ":latest" | sort -u
+~/.dotfiles/scripts/utils/check-image-updates.py --outdated
 ```
+It marks each jump as patch/minor/major and flags database majors that need a
+data migration. It only reports — bump one service at a time after reading
+the release notes. The same check runs quarterly from cron.
 Pi-hole (publicly exposed, controls DNS) and Vaultwarden come first. A client
 failing against a server that logs 200s is often a version mismatch.
 
