@@ -1,226 +1,207 @@
-# Utility Scripts
+# Utility scripts
 
-This dotfiles repository includes several utility scripts to help maintain and manage your development environment.
+Reference for the scripts in `scripts/` and `services/`. Scheduled jobs are
+listed in [scripts/cron/README.md](https://github.com/peciulevicius/.dotfiles/blob/main/scripts/cron/README.md).
 
-## Quick Reference
+## Overview
 
-| Script | What it does | When to run |
-|--------|-------------|-------------|
-| `update.sh` | Updates all package managers + pulls dotfiles + Claude Code + Docker images | Weekly |
-| `sync.sh` | Pulls dotfiles from git + re-symlinks configs (no package updates) | After pulling dotfiles |
-| `setup/setup-claude.sh` | Syncs Claude Code config (agents, skills, rules, commands) | After install / as needed |
-| `backup/backup-dotfiles.sh` | Backs up config files + package lists to a timestamped archive | Before major changes |
-| `backup/backup-external.sh` | Rsync Immich photos + DB dumps + audiobooks/books from the NAS to an external drive (Mac mini only) | Manually, when a drive is plugged in |
-| `cleanup.sh` | Cleans caches and frees disk space | Monthly |
-| `dev-check.sh` | Checks all dev tools are installed and configured | After fresh install / troubleshooting |
-| `setup/setup-gpg.sh` | Sets up GPG commit signing | Once per machine |
-| `setup/setup-obsidian.sh` | Creates Obsidian vault with PARA folder structure | Once per machine |
-| `docs.sh` | Serves or builds the MkDocs documentation site | Dev / CI |
-| `setup/mac-mini.sh` | Mac mini sleep toggle + one-time Immich setup | Mac mini only |
-| `setup/setup-cloudflare-tunnel.sh` | Sets up Cloudflare Tunnel for HTTPS on all services | Once per machine |
-| `backup/backup-databases.sh` | Dumps PostgreSQL + MariaDB databases from Docker | Weekly via cron |
-| `backup/r2-verify.sh` | Restores one random file per R2 backup set and byte-compares it with the original; tracks bucket size month to month | Monthly via cron |
-| `backup/restore.sh` | Restores from Cloudflare R2 into `~/services-restore/` — service configs, or a whole set (`set vault\|dumps\|books\|photos`); loads Postgres or MariaDB dumps back with `db` | When needed |
-| `services/setup-services.sh` | Stages Docker Compose stacks to `~/services/` | After fresh install |
-| `services/rclone/rclone-backup.sh` | Backs up `~/services/`, Obsidian, DB dumps, Calibre, Immich originals to Cloudflare R2 (cron runs the staged copy in `~/services/rclone/`) | Nightly via cron |
-| `scripts/utils/homelab-audit.sh` | Drift, container health, backup freshness (R2, DB dumps, external drives), disk, recent-commit secret scan, live crontab vs `scripts/cron/crontab` | Weekly via cron |
-| `scripts/utils/migrate-calibre-to-ssd.sh` | One-off: moves the Calibre library from the NAS to `~/services/calibre/library`, verified by checksum, with rollback | Once |
-| `scripts/utils/smb-watcher-rescan.sh` | Restarts Jellyfin + Audiobookshelf so new NAS files appear | Every 30 min via cron |
+### Workstation
+
+| Script | Purpose | When |
+|---|---|---|
+| `scripts/update.sh` | Update package managers, pull the dotfiles, update Claude Code and its configuration, pull Docker images | Weekly |
+| `scripts/sync.sh` | Pull the dotfiles, refresh configuration symlinks, enable the pre-commit hook (no package updates) | After changes on another machine |
+| `scripts/dev-check.sh` | Check that development tools are installed and configured | After installation; when troubleshooting |
+| `scripts/cleanup.sh` | Clear caches and temporary files | Monthly (see the warning below before running on the Mac mini) |
+| `scripts/backup/backup-dotfiles.sh` | Archive configuration files and package lists | Before major changes |
+| `scripts/setup/setup-claude.sh` | Install or resync the Claude Code configuration | After installation; after pulling changes |
+| `scripts/setup/setup-gpg.sh` | Configure GPG commit signing | Once per machine |
+| `scripts/setup/setup-obsidian.sh` | Create the Obsidian vault structure | Once |
+| `scripts/docs.sh` | Serve or build the MkDocs site | When editing docs |
+| `scripts/wallpapers/set-wallpaper.sh` | Set the desktop wallpaper from `wallpapers/` | As needed |
+| `scripts/convert-audiobooks.sh` | Convert Audible AAX to M4B (chapters preserved) and copy to the Mac mini | As needed |
+| `scripts/utils/arw-to-jpeg.sh` | Convert Sony ARW RAW files to JPEG for Immich (uses `sips`) | As needed |
+| `scripts/kindle/sync.sh` | Serve wallpapers or files to a jailbroken Kindle over the LAN | As needed |
+
+### Homelab (Mac mini)
+
+| Script | Purpose | When |
+|---|---|---|
+| `services/setup-services.sh` | Stage Docker Compose stacks into `~/services/` | After installation; after changing a service |
+| `scripts/setup/mac-mini.sh` | Toggle server sleep settings; one-time Immich setup | Once |
+| `scripts/setup/setup-cloudflare-tunnel.sh` | Create the Cloudflare Tunnel and DNS routes | Once |
+| `services/rclone/rclone-backup.sh` | Back up to Cloudflare R2 (staged copy in `~/services/rclone/`) | Nightly (cron) |
+| `scripts/backup/backup-databases.sh` | Dump PostgreSQL and MariaDB databases to `~/backups/` | Weekly (cron) |
+| `scripts/backup/r2-verify.sh` | Restore one random file per R2 set and compare it; track bucket sizes | Monthly (cron) |
+| `scripts/backup/restore.sh` | Restore from R2 into `~/services-restore/`; load database dumps | When needed |
+| `scripts/backup/backup-external.sh` | rsync NAS data and dumps to an external drive | Manually, when a drive is connected |
+| `scripts/utils/homelab-audit.sh` | Audit drift, containers, backups, disk, recent commits and cron | Weekly (cron) |
+| `scripts/utils/run-with-notify.sh` | Wrap a cron job and notify Discord on failure and recovery | Used by every cron job |
+| `scripts/utils/mount-nas.sh` | Mount the NAS SMB shares | At login (launchd) |
+| `scripts/utils/nas-watchdog.sh` | Remount shares and restart NAS-backed containers | Every 5 minutes (launchd) |
+| `scripts/utils/docker-watchdog.sh` | Restart Docker Desktop or its engine when down or hung | Every 5 minutes (launchd) |
+| `scripts/utils/smb-watcher-rescan.sh` | Restart Jellyfin and Audiobookshelf so new NAS files are indexed | Every 30 minutes (cron) |
+| `scripts/utils/migrate-calibre-to-ssd.sh` | Move the Calibre library from the NAS to the internal SSD | Once |
 
 ---
 
-## 📍 Location
+## Workstation scripts
 
-All utility scripts are located in `scripts/` directory:
+### update.sh
 
-```
-scripts/
-├── update.sh           # Update all package managers + pull dotfiles + Claude Code
-├── sync.sh             # Pull dotfiles from git + re-symlink configs (no package updates)
-├── setup/setup-claude.sh     # Sync Claude Code config (agents, skills, rules, commands)
-├── setup/setup-obsidian.sh   # Create Obsidian vault with PARA folder structure
-├── backup/backup-dotfiles.sh # Back up config files + package lists to timestamped archive
-├── backup/backup-external.sh # Rsync NAS photos/DB/audiobooks/books to an external drive (Mac mini only)
-├── cleanup.sh          # Clean caches and free disk space
-├── dev-check.sh        # Check environment health
-├── setup/setup-gpg.sh  # Set up GPG commit signing
-├── setup/setup-cloudflare-tunnel.sh  # Set up Cloudflare Tunnel for HTTPS
-├── backup/backup-databases.sh  # Dump databases from Docker containers
-├── backup/restore.sh   # Restore from R2 (configs, vault, dumps, books, photos)
-├── docs.sh             # Serve or build MkDocs docs site
-├── setup/mac-mini.sh   # Mac mini: sleep toggle + Immich setup (Mac mini only)
-├── utils/utils.sh      # Shared print functions used by Linux + Windows installers
-└── wallpapers/         # Wallpaper management
+Updates everything installed through the dotfiles.
 
-services/
-├── setup-services.sh             # Stage all Docker Compose stacks to ~/services/
-├── immich/                       # Google Photos replacement
-├── vaultwarden/                  # Bitwarden password manager server
-├── nextcloud/                    # Google Drive replacement
-├── uptime-kuma/                  # Uptime monitoring dashboard
-├── freshrss/                     # RSS reader
-├── syncthing/                    # File sync (Dropbox replacement)
-├── portainer/                    # Docker management UI
-├── watchtower/                   # Automatic Docker image updates
-├── homarr/                       # Home dashboard
-├── paperless-ngx/                # Document scanner and organiser
-├── calibre-web/                  # Ebook library server
-└── rclone/rclone-backup.sh       # Cloud backup to B2/S3
-```
-
-## 🚀 Quick Start
+| Platform | Updated |
+|---|---|
+| macOS | Homebrew formulae and casks, npm and pnpm globals, pip, Rust (rustup), Oh My Zsh, the dotfiles repository, Claude Code and its configuration |
+| Arch | pacman, yay (AUR), Flatpak, Snap, language package managers |
+| Debian/Ubuntu | apt, Flatpak, Snap, language package managers |
 
 ```bash
-# Make scripts executable (if needed)
-chmod +x ~/.dotfiles/scripts/*.sh
-
-# Run any script
 ~/.dotfiles/scripts/update.sh
 ```
 
----
+The script detects the OS, removes old versions and prints a summary. It is
+idempotent.
 
-## 🤖 setup/setup-claude.sh - Claude Code Setup
+### sync.sh
 
-Sets up Claude Code configuration — agents, skills, rules, commands, CLAUDE.md, statusline.
-
-### Usage
+Pulls the latest dotfiles without installing packages, then refreshes the
+configuration symlinks. It also enables the gitleaks pre-commit hook for the
+clone (`core.hooksPath` is per clone) and warns if gitleaks is not installed.
+If local and remote history have diverged, it offers to reset to the remote.
 
 ```bash
-~/.dotfiles/scripts/setup/setup-claude.sh          # interactive menu (pick 1–4)
+~/.dotfiles/scripts/sync.sh
+```
+
+### dev-check.sh
+
+Reports on the development environment and exits non-zero when a required tool
+is missing.
+
+| Area | Checks |
+|---|---|
+| System | OS, shell, terminal |
+| Essential tools | git, GitHub CLI, curl, wget, zsh |
+| Modern CLI tools | bat, eza, ripgrep, fd, fzf, zoxide, tldr, httpie, jq, delta |
+| Package managers | Homebrew, pacman/yay, apt, dnf |
+| Development | Docker (and whether it is running), Node.js, npm, nvm, pnpm, VS Code |
+| Languages | Python, pip; Ruby, Go, Rust (optional) |
+| Configuration | git, SSH, zsh, tmux, EditorConfig, IdeaVim, Starship |
+| SSH and GitHub | SSH keys, agent, `gh` authentication |
+| Dotfiles | Repository status, branch, sync state, uncommitted changes |
+| Network | Internet and GitHub reachability |
+| Homelab | Staged services and running containers (when `~/services/` exists) |
+
+```bash
+~/.dotfiles/scripts/dev-check.sh
+```
+
+### cleanup.sh
+
+Frees disk space by clearing caches and temporary files, and reports disk usage
+before and after.
+
+| Platform | Cleared |
+|---|---|
+| macOS | Homebrew cache, user caches, Trash, Xcode DerivedData, iOS Simulator data |
+| Linux | Package manager caches, unused Flatpak runtimes, old Snap revisions, journal logs, user caches |
+| All | Docker, npm/pnpm/yarn/pip/Cargo caches, VS Code, JetBrains and Chrome caches |
+
+```bash
+~/.dotfiles/scripts/cleanup.sh
+sudo ~/.dotfiles/scripts/cleanup.sh   # system-level cleanup on macOS
+```
+
+> **Warning:** The Docker section removes stopped containers, all unused
+> images and unused volumes. On the Mac mini that deletes services that are
+> stopped by design (Storyteller) together with their images. On the homelab
+> host, reclaim Docker space with `docker builder prune -af` only.
+
+More aggressive options (removing `node_modules`, `__pycache__`, old kernels)
+are present in the script but commented out.
+
+### backup-dotfiles.sh
+
+Creates `~/dotfiles_backup_<timestamp>.tar.gz` containing configuration files
+(git, zsh, SSH, tmux, IdeaVim, VS Code, Claude Code) and package lists
+(Homebrew, pacman/yay, apt, npm, pip, VS Code extensions). The last five
+archives are kept.
+
+```bash
+~/.dotfiles/scripts/backup/backup-dotfiles.sh
+```
+
+Restore by extracting the archive, copying files back, and reinstalling from
+the package lists:
+
+```bash
+tar -xzf ~/dotfiles_backup_<timestamp>.tar.gz -C ~
+xargs brew install < ~/dotfiles_backup_<timestamp>/brew_packages.txt          # macOS
+xargs yay -S --needed < ~/dotfiles_backup_<timestamp>/yay_packages.txt        # Arch
+sudo dpkg --set-selections < ~/dotfiles_backup_<timestamp>/apt_packages.txt   # Debian/Ubuntu
+sudo apt-get dselect-upgrade
+```
+
+### setup-claude.sh
+
+Symlinks `config/claude/` (agents, skills, rules, commands, `CLAUDE.md`,
+`settings.json`, status line) into `~/.claude/`.
+
+```bash
+~/.dotfiles/scripts/setup/setup-claude.sh          # interactive menu
 ~/.dotfiles/scripts/setup/setup-claude.sh update   # non-interactive resync (used by update.sh)
 ```
 
-### Menu options
+| Option | Action |
+|---|---|
+| 1 | First-time setup, including `settings.json` |
+| 2 | Resync symlinks after pulling changes |
+| 3 | Status line only |
+| 4 | Copy live agents back into the repository |
 
-```
-1) First-time setup       — full install, prompts for settings.json
-2) Update / resync        — sync all symlinks after pulling dotfiles
-3) Statusline only        — just configure the status bar
-4) Sync agents → dotfiles — pull live agents back into the repo
-```
+Windows equivalents: `setup-claude.ps1`, `setup-claude.bat`.
 
-### What it installs
+### setup-gpg.sh
 
-Symlinks everything from `config/claude/` into `~/.claude/`:
-- `agents/` — 17 specialist sub-agents
-- `skills/` — 22 reusable skills
-- `rules/` — 7 rule files (TypeScript, Git, React, etc.)
-- `commands/` — 6 slash commands (/pr, /debug, etc.)
-- `CLAUDE.md` — global instructions
-- `settings.json` — permissions and statusline config
-
-### When to run
-
-- **New machine:** run once after `./install.sh`
-- **After pulling dotfiles:** run with option 2 (or let `update.sh` do it)
-- **After adding new agents/skills:** run with option 2
-
----
-
-## 📦 update.sh - Universal System Update
-
-Updates all package managers, tools, and Claude Code config on your system.
-
-### What it Updates
-
-**macOS:**
-- Homebrew (formulas and casks)
-- npm global packages
-- pnpm global packages
-- pip packages
-- Rust (via rustup)
-- Oh My Zsh
-- Dotfiles repository
-- Claude Code CLI + config resync
-
-**Linux (Arch):**
-- pacman packages
-- yay (AUR packages)
-- Flatpak
-- Snap
-- All language package managers
-
-**Linux (Debian/Ubuntu):**
-- apt packages
-- Flatpak
-- Snap
-- All language package managers
-
-### Usage
+Interactive setup for signed commits: uses an existing GPG key or generates one,
+sets `user.signingkey`, `commit.gpgsign` and `tag.gpgsign`, exports
+`GPG_TTY`, configures `pinentry-mac` on macOS, and prints the public key for
+GitHub (Settings → SSH and GPG keys → New GPG key).
 
 ```bash
-# Update everything
-~/.dotfiles/scripts/update.sh
+brew install gnupg pinentry-mac      # macOS prerequisites
+~/.dotfiles/scripts/setup/setup-gpg.sh
+git log --show-signature -1          # verify after the next commit
 ```
 
-### Features
+| Problem | Fix |
+|---|---|
+| No passphrase prompt | `export GPG_TTY=$(tty)`, then `gpgconf --kill gpg-agent` |
+| `gpg failed to sign the data` | Check `gpg --list-secret-keys`; test with `echo test \| gpg --clearsign` |
+| macOS `Inappropriate ioctl for device` | `echo "pinentry-program $(which pinentry-mac)" >> ~/.gnupg/gpg-agent.conf`, then `gpgconf --kill gpg-agent` |
 
-- ✓ Detects your OS automatically
-- ✓ Updates all relevant package managers
-- ✓ Cleans up old versions
-- ✓ Shows summary of what was updated
-- ✓ Safe to run regularly (idempotent)
+### setup-obsidian.sh
 
-### Recommended Frequency
-
-Run this weekly or before starting new projects:
-
-```bash
-# Add to your shell aliases
-alias update='~/.dotfiles/scripts/update.sh'
-
-# Then simply run
-update
-```
-
----
-
-## 📓 setup/setup-obsidian.sh - Obsidian Vault Setup
-
-Creates an Obsidian vault with 10 emoji-prefixed folders and 27 template files.
-
-### Usage
+Creates the vault folder structure and templates described in
+[guides/NOTES.md](guides/NOTES.md). Exits without changes if `HOME.md` already
+exists.
 
 ```bash
-# Create vault at ~/obsidian-vault (default)
 ~/.dotfiles/scripts/setup/setup-obsidian.sh
-
-# Custom path
-VAULT_PATH=/Volumes/SSD/notes ~/.dotfiles/scripts/setup/setup-obsidian.sh
+VAULT_PATH=/path/to/vault ~/.dotfiles/scripts/setup/setup-obsidian.sh
 ```
 
-### What it creates
+### kindle/sync.sh
 
-```
-~/obsidian-vault/
-├── HOME.md              # Root dashboard — open on startup
-├── ⚡ Capture/           # Quick capture inbox
-├── 🏢 Work/             # Work notes (projects, 1:1s)
-├── 🚀 Build/            # Business ideas, SaaS research, writing
-├── 📚 Books & Learning/ # Currently reading, quotes, book notes
-├── 🏊 Training & Health/# Training log, races, gear, health
-├── 💰 Finance/          # Budget, finance notes
-├── ✈️ Travel/           # Trip templates, wishlist
-├── 🙋 Personal/         # Goals, weekly reflection
-├── 📥 Imports/          # Kindle TXT exports (process weekly)
-└── 📦 Archive/          # Dead ideas, old notes
-```
-
-See [guides/NOTES.md](./guides/NOTES.md) for the full Obsidian + Syncthing workflow.
-
----
-
-## 📱 scripts/kindle/sync.sh - Sync files to a jailbroken Kindle
-
-One script for everything that has to reach the Kindle. It serves over plain
-HTTP on the LAN and generates an installer, so the device side is always a
-single command however many files are involved.
+Transfers files to a jailbroken Kindle over plain HTTP on the LAN and generates
+an installer, so the device side is a single command.
 
 ```bash
-~/.dotfiles/scripts/kindle/sync.sh                              # wallpapers (mirror)
+~/.dotfiles/scripts/kindle/sync.sh                               # wallpapers (mirror)
 ~/.dotfiles/scripts/kindle/sync.sh --dir ~/Downloads/kindle-plugins
-~/.dotfiles/scripts/kindle/sync.sh --list                       # inspect/delete by hand
+~/.dotfiles/scripts/kindle/sync.sh --list                        # list what is on the device
 ~/.dotfiles/scripts/kindle/sync.sh --port 9000
 ```
 
@@ -230,682 +211,206 @@ On the Kindle, in kTerm:
 wget -O /tmp/i.sh http://<mac-ip>:8765/_install.sh && sh /tmp/i.sh
 ```
 
-### Wallpaper mode is a mirror
+**Wallpaper mode mirrors** `wallpapers/kindle/`: images are converted to
+1860 × 2480 greyscale (letterboxed) with `sips`, and anything removed from the
+folder is removed from the device. Output names derive from source names
+(`4.jpg` → `ks-4.png`), so adding or removing an image does not renumber the
+others. AVIF, HEIC, JPEG, PNG and WebP are supported; small sources produce a
+warning.
 
-Sources live in `wallpapers/kindle/`. They are converted to the Scribe's
-**1860 x 2480 greyscale** — letterboxed, never cropped — and the device is made
-to **match the source exactly**.
+**`--dir` mode only adds:**
 
-**That is how you delete a wallpaper you don't like:** remove it from
-`wallpapers/kindle/` and sync again; it disappears from the Kindle too.
-
-Converted names derive from the source filename (`4.jpg` -> `ks-4.png`) rather
-than a counter, so adding or removing one image doesn't renumber the rest and
-leave stale content sitting in a reused slot.
-
-Reads **AVIF, HEIC, JPEG, PNG, WebP** via `sips`, built into macOS — no
-ImageMagick needed. Warns when a source is small enough to look soft at 300 ppi.
-
-### `--dir` mode only adds
-
-| File | Goes to |
+| File | Destination |
 |---|---|
-| `*.png` `*.jpg` | `/mnt/us/screensavers/` |
-| `*koplugin*.zip` | unpacked into `/mnt/us/koreader/plugins/` |
-| other `*.zip` | unpacked at `/mnt/us` |
-| anything else | `/mnt/us/` |
+| `*.png`, `*.jpg` | `/mnt/us/screensavers/` |
+| `*koplugin*.zip` | Extracted into `/mnt/us/koreader/plugins/` |
+| Other `*.zip` | Extracted at `/mnt/us` |
+| Anything else | `/mnt/us/` |
 
-It never deletes here — losing a working plugin to a typo is not a risk worth
-taking. Re-running fetches only what is missing.
-
-### Why LAN HTTP
-
-Both obvious routes are dead ends on this hardware:
-
-- **USB**: Kindles from ~2022, the Scribe included, present as **MTP**, which
-  macOS cannot mount without third-party software.
-- **Downloading on the Kindle**: its busybox `wget` cannot negotiate the TLS
-  GitHub's CDN requires — HTTPS fails with *"Connection reset by peer"*.
-
-See [guides/KINDLE_SETUP.md](./guides/KINDLE_SETUP.md).
+LAN HTTP is used because the Scribe uses MTP over USB (not mountable on macOS
+without extra software) and its busybox `wget` cannot complete TLS with
+GitHub's CDN. See [guides/KINDLE_SETUP.md](guides/KINDLE_SETUP.md).
 
 ---
 
-## 🐳 services/setup-services.sh - Docker Services Setup
+## Homelab scripts
 
-Stages Docker Compose stacks and `.env` templates to `~/services/<service>/`.
+### setup-services.sh
 
-### Usage
+Copies each service's `docker-compose.yml`, scripts and `.env.example` into
+`~/services/<service>/`. An existing `.env` is never overwritten.
 
 ```bash
-# Stage all 13 services
-~/.dotfiles/services/setup-services.sh
-
-# Stage one service
-~/.dotfiles/services/setup-services.sh immich
-
-# Preview without changes
+~/.dotfiles/services/setup-services.sh             # all services
+~/.dotfiles/services/setup-services.sh immich      # one service
 ~/.dotfiles/services/setup-services.sh --dry-run
 ```
 
-### Services staged
+> **Note:** Staging copies files; it does not link them. Editing a file under
+> `services/` changes nothing until it is re-staged. Verify with
+> `diff services/<svc>/docker-compose.yml ~/services/<svc>/docker-compose.yml`;
+> the weekly audit reports drift.
 
-| Service | Port | Replaces |
-|---------|------|---------|
-| immich | 2283 | Google Photos |
-| vaultwarden | 8001 | Bitwarden Cloud |
-| nextcloud | 8080 | Google Drive |
-| uptime-kuma | 3001 | StatusCake |
-| freshrss | 8082 | Feedly |
-| syncthing | 8384 | Dropbox |
-| portainer | 9000 | Docker UI |
-| watchtower | — | Manual updates |
-| homarr | 7575 | Home dashboard |
-| paperless-ngx | 8000 | Paper filing |
-| calibre-web | 8083 | Kindle Cloud |
-| rclone | — | Cloud backup |
+The service list, ports and purposes are in [SERVICES.md](SERVICES.md).
 
-See [SERVICES.md](./SERVICES.md) for full setup guide.
-
----
-
-## ☁️ services/rclone/rclone-backup.sh - Cloud Backup
-
-Backs up `~/services/` volumes to Cloudflare R2 (or any rclone remote).
-
-### Usage
+### mac-mini.sh
 
 ```bash
-# Test first
-~/.dotfiles/services/rclone/rclone-backup.sh --dry-run
-
-# Live backup
-~/.dotfiles/services/rclone/rclone-backup.sh
-```
-
-### Setup
-
-```bash
-brew install rclone
-rclone config  # configure B2 remote named 'b2-backup'
-cp ~/.dotfiles/services/rclone/.env.example ~/services/rclone/.env
-nano ~/services/rclone/.env
-```
-
-### Automate
-
-```bash
-crontab -e
-# Daily at 3 AM:
-0 3 * * * ~/.dotfiles/services/rclone/rclone-backup.sh >> ~/logs/rclone-cron.log 2>&1
-```
-
-See [HOME_SERVER_REFERENCE.md](./HOME_SERVER_REFERENCE.md) for the current strategy.
-
----
-
-## 💾 backup-dotfiles.sh - Configuration Backup
-
-Creates timestamped backups of your configuration files and settings.
-
-### What it Backs Up
-
-**Configuration Files:**
-- `.gitconfig`, `.zshrc`, `.ideavimrc`, `.tmux.conf`, etc.
-- SSH keys and configuration
-- VS Code settings
-- Claude Code settings
-
-**Package Lists:**
-- Homebrew packages (macOS)
-- pacman/yay packages (Arch)
-- apt packages (Debian/Ubuntu)
-- npm global packages
-- pip packages
-- VS Code extensions
-
-**Other:**
-- Git repositories list
-- Custom configuration directories
-
-### Usage
-
-```bash
-# Create a backup
-~/.dotfiles/scripts/backup/backup-dotfiles.sh
-```
-
-### Output
-
-Creates a compressed archive in your home directory:
-
-```
-~/dotfiles_backup_20241105_143022.tar.gz
-```
-
-### Backup Retention
-
-- Automatically keeps the last 5 backups
-- Older backups are automatically deleted
-- Backups are compressed to save space
-
-### Restoring from Backup
-
-```bash
-# Extract the backup
-cd ~
-tar -xzf dotfiles_backup_20241105_143022.tar.gz
-
-# Copy files back to their original locations
-cp dotfiles_backup_20241105_143022/.gitconfig ~/.gitconfig
-# ... etc
-
-# Reinstall packages from lists
-# macOS:
-xargs brew install < dotfiles_backup_20241105_143022/brew_packages.txt
-
-# Arch:
-xargs yay -S --needed < dotfiles_backup_20241105_143022/yay_packages.txt
-
-# Ubuntu/Debian:
-sudo dpkg --set-selections < dotfiles_backup_20241105_143022/apt_packages.txt
-sudo apt-get dselect-upgrade
-```
-
-### Recommended Usage
-
-```bash
-# Before major changes
-~/.dotfiles/scripts/backup/backup-dotfiles.sh
-
-# Set up a cron job for automatic backups (weekly)
-# Add to crontab (crontab -e):
-0 0 * * 0 ~/.dotfiles/scripts/backup/backup-dotfiles.sh
-```
-
----
-
-## 🧹 cleanup.sh - System Cleanup
-
-Frees up disk space by cleaning caches, logs, and temporary files.
-
-### What it Cleans
-
-**macOS:**
-- Homebrew cache
-- User and system caches
-- Trash
-- Xcode derived data
-- iOS Simulator data
-
-**Linux:**
-- Package manager caches (pacman, apt, dnf)
-- Flatpak unused apps
-- Snap old versions
-- Systemd journal logs
-- User cache directories
-
-**All OS:**
-- Docker containers, images, volumes, and build cache
-- npm cache
-- pnpm cache
-- yarn cache
-- pip cache
-- Cargo cache
-- VS Code cache
-- JetBrains IDE cache
-- Chrome cache
-- Temporary files
-
-### Usage
-
-```bash
-# Clean everything
-~/.dotfiles/scripts/cleanup.sh
-
-# Some operations require sudo
-sudo ~/.dotfiles/scripts/cleanup.sh  # For system-level cleanup on macOS
-```
-
-### Safety
-
-- ✓ Only cleans caches and temp files
-- ✓ Does not delete user data
-- ✓ Does not delete source code
-- ✓ Shows disk usage before and after
-- ✓ Safe to run regularly
-
-### Expected Results
-
-Typical disk space freed:
-- **Light use:** 500MB - 2GB
-- **Heavy use:** 5GB - 20GB
-- **Docker users:** 10GB - 50GB+
-
-### Aggressive Cleaning (Optional)
-
-The script includes commented-out options for more aggressive cleaning:
-
-```bash
-# Uncomment in the script to enable:
-# - Remove all node_modules directories
-# - Remove all __pycache__ directories
-# - Remove old kernel versions (Linux)
-```
-
-### Recommended Frequency
-
-```bash
-# Monthly cleanup
-~/.dotfiles/scripts/cleanup.sh
-
-# Add to alias for convenience
-alias cleanup='~/.dotfiles/scripts/cleanup.sh'
-```
-
----
-
-## 🏥 dev-check.sh - Environment Health Check
-
-Verifies that all development tools are properly installed and configured.
-
-### What it Checks
-
-**System Info:**
-- OS version and details
-- Shell and terminal info
-
-**Essential Tools:**
-- Git, GitHub CLI, curl, wget, zsh
-
-**Modern CLI Tools:**
-- bat, eza, ripgrep, fd, fzf, zoxide, tldr, httpie, jq, delta
-
-**Package Managers:**
-- Homebrew (macOS)
-- pacman/yay (Arch)
-- apt (Debian/Ubuntu)
-- dnf (Fedora/RHEL)
-
-**Development Tools:**
-- Docker (and if it's running)
-- Node.js, npm, nvm, pnpm
-- VS Code
-
-**Languages & Runtimes:**
-- Python, pip
-- Ruby (optional)
-- Go (optional)
-- Rust (optional)
-
-**Configuration Files:**
-- Git config, SSH config, Zsh config
-- Tmux, EditorConfig
-- IdeaVim, Starship config
-
-**SSH & GitHub:**
-- SSH keys (ed25519 or RSA)
-- SSH agent status
-- GitHub CLI authentication
-
-**Dotfiles:**
-- Repository status
-- Git branch and sync status
-- Uncommitted changes
-
-**Network:**
-- Internet connectivity
-- GitHub reachability
-
-### Usage
-
-```bash
-# Run health check
-~/.dotfiles/scripts/dev-check.sh
-```
-
-### Output Example
-
-```
-═══════════════════════════════════════════════════════
-  Development Environment Health Check
-═══════════════════════════════════════════════════════
-
-Operating System: Darwin
-Hostname: MacBook-Pro
-User: john
-
-═══════════════════════════════════════════════════════
-  Essential Tools
-═══════════════════════════════════════════════════════
-
-✓ Git: git version 2.42.0
-✓ GitHub CLI: gh version 2.40.0
-✓ curl: curl 8.4.0
-✓ wget: GNU Wget 1.21.4
-✓ Zsh: zsh 5.9
-
-... [more checks]
-
-═══════════════════════════════════════════════════════
-  Summary
-═══════════════════════════════════════════════════════
-
-Health Check Results:
-
-  Required passed: 16 / 16 (100%)
-  Required failed: 0
-  Optional passed: 4 / 22
-  Optional missing: 18
-
-✓ Core environment is healthy.
-
-Quick fixes:
-  • Install missing CLI tools: brew install ...
-  • Install missing casks: brew install --cask ...
-  • Update packages: Run scripts/update.sh
-  • Install from: https://ohmyz.sh
-```
-
-### Use Cases
-
-**After Fresh Install:**
-```bash
-# Verify everything installed correctly
-~/.dotfiles/scripts/dev-check.sh
-```
-
-**Troubleshooting:**
-```bash
-# Diagnose why something isn't working
-~/.dotfiles/scripts/dev-check.sh
-```
-
-**Regular Maintenance:**
-```bash
-# Verify environment health monthly
-~/.dotfiles/scripts/dev-check.sh
-```
-
-**Documentation:**
-```bash
-# Share your environment setup with team
-~/.dotfiles/scripts/dev-check.sh > my-setup.txt
-```
-
----
-
-## 🔐 setup-gpg.sh - GPG Commit Signing Setup
-
-Sets up GPG keys for signing Git commits, making your commits verified on GitHub.
-
-### What it Does
-
-1. Checks if GPG is installed
-2. Lists existing GPG keys (if any)
-3. Generates new GPG key or uses existing one
-4. Configures Git to sign commits automatically
-5. Exports public key for GitHub
-6. Tests GPG signing
-7. Provides instructions for adding key to GitHub
-
-### Usage
-
-```bash
-# Run the setup wizard
-~/.dotfiles/scripts/setup/setup-gpg.sh
-```
-
-### Interactive Setup
-
-The script will ask you:
-1. Do you want to use an existing key? (if any exist)
-2. Your name (for new key)
-3. Your email (must match your GitHub email)
-4. Set a passphrase (keep it safe!)
-
-### What Gets Configured
-
-**Git Configuration:**
-```ini
-[user]
-    signingkey = YOUR_GPG_KEY_ID
-
-[commit]
-    gpgsign = true
-
-[tag]
-    gpgsign = true
-```
-
-**Shell Configuration:**
-```bash
-# Added to .zshrc or .bashrc
-export GPG_TTY=$(tty)
-```
-
-**macOS Specific:**
-```
-# If pinentry-mac is installed
-pinentry-program /opt/homebrew/bin/pinentry-mac
-```
-
-### Prerequisites
-
-**macOS:**
-```bash
-brew install gnupg pinentry-mac
-```
-
-**Arch Linux:**
-```bash
-sudo pacman -S gnupg
-```
-
-**Ubuntu/Debian:**
-```bash
-sudo apt install gnupg
-```
-
-### Adding Key to GitHub
-
-1. The script will display your public key
-2. Go to https://github.com/settings/keys
-3. Click "New GPG key"
-4. Paste the public key
-5. Click "Add GPG key"
-
-### Verifying It Works
-
-After setup, your commits will show as "Verified" on GitHub:
-
-```bash
-# Make a test commit
-echo "test" > test.txt
-git add test.txt
-git commit -m "Test GPG signing"
-
-# Check the signature
-git log --show-signature -1
-
-# Push to GitHub and check for "Verified" badge
-git push
-```
-
-### Troubleshooting
-
-**Passphrase Prompt Not Appearing:**
-```bash
-# Ensure GPG_TTY is set
-export GPG_TTY=$(tty)
-
-# Restart GPG agent
-gpgconf --kill gpg-agent
-```
-
-**"gpg failed to sign the data":**
-```bash
-# Check your key
-gpg --list-secret-keys
-
-# Test signing
-echo "test" | gpg --clearsign
-```
-
-**macOS: "Inappropriate ioctl for device":**
-```bash
-# Install pinentry-mac
-brew install pinentry-mac
-
-# Configure it
-echo "pinentry-program $(which pinentry-mac)" >> ~/.gnupg/gpg-agent.conf
-gpgconf --kill gpg-agent
-```
-
----
-
-## 🖥️ mac-mini.sh — Mac mini Management
-
-Manages sleep settings and Immich setup on the Mac mini. Not relevant on MacBook.
-
-### Usage
-
-```bash
-~/.dotfiles/scripts/setup/mac-mini.sh sleep off   # server mode: disable sleep
-~/.dotfiles/scripts/setup/mac-mini.sh sleep on    # normal mode: re-enable sleep
+~/.dotfiles/scripts/setup/mac-mini.sh sleep off   # server mode: no sleep, restart after power loss
+~/.dotfiles/scripts/setup/mac-mini.sh sleep on    # restore normal sleep
 ~/.dotfiles/scripts/setup/mac-mini.sh setup       # one-time Immich setup
 ```
 
-### Commands
+`setup` predates the NAS migration: it asks for the T7 volume name, creates
+Immich folders, and writes `~/services/immich/docker-compose.yml` and `.env`
+from `config/immich/`. Existing files are skipped. On the current architecture,
+use `services/setup-services.sh immich` instead.
 
-| Command | What it does |
-|---------|-------------|
-| `sleep off` | Disables sleep, enables auto-restart after power failure. Run on first boot. |
-| `sleep on` | Restores normal sleep behaviour. |
-| `setup` | Creates Immich folders, writes `docker-compose.yml` and `.env` to `~/services/immich/`. Run once after drives are connected. |
+### rclone-backup.sh
 
-### When to run
-
-- **First boot on Mac mini:** `mac-mini.sh sleep off` then later `mac-mini.sh setup`
-- **Temporarily need sleep:** `mac-mini.sh sleep on` / `mac-mini.sh sleep off` to toggle
-- **Re-running setup:** safe to rerun — existing files are skipped, not overwritten
-
-### What `setup` does
-
-1. Lists `/Volumes/` so you can see what your T7 drive is named in macOS
-2. Asks for the T7 volume name (e.g. `Samsung T7`, `T7 Touch` — whatever macOS calls it)
-3. Saves that name to `~/.config/dotfiles/mac-mini.conf` (legacy — the current `backup-external.sh` takes its target as an argument instead)
-4. Creates `/Volumes/<T7>/immich/`, `~/services/immich/`, `~/logs/`
-5. Writes `~/services/immich/docker-compose.yml` from `config/immich/docker-compose.yml` with your volume name substituted in
-6. Copies `config/immich/.env.example` to `~/services/immich/.env`
-
----
-
-## 📸 backup-external.sh — Backup to an External Drive
-
-Rsync copy from the NAS to whichever external drive is plugged in. Takes the
-target as an argument, so the same script serves T7, T5, or any future drive.
-
-Covers Immich originals, Immich transcoded video, **database dumps**,
-audiobooks and Calibre books. Skips movies/TV (too large, re-downloadable) and
-Immich thumbnails (regenerable, and they live on the internal SSD now).
-
-The database dumps matter as much as the photos: Immich names originals by
-UUID, so without a matching dump a restore yields thousands of anonymous files
-with no albums, faces, dates or favourites.
-
-### Usage
+Nightly backup to Cloudflare R2: service configuration, the Obsidian vault,
+database dumps, the Calibre library and (opt-in) Immich originals. Secrets
+(`.env`), live databases and regenerable data are excluded.
 
 ```bash
-# Preview what would change — always worth doing first
+~/services/rclone/rclone-backup.sh --dry-run
+~/services/rclone/rclone-backup.sh
+```
+
+Cron runs the staged copy in `~/services/rclone/`, which reads
+`~/services/rclone/.env`. Setup, exclusions and costs:
+[services/rclone/README.md](https://github.com/peciulevicius/.dotfiles/blob/main/services/rclone/README.md).
+
+### r2-verify.sh and restore.sh
+
+`r2-verify.sh` downloads one random file from each backup set, compares it byte
+for byte with the original, and appends bucket sizes to
+`~/logs/r2-size-history.tsv`. It fails on a mismatch or on a set that shrank by
+more than 5% (database dumps are exempt, as they rotate).
+
+`restore.sh` restores into `~/services-restore/` and never overwrites live data,
+except for `db`, which asks for confirmation.
+
+```bash
+~/.dotfiles/scripts/backup/restore.sh list                  # service configs in R2
+~/.dotfiles/scripts/backup/restore.sh service immich
+~/.dotfiles/scripts/backup/restore.sh all
+~/.dotfiles/scripts/backup/restore.sh set dumps             # vault | dumps | books | photos
+~/.dotfiles/scripts/backup/restore.sh db ~/services-restore/dumps/immich-<date>.sql immich_postgres postgres
+```
+
+`db` detects MariaDB dumps (Nextcloud) and PostgreSQL `pg_dumpall` output and
+uses the matching client.
+
+### backup-external.sh
+
+Copies Immich originals and transcoded video, database dumps, audiobooks and the
+Calibre library from the NAS to an external drive. Movies and TV
+(re-downloadable) and Immich thumbnails (regenerable) are skipped.
+
+```bash
 ~/.dotfiles/scripts/backup/backup-external.sh /Volumes/T7 --dry-run
-
-# Run it
 ~/.dotfiles/scripts/backup/backup-external.sh /Volumes/T7
-~/.dotfiles/scripts/backup/backup-external.sh /Volumes/Backup   # T5
+~/.dotfiles/scripts/backup/backup-external.sh /Volumes/Backup      # T5
 ```
 
-**Manual only — deliberately not on cron.** The drives are not permanently
-connected (T5 is meant to live offsite), so a nightly job would just fail every
-night. The predecessor `backup-t5.sh` did exactly that from Aug 2026 until it
-was removed.
+- **Manual only.** The drives are not permanently connected, so a scheduled job
+  would fail most nights. Each successful run writes
+  `~/logs/external-backup-<drive>.last`, and the weekly audit fails after 30
+  days without a backup.
+- **Refuses to run if a source share is missing or empty.** An `rsync --delete`
+  from an unmounted share would erase the backup.
+- **Destination paths mirror the NAS layout** (`…/immich/upload/upload`).
+  Changing them makes rsync delete and re-copy the whole backup.
+- Database dumps matter as much as photos: Immich stores originals under UUID
+  names, so without the database a restore loses albums, faces, dates and
+  favourites.
 
-Two safety behaviours worth knowing:
+Log: `~/logs/external-backup-<drive>-<date>.log`
 
-- If a NAS share is missing or empty the script **refuses to run**. Syncing
-  `--delete` from a share that failed to mount would otherwise wipe the backup
-  it is meant to protect.
-- Destination paths mirror the NAS layout (`…/immich/upload/upload`). Flattening
-  them makes rsync delete the existing backup and re-copy ~77GB over USB rather
-  than transferring only new files.
+### homelab-audit.sh
 
-### Check the log
+Weekly checks, each derived from a past failure:
+
+| Check | Detects |
+|---|---|
+| Drift | Repository `services/` files that differ from the staged copies |
+| Containers | Stopped or unhealthy containers (services with `restart: "no"` are ignored) |
+| Backups | No successful R2 backup in the last day; Immich step enabled but skipped; stale database dumps; external drives more than 30 days out of date |
+| Disk | Internal disk at 90% or more |
+| Secrets | gitleaks findings in the last eight days of commits; pre-commit hook not enabled |
+| Cron | Live crontab differs from `scripts/cron/crontab` |
 
 ```bash
-cat ~/logs/external-backup-*-$(date +%Y%m%d).log
+~/.dotfiles/scripts/utils/homelab-audit.sh
 ```
+
+The `homelab-audit` project skill adds the judgement-based checks (pinned image
+versions, credential copies, documentation accuracy).
+
+### run-with-notify.sh
+
+```bash
+run-with-notify.sh <label> <command> [args...]
+```
+
+Runs a job and posts to Discord only on state changes: when it starts failing
+(with its output), a reminder every `REMIND_HOURS` (default 24) while it keeps
+failing, and when it recovers. The webhook is read from
+`~/.config/homelab/notify.env`; without it the wrapper does nothing extra.
+State is kept in `~/.local/state/homelab-jobs/`. The Discord helper is sourced
+from `scripts/lib/notify.sh`.
+
+### Watchdogs and mounts
+
+- `mount-nas.sh` mounts the NAS shares by mDNS name with credentials from the
+  login keychain.
+- `nas-watchdog.sh` remounts missing shares **before** restarting exited
+  NAS-backed containers; a container started without its mount writes into an
+  empty directory on the SSD.
+- `docker-watchdog.sh` relaunches Docker Desktop, or force-restarts it when the
+  engine hangs.
+
+Details: [NAS.md](NAS.md).
+
+### smb-watcher-rescan.sh
+
+Restarts Jellyfin and Audiobookshelf every 30 minutes because their file
+watchers miss new files on SMB. This is a stopgap until import notifications
+are configured; see
+[HOME_SERVER_REFERENCE.md](HOME_SERVER_REFERENCE.md#file-watchers-miss-new-files-on-smb).
+
+### migrate-calibre-to-ssd.sh
+
+Moves the Calibre library from `/Volumes/books` to
+`~/services/calibre/library`. Dry run by default; `--apply` stops Calibre,
+Calibre-Web and LazyLibrarian, copies and verifies (checksums and
+`PRAGMA integrity_check`), updates `BOOKS_DIR` in each `.env` (keeping the old
+file as `.env.pre-ssd-migration`), recreates the containers and verifies their
+mounts. Rollback steps are in the script header.
 
 ---
 
-## 🔗 Script Combinations
+## Suggested routines
 
-### Weekly Maintenance Routine
+**Weekly (workstation)**
 
 ```bash
-# 1. Backup current state
 ~/.dotfiles/scripts/backup/backup-dotfiles.sh
-
-# 2. Update everything
 ~/.dotfiles/scripts/update.sh
-
-# 3. Clean up disk space
-~/.dotfiles/scripts/cleanup.sh
-
-# 4. Verify health
 ~/.dotfiles/scripts/dev-check.sh
 ```
 
-### New Machine Setup
+**New machine**
 
 ```bash
-# 1. Clone dotfiles
-git clone https://github.com/yourusername/.dotfiles.git ~/.dotfiles
-
-# 2. Run installer
+git clone https://github.com/peciulevicius/.dotfiles.git ~/.dotfiles
 ~/.dotfiles/install.sh
-
-# 3. Set up GPG signing
 ~/.dotfiles/scripts/setup/setup-gpg.sh
-
-# 4. Verify everything
-~/.dotfiles/scripts/dev-check.sh
-
-# 5. Create first backup
-~/.dotfiles/scripts/backup/backup-dotfiles.sh
-```
-
-### Before Major Changes
-
-```bash
-# 1. Create backup
-~/.dotfiles/scripts/backup/backup-dotfiles.sh
-
-# 2. Check current state
-~/.dotfiles/scripts/dev-check.sh
-
-# ... make your changes ...
-
-# 3. Verify nothing broke
 ~/.dotfiles/scripts/dev-check.sh
 ```
 
----
-
-## 💡 Pro Tips
-
-### Create Aliases
-
-Add these to your `.zshrc`:
+**Shell aliases**
 
 ```bash
 alias update='~/.dotfiles/scripts/update.sh'
@@ -914,37 +419,8 @@ alias cleanup='~/.dotfiles/scripts/cleanup.sh'
 alias check='~/.dotfiles/scripts/dev-check.sh'
 ```
 
-### Schedule Automatic Tasks
+## See also
 
-```bash
-# Add to crontab (crontab -e):
-
-# Weekly updates (Sundays at 2 AM)
-0 2 * * 0 ~/.dotfiles/scripts/update.sh
-
-# Weekly backups (Sundays at 3 AM)
-0 3 * * 0 ~/.dotfiles/scripts/backup/backup-dotfiles.sh
-
-# Monthly cleanup (1st of month at 4 AM)
-0 4 1 * * ~/.dotfiles/scripts/cleanup.sh
-```
-
-### Use in CI/CD
-
-```bash
-# Verify developer environment in CI
-- name: Check Development Environment
-  run: ~/.dotfiles/scripts/dev-check.sh
-```
-
----
-
-## 📚 See Also
-
-- [HOW_TO_INSTALL.md](./HOW_TO_INSTALL.md) - Installation instructions
-- [CONFIG_GUIDE.md](./CONFIG_GUIDE.md) - Configuration details
-- [MODERN_CLI_TOOLS.md](./MODERN_CLI_TOOLS.md) - Modern CLI tools guide
-
----
-
-**These scripts will save you hours of maintenance time!** Set up aliases and use them regularly to keep your development environment healthy and up-to-date.
+- [HOW_TO_INSTALL.md](HOW_TO_INSTALL.md)
+- [CONFIG_GUIDE.md](CONFIG_GUIDE.md)
+- [MODERN_CLI_TOOLS.md](MODERN_CLI_TOOLS.md)
