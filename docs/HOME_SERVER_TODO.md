@@ -831,10 +831,34 @@ No longer load-bearing — everything addresses the NAS as `DH4300PLUS-DP.local`
 
 **Goal:** Access `*.peciulevicius.com` on local WiFi without going through Cloudflare.
 
-- [ ] In Pi-hole admin (http://localhost:8053/admin) → Local DNS → DNS Records
-- [ ] Add for each subdomain → Mac mini local IP
-- [ ] Set router DNS to Mac mini IP (primary) + `1.1.1.1` (fallback)
-- [ ] Test: `nslookup home.peciulevicius.com` should return Mac mini local IP
+⚠️ **Checked 2026-09-24 — do NOT add the local DNS records on their own; it
+breaks every service on the LAN.** Nothing on the Mac mini listens on 443:
+TLS and the subdomain → port mapping (`photos` → 2283, `books` → 8083, …) both
+happen *inside* the Cloudflare tunnel. Point `photos.peciulevicius.com` at
+`192.168.1.x` and the browser opens `https://192.168.1.x:443` — connection
+refused, on every device using Pi-hole. The records only work together with a
+local reverse proxy that holds real certificates:
+
+- **Caddy** with the `caddy-dns/cloudflare` module — DNS-01 challenge, so it
+  gets valid `*.peciulevicius.com` certs without exposing a port, and one
+  `Caddyfile` line per subdomain → `localhost:<port>`. The tunnel keeps
+  serving everything from outside; Caddy serves the same names at home.
+- Needs a Cloudflare API token scoped to *Zone → DNS → Edit* for this zone
+  only (not the R2 token), kept in `~/services/caddy/.env`.
+
+What it buys: LAN traffic stays on the LAN (faster Immich/Jellyfin at home,
+works when the internet is down). What it costs: another service, and two
+paths to every app that can drift apart. **Today the tunnel already works from
+inside the house**, so this is an optimisation, not a fix. Decide before doing
+any of it.
+
+- [ ] Decide: Caddy for local HTTPS, or leave everything on the tunnel
+- [ ] Independent of that, and worth doing on its own: set router DNS to the
+      Mac mini IP (primary) + `1.1.1.1` (fallback), so every device gets
+      ad-blocking, not just the manually configured ones (see below)
+- [ ] Only with Caddy running: Pi-hole → Local DNS → DNS Records, each
+      subdomain → Mac mini LAN IP; test `curl -I https://home.peciulevicius.com`
+      from a LAN device returns 200 with a valid cert
 
 **Reality check on what Pi-hole can do:** it blocks by domain, so it stops
 trackers, telemetry and most web/banner ads — but **not YouTube or Spotify ads**,
