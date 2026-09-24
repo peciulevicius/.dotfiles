@@ -13,6 +13,9 @@
 #   backups   — backups "succeeding" while skipping data, stale dumps
 #   disk      — SSD reached 92% before anyone looked
 #   secrets   — a token committed from a machine without the pre-commit hook
+#   external  — T5 drifted seven weeks stale before anyone noticed (2026-09-05)
+#   cron      — the repo crontab fell behind the live one; reinstalling it
+#               would have silently undone the 2026-09-23 backup fix
 #
 # The judgment calls (pinned image versions, stale credential copies after a
 # rotation, docs contradicting reality) live in the homelab-audit skill.
@@ -94,6 +97,27 @@ else
   ok "DB dumps fresh ($(basename "$newest_dump"))"
 fi
 
+# External drives aren't plugged in permanently, so the nightly cron for them
+# was removed (2026-09-05) and nothing noticed T5 going seven weeks stale.
+# backup-external.sh stamps ~/logs/external-backup-<drive>.last on success;
+# this is the reminder that replaced the cron.
+EXTERNAL_MAX_DAYS=30
+stamps=("$HOME"/logs/external-backup-*.last)
+if [[ ! -e "${stamps[0]}" ]]; then
+  bad "no external-drive backup recorded — plug in T7 and run scripts/backup/backup-external.sh /Volumes/T7"
+else
+  now=$(date +%s)
+  for stamp in "${stamps[@]}"; do
+    drive="${stamp##*/external-backup-}"; drive="${drive%.last}"
+    age=$(( (now - $(cat "$stamp" 2>/dev/null || echo 0)) / 86400 ))
+    if (( age > EXTERNAL_MAX_DAYS )); then
+      bad "external backup to $drive is $age days old (limit $EXTERNAL_MAX_DAYS)"
+    else
+      ok "external backup to $drive is $age days old"
+    fi
+  done
+fi
+
 # ── 4. Disk ──────────────────────────────────────────────────────────────────
 head_ "Disk"
 target="/System/Volumes/Data"; [[ -d "$target" ]] || target="/"
@@ -117,6 +141,24 @@ fi
 [[ "$(git -C "$DOTFILES" config core.hooksPath)" == ".githooks" ]] \
   && ok "pre-commit secret hook enabled" \
   || bad "pre-commit hook NOT enabled — git config core.hooksPath .githooks"
+
+# ── 6. Live crontab vs the repo copy ─────────────────────────────────────────
+# scripts/cron/crontab is meant to be authoritative. If it falls behind, the
+# next `crontab < scripts/cron/crontab` silently reverts whatever was fixed
+# live — which is exactly what nearly happened to the 2026-09-23 rclone path.
+head_ "Cron"
+if command -v crontab >/dev/null 2>&1; then
+  jobs_only() { grep -v '^[[:space:]]*#' | grep -v '^[[:space:]]*$' | sort; }
+  cron_diff=$(diff <(crontab -l 2>/dev/null | jobs_only) <(jobs_only < "$DOTFILES/scripts/cron/crontab"))
+  if [[ -z "$cron_diff" ]]; then
+    ok "live crontab matches scripts/cron/crontab"
+  else
+    bad "live crontab differs from scripts/cron/crontab (< live, > repo):"
+    echo "$cron_diff" | grep '^[<>]' | sed 's/^/      /'
+  fi
+else
+  bad "crontab not available — cannot check the schedule"
+fi
 
 echo ""
 if (( PROBLEMS > 0 )); then

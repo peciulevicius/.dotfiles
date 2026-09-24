@@ -22,9 +22,25 @@ stdin (`crontab < file` or `cat file | crontab -`) and always verify with
 |---|---|---|
 | Sunday 04:00 | Database dumps → `~/backups/` | `~/logs/db-backup.log` |
 | Daily 05:00 | rclone → Cloudflare R2 (runs `~/services/rclone/rclone-backup.sh`) | `~/logs/rclone-backup.log` |
+| Monthly, 1st 06:00 | R2 restore spot-check + size history (`scripts/backup/r2-verify.sh`) | `~/logs/r2-verify.log` |
 | Hourly | Kindle Scribe → Obsidian vault | `~/logs/kindle-sync.log` |
 | Every 30 min | Restart Jellyfin + Audiobookshelf so they see new NAS files (`smb-watcher-rescan.sh`) | `~/logs/smb-rescan.log` |
 | Sunday 09:00 | Homelab audit — drift, containers, backups, disk, secrets (`homelab-audit.sh`) | `~/logs/homelab-audit.log` |
+
+⚠️ **Check before reinstalling.** Until 2026-09-24 this file had fallen
+behind the live schedule — it still pointed the backup at the repo copy and was
+missing the two bottom jobs. Reinstalling it would have silently reverted the
+2026-09-23 fix. `homelab-audit.sh` now diffs `crontab -l` against this file
+weekly; to check by hand:
+
+```bash
+diff <(crontab -l | grep -v '^#' | grep . | sort) \
+     <(grep -v '^#' ~/.dotfiles/scripts/cron/crontab | grep . | sort)
+```
+
+External drives have **no** cron job — they aren't permanently plugged in.
+Instead `backup-external.sh` stamps `~/logs/external-backup-<drive>.last` on
+success and the weekly audit fails once a drive's stamp is over 30 days old.
 
 ⚠️ **The backup job runs the staged copy in `~/services/rclone/`, and reads
 `~/services/rclone/.env`** — the same place every service keeps its `.env`.

@@ -185,10 +185,11 @@ and weekly audit now guard against a repeat.
       token (still in git history) can mark the nightly backup healthy. Then
       add its gitleaks fingerprint to `.gitleaksignore` so full-history scans
       stop flagging a dead token.
-- [ ] **Enable the hook on the MacBook's clone too** — `core.hooksPath` is
-      per-clone: `git -C ~/.dotfiles config core.hooksPath .githooks` and
-      `brew install gitleaks`. (The statusline commit on 2026-09-23 came from
-      a clone without it.)
+- [ ] **Enable the hook on the MacBook's clone too** — since 2026-09-24
+      `scripts/sync.sh` sets `core.hooksPath` on every run, so just run
+      `~/.dotfiles/scripts/sync.sh` there once, then `brew install gitleaks`
+      (sync warns if it is missing). (The statusline commit on 2026-09-23
+      came from a clone without it.)
 - [x] ~~Pre-commit secret hook~~ — `.githooks/pre-commit` + `.gitleaks.toml`
       (adds a Kuma push-token rule the defaults lacked), tested blocking a
       fake token. `install.sh` enables it; installers install gitleaks.
@@ -314,7 +315,9 @@ press to bring it back. Two separate gaps found.
       (773 → 353 lines, every path re-based on the NAS; old version in git history)
 - [ ] Clear the leftover data directories from tonight's removals:
       `rm -rf ~/services/mealie ~/services/grafana` (both confirmed
-      empty/unused before removal, nothing to lose)
+      empty/unused before removal, nothing to lose). Until then
+      `rclone-backup.sh` excludes both (2026-09-24), so they stop being
+      uploaded to R2 once the script is re-staged
 - [x] ~~Remove Mealie~~ — done 2026-09-21/22. **0 real recipes** despite the
       folder existing — confirmed empty, not just "unused." Container, tunnel
       route (`recipes.peciulevicius.com`), homepage entry and network all
@@ -351,7 +354,8 @@ moves, so Watchtower being enabled is not evidence anything is current.
 
 - [ ] Bump **Pi-hole** first, then work through the other pinned images
 - [ ] Move the **Calibre library off SMB** onto the internal SSD — SQLite over
-      SMB is the root cause of every Calibre-Web failure so far
+      SMB is the root cause of every Calibre-Web failure so far. Scripted —
+      see "Move the Calibre library off SMB onto the SSD" below
 - [ ] Delete ~2.3 GB of locked `.smbdelete` duplicates (needs NAS-side access)
 
 #### Quick wins left over from 2026-09-20
@@ -458,7 +462,7 @@ created, anonymous requests 401 on every path except `/_up`.
 
 Two items sit outside the ordered path and are easy to forget precisely because
 nothing is currently broken. Both are written up in full under
-[Do these first](#do-these-first--you-lose-data-or-access-without-them):
+"Do these first — you lose data or access without them" below:
 
 - 🔴 **Tailscale key expiry — 2027-03-04.** Odysseus, Vaultwarden and all
   phone access are Tailscale-only. When the key expires, remote access to
@@ -522,8 +526,8 @@ de-Google effort: its TOTP seeds sync to the account being left.
 
 Key expires **2027-03-04**. When it does, the Mac mini silently drops off the
 tailnet: no `ssh macmini` from away, and every Tailscale-only service
-(Sonarr, Radarr, Prowlarr, Transmission, Syncthing, Jellyseerr, Bazarr, Grafana,
-Prometheus, LazyLibrarian, Karakeep) becomes unreachable. This already happened
+(Sonarr, Radarr, Prowlarr, Transmission, Syncthing, Jellyseerr, Bazarr,
+LazyLibrarian, Odysseus) becomes unreachable. This already happened
 once and was only noticed on 2026-09-05, during an outage, from home.
 
 - [ ] Tailscale admin console → Machines → `macmini` → ⋯ → **Disable key expiry**
@@ -571,16 +575,19 @@ time only spike once, on the first run.
       while it's still executing) and separately caught two live-SQLite files
       that fail every run (`portainer.db`, Celery's schedule) — both fixed,
       both now excluded. Second attempt ran clean end to end.
-- [ ] Spot-check restore integrity once — pick one real photo and pull it back:
-      ```bash
-      rclone copy r2:peciulevicius-backups/immich-photos/<some-file> /tmp/restore-test/
-      ```
+- [ ] Spot-check restore integrity — **automated 2026-09-24**:
+      `scripts/backup/r2-verify.sh` pulls one random photo (and one file from
+      every other set) back and byte-compares it. Still to do: reinstall the
+      crontab (`crontab < ~/.dotfiles/scripts/cron/crontab`, then
+      `crontab -l`), run the script once by hand and tick this off when it
+      passes
 - [x] ~~Let the nightly cron pick it up~~ — ⚠️ it didn't at first: cron ran
       the repo copy, which read a different `.env` without the flag. Fixed
       2026-09-23 (cron now runs `~/services/rclone/`); first confirmed nightly
       run is the next 05:00. See changelog.
-- [ ] Re-check yearly that it's still running: `rclone size` should track the
-      library's growth, not stay flat
+- [x] ~~Re-check yearly that it's still running~~ — `r2-verify.sh` logs
+      `rclone size` monthly to `~/logs/r2-size-history.tsv` and fails on a
+      >5% shrink; a flat line shows as "unchanged since the last check"
 
 Full detail: `services/rclone/README.md` "Immich photo/video backup", and the
 updated backup facts table in
@@ -674,13 +681,11 @@ SSD). It has not corrupted yet; the 2026-09-19 "malformed" error turned out to
 be a stale bind mount, not the file. But SQLite's locking is not reliable over
 SMB and Calibre *writes* this database.
 
-- [ ] Decide the layout: book files can stay on the NAS, but the library
-      metadata should live on the internal SSD
-- [ ] Calibre and Calibre-Web both open the same library, so they have to agree
-      on the new path — check whether Calibre-Web's `--dbpath`-style split works
-      before moving anything
-- [ ] Back up `metadata.db` first; a copy is already at
-      `~/backups/calibre-repair/`
+- [x] ~~Decide the layout~~ — decided 2026-09-24: **move the whole library**,
+      not a metadata-only split. It is 1.1GB, a split would need Calibre,
+      Calibre-Web *and* LazyLibrarian to agree on two paths, and the book
+      folders are exactly what Calibre-Web renames (the `.smbdelete` source).
+      Steps and script in the next section.
 
 ### ⚠️ 21 pinned images that Watchtower can never update
 
@@ -699,9 +704,10 @@ Oldest and most exposed first:
       `pihole.peciulevicius.com`, controlling DNS for the whole network.
       Highest priority.
 - [ ] **it-tools `2023.11.2`** — public, and the oldest pin here
-- [ ] **Grafana `11.6.0`**, **Jellyfin `10.10.6`**, **Uptime Kuma `1.23.16`**
+- [ ] **Jellyfin `10.10.6`**, **Uptime Kuma `1.23.16`** (Grafana was removed
+      2026-09-22)
 - [ ] The rest: audiobookshelf, bazarr, calibre-web, couchdb, freshrss,
-      jellyseerr, linkwarden, mealie, mariadb, redis, sonarr/radarr,
+      jellyseerr, linkwarden, mariadb, redis, sonarr/radarr,
       stirling-pdf, syncthing, transmission
 - [x] ~~vaultwarden~~ — 1.35.4 → **1.37.3** on 2026-09-21
 
@@ -756,16 +762,33 @@ share**, which this setup's own rule forbids. Every symptom traced back to it �
 `.smbdelete` duplicate files, and `database disk image is malformed` from a
 stale mount.
 
-**It is affordable now:** the whole library is **1.1GB** and the SSD has 29GB
+**It is affordable now:** the whole library is **1.1GB** and the SSD has 24GB
 free.
 
-- [ ] Stop `calibre`, `calibre-web`, `lazylibrarian`
-- [ ] Copy `/Volumes/books` → `~/services/calibre/library` (internal SSD)
-- [ ] Repoint the `BOOKS_DIR` bind mount in all three compose files
-- [ ] Update `rclone-backup.sh`, which currently syncs `/Volumes/books` to R2
-- [ ] Decide where the large read-along EPUBs live — they are the only big
-      files, and they could stay on the NAS as a separate Calibre library
-- [ ] Verify OPDS still serves to KOReader afterwards
+📜 **Scripted 2026-09-24: `scripts/utils/migrate-calibre-to-ssd.sh`.** Dry
+run by default; `--apply` stops all three containers, rsyncs, verifies by
+checksum + `PRAGMA integrity_check`, sets `BOOKS_DIR` in each `.env` (old one
+kept as `.env.pre-ssd-migration`), recreates the containers and checks their
+`/books` mount. Any failure before the switch restarts them on the old path.
+Rollback is in the script header. Tested against a stand-in library and a
+stubbed `docker`, not yet on the Mac mini.
+
+- [ ] Re-stage the changed backup script first — `cp
+      ~/.dotfiles/services/rclone/rclone-backup.sh ~/services/rclone/` (it now
+      reads the library path from `~/services/calibre/.env`)
+- [ ] `~/.dotfiles/scripts/utils/migrate-calibre-to-ssd.sh` (dry run), then
+      `--apply`
+- [x] ~~Repoint the `BOOKS_DIR` bind mount~~ — compose files already read
+      `${BOOKS_DIR}`; the script edits the three `.env` files
+- [x] ~~Update `rclone-backup.sh`~~ — it, `backup-external.sh` and
+      `r2-verify.sh` all read `BOOKS_DIR` from `~/services/calibre/.env` now;
+      backup 1 excludes `calibre/library/**` so it isn't uploaded twice
+- [x] ~~Decide where the large read-along EPUBs live~~ — with them, on the
+      SSD. One 733MB book fits; revisit only if read-alongs become a shelf
+- [ ] Verify OPDS still serves to KOReader afterwards, and that Calibre-Web
+      opens a shelf (the old `disk I/O error` path)
+- [ ] After a week: delete `/Volumes/books` from the NAS via UGOS, then update
+      the Calibre rows in `HOME_SERVER_REFERENCE.md` and `NAS.md`
 
 ### Regenerate missing Immich thumbnails
 
@@ -782,8 +805,11 @@ The nightly cron was removed on 2026-09-05 (the drives are not permanently
 connected, so it failed every night). T5 had silently drifted seven weeks out of
 date before anyone noticed.
 
-- [ ] Set a recurring reminder, or check the drive's newest file against the NAS
-      before trusting it
+- [x] ~~Set a recurring reminder~~ — done 2026-09-24: `backup-external.sh`
+      stamps `~/logs/external-backup-<drive>.last`, and the weekly
+      `homelab-audit.sh` fails (→ Discord) once a stamp passes 30 days. The
+      first audit after this lands will flag "no external-drive backup
+      recorded" until a run to T7 writes the first stamp — that is intended
 - [ ] Decide what T5 is *for* — once it lives offsite it can never be the
       routine local target
 
@@ -807,10 +833,34 @@ No longer load-bearing — everything addresses the NAS as `DH4300PLUS-DP.local`
 
 **Goal:** Access `*.peciulevicius.com` on local WiFi without going through Cloudflare.
 
-- [ ] In Pi-hole admin (http://localhost:8053/admin) → Local DNS → DNS Records
-- [ ] Add for each subdomain → Mac mini local IP
-- [ ] Set router DNS to Mac mini IP (primary) + `1.1.1.1` (fallback)
-- [ ] Test: `nslookup home.peciulevicius.com` should return Mac mini local IP
+⚠️ **Checked 2026-09-24 — do NOT add the local DNS records on their own; it
+breaks every service on the LAN.** Nothing on the Mac mini listens on 443:
+TLS and the subdomain → port mapping (`photos` → 2283, `books` → 8083, …) both
+happen *inside* the Cloudflare tunnel. Point `photos.peciulevicius.com` at
+`192.168.1.x` and the browser opens `https://192.168.1.x:443` — connection
+refused, on every device using Pi-hole. The records only work together with a
+local reverse proxy that holds real certificates:
+
+- **Caddy** with the `caddy-dns/cloudflare` module — DNS-01 challenge, so it
+  gets valid `*.peciulevicius.com` certs without exposing a port, and one
+  `Caddyfile` line per subdomain → `localhost:<port>`. The tunnel keeps
+  serving everything from outside; Caddy serves the same names at home.
+- Needs a Cloudflare API token scoped to *Zone → DNS → Edit* for this zone
+  only (not the R2 token), kept in `~/services/caddy/.env`.
+
+What it buys: LAN traffic stays on the LAN (faster Immich/Jellyfin at home,
+works when the internet is down). What it costs: another service, and two
+paths to every app that can drift apart. **Today the tunnel already works from
+inside the house**, so this is an optimisation, not a fix. Decide before doing
+any of it.
+
+- [ ] Decide: Caddy for local HTTPS, or leave everything on the tunnel
+- [ ] Independent of that, and worth doing on its own: set router DNS to the
+      Mac mini IP (primary) + `1.1.1.1` (fallback), so every device gets
+      ad-blocking, not just the manually configured ones (see below)
+- [ ] Only with Caddy running: Pi-hole → Local DNS → DNS Records, each
+      subdomain → Mac mini LAN IP; test `curl -I https://home.peciulevicius.com`
+      from a LAN device returns 200 with a valid cert
 
 **Reality check on what Pi-hole can do:** it blocks by domain, so it stops
 trackers, telemetry and most web/banner ads — but **not YouTube or Spotify ads**,
@@ -893,7 +943,9 @@ re-researched. Revisit only if it gets its own machine.
 Kindle sync all exist and go unused. The problem is capture friction, not the
 tool — swapping Obsidian for something else reproduces the same failure later.
 
-- [ ] **Stand up CouchDB + Self-hosted LiveSync** — self-hosted Obsidian sync,
+- [ ] **Stand up CouchDB + Self-hosted LiveSync** — ✅ CouchDB side done
+      2026-09-19; what remains is the plugin on each device (see "Obsidian
+      LiveSync" above). Self-hosted Obsidian sync,
       works on iOS/Android/desktop, real-time, E2E, no subscription, no Apple
       dependency. `services/couchdb/`, data on the **internal SSD** (database —
       never SMB), exposed at `couchdb.peciulevicius.com` via the existing tunnel

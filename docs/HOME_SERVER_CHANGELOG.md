@@ -8,6 +8,61 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-24 — Repo crontab had fallen behind; audit now checks it
+
+`scripts/cron/crontab` is documented as the authoritative schedule, but it
+still ran the backup from the **repo** copy (`~/.dotfiles/services/rclone/…`)
+— the exact path the 2026-09-23 fix moved away from — and was missing the
+`smb-watcher-rescan.sh` and `homelab-audit.sh` jobs. The next
+`crontab < scripts/cron/crontab` would have silently re-broken the Immich
+photo backup and dropped two jobs. File brought in line with
+`scripts/cron/README.md`. ⚠️ The two added lines were reconstructed from the
+docs, not copied from the live crontab — the first audit run shows any
+difference.
+
+Three gaps closed in the same pass, all "nothing notices" failures:
+
+- **`homelab-audit.sh` diffs `crontab -l` against the repo file**, so the two
+  can't drift apart unnoticed again.
+- **External-drive staleness.** `backup-external.sh` writes
+  `~/logs/external-backup-<drive>.last` on success and reports the previous
+  run's age at start; the audit fails past 30 days. Replaces the nightly cron
+  removed 2026-09-05 (drives aren't always connected), after which T5 went
+  seven weeks stale unnoticed.
+- **`scripts/sync.sh` enables the gitleaks pre-commit hook** on every run and
+  warns if gitleaks is missing. `core.hooksPath` is per-clone and `install.sh`
+  runs once per machine, so older clones (the MacBook) never got it.
+
+### `restore.sh` can now restore everything that is backed up
+
+It could only restore the service-config set. The vault, DB dumps, Calibre
+library and Immich originals, which are the irreplaceable parts, had no restore
+path, so a disaster would have meant writing rclone commands from memory.
+Added `restore.sh set <vault|dumps|books|photos>`. `db` now detects MariaDB
+dumps (Nextcloud's) instead of piping them into `psql`, and connects to the
+`postgres` maintenance database for `pg_dumpall` output. `all` uses
+`rclone copy` rather than `sync`, so it can't delete sets already restored
+next to it. Defaults now say R2, not B2.
+
+### Calibre-off-SMB migration scripted (not yet run)
+
+`scripts/utils/migrate-calibre-to-ssd.sh` moves the whole library (1.1GB) to
+`~/services/calibre/library`: SQLite over SMB is behind every Calibre-Web
+failure so far. Whole library rather than a metadata-only split, because a
+split needs three services to agree on two paths and the book folders are
+what Calibre-Web renames. The backup scripts no longer hardcode
+`/Volumes/books`: they read `BOOKS_DIR` from `~/services/calibre/.env`, so the
+backups move with the library.
+
+### Monthly R2 restore check
+
+New `scripts/backup/r2-verify.sh`, cron'd for the 1st of each month: one
+random file per backup set is downloaded and byte-compared with the original,
+and bucket sizes go to `~/logs/r2-size-history.tsv`, failing on a >5% shrink.
+"All backups complete" only proves an upload ran — this proves a restore
+works. Tested here against a local stand-in for R2 (a corrupted file and a
+shrunk set both fail it). Not yet run against the real bucket.
+
 ## 2026-09-24 — Odysseus memories and skills repaired
 
 - **Memory re-import.** The 2026-09-23 import ran on qwen2.5:7b with a 4k
@@ -823,18 +878,11 @@ only outstanding work again.
 - [x] `nas.peciulevicius.com` → UGOS Pro web UI, via existing cloudflared tunnel on Mac mini (ingress: `http://192.168.1.73:9999`). No Docker needed on NAS.
 - [x] UGREENlink remote access active (backup access: https://ug.link/dh4300plus-dp)
 
-**Still to do (pre-drives):**
-- [ ] **NEXT SESSION:** Reserve 192.168.1.73 for NAS in router DHCP settings — if IP changes, nas.peciulevicius.com breaks. Steps:
-  1. Open http://192.168.1.1 in browser, log in (admin password often on router sticker)
-  2. Find the DHCP section — usually under *LAN*, *Network*, or *Advanced → DHCP Server*. The feature is called **"Address Reservation"**, **"Static Lease"**, **"DHCP Binding"**, or **"Reserved IP"** depending on brand
-  3. Add entry: MAC `6c:1f:f7:a9:39:e9` → IP `192.168.1.73` (device may appear in a connected-clients list as DH4300PLUS-DP — can often click it and hit "reserve")
-  4. Save/apply. No NAS reboot needed — reservation kicks in at next DHCP renewal
-  5. Verify: NAS Control Panel → Network still shows 192.168.1.73
-- [ ] Enable SSH (Control Panel → Terminal; set "Shut down automatically" to never)
-- [ ] Enable "Auto power-on when power is supplied" + WOL (Hardware & Power → Power)
-- [ ] Set up 2FA on admin account (Security → Account security)
-- [ ] Enable DoS protection (Security → Security)
-- [ ] Change custom domain name from "localhost" to "nas" (Device Connection → LAN)
+**Still to do (pre-drives):** moved to `HOME_SERVER_TODO.md` → "NAS — remaining
+follow-ups" (the NAS UI settings) and "Router DHCP reservation for the NAS"
+(MAC `6c:1f:f7:a9:39:e9`). Tracked there, not here — this file is finished
+work only. The reservation is no longer load-bearing: everything addresses the
+NAS by mDNS (`DH4300PLUS-DP.local`) since 2026-09-05.
 
 **Migration done (2026-08-04)** ✅
 - [x] RAID 5 pool created (3× 6TB IronWolf Pro = ~11TiB usable), Btrfs

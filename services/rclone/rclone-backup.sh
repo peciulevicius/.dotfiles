@@ -83,6 +83,9 @@ SYNC_CMD+=(--exclude "paperless-ngx/data/data/celerybeat-schedule.db")
 # and it is backed up separately below. Syncing live .couch files would upload
 # an inconsistent snapshot for data that can simply be re-seeded from the vault.
 SYNC_CMD+=(--exclude "couchdb/data/**")
+# Calibre library once it lives on the SSD — Backup 4 already ships it to its
+# own prefix; uploading it here too would double it.
+SYNC_CMD+=(--exclude "calibre/library/**")
 # Storyteller holds bulky audio uploads and regenerable working files; the
 # aligned EPUBs it produces belong in Calibre-Web, which is backed up.
 SYNC_CMD+=(--exclude "storyteller/data/**")
@@ -107,6 +110,9 @@ SYNC_CMD+=(--exclude "uptime-kuma/data/**")
 # Stopped/removed services
 SYNC_CMD+=(--exclude "karakeep/**")
 SYNC_CMD+=(--exclude "actual-budget/**")
+# Removed 2026-09-21/22, data dirs still on disk until deleted by hand
+SYNC_CMD+=(--exclude "mealie/**")
+SYNC_CMD+=(--exclude "grafana/**")
 SYNC_CMD+=($RCLONE_FLAGS)
 [[ "$DRY_RUN" == "true" ]] && SYNC_CMD+=(--dry-run)
 
@@ -167,8 +173,12 @@ else
   ((ERRORS++))
 fi
 
-# Backup 4: Calibre books (EPUBs on NAS — small enough for cloud)
-CALIBRE_DIR="/Volumes/books"
+# Backup 4: Calibre books (small enough for cloud)
+# The library path comes from calibre's own .env (BOOKS_DIR), so moving the
+# library off the NAS (scripts/utils/migrate-calibre-to-ssd.sh) moves the
+# backup with it — one source of truth instead of a hardcoded /Volumes/books.
+CALIBRE_DIR="${CALIBRE_DIR:-$(sed -n 's/^BOOKS_DIR=//p' "$DOCKER_DIR/calibre/.env" 2>/dev/null)}"
+CALIBRE_DIR="${CALIBRE_DIR:-/Volumes/books}"
 CALIBRE_DEST="${RCLONE_REMOTE}:peciulevicius-backups/calibre-books"
 
 if [[ -d "$CALIBRE_DIR" ]]; then
@@ -189,7 +199,7 @@ if [[ -d "$CALIBRE_DIR" ]]; then
     ((ERRORS++))
   fi
 else
-  log_err "Calibre books not mounted at $CALIBRE_DIR — NOT backed up (NAS share missing)"
+  log_err "Calibre library not found at $CALIBRE_DIR — NOT backed up (NAS share missing?)"
   ((ERRORS++))
 fi
 

@@ -66,7 +66,7 @@ Each service = one folder in `~/services/<name>/` with `docker-compose.yml`
 | immich | `UPLOAD_LOCATION` | `/Volumes/immich/upload` |
 | immich | `DB_DATA_LOCATION` | `./data/postgres` (internal SSD!) |
 | audiobookshelf, lazylibrarian | `AUDIOBOOKS_DIR` | `/Volumes/audiobooks` |
-| calibre, calibre-web, lazylibrarian | `BOOKS_DIR` | `/Volumes/books` |
+| calibre, calibre-web, lazylibrarian | `BOOKS_DIR` | `/Volumes/books` — moving to `~/services/calibre/library` (internal SSD) via `scripts/utils/migrate-calibre-to-ssd.sh` |
 | lazylibrarian | `DOWNLOADS_DIR` | `/Volumes/media/downloads` |
 
 Find every storage reference: `grep -rn "/Volumes" ~/services/*/.env`

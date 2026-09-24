@@ -191,6 +191,27 @@ if [ -f "$HOME/.ssh/config" ]; then
 fi
 
 # ═══════════════════════════════════════════════════════
+# Secret-scanning pre-commit hook
+# ═══════════════════════════════════════════════════════
+# core.hooksPath is per-clone, and install.sh only runs once per machine — so a
+# clone set up before the hook existed never gets it. On 2026-09-23 a commit
+# came from exactly such a clone (the MacBook). sync.sh runs on every machine
+# regularly, so it enforces the hook too.
+
+print_header "Repo Safety"
+
+if [ "$(git -C "$DOTFILES_DIR" config core.hooksPath)" = ".githooks" ]; then
+    print_success "Pre-commit secret hook enabled"
+else
+    git -C "$DOTFILES_DIR" config core.hooksPath .githooks
+    print_success "Pre-commit secret hook enabled (was off on this clone)"
+fi
+
+if ! command -v gitleaks >/dev/null 2>&1; then
+    print_warning "gitleaks not installed — the hook will SKIP its scan. Install: brew install gitleaks"
+fi
+
+# ═══════════════════════════════════════════════════════
 # Check for new packages
 # ═══════════════════════════════════════════════════════
 
@@ -213,6 +234,7 @@ echo ""
 echo "What was updated:"
 echo "  ✓ Configuration files (symlinks updated)"
 echo "  ✓ Latest changes from repository"
+echo "  ✓ Pre-commit secret hook"
 echo ""
 echo "Next steps:"
 echo "  1. Reload your shell: source ~/.zshrc"
