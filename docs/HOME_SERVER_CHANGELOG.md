@@ -128,7 +128,7 @@ target is still active; whether the tunnel setup script reuses a tunnel).
 
 ## 2026-09-23 (later still) — Nightly backup had silently dropped the Immich photos
 
-⚠️ **Corrects the 2026-09-21 entry that said "let the nightly cron pick it up,
+**Note:** **Corrects the 2026-09-21 entry that said "let the nightly cron pick it up,
 no further change needed" — that was wrong.** Cron ran
 `~/.dotfiles/services/rclone/rclone-backup.sh` (the repo copy), and the script
 loads `.env` from its own directory — a second, stale `.env` that never got
@@ -188,7 +188,7 @@ One real find: the **Uptime Kuma push token** was hardcoded in
 `rclone-backup.sh` (`HEARTBEAT_URL`). Anyone holding it can report the nightly
 backup as healthy, which would hide a real failure. Moved to
 `~/services/rclone/.env` (gitignored), placeholder in `.env.example`, script
-now skips the ping with a warning if unset. ⚠️ The old token is still in git
+now skips the ping with a warning if unset. Note: The old token is still in git
 history — **regenerate it in Uptime Kuma** (the backup push monitor → reset
 token) and update `.env`; that makes the leaked one worthless without
 rewriting history.
@@ -202,7 +202,7 @@ separate, easy-to-miss flag. Needs `sudo pmset -a autorestartatconnect 1`
 (interactive password, so this is a command for the user, not something run
 in-session).
 
-⚠️ **This alone doesn't give full unattended recovery — FileVault is on.**
+**Warning:** This alone doesn't give full unattended recovery — FileVault is on.
 Every cold power-on hits FileVault's pre-boot disk-password screen, which has
 no unattended-unlock path in macOS. **Decided 2026-09-22: keep FileVault on.**
 The trade-off was made deliberately — recovering from an outage still needs a
@@ -211,7 +211,7 @@ credentials stays encrypted at rest if the machine is ever stolen. The
 alternative (turn off FileVault for full auto-recovery) was rejected as the
 wrong trade for a box holding that many live secrets.
 
-🔴 **Real gap found: Uptime Kuma and Discord alerting run on the same machine
+**Important:** **Real gap found: Uptime Kuma and Discord alerting run on the same machine
 that lost power.** Confirmed no external (off this network) monitor exists at
 all. When the whole house loses power, nothing can alert about it, because the
 alerter is also without power. Needs a genuinely external heartbeat service
@@ -242,7 +242,7 @@ wanted later.
 
 ## 2026-09-21 (later) — Email audit corrected, TODO resequenced
 
-**⚠️ The earlier email audit was wrong.** It checked container *environment
+**Correction: the earlier email audit was wrong.** It checked container *environment
 variables* and concluded only `kindle_sync.py` used email. Two more consumers
 store their SMTP settings in **SQLite**, where an env check cannot see them:
 
@@ -256,7 +256,7 @@ a two-part audit command (env *and* database), and orders the runbook so both
 are repointed and tested before the app password is revoked.
 
 **Removed a stray container.** `relaxed_ritchie` (vaultwarden 1.35.4) was left
-running from the `vaultwarden hash` debugging. ⚠️ **Its pre-hash `ADMIN_TOKEN`
+running from the `vaultwarden hash` debugging. Note: **Its pre-hash `ADMIN_TOKEN`
 remained visible in the container config for ~4 hours**, readable by anything
 that could run `docker inspect`. Container and its anonymous volume removed;
 rotating the token is now step 3 of the TODO. Lesson recorded: `docker inspect`
@@ -277,7 +277,7 @@ warning that `docker image prune -a` would delete Storyteller.
 Asked "will this hit other services too" after the Radarr/Sonarr fix — checked
 rather than assumed:
 
-- 🔴 **LazyLibrarian had the identical bug**, and worse: its stored Transmission
+- **LazyLibrarian had the identical bug**, and worse: its stored Transmission
   password was still the user's actual old, reused personal password (the
   same one flagged earlier in the credential migration project), sitting in a
   live config file rather than just a doc. Fixed — but the fix didn't stick on
@@ -346,9 +346,9 @@ failing at the handoff with `Authentication Failure` / `downloadClientUnavailabl
 invisible unless you specifically checked Radarr's queue detail. Fixed both
 via the API, verified each connection test passes clean.
 
-🔴 **While confirming the fix, one of the two retried releases turned out to
-be malware.** "Resident Evil (2026) 1080p AMZN WEB-DL DDP5 1 H 264-FLUX" from
-indexer `TorrentDownload (Prowlarr)` was a single 1.15GB `.exe` file — no
+**Important:** **While confirming the fix, one of the two retried releases turned out to
+be malware.** A movie release from one of the Prowlarr indexers was a single
+1.15GB `.exe` file — no
 video container, no subtitles, nothing else in the torrent. Already 19%
 downloaded (223MB) by the time it was caught. Real releases are never a bare
 executable.
@@ -485,7 +485,7 @@ landed: `data/huggingface/` is 72 KB and the writable layer 74.8 MB.
 
 **Disk was at 92%** (15 GiB free), not the ~29 GB previously recorded. Freed
 6.05 GB of Docker build cache and 477 MB of Homebrew cache → **22 GiB**.
-⚠️ Learned: the 2.77 GB "unused" image is **Storyteller**, merely stopped —
+**Note:** Learned: the 2.77 GB "unused" image is **Storyteller**, merely stopped —
 `docker image prune -a` would have deleted it. Dangling-only reclaimed 0 B.
 
 **Email audit.** Checked all 43 containers and every script: `pkm/kindle_sync.py`
@@ -528,7 +528,7 @@ would add exposure and buy nothing.
 Measured: ~960MB for the four containers, 686MB image, host headroom down to
 **2.11 GiB**. SearXNG is the first to drop if that bites.
 
-⚠️ **Cookbook caveat worth remembering:** upstream's compose says *"Inside
+**Warning:** Cookbook caveat worth remembering: upstream's compose says *"Inside
 Docker, 'Local' means the Odysseus container."* Docker on macOS has no GPU
 passthrough, so anything Cookbook serves "locally" is CPU-only and its hardware
 scan measures the container. That is almost certainly the real cause of the
@@ -550,7 +550,7 @@ The whole books chain works end to end: Storyteller alignment → Calibre-Web �
 OPDS → KOReader, highlighting words during real narration. Self-hosted
 Whispersync, with Amazon nowhere in it.
 
-⚠️ Playback **speed** does nothing on Kindle — upstream implements `setSpeed`
+**Note:** Playback **speed** does nothing on Kindle — upstream implements `setSpeed`
 for mpv, MPlayer, ffmpeg-pipe and generic GStreamer but not the Kindle
 backends, and the call sits in a `pcall` so it fails silently. Workaround is
 `ffmpeg -filter:a atempo=` on the M4B *before* aligning.
@@ -600,10 +600,10 @@ but **cannot highlight text during real narration** — an audio file has no map
 from seconds to words. Storyteller transcribes the audio, force-aligns it
 against the ebook, and emits an EPUB 3 with Media Overlays, which does.
 
-⚠️ The ~4GB figure is for alignment, not idle, and that is the same headroom
+**Note:** The ~4GB figure is for alignment, not idle, and that is the same headroom
 Odysseus is earmarked for on a host already swapping 4.1GB. Batch use only.
 
-⚠️ Media Overlay support in `audiobook.koplugin` is still *work in progress*, so
+**Note:** Media Overlay support in `audiobook.koplugin` is still *work in progress*, so
 align one book and confirm the Kindle highlights it before doing a shelf.
 
 Data on the internal SSD (SQLite), excluded from R2 — the audio is bulky and
@@ -640,7 +640,7 @@ every run, re-nagging daily while still broken. `scripts/cron/crontab` is now
 the authoritative copy of the schedule, which previously lived only in the live
 crontab.
 
-⚠️ Learned the hard way: **`crontab <file>` silently installs an empty crontab**
+**Note:** Learned the hard way: **`crontab <file>` silently installs an empty crontab**
 on macOS when the file is outside home — exits 0, wipes everything. Pipe via
 stdin and always `crontab -l` to verify.
 
@@ -684,7 +684,7 @@ upstream. Container, image (300MB), repo directory and every reference in
 `dev-check.sh`, `nas-watchdog.sh`, `NAS.md` and the Calibre compose comments
 are gone. LazyLibrarian is the book pipeline.
 
-⚠️ Worth knowing: LazyLibrarian has **0 books downloaded** too (47 known, 1
+**Note:** Worth knowing: LazyLibrarian has **0 books downloaded** too (47 known, 1
 author). The pipeline is configured, not proven.
 
 Data directories for karakeep (238MB), actual-budget (80KB) and readarr (49MB)
@@ -715,7 +715,7 @@ several logins *are* the Gmail address (Vaultwarden, Immich, Linkwarden,
 Mealie), which the email migration has to change inside each app — not just
 forward.
 
-⚠️ Discovered while planning it: `ADMIN_USER` / `GRAFANA_USER` in the other
+**Note:** Discovered while planning it: `ADMIN_USER` / `GRAFANA_USER` in the other
 `.env` files are **inert** — they are read only at first initialisation, so the
 account already exists in each app's database and editing `.env` changes
 nothing. Those renames are UI work; the checklist is in `~/credentials-import.md`.
@@ -765,7 +765,7 @@ mounted **on the host** and that containers are **running**, and both were true.
 It now also probes from inside each container and restarts any stack whose bind
 mount has gone stale, reporting it to Discord.
 
-⚠️ Worth noting the underlying rule this bumps into: `metadata.db` is SQLite
+**Note:** Worth noting the underlying rule this bumps into: `metadata.db` is SQLite
 living on an SMB share, which the repo's own guidance says never to do. It
 survived this time because the file was only being *read* through a dead fd
 rather than written. Moving the Calibre library metadata onto the internal SSD
@@ -836,7 +836,7 @@ database created, data on the internal SSD. Live at
 requests 401. Deliberately **not** behind Cloudflare Access: an interactive
 Access policy blocks the plugin, which cannot do a browser login.
 
-⚠️ Do not bind-mount `local.ini` into `/opt/couchdb/etc/local.d/`. The stock
+**Note:** Do not bind-mount `local.ini` into `/opt/couchdb/etc/local.d/`. The stock
 entrypoint chowns everything under `/opt/couchdb` under `set -e`, a macOS bind
 mount cannot be chowned, and the container dies **with empty `docker logs`**.
 The compose file mounts at `/config` and copies it in.
@@ -871,7 +871,7 @@ only outstanding work again.
 
 ## NAS — arrival and migration (Jul–Aug 2026)
 
-**Status (Jul 2026):** NAS arrived ✅ (UGREEN DH4300 Plus, warranty until 2028-07). Drives ordered — 3× IronWolf Pro 6TB recert (ST6000NE000) €230 each from [datablocks.dev](https://datablocks.dev), preorder arriving **~Jul 27–31**.
+**Status (Jul 2026):** NAS arrived (UGREEN DH4300 Plus, warranty until 2028-07). Drives ordered — 3× IronWolf Pro 6TB recert (ST6000NE000) €230 each from [datablocks.dev](https://datablocks.dev), preorder arriving **~Jul 27–31**.
 
 **Done (pre-drives, Jul 22):**
 - [x] NAS on network at 192.168.1.73 via WiFi extender ethernet port (100Mbps — extender is the bottleneck, acceptable for now)
@@ -884,7 +884,7 @@ follow-ups" (the NAS UI settings) and "Router DHCP reservation for the NAS"
 work only. The reservation is no longer load-bearing: everything addresses the
 NAS by mDNS (`DH4300PLUS-DP.local`) since 2026-09-05.
 
-**Migration done (2026-08-04)** ✅
+**Migration done (2026-08-04)**
 - [x] RAID 5 pool created (3× 6TB IronWolf Pro = ~11TiB usable), Btrfs
 - [x] SMB on; shares: `media`, `immich`, `audiobooks`, `books`, `unsorted`; service account `macmini` (ASCII name — `ž` in `Džiugas` breaks SMB auth)
 - [x] Tailscale via Docker container on NAS (`ugreen-nas`, 100.95.228.35) — remote SMB/Finder
@@ -895,43 +895,43 @@ NAS by mDNS (`DH4300PLUS-DP.local`) since 2026-09-05.
 
 ---
 
-### ~~1. Calibre-Web — finish setup~~ ✅ Done (2026-05-09)
+### ~~1. Calibre-Web — finish setup~~ — done (2026-05-09)
 
 Bookshelves skipped (not needed). Send to Kindle configured via Gmail SMTP — the device's `@kindle.com` address approved and working.
 
 
-### ~~2. Uptime Kuma notifications~~ ✅ Done (2026-05-09)
+### ~~2. Uptime Kuma notifications~~ — done (2026-05-09)
 
 Gmail SMTP configured (smtp.gmail.com:465, app password). Email alerts working.
 
 
-### ~~5. Set up Obsidian vault sync via Syncthing~~ ✅ Done (2026-05-08)
+### ~~5. Set up Obsidian vault sync via Syncthing~~ — done (2026-05-08)
 
 `obsidian-vault` folder shared in Syncthing across Mac mini, MacBook, and iPhone. Real-time sync working.
 
 
 
-### ~~8. Bazarr — subtitle provider~~ ✅ Done (2026-05-09)
+### ~~8. Bazarr — subtitle provider~~ — done (2026-05-09)
 
 OpenSubtitles.com configured, Default language profile set with English. Applied to all series and movies. 71 Wanted items queued — downloading automatically.
 
 
-### ~~13. Show Mac host stats in monitoring~~ ✅ Done (2026-05-07)
+### ~~13. Show Mac host stats in monitoring~~ — done (2026-05-07)
 
 Homebrew node_exporter running at port 9100, scraped by Prometheus (`job="mac-host"`). Custom Grafana dashboard (`mac-host.json`) provisioned — shows real 16GB RAM, swap, CPU, disk, network. Glance `server-stats` widget updated to show actual host figures.
 
 
-### ~~14. Uptime Kuma — rclone backup heartbeat~~ ✅ Done (2026-05-09)
+### ~~14. Uptime Kuma — rclone backup heartbeat~~ — done (2026-05-09)
 
 Push monitor added in Uptime Kuma. Heartbeat URL wired into `rclone-backup.sh` — pings up on success, down on failure. R2 backup verified working across all 4 targets.
 
 
-### 15. ~~Migrate backups from B2 to Cloudflare R2~~ ✅ Done (2026-04-22)
+### 15. ~~Migrate backups from B2 to Cloudflare R2~~ — done (2026-04-22)
 
 Migrated to Cloudflare R2. Nightly rclone backup running at 5am. R2 at ~1.3GB (critical-only: vaultwarden, paperless docs, obsidian vault, db dumps, calibre books). B2 bucket purged and can be deleted from Backblaze dashboard.
 
 
-### ~~16. Docker VM resource limits~~ ✅ Done (2026-07-23)
+### ~~16. Docker VM resource limits~~ — done (2026-07-23)
 
 Docker Desktop VM bumped from 7.8GB → 10GB RAM, swap 1GB → 2GB (via
 `settings-store.json`). Also enabled AutoStart so Docker launches on login
@@ -941,7 +941,7 @@ responding (photos/vault/home/watch/nas all 200).
 ---
 
 
-### ~~17. Kindle Scribe → Obsidian automation~~ ✅ Done (2026-05-08)
+### ~~17. Kindle Scribe → Obsidian automation~~ — done (2026-05-08)
 
 **Goal:** Automatically sync Kindle Scribe handwritten/typed notes to the Obsidian vault so notes taken on the Scribe appear on all synced devices (MacBook, Mac mini, iPhone, eventually Windows work laptop).
 
@@ -987,7 +987,7 @@ pkm/
 - Gmail app password configured in `pkm/config.py` (gitignored)
 
 
-### ~~19. T7 → T5 full backup~~ ✅ Done (2026-07-09)
+### ~~19. T7 → T5 full backup~~ — done (2026-07-09)
 
 **What was done:**
 - Renamed T5 volume from `ImmichBackup` → `Backup` (`diskutil rename`)
@@ -1003,9 +1003,9 @@ pkm/
 current posture is in the Drive Layout section below):
 | If... | Photos | Audiobooks | Books | Services config |
 |-------|--------|------------|-------|----------------|
-| NAS fails | T7 ✅ + T5 ✅ | T7 ✅ + T5 ✅ | T7 ✅ + T5 ✅ + R2 ✅ | R2 ✅ |
-| A drive fails | re-run `backup-external.sh` | same | same | R2 ✅ |
-| Fire/theft | ❌ everything is in one room | ❌ | R2 ✅ | R2 ✅ |
+| NAS fails | T7 + T5 | T7 + T5 | T7 + T5 + R2 | R2 |
+| A drive fails | re-run `backup-external.sh` | same | same | R2 |
+| Fire/theft | nothing offsite (all in one room) | nothing offsite | R2 | R2 |
 
 **The real remaining gap:** both external drives sit next to the NAS, so nothing survives
 fire, flood or theft. Moving T5 offsite is what makes this genuinely 3-2-1.
@@ -1015,7 +1015,7 @@ fire, flood or theft. Moving T5 offsite is what makes this genuinely 3-2-1.
 
 ## Done
 
-- [x] ~~Books & audio automation (Jul 2026)~~ — LazyLibrarian fully configured: 4 Torznab indexers via Prowlarr (EBookBay, TPB, Knaben, TorrentDownload), Transmission download client, PostProcessor auto-moves EPUBs to Calibre and MP3s to Audiobookshelf. Click "Wanted" → fully hands-off. See `docs/guides/BOOKS.md` for setup notes and gotchas.
+- [x] ~~Books & audio automation (Jul 2026)~~ — LazyLibrarian fully configured: 4 Torznab indexers via Prowlarr, Transmission download client, PostProcessor auto-moves EPUBs to Calibre and MP3s to Audiobookshelf. Click "Wanted" → fully hands-off. See `docs/guides/BOOKS.md` for setup notes and gotchas.
 
 - [x] ~~Kindle library → Calibre-Web (Apr 2026)~~ — ~30 purchased books converted to EPUB and imported into Calibre-Web
 - [x] ~~Calibre-Web — organising books (Apr 2026)~~ — year-end books processed and organised
@@ -1044,7 +1044,7 @@ fire, flood or theft. Moving T5 offsite is what makes this genuinely 3-2-1.
 - [x] ~~Homarr cleanup~~ — removed containers, images, Docker network, updated setup script
 - [x] ~~Tunnel security split~~ — moved Sonarr/Radarr/Prowlarr/Transmission to Tailscale-only, added Portainer to public tunnel
 - [x] ~~Mealie~~ — setup complete
-- [x] ~~Linkwarden~~ — setup complete, browser extensions installed (Chrome ✅, Brave ⚠️ disable Shields), phone PWA added
+- [x] ~~Linkwarden~~ — setup complete, browser extensions installed (Chrome; Brave needs Shields disabled for the site), phone PWA added
 - [x] ~~Calibre-Web `metadata_dirtied` bug~~ — fixed: ran `CREATE TABLE` SQL
 - [x] ~~Radarr Docker volumes~~ — compose already has `/media` mount
 - [x] ~~Pi-hole 403 on root~~ — fixed: lighttpd redirect config mounted
