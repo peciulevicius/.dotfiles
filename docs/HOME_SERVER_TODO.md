@@ -298,7 +298,9 @@ press to bring it back. Two separate gaps found.
       narrative — real rewrite work, not a quick edit.
 - [ ] Clear the leftover data directories from tonight's removals:
       `rm -rf ~/services/mealie ~/services/grafana` (both confirmed
-      empty/unused before removal, nothing to lose)
+      empty/unused before removal, nothing to lose). Until then
+      `rclone-backup.sh` excludes both (2026-09-24), so they stop being
+      uploaded to R2 once the script is re-staged
 - [x] ~~Remove Mealie~~ — done 2026-09-21/22. **0 real recipes** despite the
       folder existing — confirmed empty, not just "unused." Container, tunnel
       route (`recipes.peciulevicius.com`), homepage entry and network all
