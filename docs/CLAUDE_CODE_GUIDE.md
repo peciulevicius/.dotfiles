@@ -1,187 +1,86 @@
-# Claude Code Complete Guide
+# Claude Code guide
 
-Everything about the Claude Code setup in this dotfiles repo — the 6 things, how to set up, how to update, and how to start a new project.
+How the Claude Code configuration in this repository is structured, installed
+and extended.
 
-## Table of Contents
+## Components
 
-- [The 6 Things](#the-6-things)
-- [Setup & Update](#setup-update)
-- [New Project Setup](#new-project-setup)
-- [The 6 Things In Detail](#the-6-things-in-detail)
-  - [1. Global CLAUDE.md](#1-global-claudemd)
-  - [2. Rules](#2-rules)
-  - [3. Skills](#3-skills)
-  - [4. Agents](#4-agents)
-  - [5. Settings](#5-settings)
-  - [6. Commands](#6-commands)
-- [Hooks](#hooks)
-- [Status Line](#status-line)
-- [Extending the Setup](#extending-the-setup)
-- [Reference](#reference)
+Claude Code reads its user configuration from `~/.claude/`. Everything below is
+maintained in `config/claude/` and linked into `~/.claude/` by
+`scripts/setup/setup-claude.sh`.
 
----
+| Path in `~/.claude/` | Source | Purpose |
+|---|---|---|
+| `CLAUDE.md` | `config/claude/CLAUDE.md` | Global instructions loaded in every session |
+| `rules/` | `config/claude/rules/` | Topic guidelines referenced from `CLAUDE.md` |
+| `skills/` | `config/claude/skills/` | Skills, invoked automatically or with `/name` |
+| `agents/` | `config/claude/agents/` | Specialised subagents |
+| `commands/` | `config/claude/commands/` | Slash commands |
+| `settings.json` | `config/claude/settings.json` | Permissions, hooks, status line |
+| — | `config/claude/hooks/` | Hook scripts referenced from `settings.json` |
 
-## The 6 Things
+The current inventory of skills, agents and commands is in
+[config/claude/README.md](https://github.com/peciulevicius/.dotfiles/blob/main/config/claude/README.md).
 
-Everything Claude Code uses lives in `~/.claude/`. All 6 are managed from this dotfiles repo and symlinked automatically.
-
-| # | Path | What it is | Status |
-|---|------|------------|--------|
-| 1 | `~/.claude/CLAUDE.md` | Global instructions loaded every session | ✅ |
-| 2 | `~/.claude/rules/` | Detailed guidelines split by topic | ✅ 10 files |
-| 3 | `~/.claude/skills/` | Auto-triggered or slash-invoked skill packs | ✅ 23 skills |
-| 4 | `~/.claude/agents/` | Specialist subagents for delegation | ✅ 19 agents |
-| 5 | `~/.claude/settings.json` | Permissions, statusline, hooks | ✅ |
-| 6 | `~/.claude/commands/` | Manual slash commands (`/pr`, `/debug`, etc.) | ✅ 8 commands |
-
-All files live in `config/claude/` in this repo and are symlinked to `~/.claude/` by `setup-claude.sh`.
+Project-specific skills for this repository (`homelab-service`,
+`credential-rotation`, `homelab-audit`) live in `.claude/skills/` at the
+repository root and apply only when working in this repository.
 
 ---
 
-## Setup & Update
+## Installation and updates
 
-### macOS / Linux — new machine
+### macOS / Linux
 
 ```bash
-# 1. Clone dotfiles
 git clone https://github.com/peciulevicius/.dotfiles.git ~/.dotfiles
 cd ~/.dotfiles
-
-# 2. Install tools (Homebrew, zsh, CLI tools, etc.)
 ./install.sh
-
-# 3. Set up Claude Code — shows an interactive menu
-./scripts/setup/setup-claude.sh
+./scripts/setup/setup-claude.sh      # interactive menu
 ```
 
-Running `setup-claude.sh` with no args shows a **numbered menu**:
+| Option | Action |
+|---|---|
+| 1 | First-time setup (prompts for `settings.json`) |
+| 2 | Resync agents, skills, rules and commands |
+| 3 | Status line only |
+| 4 | Copy agents created in `~/.claude/agents/` back into the repository |
 
+Non-interactive modes:
+
+```bash
+./scripts/setup/setup-claude.sh install
+./scripts/setup/setup-claude.sh update
+./scripts/setup/setup-claude.sh statusline-only
+./scripts/setup/setup-claude.sh sync
+./scripts/setup/setup-claude.sh agents-only
 ```
-What do you want to do?
 
-  1) First-time setup       — full install, prompts for settings
-  2) Update / resync        — sync agents, skills, rules, commands
-  3) Statusline only        — just configure the statusline
-  4) Sync agents → dotfiles — pull live agents back into repo
-  q) Quit
-```
-
-Pick **1** on a new machine.
-
-### Windows (PowerShell) — new machine
+### Windows
 
 ```powershell
-# One-time: allow scripts to run
-Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
-
-# Clone and set up
+Set-ExecutionPolicy RemoteSigned -Scope CurrentUser    # once
 git clone https://github.com/peciulevicius/.dotfiles.git $HOME\.dotfiles
 cd $HOME\.dotfiles
-.\scripts\setup\setup-claude.ps1
+.\scripts\setup\setup-claude.ps1           # interactive
+.\scripts\setup\setup-claude.ps1 update    # non-interactive resync
 ```
 
-This installs agents, skills, rules, commands, and `CLAUDE.md` into `~/.claude\` using **directory junctions** (no admin rights required). The statusline is macOS/Linux-only and is skipped on Windows.
+On Windows the configuration is linked with directory junctions, which need no
+administrator rights. `scripts\setup\setup-claude.bat` runs the PowerShell
+script from CMD. The status line is not installed on Windows.
 
-### Windows (CMD)
+### Keeping machines in sync
 
-```cmd
-scripts\setup\setup-claude.bat
-```
-
-The `.bat` file calls the PowerShell script automatically — no need to launch PowerShell manually.
-
-### Resync after pulling dotfiles
-
-**macOS / Linux:**
-```bash
-~/.dotfiles/scripts/update.sh
-```
-
-**Windows (PowerShell):**
-```powershell
-.\scripts\update.ps1
-```
-
-Both scripts pull the latest dotfiles and resync Claude Code config automatically. **One script, no separate step.**
-
-### macOS / Linux — direct modes (for scripting)
-
-```bash
-~/.dotfiles/scripts/setup/setup-claude.sh update          # non-interactive resync
-~/.dotfiles/scripts/setup/setup-claude.sh install         # full setup, no menu
-~/.dotfiles/scripts/setup/setup-claude.sh statusline-only
-~/.dotfiles/scripts/setup/setup-claude.sh sync
-```
-
-### Windows — modes
-
-```powershell
-.\scripts\setup\setup-claude.ps1          # interactive (prompts for settings.json)
-.\scripts\setup\setup-claude.ps1 update   # non-interactive resync
-```
+`scripts/update.sh` (macOS/Linux) and `scripts\update.ps1` (Windows) pull the
+dotfiles and resync the Claude Code configuration as part of the normal update.
 
 ---
 
-## New Project Setup
+## Global instructions (`CLAUDE.md`)
 
-Type `/new-project` inside Claude Code at the start of any project. It runs as a **conversational discovery session** — not a form.
-
-```
-/new-project
-```
-
-### What it does
-
-**Phase 1 — Discovery.** Claude asks open-ended questions about your idea, not just technical ones: who are the users, how will they find it, is there a paid component, web/mobile/both, constraints? It adapts based on your answers — 2-3 follow-ups at a time, not a 20-question interrogation.
-
-**Phase 2 — Stack recommendation.** Based on the conversation, Claude recommends a specific stack with reasoning. Not a list of options — an actual recommendation with trade-offs explained. You can push back: *"why not SvelteKit instead?"* and Claude will either agree or defend the choice.
-
-**Phase 3 — Refine.** Keep the conversation going until the stack feels right.
-
-**Phase 4 — Confirm.** Claude shows a final summary and asks for a thumbs-up before writing any files.
-
-**Phase 5 — Scaffold.** Creates two files:
-- `.claude/CLAUDE.md` — project context: idea, stack, key file paths, dev commands, conventions, and the decisions made during discovery (why you chose X over Y)
-- `.claude/settings.json` — project-level permissions tailored to your stack's tools
-
-### What it does NOT do
-
-`/new-project` only sets up the `.claude/` config. It does **not** scaffold the actual project (no `pnpm create next-app`, no file structure, no dependencies). That's intentional — the discovery is separate from the build. After `/new-project` you'd say *"now scaffold the project"* and Claude has full context to do it well.
-
-### What gets saved
-
-All decisions from the conversation are written into `.claude/CLAUDE.md`:
-- The project idea and who it's for
-- The full stack with rationale
-- Key constraints and decisions made
-- Dev commands, file paths, conventions
-
-This file loads every session for that project, so Claude always has context.
-
-### Scope: global vs project
-
-| Global `~/.claude/` | Project `.claude/` |
-|--------------------|--------------------|
-| Your persona, preferences | This project's name, stack, paths |
-| All rules (TypeScript, Git…) | Project-specific rules |
-| All agents (code-reviewer…) | Project-specific agents |
-| All skills | Project-specific skills |
-| Your default permissions | Overrides for this project's tools |
-
-The global setup applies to every project automatically. The project `.claude/` adds context on top.
-
----
-
-## The 6 Things In Detail
-
-### 1. Global CLAUDE.md
-
-**File:** `config/claude/CLAUDE.md` → symlinked to `~/.claude/CLAUDE.md`
-
-Loaded at the start of **every session**. Kept lean (~50 lines). Contains:
-- Who you are and your stack
-- Behaviour defaults (no filler, show code, etc.)
-- `@rules/` references for detailed guidelines
+Loaded at the start of every session and kept short. It describes the default
+stack, working conventions, and references rule files:
 
 ```markdown
 ## Stack
@@ -198,155 +97,123 @@ Loaded at the start of **every session**. Kept lean (~50 lines). Contains:
 @rules/git.md
 ```
 
-The `@rules/file.md` syntax tells Claude to load that file when relevant — keeps CLAUDE.md small while making the full rules available.
+`@rules/<file>.md` references let Claude load detailed guidance when relevant
+without enlarging every session's context.
 
-### 2. Rules
-
-**Directory:** `config/claude/rules/` → symlinked to `~/.claude/rules/`
-
-Detailed guidelines split by topic. Claude loads them on demand via `@rules/` references in CLAUDE.md.
+## Rules
 
 | File | Coverage |
-|------|----------|
+|---|---|
 | `typescript.md` | Strict mode, no `any`, Zod, naming, error handling |
-| `git.md` | Conventional commits, branch naming, PR format |
-| `react.md` | Server vs client, data fetching, hooks, Tailwind |
+| `git.md` | Conventional commits, branch naming, pull request format |
+| `react.md` | Server vs client components, data fetching, hooks, Tailwind |
 | `database.md` | Schema conventions, RLS, migrations, Supabase queries |
-| `security.md` | Auth, secrets, input validation, Stripe webhooks |
-| `testing.md` | Vitest, RTL, Playwright — what to test and how |
+| `security.md` | Authentication, secrets, input validation, Stripe webhooks |
+| `testing.md` | Vitest, React Testing Library, Playwright |
 | `api.md` | Route handlers, response format, pagination, webhooks |
 | `mobile.md` | Expo, React Native, SecureStore, navigation, NativeWind |
-| `performance.md` | React rendering, memoization, bundles, images, caching |
+| `performance.md` | Rendering, memoisation, bundles, images, caching |
 | `env.md` | Environment variables, validation, secrets, Vercel/Cloudflare |
 
-**Adding a rule:**
-1. Create `config/claude/rules/your-topic.md`
-2. Add `@rules/your-topic.md` to `config/claude/CLAUDE.md`
-3. Run `~/.dotfiles/scripts/setup/setup-claude.sh update` (symlink is created automatically)
+To add a rule: create `config/claude/rules/<topic>.md`, reference it from
+`config/claude/CLAUDE.md`, and run `setup-claude.sh update`.
 
-### 3. Skills
+## Skills
 
-**Directory:** `config/claude/skills/` → symlinked to `~/.claude/skills/`
+A skill is a directory containing `SKILL.md`. Claude loads only each skill's
+`name` and `description` at startup and reads the full file when the skill is
+relevant, or when it is invoked with `/<name>`.
 
-Skills are reusable instruction sets. Claude loads only the `name` + `description` at startup (~100 tokens/skill), then reads the full `SKILL.md` when relevant. Two invocation modes:
+The skills cover three areas:
 
-- **Auto-triggered** — Claude decides when to use it based on your request and the skill description
-- **Manual** — you type `/skill-name`
+- **Workflows:** `develop`, `review`, `commit`, `check`, `debug`, `standup`,
+  `jira`
+- **Frameworks and platforms:** Next.js, SvelteKit, Astro, Angular, Expo,
+  Supabase, Stripe, RevenueCat, Cloudflare, Turborepo, C#/.NET, SQL
+- **Product work:** landing pages, SEO, analytics, email marketing, market
+  research, product specifications, UI design, security audits, SaaS patterns
 
-| Skill | Trigger |
-|-------|---------|
-| `analytics-tracking` | Adding PostHog, Sentry, Chartmogul |
-| `angular` | Angular + TypeScript work |
-| `animations` | Framer Motion, Reanimated, Moti |
-| `astro` | Astro sites, content collections |
-| `cloudflare` | Pages, R2, Workers, Turnstile |
-| `commit` | `/commit` — smart git commit |
-| `csharp` | C# / .NET / ASP.NET Core |
-| `email-marketing` | Resend + Loops.so |
-| `expo-mobile` | React Native + Expo |
-| `landing-page` | High-converting SaaS landing pages |
-| `market-research` | Competitor analysis, positioning |
-| `nextjs` | Next.js App Router patterns |
-| `product-spec` | PRDs, feature specs |
-| `revenuecat` | Mobile subscriptions (iOS + Android) |
-| `saas-patterns` | Multi-tenancy, billing, auth, onboarding |
-| `security-audit` | Security review checklist |
-| `seo-content` | Next.js metadata, JSON-LD, Core Web Vitals |
-| `sql` | PostgreSQL queries and optimization |
-| `stripe` | Stripe payments, webhooks, subscriptions |
-| `supabase` | Schema, RLS, auth, edge functions |
-| `sveltekit` | SvelteKit, form actions, Cloudflare Pages |
-| `turborepo` | Monorepo setup, shared packages |
-| `ui-design` | UI/UX, Tailwind, accessibility |
+Create a skill:
 
-**Adding a skill:**
 ```bash
 mkdir -p ~/.dotfiles/config/claude/skills/my-skill
-cat > ~/.dotfiles/config/claude/skills/my-skill/SKILL.md << 'EOF'
+cat > ~/.dotfiles/config/claude/skills/my-skill/SKILL.md <<'EOF'
 ---
 name: my-skill
-description: What this does and when to trigger. Be specific — Claude uses this to decide.
+description: What it does and when to use it. Claude uses this text to decide.
 ---
 
-When invoked, do:
 1. Step one
 2. Step two
 EOF
-
-# Then sync
 ~/.dotfiles/scripts/setup/setup-claude.sh update
 ```
 
-**Skill frontmatter options:**
+Optional frontmatter:
+
 ```yaml
----
-name: deploy
-description: Deploy to Vercel production
-disable-model-invocation: true   # only YOU can invoke (not auto-triggered)
-user-invocable: false            # only Claude auto-triggers (hidden from / menu)
-allowed-tools: Bash, Read        # restrict available tools
-model: sonnet                    # override model
-context: fork                    # run as isolated subagent
----
+disable-model-invocation: true   # only invoked manually
+user-invocable: false            # only invoked by Claude; hidden from the / menu
+allowed-tools: Bash, Read        # restrict tools
+model: sonnet                    # model override
+context: fork                    # run as an isolated subagent
 ```
 
-Use `disable-model-invocation: true` for skills with side effects (deploy, send email, etc.).
+Use `disable-model-invocation: true` for skills with side effects, such as
+deploying or sending email.
 
-### 4. Agents
+## Agents
 
-**Directory:** `config/claude/agents/` → symlinked to `~/.claude/agents/`
+Agents are subagents with their own instructions, tool restrictions and
+optional model. Claude delegates to them based on their `description`.
 
-Specialist subagents with their own personas, tool restrictions, and optional model overrides. Claude delegates to them automatically based on the `description` field.
+| Area | Agents |
+|---|---|
+| Engineering | `architect`, `backend-developer`, `frontend-developer`, `mobile-developer`, `data-engineer`, `database-admin`, `devops-engineer`, `performance-engineer`, `security-engineer`, `qa-engineer` |
+| Review and documentation | `code-reviewer`, `technical-writer`, `support-engineer` |
+| Product and growth | `product-manager`, `project-manager`, `designer`, `pricing-strategist`, `growth-hacker`, `marketing-engineer` |
 
-| Agent | When used |
-|-------|-----------|
-| `architect` | System design, tech stack decisions, ADRs |
-| `backend-developer` | APIs, databases, server-side code |
-| `code-reviewer` | Code quality, best practices, refactoring |
-| `database-admin` | Database management, optimization, migrations |
-| `data-engineer` | SQL, data pipelines |
-| `designer` | UI/UX, wireframes, design systems |
-| `devops-engineer` | CI/CD, Docker, cloud infra |
-| `frontend-developer` | React, components, CSS |
-| `growth-hacker` | Virality, acquisition, retention experiments |
-| `marketing-engineer` | Marketing automation, analytics |
-| `mobile-developer` | iOS, Android, React Native |
-| `performance-engineer` | Optimization, profiling, benchmarking |
-| `pricing-strategist` | Pricing tiers, packaging, WTP |
-| `product-manager` | PRDs, feature specs, roadmaps |
-| `project-manager` | Planning, timelines |
-| `qa-engineer` | Testing, test plans, automation |
-| `security-engineer` | Security audits, threat modeling |
-| `support-engineer` | Troubleshooting, documentation |
-| `technical-writer` | Docs, READMEs, guides |
+Agent file format:
 
-**Agent file format:**
 ```markdown
 ---
 name: my-agent
-description: Trigger keywords and when to use. Be specific.
+description: When to use this agent. Be specific.
 model: sonnet        # sonnet | opus | haiku | inherit
 tools: Read, Bash    # omit for all tools
 color: blue
 ---
 
-System prompt for this agent...
+System prompt for the agent.
 ```
 
-**Adding an agent to dotfiles:**
+An agent created directly in `~/.claude/agents/` can be copied into the
+repository with `setup-claude.sh sync`, then committed.
+
+## Commands
+
+Slash commands in `config/claude/commands/` are invoked explicitly; `$ARGUMENTS`
+holds the text typed after the command.
+
+| Command | Purpose |
+|---|---|
+| `/new-project` | Discovery session that writes a project's `.claude/` configuration |
+| `/review` | Review local changes or a pull request |
+| `/check` | Type checks, lint, tests and a secret scan |
+| `/debug` | Structured root-cause investigation |
+| `/standup` | Summary of recent git activity |
+| `/dotfiles` | Work on this repository |
+
 ```bash
-# If you created an agent in ~/.claude/agents/ manually:
-~/.dotfiles/scripts/setup/setup-claude.sh sync
-
-# Then commit it
-cd ~/.dotfiles
-git add config/claude/agents/
-git commit -m "feat: add my-agent"
+cat > ~/.dotfiles/config/claude/commands/my-command.md <<'EOF'
+Do X for $ARGUMENTS.
+EOF
+~/.dotfiles/scripts/setup/setup-claude.sh update
 ```
 
-### 5. Settings
+## Settings
 
-**File:** `config/claude/settings.json` → copied/merged to `~/.claude/settings.json`
+`config/claude/settings.json` is merged into `~/.claude/settings.json`:
 
 ```json
 {
@@ -370,166 +237,69 @@ git commit -m "feat: add my-agent"
 }
 ```
 
-**Project-level settings** (`.claude/settings.json`) override the global ones for that project. Use them to allow project-specific commands:
-```json
-{
-  "permissions": {
-    "allow": ["Bash(vercel *)", "Bash(wrangler *)"]
-  }
-}
-```
-
-### 6. Commands
-
-**Directory:** `config/claude/commands/` → symlinked to `~/.claude/commands/`
-
-Manual slash commands you invoke explicitly (vs skills which auto-trigger).
-
-| Command | What it does |
-|---------|-------------|
-| `/new-project` | Scaffold `.claude/` config for a new project |
-| `/pr` | Create a GitHub PR with conventional title + body |
-| `/review` | Review local changes or a PR by number |
-| `/standup` | Generate standup from yesterday's git activity |
-| `/debug` | Systematic debugging — root cause analysis |
-| `/docs` | Generate or update documentation |
-| `/deploy` | Deploy to production |
-| `/check` | Run health check on project |
-
-**Adding a command:**
-```bash
-cat > ~/.dotfiles/config/claude/commands/my-command.md << 'EOF'
-Do X for $ARGUMENTS.
-
-## Step 1
-...
-EOF
-
-~/.dotfiles/scripts/setup/setup-claude.sh update
-```
-
-Use `$ARGUMENTS` to capture what you type after the slash command name.
-
----
+A project's `.claude/settings.json` overrides these for that project, for
+example to allow `vercel` or `wrangler`.
 
 ## Hooks
 
-Hooks are shell scripts that fire at specific points in Claude's workflow. Configured in `settings.json` and stored in `config/claude/hooks/`.
+Hook scripts live in `config/claude/hooks/` and are wired up in `settings.json`.
 
-### notify-done.sh
+| Hook | Behaviour |
+|---|---|
+| `notify-done.sh` | Desktop notification when Claude finishes responding |
+| `typecheck.sh` | Type check after file edits |
 
-Fires a macOS/Linux desktop notification when Claude finishes responding. Useful when you step away from long-running tasks (testing, analysis, building) — you get a notification when Claude is done instead of constantly checking back.
+## Status line
 
-Example:
-```
-$ /some-long-task
-[Claude thinking... notification fires when done]
-```
-
-Add more hooks to `config/claude/hooks/` as needed — they're auto-picked up by `setup-claude.sh`.
-
----
-
-## Status Line
-
-Shows at the top of Claude Code:
+`config/claude/statusline.sh` (and `statusline.ps1`) shows the model, context
+usage and plan usage:
 
 ```
-Claude Sonnet 4.6 | 45k / 200k | 22% used | thinking: On
+<model> | 45k / 200k | 22% used | thinking: On
 current: ●●○○○○○○○○ 22%    | weekly: ●●●○○○○○○○ 34%
 resets 3:45pm              | resets mar 8, 11:00am
 ```
 
-Script: `config/claude/statusline.sh`. Parses token counts from Claude's context JSON and fetches usage from the Anthropic API (cached 60s, reads OAuth token from macOS Keychain).
-
-**Troubleshooting:**
-- No usage bars → `jq` or `curl` missing, or not logged in with OAuth
-- Empty → check `jq` is installed (`brew install jq`)
+Usage is read from the Anthropic API with the OAuth token from the macOS
+Keychain and cached for 60 seconds. If the bars are missing, check that `jq`
+and `curl` are installed and that Claude Code is logged in with OAuth.
 
 ---
 
-## Extending the Setup
+## New projects
 
-### File counts (current)
+Run `/new-project` in Claude Code at the start of a project. It is a
+conversation rather than a form:
 
-| Type | Count | Add more to |
-|------|-------|-------------|
-| Agents | 19 | `config/claude/agents/` |
-| Skills | 23 | `config/claude/skills/` |
-| Rules | 10 | `config/claude/rules/` |
-| Commands | 8 | `config/claude/commands/` |
-| Hooks | 1 | `config/claude/hooks/` |
+1. **Discovery:** users, distribution, monetisation, platforms and constraints.
+2. **Stack recommendation:** one recommended stack with its trade-offs.
+3. **Refinement:** until the stack is agreed.
+4. **Confirmation:** a summary before any file is written.
+5. **Output:** `.claude/CLAUDE.md` (idea, stack, paths, commands, conventions
+   and the decisions made) and `.claude/settings.json` (permissions for the
+   stack's tools).
 
-### After adding anything
+It does not scaffold the application itself; ask for that afterwards, with the
+context already in place.
+
+| Global (`~/.claude/`) | Project (`.claude/`) |
+|---|---|
+| Preferences and defaults | Project name, stack and paths |
+| All rules, agents and skills | Project-specific rules, agents and skills |
+| Default permissions | Permission overrides for the project's tools |
+
+---
+
+## After adding anything
 
 ```bash
-# Resync symlinks
 ~/.dotfiles/scripts/setup/setup-claude.sh update
-
-# Commit
-cd ~/.dotfiles
-git add config/claude/
-git commit -m "feat: add [whatever you added]"
-git push
+cd ~/.dotfiles && git add config/claude/ && git commit -m "feat(claude): add <name>" && git push
 ```
 
-The next `update.sh` run on any machine will automatically pick up the new files.
+Other machines pick the change up on their next `update.sh` run.
 
----
+## Related
 
-## Reference
-
-### All setup-claude.sh modes
-
-```bash
-./scripts/setup/setup-claude.sh            # full interactive install
-./scripts/setup/setup-claude.sh update     # non-interactive resync (use for updates)
-./scripts/setup/setup-claude.sh statusline-only
-./scripts/setup/setup-claude.sh sync       # pull live agents back into dotfiles
-./scripts/setup/setup-claude.sh agents-only
-```
-
-### Directory structure
-
-```
-config/claude/
-├── CLAUDE.md              # global instructions → ~/.claude/CLAUDE.md
-├── settings.json          # settings → ~/.claude/settings.json
-├── settings.example.json  # reference copy
-├── statusline.sh          # statusline script
-├── agents/                # 19 agents → ~/.claude/agents/
-├── skills/                # 23 skills → ~/.claude/skills/
-├── rules/                 # 10 rules → ~/.claude/rules/
-├── commands/              # 8 commands → ~/.claude/commands/
-└── hooks/                 # shell hooks (notify-done.sh, etc.)
-```
-
-### All scripts in this repo
-
-**macOS / Linux (bash):**
-
-| Script | Interactive? | What it does |
-|--------|-------------|-------------|
-| `install.sh` | ✅ yes | Full machine setup — Homebrew, tools, symlinks |
-| `scripts/setup/setup-claude.sh` | ✅ menu when no args | Claude Code setup (menu → pick 1–4) |
-| `scripts/update.sh` | ❌ | Update all package managers + Claude Code |
-| `scripts/backup/backup-dotfiles.sh` | ❌ | Backup configs to timestamped folder |
-| `scripts/cleanup.sh` | ❌ | Clear caches (Homebrew, npm, pip, etc.) |
-| `scripts/dev-check.sh` | ❌ | Health check — are all tools installed? |
-| `scripts/setup/setup-gpg.sh` | ✅ yes | Set up GPG commit signing |
-
-**Windows:**
-
-| Script | Shell | What it does |
-|--------|-------|-------------|
-| `scripts/setup/setup-claude.ps1` | PowerShell | Claude Code setup (agents, skills, rules, CLAUDE.md) |
-| `scripts/setup/setup-claude.bat` | CMD | Same — delegates to the `.ps1` |
-| `scripts/update.ps1` | PowerShell | Update winget, npm, pnpm, dotfiles, Claude Code |
-| `scripts/update.bat` | CMD | Same — delegates to the `.ps1` |
-
-"Interactive" means it pauses and asks you questions. Non-interactive scripts run to completion without prompts.
-
-### Related docs
-
-- [Claude Code docs](https://code.claude.com/docs)
-- [skills.sh marketplace](https://skills.sh)
+- [guides/CLAUDE_WORKFLOW.md](guides/CLAUDE_WORKFLOW.md) — using the tools from idea to deployment
+- [Claude Code documentation](https://code.claude.com/docs)
