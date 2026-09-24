@@ -236,6 +236,11 @@ press to bring it back. Two separate gaps found.
       services' `.env` files stays encrypted at rest if the machine is ever
       stolen. Right trade for a box holding that many live secrets.
 - [ ] 🔴 **Add an external (off this network) dead-man's-switch monitor.**
+      ⏳ **Still open — code done 2026-09-24, account setup pending.** `scripts/utils/heartbeat.sh` + a 5-minute
+      cron line + an audit check. Left for you (~5 min): Healthchecks.io
+      account, a check with period 5 min / grace 10 min, then the ping URL in
+      `~/.config/homelab/heartbeat.env` — steps in `scripts/cron/README.md`
+      "Setting up the heartbeat". Original note:
       Confirmed 2026-09-22: Uptime Kuma and its Discord alerts run on the same
       machine that just lost power — when the whole house goes down, nothing
       can alert about it, because the alerter is also without power. Needs a

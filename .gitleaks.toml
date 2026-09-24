@@ -12,3 +12,12 @@ id = "uptime-kuma-push-token"
 description = "Uptime Kuma push monitor URL containing a real token"
 regex = '''/api/push/[A-Za-z0-9]{8,}'''
 keywords = ["api/push/"]
+
+# Healthchecks.io ping URL (dead-man's switch, scripts/utils/heartbeat.sh).
+# Anyone holding it can keep the check green while the Mac mini is down.
+# Covers both forms: /<uuid> and /<ping-key>/<slug>.
+[[rules]]
+id = "healthchecks-ping-url"
+description = "Healthchecks.io ping URL with a real UUID or ping key"
+regex = '''hc-ping\.com/(?:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}|[A-Za-z0-9_-]{22})'''
+keywords = ["hc-ping.com"]

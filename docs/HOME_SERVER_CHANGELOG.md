@@ -116,6 +116,19 @@ and bucket sizes go to `~/logs/r2-size-history.tsv`, failing on a >5% shrink.
 works. Tested here against a local stand-in for R2 (a corrupted file and a
 shrunk set both fail it). Not yet run against the real bucket.
 
+## 2026-09-24 — External dead-man's switch (code; account setup pending)
+
+Every alert here ran on the Mac mini, so the 2026-09-22 power cut went
+unreported. `scripts/utils/heartbeat.sh` now pings Healthchecks.io every five
+minutes from cron; Healthchecks alerts from its own servers when the pings
+stop. It pings `/fail` when Docker does not answer within 20s, because Uptime
+Kuma is a container and is blind at the same moment. The ping URL is a
+credential and lives only in `~/.config/homelab/heartbeat.env`; a new gitleaks
+rule (`healthchecks-ping-url`) blocks it from being committed, and the weekly
+audit fails while it is missing or the last successful ping is over an hour
+old. Not wrapped in `run-with-notify.sh` — it would nag every five minutes
+while unconfigured; the audit reports that weekly instead.
+
 ## 2026-09-24 — Odysseus memories and skills repaired
 
 - **Memory re-import.** The 2026-09-23 import ran on qwen2.5:7b with a 4k

@@ -16,6 +16,8 @@
 #   external  — T5 drifted seven weeks stale before anyone noticed (2026-09-05)
 #   cron      — the repo crontab fell behind the live one; reinstalling it
 #               would have silently undone the 2026-09-23 backup fix
+#   heartbeat — a power cut on 2026-09-22 went unreported: every alerter was
+#               on the machine that lost power
 #
 # The judgment calls (pinned image versions, stale credential copies after a
 # rotation, docs contradicting reality) live in the homelab-audit skill.
@@ -116,6 +118,18 @@ else
       ok "external backup to $drive is $age days old"
     fi
   done
+fi
+
+# External dead-man's switch (heartbeat.sh → Healthchecks.io). It is the only
+# alert that survives the whole house losing power, so a missing config or a
+# heartbeat that stopped reaching the monitor is a problem in its own right.
+hb_last="$HOME/.local/state/homelab-jobs/heartbeat.last"
+if [[ ! -f "$HOME/.config/homelab/heartbeat.env" ]]; then
+  bad "external heartbeat not configured (~/.config/homelab/heartbeat.env) — a power cut would go unreported"
+elif [[ ! -f "$hb_last" ]] || (( $(date +%s) - $(cat "$hb_last") > 3600 )); then
+  bad "external heartbeat has not reached Healthchecks.io in the last hour — check ~/logs/heartbeat.log"
+else
+  ok "external heartbeat last sent $(( ($(date +%s) - $(cat "$hb_last")) / 60 )) min ago"
 fi
 
 # ── 4. Disk ──────────────────────────────────────────────────────────────────

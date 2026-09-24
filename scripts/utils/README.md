@@ -37,6 +37,22 @@ Uses macOS built-in `sips` — no dependencies needed.
 
 ---
 
+## heartbeat.sh
+
+Dead-man's switch. Pings a Healthchecks.io check every five minutes (cron);
+Healthchecks alerts from outside the network when the pings stop — the only
+alert that survives the whole house losing power. Sends a `/fail` ping when
+Docker is unresponsive, since Uptime Kuma is down with it.
+
+```bash
+~/.dotfiles/scripts/utils/heartbeat.sh --test   # one ping, prints "sent: ok" or the failure
+```
+
+Reads `HEARTBEAT_PING_URL` from `~/.config/homelab/heartbeat.env` (never commit
+it). Setup: `scripts/cron/README.md`, "Setting up the heartbeat".
+
+---
+
 ## utils.sh
 
 Shared print/formatting helper functions (coloured output, section banners).
