@@ -30,10 +30,8 @@ All services accessible via: localhost, Tailscale (`100.81.171.49`), and `*.peci
 - `scripts/setup/setup-cloudflare-tunnel.sh` — creates tunnel + DNS records
 - `services/rclone/rclone-backup.sh` — Cloudflare R2 cloud backup (cron at 5am)
 - `docs/HOME_SERVER_TODO.md` — **active TODO list for the homelab. Start here.**
-- `docs/HOME_SERVER.md` — ⚠️ **historical**, describes the pre-2026-08-04
-  T7-primary architecture. For setting up a new Mac mini today, use
-  `docs/HOME_SERVER_REFERENCE.md` (current drive layout + backup facts) and
-  `docs/SERVICES.md`, not this file's commands verbatim.
+- `docs/HOME_SERVER.md` — full setup + disaster-recovery guide for a new Mac
+  mini (rewritten 2026-09-24 for the NAS architecture)
 - `docs/HOME_SERVER_CHANGELOG.md` — completed work. Check before proposing
   anything — several ideas have been tried and reverted already.
 

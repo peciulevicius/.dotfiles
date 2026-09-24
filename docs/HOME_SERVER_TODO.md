@@ -61,7 +61,7 @@ Made during the 2026-09-21 Vaultwarden scare (212 cleartext passwords,
       `~/.training/` backed up to R2
 - [ ] **Claude config** — relink commands, drop stale Grafana refs, dedupe
       skill/command pairs, add `personal-finance`, `pkm-notes`, `testing` skills
-- [ ] **HOME_SERVER.md rewrite** against the NAS architecture
+- [x] ~~HOME_SERVER.md rewrite~~ — done
 - [ ] Local models: no bigger model (RAM ceiling ~8B); optional later — OpenCode
       + `qwen2.5-coder:7b` for offline snippets only
 
@@ -313,13 +313,8 @@ press to bring it back. Two separate gaps found.
       docker compose -f ~/services/immich/docker-compose.yml up -d
       # verify: docker logs immich_server --tail 20 (no auth errors), open the app
       ```
-- [ ] **Rewrite `HOME_SERVER.md` against the NAS architecture.** It's the
-      linked "set up from scratch" guide but still describes the pre-2026-08-04
-      T7-primary setup (Immich/media/books all pointed at T7, no NAS at all).
-      Flagged with a banner 2026-09-21 and its stale "backup strategy" links
-      from `SERVICES.md`/`UTILITY_SCRIPTS.md` repointed at
-      `HOME_SERVER_REFERENCE.md`, but the ~750-line body is still the old
-      narrative — real rewrite work, not a quick edit.
+- [x] ~~Rewrite `HOME_SERVER.md` against the NAS architecture~~ — done 2026-09-24
+      (773 → 353 lines, every path re-based on the NAS; old version in git history)
 - [ ] Clear the leftover data directories from tonight's removals:
       `rm -rf ~/services/mealie ~/services/grafana` (both confirmed
       empty/unused before removal, nothing to lose)

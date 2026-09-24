@@ -8,6 +8,18 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-24 — HOME_SERVER.md rewritten for the NAS architecture
+
+The linked "set up from scratch" guide still described the pre-2026-08-04
+T7-primary setup. Rewritten (773 → 353 lines) against the current facts in
+`HOME_SERVER_REFERENCE.md`, `SERVICES.md`, `NAS.md` and the live compose files:
+architecture, prerequisites (incl. getting into Vaultwarden when it's what
+you're rebuilding), step-by-step rebuild with the pmset/FileVault, copy-not-
+symlink staging and real-cloudflared-agent caveats, R2/DB-dump/Immich restores,
+cron, and an if-something-breaks table. The old narrative stays in git history.
+Unverified spots are marked "check" rather than guessed (whether a Time Machine
+target is still active; whether the tunnel setup script reuses a tunnel).
+
 ## 2026-09-23 (later still) — Nightly backup had silently dropped the Immich photos
 
 ⚠️ **Corrects the 2026-09-21 entry that said "let the nightly cron pick it up,
