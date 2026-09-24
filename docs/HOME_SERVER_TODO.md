@@ -555,16 +555,19 @@ time only spike once, on the first run.
       while it's still executing) and separately caught two live-SQLite files
       that fail every run (`portainer.db`, Celery's schedule) — both fixed,
       both now excluded. Second attempt ran clean end to end.
-- [ ] Spot-check restore integrity once — pick one real photo and pull it back:
-      ```bash
-      rclone copy r2:peciulevicius-backups/immich-photos/<some-file> /tmp/restore-test/
-      ```
+- [ ] Spot-check restore integrity — **automated 2026-09-24**:
+      `scripts/backup/r2-verify.sh` pulls one random photo (and one file from
+      every other set) back and byte-compares it. Still to do: reinstall the
+      crontab (`crontab < ~/.dotfiles/scripts/cron/crontab`, then
+      `crontab -l`), run the script once by hand and tick this off when it
+      passes
 - [x] ~~Let the nightly cron pick it up~~ — ⚠️ it didn't at first: cron ran
       the repo copy, which read a different `.env` without the flag. Fixed
       2026-09-23 (cron now runs `~/services/rclone/`); first confirmed nightly
       run is the next 05:00. See changelog.
-- [ ] Re-check yearly that it's still running: `rclone size` should track the
-      library's growth, not stay flat
+- [x] ~~Re-check yearly that it's still running~~ — `r2-verify.sh` logs
+      `rclone size` monthly to `~/logs/r2-size-history.tsv` and fails on a
+      >5% shrink; a flat line shows as "unchanged since the last check"
 
 Full detail: `services/rclone/README.md` "Immich photo/video backup", and the
 updated backup facts table in

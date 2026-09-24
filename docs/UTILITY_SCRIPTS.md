@@ -19,6 +19,7 @@ This dotfiles repository includes several utility scripts to help maintain and m
 | `setup/mac-mini.sh` | Mac mini sleep toggle + one-time Immich setup | Mac mini only |
 | `setup/setup-cloudflare-tunnel.sh` | Sets up Cloudflare Tunnel for HTTPS on all services | Once per machine |
 | `backup/backup-databases.sh` | Dumps PostgreSQL + MariaDB databases from Docker | Weekly via cron |
+| `backup/r2-verify.sh` | Restores one random file per R2 backup set and byte-compares it with the original; tracks bucket size month to month | Monthly via cron |
 | `backup/restore.sh` | Restores service data from Backblaze B2 | When needed |
 | `services/setup-services.sh` | Stages Docker Compose stacks to `~/services/` | After fresh install |
 | `services/rclone/rclone-backup.sh` | Backs up `~/services/`, Obsidian, DB dumps, Calibre, Immich originals to Cloudflare R2 (cron runs the staged copy in `~/services/rclone/`) | Nightly via cron |

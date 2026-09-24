@@ -53,6 +53,24 @@ crontab -e
 # silently used a different .env (Immich backup was off there, 2026-09-23).
 ```
 
+## Verify it restores (monthly)
+
+`scripts/backup/r2-verify.sh` downloads one random file from each backup set
+(vault, DB dumps, Calibre, Immich originals when enabled), byte-compares it
+with the original on disk, and appends `rclone size` to
+`~/logs/r2-size-history.tsv`. It fails if a restored file differs, or if a set
+shrank by more than 5% since the previous run (rclone `sync` mirrors
+deletions, so a shrink means data vanished locally). R2 has no egress fees, so
+the check is free. Cron'd on the 1st of each month — see
+[`scripts/cron/`](../../scripts/cron/README.md).
+
+```bash
+~/.dotfiles/scripts/backup/r2-verify.sh
+```
+
+Files modified in the last 24h are skipped as candidates — they may have
+changed since the 05:00 run, which would be a false alarm, not corruption.
+
 ## Migrate from B2 to R2
 
 If switching from Backblaze B2, use the migration helper:

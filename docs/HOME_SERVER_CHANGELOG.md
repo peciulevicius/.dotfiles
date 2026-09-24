@@ -33,6 +33,15 @@ Three gaps closed in the same pass, all "nothing notices" failures:
   warns if gitleaks is missing. `core.hooksPath` is per-clone and `install.sh`
   runs once per machine, so older clones (the MacBook) never got it.
 
+### Monthly R2 restore check
+
+New `scripts/backup/r2-verify.sh`, cron'd for the 1st of each month: one
+random file per backup set is downloaded and byte-compared with the original,
+and bucket sizes go to `~/logs/r2-size-history.tsv`, failing on a >5% shrink.
+"All backups complete" only proves an upload ran — this proves a restore
+works. Tested here against a local stand-in for R2 (a corrupted file and a
+shrunk set both fail it). Not yet run against the real bucket.
+
 ## 2026-09-23 (later still) — Nightly backup had silently dropped the Immich photos
 
 ⚠️ **Corrects the 2026-09-21 entry that said "let the nightly cron pick it up,
