@@ -110,6 +110,9 @@ SYNC_CMD+=(--exclude "uptime-kuma/data/**")
 # Stopped/removed services
 SYNC_CMD+=(--exclude "karakeep/**")
 SYNC_CMD+=(--exclude "actual-budget/**")
+# Removed 2026-09-21/22, data dirs still on disk until deleted by hand
+SYNC_CMD+=(--exclude "mealie/**")
+SYNC_CMD+=(--exclude "grafana/**")
 SYNC_CMD+=($RCLONE_FLAGS)
 [[ "$DRY_RUN" == "true" ]] && SYNC_CMD+=(--dry-run)
 
