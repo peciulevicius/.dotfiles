@@ -1,84 +1,66 @@
-# Octopus Deploy in the homelab — researched, not building it
+# Octopus Deploy (evaluated, not deployed)
 
-**Verdict (2026-09-19): no, not on the Mac mini.** Not because the idea is bad —
-because the RAM isn't there, and the measurement below says so plainly. This file
-exists so the research isn't lost and the idea doesn't get re-proposed from
-scratch in six months.
+**Decision (2026-09-19): not deployed on the Mac mini, because of available
+memory.** This page records the evaluation so it does not need repeating.
 
-Moved here from a scratchpad in `~/dev/janioniu-vynuogynas`, where it didn't
-belong: that repo is a single Cloudflare Worker. `.dotfiles` is the homelab repo.
+## Goal
+
+A self-hosted Octopus Deploy instance for practising .NET deployments to
+self-managed targets and for deploying personal .NET projects.
+
+It was not intended as the deploy path for Cloudflare Worker or static-site
+projects. For those, `wrangler versions upload` / `versions deploy` /
+`rollback` already provide promotion, rollback and traffic splitting.
+
+## Why it does not fit
+
+Octopus Server requires **SQL Server**, and `mcr.microsoft.com/mssql/server`
+has a 2GB memory floor. Octopus Server plus SQL Server needs roughly 3–4GB.
+
+Measured on the Mac mini on 2026-09-19, after removing unused containers:
+
+| Metric | Value |
+|---|---|
+| Host RAM | 16GB total, ~7.4GB compressed |
+| Host swap | 3.0GB of 4GB in use |
+| Docker VM allocation | 9.7GiB |
+| Used by 38 running containers | 5.55GiB |
+| Headroom inside the Docker VM | ~4.1GiB |
+
+The pair would consume all remaining Docker headroom on a host that is already
+swapping, and the freed memory was allocated to the AI workspace, which had
+higher priority.
+
+## Conditions for revisiting
+
+- Octopus gets its own machine or VM.
+- The Mac mini's container load drops substantially.
+- Octopus supports a lighter database backend (SQLite or PostgreSQL).
 
 ---
 
-## What was wanted
+## Notes for a future deployment
 
-A mirror of the day-job setup — Octopus deploying .NET apps to self-managed
-targets — for practice and for personal .NET projects. Intended hostname
-`deploy.peciulevicius.com`.
+### 1. Licensing
 
-Explicitly **not** the deploy path for `janioniu-vynuogynas`. That site is one
-Worker; `wrangler versions upload` / `versions deploy` / `rollback` already gives
-promote-and-rollback, and can split traffic, which is more than Octopus gives
-for free. See that repo's `docs/environments.md`.
+Octopus is commercial software. Its free tier has historically been a
+Community Edition with limits on targets and projects, and the terms have
+changed more than once. Check the current limits at octopus.com/pricing before
+anything else.
 
-## Why it doesn't fit here — measured, not guessed
+### 2. Choose based on the goal
 
-Octopus's real cost is not Octopus, it's **SQL Server**. `mcr.microsoft.com/mssql/server`
-has a hard 2 GB RAM floor and will use it. Plus the Octopus Server container,
-call it ~3–4 GB for the pair.
+- **Learning Octopus itself:** Octopus is the right tool; SQL Server is the
+  cost.
+- **Deploying personal .NET projects:** a self-hosted GitHub Actions runner is
+  simpler — free, no database, no server to maintain. Woodpecker CI or Drone
+  (SQLite-backed) also avoid SQL Server; Argo CD fits if targets become
+  Kubernetes.
 
-Measured on the Mac mini, 2026-09-19, *after* stopping karakeep ×3 and
-actual-budget:
+### 3. Compose starting point
 
-| | |
-|---|---|
-| Host RAM | 16 GB total, ~7.4 GB in the compressor |
-| Host swap | **3.0 GB of 4 GB used** |
-| Docker VM allocation | 9.7 GiB |
-| Used by the 38 running containers | 5.55 GiB |
-| Headroom inside the Docker VM | ~4.1 GiB |
-
-So Octopus + SQL Server would consume essentially *all* remaining Docker
-headroom, on a host already swapping 3 GB. And the RAM freed by stopping
-karakeep was earmarked for Odysseus, which is the higher-priority want.
-
-**This would not be tight. It would not fit.**
-
-## What would change the answer
-
-- Octopus moves to its own machine or VM — it was always the honest answer for
-  a SQL-Server-backed service
-- The Mac mini's container load drops substantially (it is going up, not down)
-- Octopus ships a SQLite or Postgres backend (no sign of this)
-
-## If it's revisited, start here — don't re-research
-
-### 1. Licence, before anything else
-
-Octopus is commercial. The free tier has historically been **Community Edition**
-with small target/project caps, and the terms have moved more than once. Confirm
-the current free-tier limits and whether self-hosted Community still exists at
-octopus.com/pricing. If it now needs a paid licence, the alternatives below win
-outright.
-
-### 2. Decide what the goal actually is
-
-This changes the answer completely:
-
-- **Day-job skill transfer** → Octopus is correct, and the SQL Server cost is
-  simply the price of it
-- **"Deploy my .NET side projects"** → a **self-hosted GitHub Actions runner**
-  beats it on every axis: free, no server to maintain, no database, and closest
-  to what already works for the vineyard site
-
-Other options that avoid the SQL Server tax: Woodpecker CI or Drone (SQLite),
-Argo CD if targets ever become Kubernetes. None of them teach you Octopus, which
-is the whole point if it's skill transfer.
-
-### 3. Compose sketch — untested starting point
-
-Pin real versions and re-read Octopus's docs for current env var names; they have
-changed between majors.
+Untested. Pin real image tags and confirm environment variable names against
+the current Octopus documentation; they have changed between major versions.
 
 ```yaml
 services:
@@ -86,8 +68,8 @@ services:
     image: mcr.microsoft.com/mssql/server:2022-latest
     environment:
       ACCEPT_EULA: "Y"
-      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD}   # from .env, never inline
-      MSSQL_PID: Express                        # check Express's 10 GB DB cap is enough
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD}   # from .env
+      MSSQL_PID: Express                        # Express has a 10GB database cap
     volumes:
       - octopus_db_data:/var/opt/mssql
     restart: unless-stopped
@@ -100,9 +82,9 @@ services:
       DB_CONNECTION_STRING: "Server=octopus_db,1433;Database=Octopus;User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=true"
       ADMIN_USERNAME: ${OCTOPUS_ADMIN_USERNAME}
       ADMIN_PASSWORD: ${OCTOPUS_ADMIN_PASSWORD}
-      MASTER_KEY: ${OCTOPUS_MASTER_KEY}          # generate once, BACK IT UP
+      MASTER_KEY: ${OCTOPUS_MASTER_KEY}          # generate once and back up
     ports:
-      - "8090:8080"                              # 8080 is taken on this host
+      - "8090:8080"                              # 8080 is in use on this host
     volumes:
       - octopus_repo:/repository
       - octopus_artifacts:/artifacts
@@ -116,28 +98,28 @@ volumes:
   octopus_logs:
 ```
 
-Ports already bound on this host: `8080`, `8000`, `8001`, `8053`, `8082`–`8085`,
-`8096`, `5055`, and now `5984` (CouchDB). `8090` was free as of 2026-09-19 —
-re-check with `lsof -nP -iTCP:8090 -sTCP:LISTEN`.
+Ports in use on the host as of 2026-09-19 include `8080`, `8000`, `8001`,
+`8053`, `8082`–`8085`, `8096`, `5055` and `5984`. Check `8090` before use:
+
+```bash
+lsof -nP -iTCP:8090 -sTCP:LISTEN
+```
 
 ### 4. Exposure
 
-**Never behind a plain reverse proxy.** Octopus holds deployment credentials for
-every target it touches; an exposed instance with a weak admin password is a full
-compromise of all of them.
+Octopus holds deployment credentials for every target it manages, so a
+compromised instance compromises all of them.
 
-**Prefer Tailscale-only.** The tunnel + Cloudflare Access path
-(`deploy.peciulevicius.com`, allow-list your own email, no inbound port forward)
-is available since the tunnel already runs — but it is a public surface for no
-gain unless you genuinely need access from a device that can't run Tailscale.
+- Keep it **Tailscale-only**.
+- If access from a device without Tailscale is ever required, publish it through
+  the Cloudflare tunnel behind Cloudflare Access (for example
+  `deploy.peciulevicius.com`), never through a plain reverse proxy.
 
-### 5. Back up the master key on first run — this one is unrecoverable
+### 5. Master key
 
-Octopus encrypts sensitive variables with the master key. Lose it and the
-database cannot be recovered even from a complete SQL backup.
+Octopus encrypts sensitive variables with a master key. **Without the key, the
+database cannot be recovered, even from a complete SQL backup.**
 
-- Save the master key to Vaultwarden (already running here)
-- Back up the SQL database **and** the master key together
-- Verify a restore into a throwaway instance before trusting it
-
-This is the step people skip and regret.
+1. Store the master key in Vaultwarden when the instance is first created.
+2. Back up the SQL database and the master key together.
+3. Test a restore into a throwaway instance before relying on the backup.

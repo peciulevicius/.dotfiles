@@ -1,306 +1,176 @@
-# Self-Hosted AI
+# Self-hosted AI
 
-Owning your AI history, memories and documents — and running models locally
-where it's worth it.
+A self-hosted AI workspace that keeps chat history, memories and documents on
+local storage, with local models for sensitive work and cloud models where
+capability matters.
 
-Companion: [DEGOOGLE.md](DEGOOGLE.md). This is Gap 4 from that guide.
+Deployment details, configuration and benchmarks:
+[services/odysseus/README.md](https://github.com/peciulevicius/.dotfiles/blob/main/services/odysseus/README.md).
+Outstanding work: [HOME_SERVER_TODO.md](../HOME_SERVER_TODO.md).
+
+## Current state
+
+| Component | State |
+|---|---|
+| Workspace | **Odysseus**, deployed 2026-09-21, port 7001, Tailscale only |
+| Local inference | **Ollama**, native via Homebrew |
+| Chat model | `qwen2.5:7b` |
+| Background model (titles, tagging) | `llama3.2:3b` |
+| Data | `~/services/odysseus/data` on the internal SSD, backed up to R2 |
+| Authentication | `AUTH_ENABLED=true` with TOTP |
 
 ---
 
-## Your three questions, answered up front
+## Sovereignty and privacy
 
-**"Does a cloud backend mean my chats still go through AI servers?"**
+These are different properties, and the difference determines which model to
+use.
 
-Yes — and this distinction matters more than anything else on this page:
-
-| | Where it lives | Who sees it |
+| | What it covers | Where it lives |
 |---|---|---|
-| **Data sovereignty** ✅ what you get | History, memories, RAG documents, agent configs, attachments — **on your NAS** | Only you |
-| **Data privacy** ⚠️ what you don't | The text of each prompt while it's being answered | Anthropic / OpenAI / whoever |
+| **Sovereignty** | Chat history, memories, RAG documents, agent configuration, attachments | Local storage, for any backend |
+| **Privacy** | The content of each prompt while it is answered | Stays local only with a local model |
 
-With a cloud backend, the *content of a query* still travels to the provider.
-What changes is that **the accumulated record of you stops living in their
-account**. PewDiePie's own framing was precise: the more you tell an AI, the
-better it works, and the more of yourself you've handed to a company — *"I'm
-glad I'm the one who owns this file."* The file is the asset. Own the file,
-rent the compute.
+With a cloud backend, each prompt still reaches the provider; what changes is
+that the accumulated record stays in local storage rather than in the
+provider's account. Only a local model provides both.
 
-A fully-local model is the only way to get both. That's Phase 2.
+### Routing by sensitivity
 
-**"Can I mix — Claude when I need power, local when it's sensitive?"**
-
-Yes, and that's the main reason to run a workspace at all. Both Odysseus and
-Open WebUI let you pick the model per conversation. Sensible routing:
+The workspace selects the model per conversation.
 
 | Use | Model |
 |---|---|
-| Coding, hard reasoning, long context | **Claude** (nothing local competes) |
-| Journal, health, finances, personal docs, anything from Paperless | **Local** |
-| Bulk drudgery — summarise, reformat, extract, rename | **Local** (it's free and fast enough) |
-| Offline / travelling / provider outage | **Local** |
-
-**"Do I need a separate machine with more RAM later?"**
-
-For local models that genuinely rival Claude — yes, and it's a real purchase
-(see Phase 3). For a *useful* local model that handles the sensitive-data
-column above — no, your current hardware manages. Phase 1 needs no hardware
-at all.
+| Coding, complex reasoning, long context | Cloud (Claude) |
+| Journal, health, finances, personal documents, Paperless content | Local |
+| Bulk work: summarising, reformatting, extraction | Local |
+| Offline use or provider outage | Local |
 
 ---
 
-## Hardware reality check
+## Hardware constraints
 
-This has been tried here before and failed. From `HOME_SERVER_CHANGELOG.md:168`:
-
-> ~~Ollama + Open WebUI~~ — removed (not enough RAM, using Claude instead)
-
-Before repeating it, the actual numbers:
-
-| Machine | Spec | Usable for inference |
+| Machine | Memory | Practical inference budget |
 |---|---|---|
-| Mac mini M4 | 16GB unified, 42 containers using 5.2GB of a 10GB Docker VM | ~6–8GB headroom |
-| MacBook Air M1 | 16GB unified, **fanless** | ~10GB, but throttles under sustained load |
+| Mac mini M4 | 16GB unified, shared with ~40 containers | ~6–8GB |
+| MacBook Air M1 | 16GB unified, fanless | ~10GB, throttles under sustained load |
 
-**The likely reason the first attempt felt bad: Ollama was running in Docker.**
-Docker Desktop/OrbStack on macOS runs a Linux VM with **no GPU passthrough** —
-Metal is unreachable, so the model runs on CPU at a fraction of the speed. The
-same model run natively via Homebrew uses the M4's GPU and is several times
-faster.
+**Models run natively on macOS; only the web UI runs in Docker.** Docker on
+macOS runs a Linux VM with no GPU passthrough, so a containerised model runs on
+the CPU at a fraction of Metal speed. This was the likely cause of an earlier
+failed attempt with Ollama and Open WebUI in Docker. Containers reach the host
+at `http://host.docker.internal:11434`.
 
-**Rule: models run natively on macOS. Only the web UI goes in Docker.**
-The container reaches the host with `http://host.docker.internal:11434`.
+For the same reason, Odysseus's **Cookbook** (hardware scan and model
+download) is unusable here: it scans the container, reports no GPU, and
+recommends models that would run CPU-only.
 
----
+### Model sizing
 
-## Phase 1 — The workspace (do this first, costs nothing)
-
-This is the part worth having regardless of whether you ever run a local model.
-
-### Which one
-
-| | Odysseus | Open WebUI |
+| Model | RAM (Q4) | Assessment |
 |---|---|---|
-| What it is | PewDiePie's AI workspace — the video's subject | The mature, established self-hosted LLM UI |
-| Maturity | New, fast-moving, AGPL-3.0 | Years old, huge community, well-tested |
-| Backends | Ollama, llama.cpp, vLLM, OpenRouter, any OpenAI-compatible API | Same |
-| Extras | Agent, deep research, email client, calendar, notes, docs editor, image editor, **Cookbook** | Chat, RAG, tools, pipelines |
-| macOS support | ⚠️ see below | ✅ Docker, well-trodden |
+| `llama3.2:3b` | ~2GB | Fast; suitable for titles, tags, short summaries |
+| Qwen3 4B | ~2.5GB | Tried and removed: slower end to end than the 7B and far more verbose |
+| `qwen2.5:7b` | ~4.7GB | Current chat model |
+| Qwen3 8B | ~5GB | Better reasoning; leaves little headroom beside Docker |
+| 30B and above | 18GB+ | Not possible on this hardware |
 
-**What Odysseus actually bundles** (from the release video):
-
-- **Agent** — built on [OpenCode](https://opencode.ai). Runs on your machine:
-  reads, writes, edits files, browses the web. His example was finding a video
-  on another machine, converting it, running Whisper, returning the transcript.
-  It's *self-evolving* — writes its own instructions after doing a task once.
-- **Memory extraction** — pulls durable facts out of conversations into a file
-  you own. This is the sovereignty argument made concrete.
-- **Email client with AI triage** — reads mail, flags what's genuinely urgent,
-  drafts auto-replies, summarises. Born from hating having to check email
-  constantly. **This pairs directly with your email migration** — if you end up
-  on Purelymail/Migadu with plain IMAP, this can sit on top of it.
-- **Deep research** — adapted from Tongyi Labs, with a visual mode you can
-  interrogate further.
-- **Document editor** — Claude-Artifacts-style, but deliberately built so *you*
-  write and the AI only fixes formatting, spelling, and fact-checks.
-- **Built-in search**, calendar, Keep-style notes, characters, themes, an image
-  editor with background removal, and a responsive mobile UI.
-- **Cookbook** — see below, this is the important one for you.
-
-**Repo:** <https://github.com/odysseus-dev/odysseus> — AGPL-3.0-or-later.
-
-> ✅ **macOS is supported.** At release he said *"there is no Windows or Mac
-> port"*, but the repo now ships `build-macos-app.sh` and `start-macos.sh`
-> alongside a Windows portable build and a Linux `install-service.sh`. The
-> Docker Compose path is still the right one for the Mac mini — it keeps
-> Odysseus consistent with your other 42 services.
-
-```bash
-git clone https://github.com/odysseus-dev/odysseus.git
-cd odysseus
-cp .env.example .env
-docker compose up -d --build
-# http://localhost:7000 — admin password is printed in the logs
-```
-
-Three details from the README that matter for your setup:
-
-- **`AUTH_ENABLED=true`** — the project explicitly warns to keep this on for any
-  network-accessible deployment. Non-negotiable behind your tunnel.
-- **IMAP/SMTP email integration** with triage and summaries — so it plugs
-  straight into whichever mailbox you pick in [DEGOOGLE.md](DEGOOGLE.md),
-  provided that mailbox speaks plain IMAP. One more reason to avoid
-  Bridge-only providers.
-- **CalDAV sync** — it can talk to Nextcloud Calendar directly, and **MCP**
-  support means it can use the same tool servers Claude Code does.
-
-**Recommendation:** try Odysseus first — it's what you actually saw and the
-feature set is far ahead. Keep **Open WebUI as the fallback** if it turns out to
-be rough on macOS/ARM. Both read the same backends, so switching costs nothing
-but time.
-
-### Cookbook answers your RAM question for you
-
-The single most useful feature for your situation. Cookbook **scans your
-hardware and scores what you can actually run**, then downloads the model,
-serves it, and wires the endpoint into the workspace automatically — no more
-guessing whether a quantisation fits in 16GB, and no more `/v1` endpoint
-fiddling.
-
-So the honest answer to *"do I need a machine with more RAM?"* is: **install
-this, let it score your Mac mini, and find out** rather than deciding in
-advance.
-
-### Make room first
-
-You have ~400MB of RAM sitting in containers your own changelog says were
-removed. From `HOME_SERVER_TODO.md`:
-
-- [x] ~~Stop `karakeep` + `karakeep-chrome` + `karakeep-meilisearch`~~ —
-      removed 2026-09-19 (containers and images; see changelog)
-- [x] ~~Stop `actual-budget`~~ — removed 2026-09-19
-
-That reconciliation was already on the list. Doing it now funds the workspace.
-
-### Steps
-
-> ✅ **Deployed 2026-09-21** — on **port 7001** (7000 is macOS AirPlay),
-> Tailscale-only. Live configuration work is tracked in
-> `HOME_SERVER_TODO.md` step 8 and `services/odysseus/README.md`; the list
-> below is the original plan, ticked against what shipped.
-
-- [x] ~~Free RAM (above)~~
-- [x] ~~Read the Odysseus repo README; confirm macOS/ARM64 status~~
-- [x] ~~`services/odysseus/`~~ — upstream's own compose via `setup.sh` +
-      `.env.example`, rather than a hand-written compose file
-- [x] ~~Store data on the **internal SSD**~~ — `~/services/odysseus/data`
-- [ ] Add an Anthropic or OpenRouter API key as the first backend
-- [x] ~~Expose at `ai.peciulevicius.com`~~ — **decided against for now**: it is
-      Tailscale-only. Public exposure only if a non-Tailscale device ever
-      needs it, and then behind Cloudflare Access
-- [x] ~~Keep **`AUTH_ENABLED=true`**~~ — set in `.env.example`, with TOTP 2FA.
-      This holds the whole conversational history and the agent can execute
-      code; do not put it on the open internet.
-- [x] ~~Add the data directory to `rclone-backup.sh`~~ — `odysseus/data/`
-      minus the regenerable model caches
-- [x] ~~Glance tile~~ — done. [ ] Uptime Kuma check — not confirmed
+A 4–8B model does not replace Claude. It is useful where keeping the data local
+matters more than raw capability, and particularly with retrieval over local
+documents (Paperless, Obsidian, Linkwarden, Calibre).
 
 ---
 
-## Phase 2 — Local models, natively
+## Workspace choice
 
-Once the workspace is up, add a local backend for the sensitive-data column.
-
-- [x] ~~`brew install ollama && brew services start ollama`~~ — native, 2026-09-21
-- [x] ~~Point the workspace at `http://host.docker.internal:11434`~~ —
-      `OLLAMA_BASE_URL` in `.env.example`
-- [x] ~~Start with a 4B model~~ — `qwen3:4b` was tried and removed (slower end
-      to end than the 7B and far wordier); **`qwen2.5:7b`** for chat and
-      **`llama3.2:3b`** for background calls. Benchmarks in
-      `services/odysseus/README.md`
-
-Realistic for 16GB shared with 40+ containers:
-
-| Model | ~RAM (Q4) | Honest verdict |
+| | Odysseus (chosen) | Open WebUI (fallback) |
 |---|---|---|
-| Qwen3 4B | ~2.5GB | Summarising, extraction, tagging. Fine at it. |
-| Gemma 3 4B | ~3GB | Similar; better prose |
-| Qwen3 8B | ~5GB | Noticeably better reasoning; tight alongside Docker |
-| Anything 30B+ | 18GB+ | **Not possible on this hardware** |
+| Maturity | New, fast-moving, AGPL-3.0 | Established, large community |
+| Backends | Ollama, llama.cpp, vLLM, OpenRouter, OpenAI-compatible APIs | Same |
+| Features | Agent (built on OpenCode), memory extraction, IMAP/SMTP email with triage, deep research, document editor, CalDAV, MCP, notes | Chat, RAG, tools, pipelines |
 
-Set expectations correctly: a 4–8B model is **not** a Claude replacement. It is
-a competent local worker for jobs where the data matters more than the
-brilliance. Used that way it's genuinely valuable; used as a Claude substitute
-it will disappoint, which is exactly what happened last time.
+Both use the same backends, so switching costs only configuration time.
 
-**Where it earns its keep:** RAG over your own corpus. You have Paperless-NGX
-(documents), Obsidian (notes), Linkwarden (bookmarks) and Calibre (books) — a
-small model with retrieval over *your* documents beats a large model that has
-never seen them. That's the "smaller models are amazing once you add retrieval"
-point, and it's true.
+Relevant Odysseus features:
+
+- **Memory extraction** stores durable facts from conversations in local data.
+- **IMAP/SMTP email integration** requires a provider with plain IMAP — one
+  reason Bridge-only and IMAP-less providers were ruled out
+  ([DEGOOGLE.md](DEGOOGLE.md#email)).
+- **CalDAV** can sync with Nextcloud Calendar.
+- **MCP** support allows the same tool servers Claude Code uses.
+
+### Exposure
+
+Odysseus is **Tailscale-only**. It holds conversation history and memories, and
+its agent can read, write and execute on the host; a public instance with the
+agent enabled amounts to remote code execution. A public hostname
+(`ai.peciulevicius.com`) would only be added if a non-Tailscale device needs
+access, and then behind Cloudflare Access.
 
 ---
 
-## Phase 3 — Dedicated hardware (only if Phase 2 leaves you wanting)
+## Cloud API keys
 
-Don't buy anything until you've run Phase 2 and know what you're missing.
+An Anthropic API key is billed separately from a Claude subscription; a
+subscription does not include API access. If a key is added:
 
-| Option | Cost | Buys you |
+- Store it in `~/services/odysseus/.env` (gitignored) and in Vaultwarden.
+- Keep a low prepaid balance with automatic top-up disabled, so a leaked key or
+  a runaway agent loop cannot run up charges.
+
+OpenRouter was considered and rejected: a 5.5% top-up fee, one-year credit
+expiry, a 24-hour refund window, Discord-only support, and some providers
+serving quantised models.
+
+---
+
+## Importing chat history
+
+1. **ChatGPT:** Settings → Data Controls → Export Data (emailed zip with
+   `conversations.json`).
+2. **Claude:** Settings → Privacy → Export Data (emailed JSON).
+3. **ChatGPT memories** are not included in the export; copy them manually from
+   Settings → Personalization → Manage Memory.
+4. **Claude project and custom instructions** are also copied manually.
+5. Keep the raw exports on the NAS under `/Volumes/unsorted/ai-exports/` as the
+   source of truth, and include that path in the R2 backup.
+
+Use a cloud model with a large context for memory extraction from long
+exports; small local models with a 4K context merge or drop facts.
+
+---
+
+## Dedicated hardware
+
+Not planned. Buying hardware only makes sense once the local setup shows a
+specific limitation.
+
+| Option | Approximate cost | Capability |
 |---|---|---|
-| Mac mini M4 Pro, 48–64GB | ~€1,600–2,200 | 30B–70B quantised, quiet, low power, Metal |
-| Used RTX 3090 (24GB) in a PC | ~€700–1,000 | Much faster tokens/sec, 30B comfortably, noisy and power-hungry |
-| 2× used 3090 | ~€1,500–2,000 | 70B quantised — approaching PewDiePie territory |
+| Mac mini M4 Pro, 48–64GB | €1,600–2,200 | 30B–70B quantised; quiet, low power |
+| Used RTX 3090 (24GB) in a PC | €700–1,000 | Faster generation; 30B comfortably; loud, power-hungry |
+| 2× used RTX 3090 | €1,500–2,000 | 70B quantised |
 
-For scale: his rig is ~$20K — eight modded 48GB 4090s plus 2× RTX 4000, running
-Llama-3.1-70B, GPT-OSS-120B and Qwen3-235B with a "council" of models voting on
-answers. That is not a consumer target and shouldn't be treated as one.
-
-**The unsentimental maths:** Claude costs you ~€20/month. A €2,000 box is eight
-years of subscription, still won't match Claude on coding, and needs
-maintenance. Buy it if you want local inference *as a goal* — that's a
-perfectly good reason. Don't buy it expecting to save money.
+At about €20/month for a Claude subscription, a €2,000 machine equals roughly
+eight years of subscription and still does not match Claude on coding. It is
+justified if local inference is the goal in itself, not as a cost saving.
 
 ---
 
-## Bringing your Claude + ChatGPT history home
+## Security
 
-You asked for this specifically, and it's the most satisfying part — it turns
-years of accumulated context into something you own and can grep.
+- Keep Odysseus off the public internet (see [Exposure](#exposure)).
+- Scope what the agent can reach before enabling it.
+- API keys belong in `.env`, never in the repository.
+- Memories and history are backed up nightly with the rest of
+  `~/services/odysseus/data`.
+- A local model is only as private as the instance is locked down.
 
-### Export
+## References
 
-- [ ] **ChatGPT** — Settings → Data Controls → Export Data. Emailed zip
-      containing `conversations.json`.
-- [ ] **Claude** — Settings → Privacy → Export Data. Emailed JSON.
-- [ ] **ChatGPT memories** — Settings → Personalization → Manage Memory.
-      Not in the export; copy them out by hand.
-- [ ] **Claude memories/projects** — copy project instructions and any custom
-      instructions manually.
-
-### Import
-
-Neither export matches any workspace's import format, so this needs a small
-converter — a genuinely good little project for this repo:
-
-- [ ] `scripts/ai/import-chat-history.py` — read both exports, normalise to
-      `{title, created_at, messages[{role, content, timestamp}]}`, emit the
-      target workspace's import JSON
-- [ ] Check first whether Odysseus or Open WebUI already ship a ChatGPT
-      importer — Open WebUI has had community converters; don't write what exists
-- [ ] Keep the raw exports on the NAS under `/Volumes/unsorted/ai-exports/`
-      regardless — they're the source of truth
-- [ ] Add that path to `rclone-backup.sh`
-
-### Then feed it back
-
-Once imported, point the workspace's RAG at the archive. Your own past
-conversations become a searchable corpus — and the memory extraction can build
-a profile from years of history that currently only exists inside someone
-else's account.
-
----
-
-## Security notes
-
-This service is different from the rest of the stack. It will hold your email,
-your documents, your memories, and an agent that can execute code on your
-machine.
-
-- **Never expose it without Cloudflare Access.** A public Odysseus instance with
-  the agent enabled is remote code execution on the Mac mini.
-- **Understand the agent before enabling it.** It reads, writes and deletes
-  files. Scope what it can reach.
-- **API keys are server-side only** — they go in `.env`, which is gitignored.
-- **Back up the memories file.** It becomes irreplaceable faster than you expect.
-- **Local ≠ automatically safe.** PewDiePie's line that the AI reading his email
-  is fine "because it's a local AI" holds only if the instance is actually
-  locked down. Yours is reachable over a Cloudflare tunnel. Lock it down.
-
----
-
-## Resources
-
-- [github.com/odysseus-dev/odysseus](https://github.com/odysseus-dev/odysseus) — the workspace, AGPL-3.0
-- [openwebui.com](https://openwebui.com) — mature alternative
-- [opencode.ai](https://opencode.ai) — the agent Odysseus builds on
-- [ollama.com](https://ollama.com) — `brew install ollama`
-- [LM Studio](https://lmstudio.ai) — GUI alternative, good for testing what fits
+- [Odysseus](https://github.com/odysseus-dev/odysseus) (AGPL-3.0)
+- [Open WebUI](https://openwebui.com)
+- [OpenCode](https://opencode.ai)
+- [Ollama](https://ollama.com)
+- [LM Studio](https://lmstudio.ai)
