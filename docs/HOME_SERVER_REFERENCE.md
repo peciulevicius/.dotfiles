@@ -1,359 +1,277 @@
-# Home Server — Reference
+# Home server reference
 
-Facts about the machine, not work to do. Outstanding work lives in
-[HOME_SERVER_TODO.md](HOME_SERVER_TODO.md); finished work in
+Facts about the Mac mini homelab: capacity, storage layout, backups and known
+platform behaviours. Outstanding work is in
+[HOME_SERVER_TODO.md](HOME_SERVER_TODO.md); completed work in
 [HOME_SERVER_CHANGELOG.md](HOME_SERVER_CHANGELOG.md).
 
 ---
 
-### RAM baseline
+## Memory
 
-Mac mini M4, **16GB unified memory**. Docker VM ceiling is now **10GB** (raised
-from 7.8GB on 2026-07-23), but that is a *ceiling*, not a reservation — the VM
-allocates lazily.
+Mac mini M4, **16GB unified memory**. The Docker VM ceiling is **10GB** (raised
+from 7.8GB on 2026-07-23). It is a ceiling, not a reservation; the VM allocates
+lazily.
 
-Measured 2026-09-21 (evening) with 42 containers, after adding the
-four-container Odysseus stack:
-
-| Metric | Value | Reading |
-|---|---|---|
-| Containers, total | 7.59 GiB of the VM's 9.7 GiB | **2.11 GiB headroom** |
-| macOS memory free | 30% | tighter; watch it |
-| Swap used | ~3.3 GB of 4 GB | |
-
-⚠️ **This was the tightest the host had been.** Resolved same night — see below.
-
-**Measured 2026-09-21 (later) with 38 containers**, after removing Mealie (0
-recipes, confirmed unused) and Grafana+Prometheus+node-exporter (Tailscale-only,
-no scripts depended on it, credentials long forgotten):
-
-| Metric | Value | Reading |
-|---|---|---|
-| Containers, total | **5.81 GiB** | ~1.78 GiB reclaimed vs the same-night peak |
+| Date | Containers | Container memory | Notes |
+|---|---|---|---|
+| 2026-09-08 | 42 | 5.2GiB | 43% free, ~2.5GB swap |
+| 2026-09-19 | 39 | 5.55GiB | ~4.1GiB headroom in the VM |
+| 2026-09-21 (peak) | 42 | 7.59GiB of 9.7GiB | 2.11GiB headroom, 30% free, ~3.3GB swap — after adding Odysseus |
+| 2026-09-21 (later) | 38 | **5.81GiB** | After removing Mealie and Grafana/Prometheus/node-exporter (~1.78GiB reclaimed) |
 
 Odysseus stack: odysseus ~745MB, searxng ~141MB, ntfy ~45MB, chromadb ~28MB.
 
-Previous baselines: 2026-09-19, 39 containers, 5.55 GiB used / ~4.1 GiB free.
-2026-09-08, 42 containers, 5.2 GiB used / 43% free.
+Largest consumers (2026-09-19): `immich_server` ~839MB, `paperless` ~374MB,
+`stirling_pdf` ~360MB, `flaresolverr` ~302MB, `calibre` ~299MB.
 
-Previous baseline, 2026-09-08 with 42 containers: 5.2 GiB of containers, 43%
-free, ~2.5 GB swap.
+**Reading macOS memory:** a low "pages free" count is normal, since macOS uses
+spare memory as cache. Judge by memory-pressure percentage and by whether swap is
+growing. Stable swap is fine even at 2.5GB; growing swap with pressure below
+~20% is the warning sign.
 
-**How to read swap on macOS:** "Pages free" is always near zero by design — macOS
-uses spare RAM as cache, so a low free-page count is not a warning. Judge by
-*memory pressure percentage* and whether swap is **growing**. Stable or shrinking
-swap is fine, even at 2.5GB. Growing swap plus pressure under ~20% is the real
-alarm.
+**Containers that can be stopped while travelling:** `nextcloud`,
+`nextcloud_db`, `pihole`, `bazarr`, `sonarr`, `radarr`, `prowlarr`,
+`transmission`, `jellyseerr`, `immich_machine_learning`.
 
-Biggest single consumers (2026-09-19): `immich_server` (~839MB), `paperless`
-(~374MB), `stirling_pdf` (~360MB), `flaresolverr` (~302MB), `calibre` (~299MB).
-
-**Containers safe to stop while traveling:**
-`nextcloud`, `nextcloud_db`, `pihole`, `bazarr`, `sonarr`, `radarr`, `prowlarr`, `transmission`, `jellyseerr`, `immich_machine_learning`
-
-**This is the budget that rules out Octopus Deploy** — its SQL Server dependency
-alone wants 2GB. See [guides/OCTOPUS_DEPLOY.md](guides/OCTOPUS_DEPLOY.md).
+This budget is why Octopus Deploy was not deployed
+([guides/OCTOPUS_DEPLOY.md](guides/OCTOPUS_DEPLOY.md)).
 
 ---
 
-## ⚠️ Cloudflare Tunnel caps uploads at 100MB
+## Storage layout
 
-The free Cloudflare plan limits request bodies to **100MB**. Anything larger
-fails on the way *in* through `*.peciulevicius.com`, and the error comes from
-the app rather than Cloudflare — Calibre-Web reports *"File size may be too
-big"*, which looks like an app setting and isn't.
+Since the 2026-08-04 migration the **NAS is primary storage**. The external
+SSDs are backup targets, normally unplugged and synced manually.
 
-Affects any upload: Calibre-Web, Immich, Nextcloud, Paperless.
+| Device | Capacity | Role | Mount path | Connected |
+|---|---|---|---|---|
+| UGREEN NAS | ~11TiB usable (RAID 5) | Primary storage | `/Volumes/<share>` | Always, over SMB |
+| Samsung T7 | 1TB | Manual backup | `/Volumes/T7/` | Normally unplugged |
+| Samsung T5 | 500GB | Manual backup, planned offsite | `/Volumes/Backup/` | Normally unplugged |
 
-**Workaround: skip the tunnel for large uploads.** Every service is also
-reachable directly:
+Paths under `/Volumes/T7` in documentation or scripts describe what to do when
+the drive is plugged in; they are not live mounts.
 
-| Route | Address | Limit |
+| Data | Location | Path |
 |---|---|---|
-| Public hostname | `https://<svc>.peciulevicius.com` | **100MB** |
-| Tailscale | `http://100.81.171.49:<port>` | none |
-| On the Mac mini | `http://localhost:<port>` | none |
-
-Downloads are unaffected — the cap is on request bodies only.
-
-The homepage carries a **"Direct (no tunnel)"** bookmark group with the
-Tailscale URLs for the four upload-heavy services, so the right link is one
-click away rather than something to remember.
-
-⚠️ **A failed large upload can leave the library half-written.** One 750MB
-attempt through the tunnel produced a Calibre record with no file on disk, a
-folder renamed while the database still pointed at the old name, and a
-733MB `.smbdelete` duplicate. See the SMB section below.
-
-## ⚠️ Two cloudflared LaunchAgents exist — only one is real
-
-```
-~/Library/LaunchAgents/com.cloudflare.cloudflared.plist   ← the one actually serving traffic
-~/Library/LaunchAgents/sh.brew.cloudflared.plist          ← brew's own agent, inert
-```
-
-`brew services restart cloudflared` restarts the **second one**, silently —
-it reports success either way, and the real tunnel process (started outside
-Homebrew, `PPID 1`, running since whenever it was first set up) never notices
-the config file changed underneath it. Confirmed 2026-09-22: after editing
-`~/.cloudflared/config.yml`, `brew services restart cloudflared` reported
-success but a request to the removed hostname still hung for 15s+ instead of
-404ing — the old process, with the old config already read into memory, was
-still running, untouched.
-
-**To actually reload the tunnel after editing `config.yml`:**
-
-```bash
-launchctl kickstart -k "gui/$(id -u)/com.cloudflare.cloudflared"
-```
-
-Verify it worked by checking the PID and start time changed:
-
-```bash
-ps aux | grep "[c]loudflared tunnel"
-```
-
-`brew services stop cloudflared` is safe to run once, to stop the dead
-duplicate from sitting in `error` state in `brew services list` — it does not
-touch the real tunnel.
-
-## ⚠️ Rotating a password only fixes one side of a connection
-
-Radarr and Sonarr each store their **own separate copy** of Transmission's
-login to talk to it — rotating Transmission's password (done 2026-09-19,
-credential migration) does not touch that copy. Result, not caught until
-2026-09-22: every release either app grabbed silently failed the handoff
-(`Authentication Failure`) for three days, invisible unless you specifically
-opened Radarr's queue and read the error detail — Jellyseerr showed the
-request as accepted, nothing looked broken.
-
-**When rotating any credential a *client* also stores its own copy of**, check
-every consumer, not just the service whose password changed:
-
-| Rotated | Also stored in | Check |
-|---|---|---|
-| Transmission | Radarr, Sonarr (download client settings) | `/api/v3/downloadclient/test` |
-| Vaultwarden's own login | nothing — it's the source of truth | — |
-| Any `*@peciulevicius.com` alias | wherever that alias is the *login*, not just the notify address | per-service |
-
-This is the same class of risk as the [malware release profile](#) below —
-a change that looks complete from the changed service's side can be silently
-broken from a consumer's side. Verify the *consumer*, not just the source.
-
-## 🔴 A fake "movie" release is often a bare `.exe` — check before it finishes
-
-Caught 2026-09-22: a Radarr-grabbed "Resident Evil (2026)" release was a
-single 1.15GB `.exe` file, no video container, already 19% downloaded before
-anyone looked. This is a known piracy-scene scam pattern — a fake release
-with a real-looking name whose payload is a Trojan installer, not media.
-
-**Manual check, if you ever want to look yourself** (Transmission's web UI or
-API, before a download finishes): open the torrent's file list.
-
-- ✅ **Legitimate:** one `.mkv`/`.mp4`/`.avi` as the bulk of the size, optionally
-  with `.srt`/`.nfo`/small `.txt` siblings (YTS-style attribution files are
-  normal and harmless)
-- 🔴 **Fake:** the *only* substantial file is `.exe`/`.scr`/`.msi`/`.bat`/`.zip`,
-  or a video-shaped name that actually resolves to one of those extensions
-
-**Automated, added the same day:** a **release profile** in both Radarr and
-Sonarr (Settings → Custom Formats, or `/api/v3/releaseprofile`) that rejects
-any release whose name contains `.exe .scr .lnk .msi .bat .cmd .vbs .jar`,
-`password.txt`, `setup.exe`, `installer` — **before it ever reaches a download
-client**, not just cleaned up after. This is now a standing, automatic
-protection; nothing to run by hand going forward. Verify it's still there:
-
-```bash
-curl -s "http://localhost:7878/api/v3/releaseprofile" -H "X-Api-Key: <radarr-key>"
-```
-
-⚠️ **It only catches releases naming the bad extension in the release title
-itself** — this specific scam did (`FLUX.exe`), which is why the filter
-works, but a more careful fake could rename the payload after download to
-something less obvious. It raises the bar; it doesn't guarantee zero risk. If
-you ever manually eyeball a torrent's file list and it doesn't look like §
-above, delete it — don't run anything from `/Volumes/media`.
-
-## 🚫 Never rename a book in Calibre-Web
-
-**Renaming a book's title or author in Calibre-Web will corrupt the library
-entry on this setup.** It happened twice on 2026-09-21, both times identically:
-
-1. Calibre-Web renames the folder on disk
-2. It copies the EPUB to the new filename
-3. It tries to delete the original — and **SMB refuses**: *"Device or resource
-   busy"*, because the Calibre content server still holds a handle
-4. It rolls the database back, but **not the folder rename**
-
-You are left with `metadata.db` pointing at the old path, a folder with the new
-name, two copies of a 769MB file, and the book 404ing.
-
-The cause is renaming large files on an **SMB share with the library open by two
-services** — the same class of problem as never putting a database on SMB.
-
-### Repair
-
-```bash
-# Rename the folder back to whatever metadata.db expects:
-sqlite3 /Volumes/books/metadata.db "select path from books where id=<ID>;"
-mv "/Volumes/books/<wrong name>" "/Volumes/books/<path from the DB>"
-```
-
-The duplicate EPUB left behind is usually locked server-side. Stopping the
-containers and remounting the share does **not** always clear it — the lock
-lives on the NAS. Clear it from the NAS's own file manager, or leave it; it is
-excluded from the R2 backup.
-
-### What to do instead
-
-| Want | Do |
-|---|---|
-| **Mark a book as read-along/aligned** | Add a **tag** in Calibre-Web. Tags are metadata-only — no file or folder is touched, and KOReader's OPDS browser can filter by them. |
-| **A different title** | Set it **before** importing, by editing the EPUB's metadata on the Mac: `ebook-meta book.epub --title "Can't Hurt Me (read-along)"`. Calibre reads the title from the file, so it imports correctly and nothing needs renaming afterwards. |
-| Anything else that renames files | Do it from the **Calibre desktop app with the library local**, not over SMB. |
-
-⚠️ Tags are also the answer to *"how do I tell which book is aligned from the
-Kindle?"* — a `read-along` tag shows up as a browsable category in the OPDS feed.
-
-## SMB leaves `.smbdelete*` files behind
-
-When a file is deleted on an SMB share while a process still holds it open, the
-server renames it to `.smbdeleteXXXX` instead of removing it. These are
-byte-identical copies of real files — one was **733MB** — and they linger until
-every handle closes.
-
-```bash
-find /Volumes/books -name ".smbdelete*" -exec ls -lh {} \; 2>/dev/null
-find /Volumes/books -name ".smbdelete*" -delete          # "Resource busy" = still held
-```
-
-If they refuse to delete, restarting the containers that touch the share
-(`calibre`, `calibre-web`, `lazylibrarian`) releases most of them. A stubborn
-one needs the share unmounted and remounted, or deletion from the NAS itself.
-
-`rclone-backup.sh` **excludes them** — otherwise a 733MB duplicate would be
-uploaded to R2 as if it were a book.
-
-## Services with an SMB-mounted library don't reliably notice new files
-
-A media server's real-time file watcher does not reliably fire on an
-SMB-mounted share. **Confirmed** for Jellyfin (`/Volumes/media`) 2026-09-22 —
-a Radarr import completed, the file sat correctly in `/media/movies/`, and
-Jellyfin's logs showed zero scan activity until the container was
-**restarted**, which forces a full library scan on startup and picked it up
-immediately. **Audiobookshelf** (`/Volumes/audiobooks`) runs the identical
-watcher-on-SMB pattern — no confirmed failure yet, covered preventively since
-the root cause is architectural, not specific to Jellyfin.
-
-**Stopgap, running now:** `scripts/utils/smb-watcher-rescan.sh` restarts
-both containers every 30 minutes via cron. Brief interruption for anyone
-actively using either at that moment, but new files stop needing a manual
-nudge either way.
-
-**Real fix, needs a person, per service:**
-- **Jellyfin** — generate an API key (dashboard → Admin → API Keys) and wire
-  it into Radarr's and Sonarr's Settings → Connect as a native Jellyfin
-  notification. Refreshes just the new item the moment import finishes, no
-  restart, no interruption.
-- **Audiobookshelf** — no equivalent documented "notify on import" hook from
-  LazyLibrarian as of 2026-09-22. Worth checking Audiobookshelf's own API for
-  a targeted scan-one-folder endpoint before assuming the blunt restart is
-  permanent for this one.
-
-See `HOME_SERVER_TODO.md`.
-
----
-
-## Drive Layout (reference)
-
-Since the 2026-08-04 migration the **NAS is primary**. The two Samsung SSDs are
-backup targets only, plugged in occasionally and synced by hand.
-
-| Device | Size | Role | Mount path | Connected? |
-|--------|------|------|-----------|---|
-| **UGREEN NAS** | ~11TiB usable (RAID 5) | Primary storage | `/Volumes/<share>` | always, over SMB |
-| **T7** | 1TB | Manual backup | `/Volumes/T7/` | **normally unplugged** |
-| **T5** | 500GB | Manual backup, destined offsite | `/Volumes/Backup/` | **normally unplugged** |
-
-**T7 and T5 are disconnected by design and were confirmed unplugged on
-2026-09-19.** The migration to the NAS is finished: every service reads from
-`/Volumes/<share>`, T7 was fully decoupled on 2026-08-04, and the nightly
-external-drive cron was deleted on 2026-09-05 precisely because the drives
-aren't attached. Any doc or script path mentioning `/Volumes/T7` is describing
-**what to do once you plug it back in**, not a live mount.
-
-Photos live in **Immich, on the NAS** — that is the source of truth now. The
-year folders still sitting on T7 are an *unimported archive*, not a working
-copy.
-
-**What lives where:**
-
-| Data | Where | Path |
-|------|-------|------|
 | Immich photos | NAS | `/Volumes/immich/upload` |
-| Immich database | Internal SSD | `~/services/immich/data/postgres` (never on SMB — DBs corrupt over network mounts) |
-| Immich thumbnails | Internal SSD | `~/services/immich/data/thumbs` (SSD for fast scrolling; regenerable) |
-| Media (movies, TV, downloads) | NAS | `/Volumes/media/` |
+| Immich database | Internal SSD | `~/services/immich/data/postgres` |
+| Immich thumbnails | Internal SSD | `~/services/immich/data/thumbs` (regenerable) |
+| Movies, TV, downloads | NAS | `/Volumes/media/` |
 | Audiobooks | NAS | `/Volumes/audiobooks/` |
-| Calibre books | NAS | `/Volumes/books/` |
-| CouchDB (Obsidian LiveSync) | Internal SSD | `~/services/couchdb/data` (database — never on SMB) |
+| Calibre library | NAS (moving to the SSD) | `BOOKS_DIR` in `~/services/calibre/.env` |
+| CouchDB (Obsidian sync) | Internal SSD | `~/services/couchdb/data` |
 | Obsidian vault | Internal SSD | `~/obsidian-vault` |
 | Docker data | Internal SSD | `~/Library/Containers/com.docker.docker` |
 
-**Still on T7 and not yet in Immich:** the year folders (`2002`–`2024`, plus a few named and
-unsorted folders) — ~140GB of archives, see TODO #20. T5 holds copies of the same
-folders, so they are not single-copy, but **do not wipe T7 until they are imported**.
+**Databases never live on SMB**; they corrupt over network filesystems.
 
-**Cloud backup (rclone → Cloudflare R2), nightly 5am:**
-- Docker service configs, obsidian vault, Calibre books, DB dumps → R2 `peciulevicius-backups`
-- Script: cron runs the staged copy `~/services/rclone/rclone-backup.sh`, config in `~/services/rclone/.env` (one script path, one `.env` — two copies silently dropped the Immich step once)
-- ~2.9GB total (critical-only; audiobooks excluded from R2), **$0/month** — under
-  the 10GB free tier
-- **Immich photo originals — enabled 2026-09-21.** `/Volumes/immich/upload/upload`
-  → R2 `immich-photos/`, **72.4GB, 6,696 files, zero errors**
-  (encoded-video/thumbs/backups excluded as regenerable or redundant with the
-  DB dump above). Second offsite copy alongside the T5 drive plan below.
-  Total R2 bill is now ~$1/month. See `services/rclone/README.md`.
-- **Verified monthly** by `scripts/backup/r2-verify.sh` (one random file per
-  set restored and byte-compared; size history in `~/logs/r2-size-history.tsv`)
-- **Restore:** `scripts/backup/restore.sh list | service <name> | set
-  <vault|dumps|books|photos>`, always into `~/services-restore/`; `restore.sh db`
-  loads a dump back into its container
+Photos are managed by Immich on the NAS. About 140GB of older year and trip
+folders on T7 (also copied to T5) have not been imported into Immich yet; do
+not wipe T7 until they are.
 
-**Local backup (rsync NAS → external drive), MANUAL — no cron:**
-- `~/.dotfiles/scripts/backup/backup-external.sh /Volumes/T7` (or `/Volumes/Backup` for T5)
-- Each successful run stamps `~/logs/external-backup-<drive>.last`; the weekly
-  `homelab-audit.sh` fails once a drive is over 30 days stale
-- Covers: Immich originals + transcoded video, **database dumps**, audiobooks, Calibre books
-- Skips: media (movies/TV — too large, re-downloadable), Immich thumbnails (regenerable)
-- Both drives verified 1:1 against the NAS on 2026-09-05
+### Container paths
 
-**If the NAS dies:** photos + books + audiobooks + DB dumps on T7 and T5. Configs on R2.
-Re-download media.
-**If a drive dies:** re-run the script against a replacement.
-**If the Mac mini dies:** all data safe on the NAS. Reinstall macOS, clone dotfiles,
-restore configs from R2.
-
-**The gap:** T7 and T5 currently sit in the same room as the NAS, so nothing survives
-fire/flood/theft. Moving T5 offsite (the parents' house plan) is what makes this 3-2-1
-for everything *except* photos. Photo originals additionally have a cloud-based
-offsite option (`BACKUP_IMMICH_PHOTOS=true`, above) that doesn't depend on a trip
-to the parents' house — the two are complementary, not either/or.
-
----
-
-## Quick reference
-
-| Service | Container path | Mac mini path |
+| Service | Container path | Host path |
 |---|---|---|
 | Radarr/Sonarr media | `/media` | `/Volumes/media` |
 | Radarr movies | `/media/movies` | `/Volumes/media/movies` |
 | Sonarr TV | `/media/tv` | `/Volumes/media/tv` |
 | Transmission downloads | `/downloads` | `/Volumes/media/downloads` |
 | Audiobookshelf | `/audiobooks` | `/Volumes/audiobooks` |
-| Calibre library | `/books` | `/Volumes/books` |
+| Calibre library | `/books` | `BOOKS_DIR` (`/Volumes/books` today) |
 | Immich photos | `/usr/src/app/upload` | `/Volumes/immich/upload` |
-| Immich thumbnails | `/usr/src/app/upload/thumbs` | `~/services/immich/data/thumbs` (internal SSD) |
-| Immich DB | `/var/lib/postgresql/data` | `~/services/immich/data/postgres` (internal SSD) |
+| Immich thumbnails | `/usr/src/app/upload/thumbs` | `~/services/immich/data/thumbs` |
+| Immich database | `/var/lib/postgresql/data` | `~/services/immich/data/postgres` |
 
-All `/Volumes/<share>` paths are NAS SMB mounts — see `docs/NAS.md`.
+NAS mounts and troubleshooting: [NAS.md](NAS.md).
+
+---
+
+## Backups
+
+### Cloud: rclone → Cloudflare R2, nightly at 05:00
+
+| Set | Source | Notes |
+|---|---|---|
+| Service configs | `~/services` | `.env` files, databases (dumped separately), large media and regenerable caches excluded |
+| Obsidian vault | `~/obsidian-vault` | |
+| Database dumps | `~/backups` | Weekly `pg_dump` / `mariadb-dump` |
+| Calibre library | `BOOKS_DIR` | |
+| Immich originals | `/Volumes/immich/upload/upload` | Enabled 2026-09-21: 72.4GB, 6,696 files. Transcodes, thumbnails and Immich's own DB backups are excluded as regenerable or redundant. |
+
+- Cron runs the staged copy `~/services/rclone/rclone-backup.sh` with its
+  configuration in `~/services/rclone/.env`. Keep one script path and one
+  `.env`: two copies once silently dropped the Immich step.
+- Cost: about $1/month (everything except photos is ~2.9GB, within the free
+  tier).
+- **Verified monthly** by `scripts/backup/r2-verify.sh`, which restores one
+  random file per set, compares it byte for byte, and records sizes in
+  `~/logs/r2-size-history.tsv`.
+- **Restore** with `scripts/backup/restore.sh` (`list`, `service <name>`,
+  `set vault|dumps|books|photos`) into `~/services-restore/`; `restore.sh db`
+  loads a dump into its container.
+
+Details: `services/rclone/README.md`.
+
+### Local: rsync NAS → external drive, manual
+
+```bash
+~/.dotfiles/scripts/backup/backup-external.sh /Volumes/T7        # or /Volumes/Backup for T5
+```
+
+- Covers Immich originals and transcoded video, database dumps, audiobooks and
+  the Calibre library. Skips movies and TV (large, re-downloadable) and Immich
+  thumbnails (regenerable).
+- Each successful run writes `~/logs/external-backup-<drive>.last`; the weekly
+  audit fails when a drive is more than 30 days out of date.
+- Both drives were verified 1:1 against the NAS on 2026-09-05.
+
+### Failure scenarios
+
+| Failure | Recovery |
+|---|---|
+| NAS | Photos, books, audiobooks and database dumps from T7/T5 and R2; configs from R2; media re-downloaded |
+| One external drive | Re-run the backup to a replacement |
+| Mac mini | Data is on the NAS; reinstall macOS, clone the dotfiles, restore configs from R2 |
+| Site loss (fire, flood, theft) | R2 holds configs, vault, dumps, books and photo originals. Moving T5 offsite adds a physical copy. |
+
+---
+
+## Known platform behaviours
+
+### Cloudflare Tunnel limits uploads to 100MB
+
+The free Cloudflare plan limits request bodies to 100MB. Larger uploads through
+`*.peciulevicius.com` fail, and the error comes from the application (for
+example Calibre-Web reports *"File size may be too big"*). Downloads are not
+affected.
+
+| Route | Address | Upload limit |
+|---|---|---|
+| Public hostname | `https://<svc>.peciulevicius.com` | 100MB |
+| Tailscale | `http://100.81.171.49:<port>` | None |
+| On the Mac mini | `http://localhost:<port>` | None |
+
+The homepage has a **Direct (no tunnel)** bookmark group with Tailscale URLs for
+the upload-heavy services (Calibre-Web, Immich, Nextcloud, Paperless).
+
+A failed large upload can leave a library half-written: one 750MB attempt left
+a Calibre record without a file, a renamed folder the database no longer
+matched, and a 733MB `.smbdelete` duplicate.
+
+### Two cloudflared LaunchAgents
+
+```
+~/Library/LaunchAgents/com.cloudflare.cloudflared.plist   # serves traffic
+~/Library/LaunchAgents/sh.brew.cloudflared.plist          # Homebrew's agent, inactive
+```
+
+`brew services restart cloudflared` restarts the Homebrew agent and reports
+success, while the real tunnel keeps running with the old configuration in
+memory. To reload after editing `~/.cloudflared/config.yml`:
+
+```bash
+launchctl kickstart -k "gui/$(id -u)/com.cloudflare.cloudflared"
+ps aux | grep "[c]loudflared tunnel"     # confirm the PID and start time changed
+```
+
+`brew services stop cloudflared` can be run once to clear the inactive agent's
+error state; it does not affect the tunnel.
+
+### Credentials stored by clients
+
+Rotating a password on a service does not update clients that keep their own
+copy. After Transmission's password was rotated on 2026-09-19, Radarr, Sonarr
+and LazyLibrarian failed to authenticate for three days while every request
+appeared accepted upstream.
+
+| Rotated | Also stored in | Check |
+|---|---|---|
+| Transmission | Radarr, Sonarr, LazyLibrarian (download client settings) | `/api/v3/downloadclient/test` for Radarr/Sonarr |
+| An `@peciulevicius.com` alias | Any service that uses it as the login | Per service |
+
+After any rotation, search for the old value across all service configuration
+(`grep -rl "<old value>" ~/services/`) and test each consumer. The
+`credential-rotation` project skill encodes this procedure.
+
+### Malicious releases disguised as media
+
+Fake releases sometimes contain an executable instead of video. On 2026-09-22 a
+grabbed movie release turned out to be a single 1.15GB `.exe`.
+
+- **Legitimate:** one `.mkv`/`.mp4`/`.avi` makes up most of the size, possibly
+  with `.srt`, `.nfo` or small `.txt` files.
+- **Suspicious:** the only substantial file is `.exe`, `.scr`, `.msi`, `.bat` or
+  `.zip`.
+
+Radarr and Sonarr have a **release profile** that rejects release names
+containing `.exe .scr .lnk .msi .bat .cmd .vbs .jar`, `password.txt`,
+`setup.exe` or `installer` before they reach the download client:
+
+```bash
+curl -s "http://localhost:7878/api/v3/releaseprofile" -H "X-Api-Key: <radarr-key>"
+```
+
+The filter only matches names that include the extension; it reduces the risk
+rather than removing it. Never run files from `/Volumes/media`.
+
+### Renaming books in Calibre-Web corrupts the entry (library on SMB)
+
+Renaming a title or author in Calibre-Web while the library is on SMB failed
+twice on 2026-09-21 in the same way:
+
+1. Calibre-Web renames the folder.
+2. It copies the EPUB to the new filename.
+3. Deleting the original fails (*Device or resource busy*) because the Calibre
+   content server holds the file open.
+4. The database change is rolled back, the folder rename is not.
+
+Repair:
+
+```bash
+sqlite3 "$BOOKS_DIR/metadata.db" "select path from books where id=<ID>;"
+mv "$BOOKS_DIR/<wrong name>" "$BOOKS_DIR/<path from the DB>"
+```
+
+The leftover duplicate is usually locked by the NAS and has to be removed from
+the NAS file manager; it is excluded from the R2 backup.
+
+| Goal | Method |
+|---|---|
+| Mark a book (for example as read-along) | Add a **tag**. Tags are metadata only and appear as a category in the OPDS feed. |
+| Change the title | Set it in the EPUB before importing: `ebook-meta book.epub --title "Title (read-along)"` |
+| Any other renaming | Use the Calibre desktop app with a local library |
+
+Moving the library to the SSD (`scripts/utils/migrate-calibre-to-ssd.sh`)
+removes the underlying cause.
+
+### SMB leaves `.smbdelete*` files
+
+When a file on an SMB share is deleted while still open, the server renames it
+to `.smbdeleteXXXX` until every handle closes. These are full copies (one was
+733MB).
+
+```bash
+find /Volumes/books -name ".smbdelete*" -exec ls -lh {} \; 2>/dev/null
+find /Volumes/books -name ".smbdelete*" -delete     # "Resource busy" means still held
+```
+
+Restarting `calibre`, `calibre-web` and `lazylibrarian` releases most of them;
+the rest need removal from the NAS itself. The R2 and external backups exclude
+them.
+
+### File watchers miss new files on SMB
+
+Real-time file watching does not work reliably on SMB mounts. Confirmed for
+Jellyfin (`/Volumes/media`) on 2026-09-22: an imported movie was not detected
+until the container restarted. Audiobookshelf (`/Volumes/audiobooks`) uses the
+same pattern.
+
+- **Current workaround:** `scripts/utils/smb-watcher-rescan.sh` restarts both
+  containers every 30 minutes (cron).
+- **Planned fix:** a Jellyfin API key configured in Radarr and Sonarr
+  (Settings → Connect) triggers a targeted refresh on import, with no restart.
+  Audiobookshelf has no documented notify-on-import hook from LazyLibrarian as
+  of 2026-09-22; its API may offer a per-folder scan.

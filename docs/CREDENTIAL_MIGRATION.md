@@ -1,107 +1,100 @@
-# Credential migration — moving every service into Bitwarden
+# Credential migration
 
-Working checklist for giving each service a unique generated password stored in
-Vaultwarden. Tick rows off as you go.
+Checklist for giving every service a unique generated password stored in
+Vaultwarden, and for moving email-based logins to per-service aliases on the
+own domain.
 
-🚫 **No passwords in this file — this repo is public.** Values you still need to
-transcribe live in `~/credentials-import.md` (chmod 600, outside the repo);
-delete that file once the vault holds everything.
+> **Warning:** This repository is public. No passwords or usernames belong in
+> this file. Values still to be transcribed are in `~/credentials-import.md`
+> (mode 600, outside the repository); delete that file once the vault holds
+> everything.
 
-Status: **4 of ~18 services done.** Started 2026-09-19.
-
----
-
-## The rule
-
-- **One standard username** (stored in Vaultwarden, not written here) everywhere the app allows it. Not `admin` — that
-  is the first username every automated attack tries.
-- **One memorised passphrase**: the Vaultwarden master, and nothing else.
-- **Everything else generated random** in Vaultwarden, copy-pasted when needed —
-  including on the phone. No service password is ever typed from memory, so
-  none of them need to be memorable.
-- **Put the URL on every Bitwarden entry** so autofill offers the right one.
-
-Tailscale IP for the internal services: `100.81.171.49`.
+Status: **4 of ~16 services done** (started 2026-09-19).
 
 ---
 
-## Use this pass to change the email too
+## Rules
 
-You are already visiting every service to change its password, and several use
-the **Gmail address as the login**. Switch those to a per-service alias on
-`peciulevicius.com` at the same time — `netflix@`, `bank@`, `github@`. The
-catch-all means no alias needs creating first, and if one ever starts attracting
-spam you know exactly which service leaked it.
+- **One standard, non-default username** wherever the application allows it
+  (stored in Vaultwarden). `admin` is the first name automated attacks try.
+- **One memorised passphrase:** the Vaultwarden master password.
+- **Every other password is generated** by Vaultwarden and pasted when needed,
+  including on the phone.
+- **Every entry has its URL set**, so autofill offers the right credential.
+- **Change the email in the same visit.** Services that use the Gmail address as
+  the login move to a per-service alias (`immich@`, `github@`, …). The domain's
+  catch-all means aliases need no setup, and an alias that attracts spam
+  identifies which service leaked it. Doing email separately would double the
+  number of logins.
+- **After rotating a password, update every client that stores its own copy**
+  (see the `credential-rotation` project skill and
+  [HOME_SERVER_REFERENCE.md](HOME_SERVER_REFERENCE.md#credentials-stored-by-clients)).
 
-Doing this later means a second pass through all eighteen.
+Internal services are reached at the Tailscale address `100.81.171.49`.
 
 ---
 
-## ✅ Done
+## Done
 
-| Service | URL | Username | Notes |
+| Service | URL | Login | Notes |
 |---|---|---|---|
-| Vaultwarden | `https://vault.peciulevicius.com` | email | Master password changed 2026-09-19 |
-| CouchDB | `https://couchdb.peciulevicius.com` | `<username>` | 32-char random, `.env`-backed |
-| Transmission | `http://100.81.171.49:9091` | `<username>` | 28-char random, `.env`-backed |
-| Pi-hole | `https://pihole.peciulevicius.com` | *(password only)* | 32-char random. Old one was **5 characters** on a public panel controlling DNS — assume exposed |
+| Vaultwarden | `https://vault.peciulevicius.com` | Email | Master password changed 2026-09-19 |
+| CouchDB | `https://couchdb.peciulevicius.com` | Standard username | 32-character random, from `.env` |
+| Transmission | `http://100.81.171.49:9091` | Standard username | 28-character random, from `.env` |
+| Pi-hole | `https://pihole.peciulevicius.com` | Password only | 32-character random. The previous 5-character password was on a public panel and is treated as exposed. |
 
 ---
 
-## ⬜ Resettable from the command line
+## Reset from the command line
 
-Generate in Vaultwarden first, then run the command, then save.
+Generate the password in Vaultwarden first, then run the command, then save.
 
-| Service | URL | Username |
-|---|---|---|
-| Nextcloud | `https://cloud.peciulevicius.com` | `<username>` |
-| Paperless-ngx | `https://papers.peciulevicius.com` | `<username>` |
-| FreshRSS | `https://rss.peciulevicius.com` | `<username>` |
-| Grafana | `http://100.81.171.49:3000` | `admin` |
+| Service | URL |
+|---|---|
+| Nextcloud | `https://cloud.peciulevicius.com` |
+| Paperless-ngx | `https://papers.peciulevicius.com` |
+| FreshRSS | `https://rss.peciulevicius.com` |
 
 ```bash
 # Nextcloud
 OC_PASS='NEW_PASSWORD' docker exec -u www-data -e OC_PASS nextcloud \
-  php occ user:resetpassword --password-from-env <username>
+  php occ user:resetpassword --password-from-env '<username>'
 
-# Paperless-ngx  (interactive prompt)
+# Paperless-ngx (interactive prompt)
 docker exec -it paperless python3 /usr/src/paperless/src/manage.py \
-  changepassword <username>
+  changepassword '<username>'
 
 # FreshRSS
 docker exec freshrss php /var/www/FreshRSS/cli/update-user.php \
   --user '<username>' --password 'NEW_PASSWORD'
-
-# Grafana
-docker exec grafana grafana cli admin reset-admin-password 'NEW_PASSWORD'
 ```
 
 ---
 
-## ⬜ UI only — change inside the app
+## Change in the application
 
-| Service | URL | Username / email |
+| Service | URL | Login |
 |---|---|---|
-| Immich | `https://photos.peciulevicius.com` | email → switch to an alias |
-| Linkwarden | `https://links.peciulevicius.com` | email → switch to an alias |
-| Mealie | `https://recipes.peciulevicius.com` | email → switch to an alias |
-| Calibre-Web | `https://books.peciulevicius.com` | `<username>` |
-| Jellyfin | `https://watch.peciulevicius.com` | `<username>` |
-| Audiobookshelf | `https://listen.peciulevicius.com` | `<username>` |
-| Uptime Kuma | `https://status.peciulevicius.com` | `<username>` |
-| Portainer | `https://portainer.peciulevicius.com` | `<username>` |
-| Syncthing | `http://100.81.171.49:8384` | `<username>` |
-| Bazarr | `http://100.81.171.49:6767` | `<username>` |
-| LazyLibrarian | `http://100.81.171.49:5299` | `<username>` |
-| Jellyseerr | `http://100.81.171.49:5055` | via Jellyfin |
-| NAS (UGOS) | `https://nas.peciulevicius.com` | `Džiugas` |
-| NAS SMB service account | *(macOS Keychain)* | `macmini` |
+| Immich | `https://photos.peciulevicius.com` | Email → alias |
+| Linkwarden | `https://links.peciulevicius.com` | Email → alias |
+| Calibre-Web | `https://books.peciulevicius.com` | Standard username |
+| Jellyfin | `https://watch.peciulevicius.com` | Standard username |
+| Audiobookshelf | `https://listen.peciulevicius.com` | Standard username |
+| Uptime Kuma | `https://status.peciulevicius.com` | Standard username |
+| Portainer | `https://portainer.peciulevicius.com` | Standard username |
+| Syncthing | `http://100.81.171.49:8384` | Standard username |
+| Bazarr | `http://100.81.171.49:6767` | Standard username |
+| LazyLibrarian | `http://100.81.171.49:5299` | Standard username |
+| Jellyseerr | `http://100.81.171.49:5055` | Via Jellyfin |
+| NAS (UGOS) | `https://nas.peciulevicius.com` | Personal admin account |
+| NAS SMB service account | macOS Keychain | `macmini` — update the Keychain entry and remount the shares after changing it |
 
 ---
 
-## ⬜ API keys, not passwords
+## API keys
 
-Copy each from **Settings → General → API Key** into Bitwarden as a secure note.
+Copy each from **Settings → General → API Key** into Vaultwarden as a secure
+note.
 
 | Service | URL |
 |---|---|
@@ -111,46 +104,43 @@ Copy each from **Settings → General → API Key** into Bitwarden as a secure n
 
 ---
 
-## No login at all — skip
+## No login
 
 Glance (`home.`), Stirling PDF (`pdf.`), IT-Tools (`tools.`), Calibre desktop
-(`:8888`), Prometheus (`:9090`).
+(`:8888`).
 
 ---
 
-## Also belongs in Bitwarden
+## Other secrets to store in Vaultwarden
 
-| Thing | Where it lives |
+| Secret | Location |
 |---|---|
-| Gmail app password | `pkm/config.py`, Uptime Kuma SMTP, Calibre-Web SMTP — **one password, three consumers** |
+| Gmail app password | `pkm/config.py`, Uptime Kuma SMTP, Calibre-Web SMTP — one password, three consumers |
 | Discord webhook | `~/.config/homelab/notify.env` |
 | Cloudflare tunnel credentials | `~/.cloudflared/*.json` |
 | R2 / rclone | `~/.config/rclone/rclone.conf` |
 
 ---
 
-## Why most of these can't just be edited in a `.env`
+## Where passwords are stored
 
-Only three services read their password from a file at runtime. Knowing which
-kind you are dealing with saves guessing:
-
-| Kind | Where the password lives | Editable in a file? |
+| Type | Storage | Change by editing a file? |
 |---|---|---|
-| Runtime env var — CouchDB, Transmission, Pi-hole | Read from `.env` on **every start** | ✅ edit, then `docker compose up -d --force-recreate` |
-| Init-only env var — Nextcloud, Paperless, Grafana | Read **once**, to create the account | ❌ inert now; the account lives in the app's database |
-| App account — everything else | **Salted hash** in the app's database | ❌ plaintext unrecoverable by design |
-| Internal DB role — Immich/Paperless/Linkwarden Postgres | `.env` **and** the role inside the DB | ⚠️ both together, or the app cannot connect |
+| Runtime environment variable (CouchDB, Transmission, Pi-hole) | Read from `.env` on every start | Yes — edit, then `docker compose up -d --force-recreate` |
+| Initialisation-only variable (Nextcloud, Paperless) | Read once to create the account | No — the account now lives in the application database |
+| Application account (all others) | Salted hash in the application database | No — change it in the application |
+| Internal database role (Immich, Paperless, Linkwarden Postgres) | `.env` **and** the role inside the database | Only both together, or the application loses its database |
 
 ---
 
-## ⚠️ Open issues to settle during this pass
+## Open issues
 
-- **Immich's Postgres password is the old reused personal password.**
-  Internal-only, but changing it needs `ALTER USER` inside Postgres *and* the
-  `.env` updated together, or Immich loses its database. Deliberate session.
-- **Nextcloud has two accounts** — the standard username, and a second `admin` whose
-  display name is confusingly the same as the standard username. Pick one, delete the other.
-- **Retire the old reused personal password** everywhere it still appears.
-- **`.env` files are excluded from the R2 backup.** A restore gives you configs
-  with **no secrets** — Vaultwarden is the only copy. Keep an emergency export
-  of the vault somewhere offline.
+- **Immich's Postgres password is an old reused password.** It is internal only,
+  but changing it requires `ALTER USER` in Postgres and the `.env` update
+  together. Procedure in [HOME_SERVER_TODO.md](HOME_SERVER_TODO.md).
+- **Nextcloud has two accounts**: the standard one and an `admin` account with
+  the same display name. Keep one.
+- **Retire the old reused password** wherever it still appears.
+- **`.env` files are excluded from the R2 backup**, so a restore contains no
+  secrets. Vaultwarden is the only copy; keep an encrypted offline export of the
+  vault.

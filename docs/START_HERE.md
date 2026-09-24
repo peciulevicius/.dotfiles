@@ -1,10 +1,12 @@
-# Start Here
+# Start here
 
-New to this repo? Follow this order.
+This repository holds workstation dotfiles for macOS, Linux and Windows, and
+the configuration and documentation for a self-hosted homelab running on a Mac
+mini with a UGREEN NAS.
 
 ---
 
-## 1) Install on Your Machine
+## 1. Install
 
 === "macOS"
 
@@ -19,19 +21,18 @@ New to this repo? Follow this order.
 
     ```bash
     git clone https://github.com/peciulevicius/.dotfiles.git ~/.dotfiles
-    cd ~/.dotfiles && ./install.sh   # auto-detects your distro
+    cd ~/.dotfiles && ./install.sh   # detects the distribution
     ```
 
 === "Windows (PowerShell)"
 
-    Windows support covers Claude Code config and package updates via winget.
-    For full shell tooling (zsh, starship, CLI tools), use WSL.
+    Windows support covers Claude Code configuration and package updates via
+    winget. For the full shell environment, use WSL.
 
     ```powershell
-    # One-time: allow scripts to run
+    # One-time: allow local scripts to run
     Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
 
-    # Clone and set up Claude Code
     git clone https://github.com/peciulevicius/.dotfiles.git $HOME\.dotfiles
     cd $HOME\.dotfiles
     .\scripts\setup\setup-claude.ps1
@@ -41,10 +42,10 @@ New to this repo? Follow this order.
 
     ```bash
     git clone https://github.com/peciulevicius/.dotfiles.git ~/.dotfiles
-    cd ~/.dotfiles && ./install.sh   # auto-detects WSL
+    cd ~/.dotfiles && ./install.sh   # detects WSL
     ```
 
-After installing, verify everything is working:
+Verify the installation:
 
 ```bash
 scripts/dev-check.sh
@@ -52,14 +53,14 @@ scripts/dev-check.sh
 
 ---
 
-## 2) Set Up Claude Code
+## 2. Set up Claude Code
 
-Installs agents, skills, rules, and commands into `~/.claude/`.
+Installs agents, skills, rules and commands into `~/.claude/`.
 
 === "macOS / Linux / WSL"
 
     ```bash
-    scripts/setup/setup-claude.sh   # shows an interactive menu — pick 1
+    scripts/setup/setup-claude.sh   # interactive menu; option 1 installs everything
     ```
 
 === "Windows (PowerShell)"
@@ -74,72 +75,83 @@ Installs agents, skills, rules, and commands into `~/.claude/`.
     scripts\setup\setup-claude.bat
     ```
 
-Full guide: [Claude Code Guide](./CLAUDE_CODE_GUIDE.md)
+Full guide: [CLAUDE_CODE_GUIDE.md](./CLAUDE_CODE_GUIDE.md)
 
 ---
 
-## 3) Learn the Tools
+## 3. Command-line tools
 
-- [Modern CLI Tools](./MODERN_CLI_TOOLS.md) — bat, eza, fzf, zoxide, ripgrep, and more
-- [Tool Tutorials](./tutorials/TOOL_TUTORIALS.md) — official docs and video links
+- [MODERN_CLI_TOOLS.md](./MODERN_CLI_TOOLS.md) — bat, eza, fzf, zoxide, ripgrep and others
+- [tutorials/TOOL_TUTORIALS.md](./tutorials/TOOL_TUTORIALS.md) — official documentation and video links
 
 ---
 
-## 4) Daily Maintenance
+## 4. Maintenance
 
 === "macOS / Linux"
 
     ```bash
-    scripts/update.sh     # update all package managers + Claude Code
-    scripts/dev-check.sh  # health check
-    scripts/backup/backup-dotfiles.sh     # backup configs
+    scripts/update.sh                   # update package managers and Claude Code
+    scripts/dev-check.sh                # health check
+    scripts/backup/backup-dotfiles.sh   # back up configuration files
     ```
 
 === "Windows (PowerShell)"
 
     ```powershell
-    .\scripts\update.ps1  # update winget, npm, pnpm, Claude Code
+    .\scripts\update.ps1   # update winget, npm, pnpm and Claude Code
     ```
 
 ---
 
-## 5) Find Anything — the map
+## 5. Documentation map
 
-### Running the homelab
+### Homelab operations
 
-| I want to… | Go to |
+| Task | Document |
 |---|---|
-| **See what needs doing next** | [HOME_SERVER_TODO.md](./HOME_SERVER_TODO.md) — outstanding work only |
-| See what's already been done, and why | [HOME_SERVER_CHANGELOG.md](./HOME_SERVER_CHANGELOG.md) — **check before proposing anything**; several ideas were tried and reverted |
-| Look up RAM, drive layout, container paths | [HOME_SERVER_REFERENCE.md](./HOME_SERVER_REFERENCE.md) |
-| Set up a Mac mini from scratch | [HOME_SERVER_REFERENCE.md](./HOME_SERVER_REFERENCE.md) (current) — [HOME_SERVER.md](./HOME_SERVER.md) is the original narrative, ⚠️ pre-NAS-migration, historical |
-| See what each service is and its port | [SERVICES.md](./SERVICES.md) |
-| Understand the NAS and its mounts | [NAS.md](./NAS.md) |
-| Know what the scripts do | [UTILITY_SCRIPTS.md](./UTILITY_SCRIPTS.md) |
-| Fix or add a scheduled job | [scripts/cron/README.md](https://github.com/peciulevicius/.dotfiles/blob/main/scripts/cron/README.md) |
+| Outstanding work | [HOME_SERVER_TODO.md](./HOME_SERVER_TODO.md) |
+| Completed work and the reasons behind it | [HOME_SERVER_CHANGELOG.md](./HOME_SERVER_CHANGELOG.md) — check before proposing changes; several approaches were tried and reverted |
+| Memory, drive layout, container paths, backups | [HOME_SERVER_REFERENCE.md](./HOME_SERVER_REFERENCE.md) |
+| Setting up a Mac mini from scratch | [HOME_SERVER_REFERENCE.md](./HOME_SERVER_REFERENCE.md) and [SERVICES.md](./SERVICES.md). [HOME_SERVER.md](./HOME_SERVER.md) describes the pre-NAS architecture and is historical. |
+| Services and ports | [SERVICES.md](./SERVICES.md) |
+| NAS storage and mounts | [NAS.md](./NAS.md) |
+| Scripts | [UTILITY_SCRIPTS.md](./UTILITY_SCRIPTS.md) |
+| Scheduled jobs | [scripts/cron/README.md](https://github.com/peciulevicius/.dotfiles/blob/main/scripts/cron/README.md) |
+| Credential inventory (no secrets) | [CREDENTIAL_MIGRATION.md](./CREDENTIAL_MIGRATION.md) |
 
-### The long-running projects
+### Project guides
 
-Each has a guide holding the decisions already made. **Read the guide before
-reopening the topic** — they record what was ruled out and why.
+Each guide records decisions already made and the options ruled out. Read it
+before reopening the topic.
 
 | Project | Guide | State |
 |---|---|---|
-| **Email** | [guides/EMAIL.md](./guides/EMAIL.md) | ⏳ **Active.** Cloudflare Email Routing live (receive-only); Purelymail is the next buy |
-| De-Googling | [guides/DEGOOGLE.md](./guides/DEGOOGLE.md) · [alternatives](./guides/DEGOOGLE_ALTERNATIVES.md) | ~90% done. Gaps: email, phone, calendar, AI |
-| Notes / PKM | [guides/NOTES.md](./guides/NOTES.md) | Vault + sync exist; capture friction is the real problem |
-| Books + Kindle | [guides/BOOKS.md](./guides/BOOKS.md) · [setup](./guides/KINDLE_SETUP.md) | **Jailbroken 2026-09-20.** KOReader + OPDS is the live task |
-| Self-hosted AI | [guides/SELF_HOSTED_AI.md](./guides/SELF_HOSTED_AI.md) | ✅ **Odysseus running on 7001** (7000 is AirPlay). Local models via native Ollama |
-| Octopus Deploy | [guides/OCTOPUS_DEPLOY.md](./guides/OCTOPUS_DEPLOY.md) | ❌ Ruled out on RAM — don't re-research |
-| Automation & repo safety | `.claude/skills/` (homelab-service, credential-rotation, homelab-audit) · `scripts/utils/homelab-audit.sh` · `.githooks/pre-commit` | ✅ Weekly audit cron'd; gitleaks blocks secret commits |
+| Email | [guides/EMAIL.md](./guides/EMAIL.md) | In progress: Cloudflare Email Routing live (receive only); cutover to Purelymail pending |
+| De-Googling | [guides/DEGOOGLE.md](./guides/DEGOOGLE.md), [alternatives](./guides/DEGOOGLE_ALTERNATIVES.md) | Mostly complete; remaining: 2FA, email, calendar/contacts |
+| Notes | [guides/NOTES.md](./guides/NOTES.md) | Vault and Kindle import running; mobile sync setup pending |
+| Books and Kindle | [guides/BOOKS.md](./guides/BOOKS.md), [Kindle setup](./guides/KINDLE_SETUP.md) | Kindle jailbroken; KOReader, OPDS and read-along working |
+| Self-hosted AI | [guides/SELF_HOSTED_AI.md](./guides/SELF_HOSTED_AI.md) | Odysseus running on port 7001 with native Ollama |
+| Octopus Deploy | [guides/OCTOPUS_DEPLOY.md](./guides/OCTOPUS_DEPLOY.md) | Not deployed (insufficient memory) |
 
-### Which file do I write in?
+### Automation and repository safety
 
-- A thing **to do** → `HOME_SERVER_TODO.md`
-- A thing **done** → move it to `HOME_SERVER_CHANGELOG.md`, with the *why*
-- A **fact** about the machine → `HOME_SERVER_REFERENCE.md`
-- A **decision** on a long-running topic → that topic's guide
+| Component | Purpose |
+|---|---|
+| `.claude/skills/` | Project skills: `homelab-service`, `credential-rotation`, `homelab-audit` |
+| `scripts/utils/homelab-audit.sh` | Weekly health audit (cron → Discord on failure) |
+| `.githooks/pre-commit` | gitleaks scan that blocks commits containing secrets |
+| `.github/workflows/checks.yml` | gitleaks, shellcheck and a strict docs build on every push |
 
-🚫 **Never a secret, anywhere in this repo — it is public on GitHub.** Passwords,
-tokens and webhook URLs live in `~/services/<svc>/.env`, `~/.config/homelab/`
-or Vaultwarden — never in a file under this repo.
+### Where to record changes
+
+| Content | File |
+|---|---|
+| Outstanding work | `HOME_SERVER_TODO.md` |
+| Completed work, with the reason | `HOME_SERVER_CHANGELOG.md` |
+| Facts about the machine | `HOME_SERVER_REFERENCE.md` |
+| Decisions on a project | That project's guide |
+
+> **Warning:** This repository is public. Passwords, tokens and webhook URLs
+> belong in `~/services/<svc>/.env`, `~/.config/homelab/` or Vaultwarden, never
+> in a tracked file.
