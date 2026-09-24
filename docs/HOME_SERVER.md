@@ -60,7 +60,7 @@ Have these before starting a rebuild:
 | NAS admin login | SMB account `macmini`, shares | Vaultwarden |
 | This repo | Everything else | `github.com/peciulevicius/.dotfiles` (public — no secrets in it) |
 
-⚠️ **The chicken-and-egg:** Vaultwarden runs *on* the Mac mini you're
+**Warning:** The chicken-and-egg: Vaultwarden runs *on* the Mac mini you're
 rebuilding. Its data is in the R2 backup, but you need R2 credentials to pull
 it — which are in Vaultwarden. Break the loop with the phone's cached vault,
 or create a **new** R2 API token in the Cloudflare dashboard (scope it to the
@@ -80,7 +80,7 @@ or create a **new** R2 API token in the Cloudflare dashboard (scope it to the
 | Remote Login (SSH) | System Settings → General → Sharing, or `scripts/setup/mac-mini.sh ssh on` | `ssh macmini` from the laptop (`config/ssh/config` has the `Host macmini` entry) |
 | FileVault | **Keep it on** (decided 2026-09-22) | Trade-off below |
 
-⚠️ **FileVault vs unattended recovery.** With FileVault on, every cold boot
+**Warning:** FileVault vs unattended recovery. With FileVault on, every cold boot
 stops at a pre-boot password screen — so after a power outage someone has to
 be there once, even with `autorestartatconnect`. The alternative (FileVault
 off) would leave every service's `.env` secrets readable on a stolen disk.
@@ -115,7 +115,7 @@ secret, never bypass the hook.
 | `com.peciulevicius.nas-watchdog` | `scripts/utils/nas-watchdog.sh` | Every 5 min: remount missing shares, then restart NAS-backed containers |
 | `com.peciulevicius.docker-watchdog` | `scripts/utils/docker-watchdog.sh` | Every 5 min: Docker Desktop down/hung |
 
-⚠️ **Only the docker-watchdog plist is in the repo** (`os/mac/`). The
+**Warning:** Only the docker-watchdog plist is in the repo (`os/mac/`). The
 mount-nas and nas-watchdog plists currently exist only in
 `~/Library/LaunchAgents/` on the Mac mini — on a rebuild, check whether they
 were added to the repo since; if not, recreate them from the script headers.
@@ -139,7 +139,7 @@ Details and troubleshooting: [NAS.md](NAS.md).
 ~/.dotfiles/services/setup-services.sh   # copies every services/<svc>/ into ~/services/<svc>/
 ```
 
-⚠️ **`~/services/` is a copy, not a symlink.** Editing
+**Warning:** `~/services/` is a copy, not a symlink. Editing
 `~/.dotfiles/services/<svc>/…` changes nothing that's running until you
 re-copy the file and recreate the container. `.env` is the exception:
 `setup-services.sh` creates it from `.env.example` only if it's missing and
@@ -173,7 +173,7 @@ Public hostnames and their local ports are in `~/.cloudflared/config.yml`
 `~/.cloudflared/*.json` — secret, not in the repo; recreating the tunnel with
 the script is simpler than restoring them.
 
-⚠️ **Reloading the tunnel after editing `config.yml`:** use
+**Warning:** Reloading the tunnel after editing `config.yml`: use
 `launchctl kickstart -k "gui/$(id -u)/com.cloudflare.cloudflared"`. There is
 also a Homebrew agent (`sh.brew.cloudflared`); `brew services restart
 cloudflared` restarts *that* one and silently does nothing. Verify the PID
@@ -248,7 +248,7 @@ crontab < ~/.dotfiles/scripts/cron/crontab
 crontab -l
 ```
 
-⚠️ Check `scripts/cron/crontab` matches the table above before installing — the
+**Note:** Check `scripts/cron/crontab` matches the table above before installing — the
 live crontab was changed on 2026-09-23 (backup path, two new jobs). See
 [scripts/cron/README.md](https://github.com/peciulevicius/.dotfiles/blob/main/scripts/cron/README.md)
 for the `crontab <file>` pitfall on macOS.
@@ -313,7 +313,7 @@ before relying on it (a NAS-based target is an open TODO).
 | Add/remove/change a service | `homelab-service` skill checklist |
 | Rotate a password or key | `credential-rotation` skill — every service that keeps its own copy of it must be updated and tested |
 | Updates | Watchtower handles `:latest` images; **pinned tags never move** — review them (Pi-hole first) |
-| Disk space | `df -h /System/Volumes/Data`; safe reclaim: `docker builder prune -af`. ⚠️ Never `docker image prune -a` — stopped services like Storyteller lose their image |
+| Disk space | `df -h /System/Volumes/Data`; safe reclaim: `docker builder prune -af`. Never `docker image prune -a` — stopped services like Storyteller lose their image |
 | Put files on the NAS | Finder → ⌘K → `smb://DH4300PLUS-DP.local`, or nas.peciulevicius.com |
 
 ---

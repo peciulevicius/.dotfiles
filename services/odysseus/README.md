@@ -1,13 +1,14 @@
 # Odysseus — self-hosted AI workspace
 
-Chat, agents, research, RAG and memory, with **your** history on your own disk.
-Gap 4 of the de-Googling effort: *own the file, rent the compute.*
+Self-hosted AI workspace: chat, agents, research, retrieval and long-term
+memory, with the history stored on the Mac mini. Design and decisions:
+[docs/guides/SELF_HOSTED_AI.md](../../docs/guides/SELF_HOSTED_AI.md).
 
 **Port:** 7001 · **Source:** <https://github.com/odysseus-dev/odysseus> · AGPL-3.0
 
-## The one thing to get right
+## Routing by sensitivity
 
-🔒 **Sensitive topics go to the local model, never the cloud one.**
+**Sensitive topics go to the local model, never the cloud one.**
 
 A cloud backend gives you **sovereignty** — the accumulated record of you lives
 here, not in someone's account. It does **not** give you privacy from the
@@ -15,7 +16,7 @@ provider: the text of each prompt still travels to them.
 
 | Topic | Backend |
 |---|---|
-| Health, finances, journal, anything out of Paperless | 🔒 **Local (Ollama)** |
+| Health, finances, journal, anything out of Paperless | **Local (Ollama)** |
 | Coding | Claude Code, not this |
 | General reasoning, research, long context | Cloud API key |
 | Bulk drudgery — summarise, reformat, extract | Local |
@@ -36,7 +37,7 @@ docker compose up -d --build                # long first build
 Four containers: `odysseus`, `chromadb` (vectors), `searxng` (search),
 `ntfy` (notifications).
 
-## ⚠️ Local models run on the host, never in Docker
+## Local models run on the host, never in Docker
 
 `brew services start ollama` — **not** a container.
 
@@ -58,10 +59,10 @@ Verify from inside the container — this is the check that matters:
 docker exec odysseus-odysseus-1 curl -s http://host.docker.internal:11434/api/tags
 ```
 
-### 🧑‍🍳 Cookbook: use it to browse, not to serve
+### Cookbook: use it to browse, not to serve
 
 Cookbook scores which models fit your hardware and can download and serve them.
-⚠️ **On this host it is unusable, and it says so itself.** Confirmed 2026-09-21 —
+**Warning:** On this host it is unusable, and it says so itself. Confirmed 2026-09-21 —
 its Scan tab reports:
 
 > **No GPU visible inside Docker** — "Cookbook is scanning hardware from inside
@@ -96,7 +97,7 @@ heart rate up from 48 to 55 over two weeks, sleep worse, 8h/week"). All ran
 | | `llama3.2:3b` | `qwen3:4b` | `qwen2.5:7b` |
 |---|---|---|---|
 | Speed | **42.9 tok/s** | 31.9 tok/s | 20.1 tok/s |
-| Wall clock | **14s** | ⚠️ **80s** | 30s |
+| Wall clock | **14s** | **80s** | 30s |
 | RAM loaded | 2.5 GB | 3.2 GB | 4.8 GB |
 | Tokens written | 451 | **2445** | 479 |
 | Answer quality | shallow, generic | verbose, not smarter | **best** |
@@ -107,12 +108,12 @@ actual numbers in the question. 30s for a considered reply is a fair trade.
 **Use `llama3.2:3b` for Odysseus's background calls** — chat titles, summaries,
 tagging. Those need speed, not intelligence, and you never see them.
 
-⚠️ **`qwen3:4b` is dominated on both axes** — slower end to end than the 7B
+**Warning:** `qwen3:4b` is dominated on both axes — slower end to end than the 7B
 *and* less useful. It is a reasoning model: it wrote **2445 tokens** to answer
 one question, and Ollama's `"think": false` does not suppress that cleanly —
 the reasoning leaks into the visible reply instead. Don't make it the default.
 
-⚠️ **A 7B is not Claude.** It gives sensible, safe, general advice and keeps the
+**Warning:** A 7B is not Claude. It gives sensible, safe, general advice and keeps the
 data on your disk — which is the whole point — but don't expect real reasoning.
 
 ### Host headroom at 7B
@@ -142,7 +143,7 @@ its agent can execute code. The iPhone is on the tailnet, so Tailscale already
 gives phone access from anywhere — a public hostname would add exposure and buy
 nothing. `AUTH_ENABLED=true` regardless.
 
-⚠️ 7000 is macOS **AirPlay Receiver**; upstream's own docs warn about it.
+**Note:** 7000 is macOS **AirPlay Receiver**; upstream's own docs warn about it.
 
 ## Memory & skills
 
@@ -152,7 +153,7 @@ nothing. `AUTH_ENABLED=true` regardless.
 | Skills | `data/skills/<category>/<name>/SKILL.md` (+ `_usage.json`) | Same `SKILL.md` format as Claude Code |
 | Model settings | `data/settings.json` | default = `claude-opus-5-5`; **task + utility = `claude-sonnet-5`** (set 2026-09-24) |
 
-⚠️ **Never bulk-import memories through a small local model.** On 2026-09-23
+**Warning:** Never bulk-import memories through a small local model. On 2026-09-23
 an import ran on `qwen2.5:7b` with a 4096-token context: it saw only part of a
 15KB export, merged ~40 facts into one blob (later deleted), saved skill
 descriptions as memories, and switched to Chinese mid-session — **none of the
@@ -179,7 +180,7 @@ back to whatever the chat used — including the 4k-context local model. It is
 now Sonnet on the Anthropic endpoint: **API-billed**, separate from any Claude
 subscription.
 
-⚠️ **Skill import bug — nested copies duplicate on restart.** Importing from a
+**Warning:** Skill import bug — nested copies duplicate on restart. Importing from a
 repo URL whose `SKILL.md` isn't at the folder root (e.g. a whole dotfiles
 repo) also copies the original *nested* `SKILL.md` into the skill folder,
 without an `owner`. On the next container start, `app.py` (~L1186-1206)
@@ -211,6 +212,6 @@ backup was caught 2026-09-21), `logs/`, and `.git/`.
 | ntfy | ~45MB |
 | chromadb | ~28MB |
 
-~960MB for the stack. Image 686MB built. ⚠️ Host headroom afterwards: **2.11
+~960MB for the stack. Image 686MB built. Host headroom afterwards: **2.11
 GiB**, 30% memory free. **SearXNG is the first thing to drop** if it gets tight
 — it only powers web search.
