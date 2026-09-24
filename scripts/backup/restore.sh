@@ -45,8 +45,8 @@ if [[ -f "$RCLONE_ENV" ]]; then
 fi
 
 RCLONE_REMOTE="${RCLONE_REMOTE:-r2}"
-BACKUP_DEST="${BACKUP_DEST:-${RCLONE_REMOTE}:peciulevicius-services-backup/services}"
-OBSIDIAN_DEST="${OBSIDIAN_DEST:-${RCLONE_REMOTE}:peciulevicius-services-backup/obsidian-vault}"
+BACKUP_DEST="${BACKUP_DEST:-${RCLONE_REMOTE}:peciulevicius-backups/services}"
+OBSIDIAN_DEST="${OBSIDIAN_DEST:-${RCLONE_REMOTE}:peciulevicius-backups/obsidian-vault}"
 RESTORE_DIR="$HOME/services-restore"
 
 if ! command -v rclone &>/dev/null; then

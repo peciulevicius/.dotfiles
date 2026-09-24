@@ -54,7 +54,7 @@ fi
 
 # label | local source | remote path — keep in step with rclone-backup.sh
 SETS=(
-  "obsidian-vault|$HOME/obsidian-vault|${OBSIDIAN_DEST:-${RCLONE_REMOTE}:peciulevicius-services-backup/obsidian-vault}"
+  "obsidian-vault|$HOME/obsidian-vault|${OBSIDIAN_DEST:-${RCLONE_REMOTE}:peciulevicius-backups/obsidian-vault}"
   "db-dumps|$HOME/backups|${RCLONE_REMOTE}:peciulevicius-backups/db-dumps"
   "calibre-books|${CALIBRE_DIR:-/Volumes/books}|${RCLONE_REMOTE}:peciulevicius-backups/calibre-books"
 )
