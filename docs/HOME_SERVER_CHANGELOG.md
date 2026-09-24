@@ -33,6 +33,16 @@ Three gaps closed in the same pass, all "nothing notices" failures:
   warns if gitleaks is missing. `core.hooksPath` is per-clone and `install.sh`
   runs once per machine, so older clones (the MacBook) never got it.
 
+### Calibre-off-SMB migration scripted (not yet run)
+
+`scripts/utils/migrate-calibre-to-ssd.sh` moves the whole library (1.1GB) to
+`~/services/calibre/library`: SQLite over SMB is behind every Calibre-Web
+failure so far. Whole library rather than a metadata-only split, because a
+split needs three services to agree on two paths and the book folders are
+what Calibre-Web renames. The backup scripts no longer hardcode
+`/Volumes/books`: they read `BOOKS_DIR` from `~/services/calibre/.env`, so the
+backups move with the library.
+
 ### Monthly R2 restore check
 
 New `scripts/backup/r2-verify.sh`, cron'd for the 1st of each month: one

@@ -352,7 +352,8 @@ moves, so Watchtower being enabled is not evidence anything is current.
 
 - [ ] Bump **Pi-hole** first, then work through the other pinned images
 - [ ] Move the **Calibre library off SMB** onto the internal SSD — SQLite over
-      SMB is the root cause of every Calibre-Web failure so far
+      SMB is the root cause of every Calibre-Web failure so far. Scripted —
+      see "Move the Calibre library off SMB onto the SSD" below
 - [ ] Delete ~2.3 GB of locked `.smbdelete` duplicates (needs NAS-side access)
 
 #### Quick wins left over from 2026-09-20
@@ -678,13 +679,11 @@ SSD). It has not corrupted yet; the 2026-09-19 "malformed" error turned out to
 be a stale bind mount, not the file. But SQLite's locking is not reliable over
 SMB and Calibre *writes* this database.
 
-- [ ] Decide the layout: book files can stay on the NAS, but the library
-      metadata should live on the internal SSD
-- [ ] Calibre and Calibre-Web both open the same library, so they have to agree
-      on the new path — check whether Calibre-Web's `--dbpath`-style split works
-      before moving anything
-- [ ] Back up `metadata.db` first; a copy is already at
-      `~/backups/calibre-repair/`
+- [x] ~~Decide the layout~~ — decided 2026-09-24: **move the whole library**,
+      not a metadata-only split. It is 1.1GB, a split would need Calibre,
+      Calibre-Web *and* LazyLibrarian to agree on two paths, and the book
+      folders are exactly what Calibre-Web renames (the `.smbdelete` source).
+      Steps and script in the next section.
 
 ### ⚠️ 21 pinned images that Watchtower can never update
 
@@ -760,16 +759,33 @@ share**, which this setup's own rule forbids. Every symptom traced back to it �
 `.smbdelete` duplicate files, and `database disk image is malformed` from a
 stale mount.
 
-**It is affordable now:** the whole library is **1.1GB** and the SSD has 29GB
+**It is affordable now:** the whole library is **1.1GB** and the SSD has 24GB
 free.
 
-- [ ] Stop `calibre`, `calibre-web`, `lazylibrarian`
-- [ ] Copy `/Volumes/books` → `~/services/calibre/library` (internal SSD)
-- [ ] Repoint the `BOOKS_DIR` bind mount in all three compose files
-- [ ] Update `rclone-backup.sh`, which currently syncs `/Volumes/books` to R2
-- [ ] Decide where the large read-along EPUBs live — they are the only big
-      files, and they could stay on the NAS as a separate Calibre library
-- [ ] Verify OPDS still serves to KOReader afterwards
+📜 **Scripted 2026-09-24: `scripts/utils/migrate-calibre-to-ssd.sh`.** Dry
+run by default; `--apply` stops all three containers, rsyncs, verifies by
+checksum + `PRAGMA integrity_check`, sets `BOOKS_DIR` in each `.env` (old one
+kept as `.env.pre-ssd-migration`), recreates the containers and checks their
+`/books` mount. Any failure before the switch restarts them on the old path.
+Rollback is in the script header. Tested against a stand-in library and a
+stubbed `docker`, not yet on the Mac mini.
+
+- [ ] Re-stage the changed backup script first — `cp
+      ~/.dotfiles/services/rclone/rclone-backup.sh ~/services/rclone/` (it now
+      reads the library path from `~/services/calibre/.env`)
+- [ ] `~/.dotfiles/scripts/utils/migrate-calibre-to-ssd.sh` (dry run), then
+      `--apply`
+- [x] ~~Repoint the `BOOKS_DIR` bind mount~~ — compose files already read
+      `${BOOKS_DIR}`; the script edits the three `.env` files
+- [x] ~~Update `rclone-backup.sh`~~ — it, `backup-external.sh` and
+      `r2-verify.sh` all read `BOOKS_DIR` from `~/services/calibre/.env` now;
+      backup 1 excludes `calibre/library/**` so it isn't uploaded twice
+- [x] ~~Decide where the large read-along EPUBs live~~ — with them, on the
+      SSD. One 733MB book fits; revisit only if read-alongs become a shelf
+- [ ] Verify OPDS still serves to KOReader afterwards, and that Calibre-Web
+      opens a shelf (the old `disk I/O error` path)
+- [ ] After a week: delete `/Volumes/books` from the NAS via UGOS, then update
+      the Calibre rows in `HOME_SERVER_REFERENCE.md` and `NAS.md`
 
 ### Regenerate missing Immich thumbnails
 
