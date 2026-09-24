@@ -47,10 +47,8 @@ Made during the 2026-09-21 Vaultwarden scare (212 cleartext passwords,
 - [ ] 👤 **Reset Odysseus 2FA** (TOTP + backup codes) — exposed in a session
       transcript 2026-09-23 while auditing `data/auth.json`
 - [ ] 👤 Reset the Uptime Kuma backup push token → `~/services/rclone/.env`
-- [ ] **Odysseus repair** — remove 32 nested ownerless skill copies (would
-      duplicate on next restart), prune dev skills, re-import the Claude export
-      as atomic memories (the qwen 4k-context import lost all of it), set a
-      task/utility model
+- [x] ~~**Odysseus repair**~~ — done: 131 memories (12 pinned), dup-skill bug
+      removed, dev skills pruned, task/utility model = Sonnet
 - [ ] **Email cutover** — 👤 Purelymail domain + `dziugas@` mailbox + Cloudflare
       API token; then DNS switch (replace SPF, MX, DKIM×3, DMARC, ownership),
       catch-all, tests, repoint kindle_sync / Calibre-Web / Kuma SMTP, 👤 revoke
@@ -59,8 +57,7 @@ Made during the 2026-09-21 Vaultwarden scare (212 cleartext passwords,
       `trainingpeaks-mcp` service (👤 TP cookie), Strava MCP for Odysseus
       (👤 Strava API app), 👤 Garmin→TP Daily Health Stats toggle,
       `~/.training/` backed up to R2
-- [ ] **Claude config** — relink commands, drop stale Grafana refs, dedupe
-      skill/command pairs, add `personal-finance`, `pkm-notes`, `testing` skills
+- [x] ~~**Claude config**~~ — done (setup-claude.sh fixed, 3 new skills)
 - [x] ~~HOME_SERVER.md rewrite~~ — done
 - [ ] Local models: no bigger model (RAM ceiling ~8B); optional later — OpenCode
       + `qwen2.5-coder:7b` for offline snippets only

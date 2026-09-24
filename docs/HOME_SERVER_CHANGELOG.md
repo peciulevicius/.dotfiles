@@ -8,6 +8,25 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-24 — Odysseus memories and skills repaired
+
+- **Memory re-import.** The 2026-09-23 import ran on qwen2.5:7b with a 4k
+  context — it saw part of the export, merged ~40 facts into one blob (later
+  deleted), saved skill descriptions as memories; **none of the export
+  survived**. Rewritten as 130 atomic facts directly through `MemoryManager`
+  inside the container (no model involved), 12 pinned; vector index rebuilt
+  (startup only rebuilds an *empty* index). 3 → 131 memories; 15-fact
+  spot-check matched the export.
+- **Skills.** Removed 32 nested ownerless `SKILL.md` copies that `app.py`
+  would have adopted into `general/` on every restart; pruned the 29 dev
+  skills plus one extractor draft — only the homelab skills remain (coding
+  stays in Claude Code).
+- **Background model.** Task + utility models were empty (fell back to the
+  4k local model); now `claude-sonnet-5` (API-billed). Default chat stays
+  `claude-opus-5-5`.
+- Backups: `data/{memory,settings}.json.bak-2026-09-24`. Scratch files holding
+  personal facts removed from container and host `/tmp`.
+
 ## 2026-09-24 — CI on every push: secrets, shellcheck, docs
 
 `.github/workflows/checks.yml` runs on every push to every branch:
