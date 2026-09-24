@@ -102,7 +102,7 @@ secret, never bypass the hook.
 
 1. NAS side (nas.peciulevicius.com or the local web UI): SMB account
    **`macmini`** with R/W on `media`, `immich`, `audiobooks`, `books`,
-   `unsorted`. (The human admin account `Džiugas` can't be used for SMB — the
+   `unsorted`. (The personal admin account can't be used for SMB — its
    non-ASCII name breaks it.)
 2. Store the `macmini` SMB password in the macOS login keychain (first manual
    mount via Finder → ⌘K → `smb://DH4300PLUS-DP.local` and tick "remember").

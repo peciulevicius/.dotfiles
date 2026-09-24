@@ -32,7 +32,7 @@ Everything Claude Code uses lives in `~/.claude/`. All 6 are managed from this d
 | 3 | `~/.claude/skills/` | Auto-triggered or slash-invoked skill packs | ✅ 23 skills |
 | 4 | `~/.claude/agents/` | Specialist subagents for delegation | ✅ 19 agents |
 | 5 | `~/.claude/settings.json` | Permissions, statusline, hooks | ✅ |
-| 6 | `~/.claude/commands/` | Manual slash commands (`/pr`, `/debug`, etc.) | ✅ 8 commands |
+| 6 | `~/.claude/commands/` | Manual slash commands (`/new-project`, `/dotfiles`) | ✅ 2 commands |
 
 All files live in `config/claude/` in this repo and are symlinked to `~/.claude/` by `setup-claude.sh`.
 
@@ -388,13 +388,12 @@ Manual slash commands you invoke explicitly (vs skills which auto-trigger).
 | Command | What it does |
 |---------|-------------|
 | `/new-project` | Scaffold `.claude/` config for a new project |
-| `/pr` | Create a GitHub PR with conventional title + body |
-| `/review` | Review local changes or a PR by number |
-| `/standup` | Generate standup from yesterday's git activity |
-| `/debug` | Systematic debugging — root cause analysis |
-| `/docs` | Generate or update documentation |
-| `/deploy` | Deploy to production |
-| `/check` | Run health check on project |
+| `/dotfiles` | Manage the dotfiles repo |
+
+`check`, `debug`, `review` and `standup` used to exist here as commands too;
+they are **skills** now (invoked the same way, `/check` etc.) and the
+duplicate commands were removed 2026-09-24. `/pr`, `/docs` and `/deploy` never
+had files behind them after the scripts reorg.
 
 **Adding a command:**
 ```bash

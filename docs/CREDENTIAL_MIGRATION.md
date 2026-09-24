@@ -94,7 +94,7 @@ docker exec grafana grafana cli admin reset-admin-password 'NEW_PASSWORD'
 | Bazarr | `http://100.81.171.49:6767` | `<username>` |
 | LazyLibrarian | `http://100.81.171.49:5299` | `<username>` |
 | Jellyseerr | `http://100.81.171.49:5055` | via Jellyfin |
-| NAS (UGOS) | `https://nas.peciulevicius.com` | `Džiugas` |
+| NAS (UGOS) | `https://nas.peciulevicius.com` | personal admin account (in Vaultwarden) |
 | NAS SMB service account | *(macOS Keychain)* | `macmini` |
 
 ---

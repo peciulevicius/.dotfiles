@@ -660,9 +660,9 @@ Change the app's *login*, not the database role.
 
 This is a walk, not a single sitting.
 
-Both NAS accounts (`Džiugas` admin + `macmini` SMB service account) currently
+Both NAS accounts (personal admin + `macmini` SMB service account) currently
 use the same password as elsewhere. Rotate to unique generated passwords:
-- [ ] `Džiugas` (web UI admin) — generate in Bitwarden, update entry
+- [ ] personal admin (web UI) — generate in Bitwarden, update entry
 - [ ] `macmini` (SMB) — generate in Bitwarden; after changing on NAS, update
   the saved credential in macOS Keychain on the Mac mini (Finder will prompt
   on next mount; also remount the four shares)

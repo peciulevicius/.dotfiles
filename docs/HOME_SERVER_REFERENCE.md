@@ -142,7 +142,7 @@ broken from a consumer's side. Verify the *consumer*, not just the source.
 
 ## 🔴 A fake "movie" release is often a bare `.exe` — check before it finishes
 
-Caught 2026-09-22: a Radarr-grabbed "Resident Evil (2026)" release was a
+Caught 2026-09-22: a Radarr-grabbed release of a new movie was a
 single 1.15GB `.exe` file, no video container, already 19% downloaded before
 anyone looked. This is a known piracy-scene scam pattern — a fake release
 with a real-looking name whose payload is a Trojan installer, not media.
@@ -151,7 +151,7 @@ with a real-looking name whose payload is a Trojan installer, not media.
 API, before a download finishes): open the torrent's file list.
 
 - ✅ **Legitimate:** one `.mkv`/`.mp4`/`.avi` as the bulk of the size, optionally
-  with `.srt`/`.nfo`/small `.txt` siblings (YTS-style attribution files are
+  with `.srt`/`.nfo`/small `.txt` siblings (release-group attribution files are
   normal and harmless)
 - 🔴 **Fake:** the *only* substantial file is `.exe`/`.scr`/`.msi`/`.bat`/`.zip`,
   or a video-shaped name that actually resolves to one of those extensions
@@ -168,7 +168,7 @@ curl -s "http://localhost:7878/api/v3/releaseprofile" -H "X-Api-Key: <radarr-key
 ```
 
 ⚠️ **It only catches releases naming the bad extension in the release title
-itself** — this specific scam did (`FLUX.exe`), which is why the filter
+itself** — this specific scam did (the release name ended in `.exe`), which is why the filter
 works, but a more careful fake could rename the payload after download to
 something less obvious. It raises the bar; it doesn't guarantee zero risk. If
 you ever manually eyeball a torrent's file list and it doesn't look like §

@@ -8,6 +8,36 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-24 — Cloud PRs triaged: #34/#35 merged, #36/#40 closed with cherry-picks
+
+A cloud Claude session opened six PRs. Each was reviewed against the live
+system before anything landed.
+
+- **#35 (CI: gitleaks, shellcheck, strict docs build)** — merged as-is after a
+  rebase.
+- **#34 (backup reliability)** — merged after two fixes: the cron label
+  (`"SMB rescan"` vs live `"SMB library rescan"`, which would have failed the
+  new crontab-diff audit weekly) and the restore/verify fallback bucket (the
+  non-existent `peciulevicius-services-backup`, only used when `.env` is
+  missing — i.e. exactly a disaster rebuild). Live crontab reinstalled from the
+  repo (now identical, 7 jobs). First `r2-verify.sh` run: all five sets
+  restored a byte-identical file.
+- **#36 / #40 (docs "professional rewrite")** — closed. Their tone rewrites
+  halved BOOKS/KINDLE_SETUP/DEGOOGLE and deleted settled decisions ("can't
+  wipe the Scribe", the capture-friction diagnosis, "don't re-research",
+  the why/caught lines), and #40's SERVICES.md rewrite dropped post-deploy
+  wiring, access rationale and the Mobile Apps section. **Kept by
+  cherry-pick:** the privacy scrub (NAS serial, router MAC, remote-access URL,
+  Send-to-Kindle address, employer/colleague/bank/family names, DRM tooling;
+  `settings.local.json` untracked everywhere), the changelog redaction, and the
+  UTILITY_SCRIPTS refresh.
+- **Hand-applied** the other real fixes from those PRs: Mealie hostname out of
+  `setup-cloudflare-tunnel.sh`, `guides/EMAIL.md` into the docs nav, stale
+  `/pr`/`/docs`/`/deploy` and command counts out of CLAUDE_CODE_GUIDE. Also
+  scrubbed what the PRs missed: the NAS admin *login* name (half a credential)
+  and piracy indexer / release names (generic labels now; Prowlarr IDs and
+  every gotcha kept). Your name as a public author identity stays.
+
 ## 2026-09-24 — Repo crontab had fallen behind; audit now checks it
 
 `scripts/cron/crontab` is documented as the authoritative schedule, but it
@@ -886,7 +916,7 @@ NAS by mDNS (`DH4300PLUS-DP.local`) since 2026-09-05.
 
 **Migration done (2026-08-04)**
 - [x] RAID 5 pool created (3× 6TB IronWolf Pro = ~11TiB usable), Btrfs
-- [x] SMB on; shares: `media`, `immich`, `audiobooks`, `books`, `unsorted`; service account `macmini` (ASCII name — `ž` in `Džiugas` breaks SMB auth)
+- [x] SMB on; shares: `media`, `immich`, `audiobooks`, `books`, `unsorted`; service account `macmini` (ASCII name — a non-ASCII character in the personal admin account name breaks SMB auth)
 - [x] Tailscale via Docker container on NAS (`ugreen-nas`, 100.95.228.35) — remote SMB/Finder
 - [x] Full copy T7 → NAS (~680GB incl. 142G photo archives → `unsorted`), zero errors
 - [x] All services switched to NAS paths (`/Volumes/media` etc.); Immich Postgres moved to internal SSD (`~/services/immich/data/postgres`) — DBs must not live on SMB

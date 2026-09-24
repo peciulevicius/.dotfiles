@@ -113,7 +113,7 @@ the browser, or UGREEN mobile apps). Then drag & drop like a normal disk.
 
 ## Accounts
 
-- `Džiugas` — human admin, web UI only (non-ASCII name breaks SMB)
+- personal admin account — web UI only (its non-ASCII name breaks SMB)
 - `macmini` — SMB service account used by the Mac mini for all mounts
 
 ## T7 retirement plan

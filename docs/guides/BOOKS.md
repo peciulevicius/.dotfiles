@@ -29,10 +29,10 @@ LazyLibrarian connects to Prowlarr's Torznab proxy. Prowlarr must be running wit
 
 | Prowlarr ID | Indexer | Torznab URL |
 |-------------|---------|-------------|
-| 2 | The Pirate Bay | `http://prowlarr:9696/2` |
-| 4 | Knaben | `http://prowlarr:9696/4` |
-| 5 | EBookBay | `http://prowlarr:9696/5` |
-| 6 | TorrentDownload | `http://prowlarr:9696/6` |
+| 2 | general torrent index | `http://prowlarr:9696/2` |
+| 4 | meta-search index | `http://prowlarr:9696/4` |
+| 5 | ebook-focused index | `http://prowlarr:9696/5` |
+| 6 | general torrent index (2nd) | `http://prowlarr:9696/6` |
 
 LazyLibrarian appends `/api` to these URLs automatically.
 
@@ -41,7 +41,7 @@ LazyLibrarian appends `/api` to these URLs automatically.
 **Torznab providers** — in LazyLibrarian config, each `[Torznab_N]` section needs:
 ```ini
 [Torznab_0]
-dispname = EBookBay
+dispname = ebook-index
 enabled = True          ← CRITICAL: defaults to False, must be explicit
 host = http://prowlarr:9696/5
 api = <prowlarr_api_key>
@@ -86,10 +86,10 @@ LazyLibrarian is on port 5299 (Tailscale-only: `http://100.81.171.49:5299`).
 ### 2. Add Torznab providers via web UI
 
 Go to **Config → Providers → Torznab** and add each indexer:
-- Display Name: `EBookBay` / Host: `http://prowlarr:9696/5` / API: `<prowlarr_api_key>`
-- Display Name: `The Pirate Bay` / Host: `http://prowlarr:9696/2` / API: `<prowlarr_api_key>`
-- Display Name: `Knaben` / Host: `http://prowlarr:9696/4` / API: `<prowlarr_api_key>`
-- Display Name: `TorrentDownload` / Host: `http://prowlarr:9696/6` / API: `<prowlarr_api_key>`
+- Display Name: `ebook-index` / Host: `http://prowlarr:9696/5` / API: `<prowlarr_api_key>`
+- Display Name: `general-1` / Host: `http://prowlarr:9696/2` / API: `<prowlarr_api_key>`
+- Display Name: `meta-search` / Host: `http://prowlarr:9696/4` / API: `<prowlarr_api_key>`
+- Display Name: `general-2` / Host: `http://prowlarr:9696/6` / API: `<prowlarr_api_key>`
 
 Check **Enabled** on each one. Set **Download Types** to `A,E`.
 
@@ -197,9 +197,9 @@ it exists in Calibre-Web, covers and all, with Amazon out of the loop.
 **Fix:** Must explicitly set `enabled = True` in each `[Torznab_N]` section, or tick **Enabled** in the web UI.
 **After restart:** If LazyLibrarian rewrites config and drops the `enabled` field, use the web UI to re-enable providers and save. Alternatively, run `config_update` POST via script (see `scripts/lazylibrarian-config-fix.sh` if it exists).
 
-### EBookBay rate limiting (429)
-**Symptom:** EBookBay returns `429 Too Many Requests`, gets blocked for 30 seconds.
-**Impact:** Minor — other 3 indexers still search fine. EBookBay just times out.
+### Ebook indexer rate limiting (429)
+**Symptom:** the ebook-focused indexer returns `429 Too Many Requests`, gets blocked for 30 seconds.
+**Impact:** Minor — other 3 indexers still search fine; that one just times out.
 **Fix:** No fix needed — LazyLibrarian continues with other providers.
 
 ### "audiobook" in banword list rejects ebook torrents
