@@ -40,6 +40,31 @@ Made during the 2026-09-21 Vaultwarden scare (212 cleartext passwords,
 > 1.35.4 → 1.37.3. These exports were leftover blast radius from the
 > debugging, not a backup anyone needed.
 
+### ⚡ Batch 2026-09-24 — one-day push (subagents in parallel)
+
+👤 = needs you. Everything else runs in parallel.
+
+- [ ] 👤 **Reset Odysseus 2FA** (TOTP + backup codes) — exposed in a session
+      transcript 2026-09-23 while auditing `data/auth.json`
+- [ ] 👤 Reset the Uptime Kuma backup push token → `~/services/rclone/.env`
+- [ ] **Odysseus repair** — remove 32 nested ownerless skill copies (would
+      duplicate on next restart), prune dev skills, re-import the Claude export
+      as atomic memories (the qwen 4k-context import lost all of it), set a
+      task/utility model
+- [ ] **Email cutover** — 👤 Purelymail domain + `dziugas@` mailbox + Cloudflare
+      API token; then DNS switch (replace SPF, MX, DKIM×3, DMARC, ownership),
+      catch-all, tests, repoint kindle_sync / Calibre-Web / Kuma SMTP, 👤 revoke
+      Gmail app password, 👤 iPhone Apple Mail + Sieve filters, 👤 Gmail forward
+- [ ] **AI coach** — `adaptive-endurance-coach` skill (Claude Code + Odysseus),
+      `trainingpeaks-mcp` service (👤 TP cookie), Strava MCP for Odysseus
+      (👤 Strava API app), 👤 Garmin→TP Daily Health Stats toggle,
+      `~/.training/` backed up to R2
+- [ ] **Claude config** — relink commands, drop stale Grafana refs, dedupe
+      skill/command pairs, add `personal-finance`, `pkm-notes`, `testing` skills
+- [ ] **HOME_SERVER.md rewrite** against the NAS architecture
+- [ ] Local models: no bigger model (RAM ceiling ~8B); optional later — OpenCode
+      + `qwen2.5-coder:7b` for offline snippets only
+
 ### 2. 🔴 Move TOTP off Google Authenticator — before any password change
 
 **The single highest-risk item in the whole de-Googling effort.** Google
