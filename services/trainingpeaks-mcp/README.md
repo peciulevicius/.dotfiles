@@ -7,8 +7,8 @@ Odysseus) read **and write** access to TrainingPeaks: workouts, fitness
 
 **Port:** `127.0.0.1:8092` (Streamable HTTP at `/mcp`, SSE at `/sse`, health at
 `/status`) · **Upstream:** [JamsusMaximus/trainingpeaks-mcp](https://github.com/JamsusMaximus/trainingpeaks-mcp)
-(MIT), pinned to commit `a412a84` (v3.2.0, 85 tools) · Not public: no tunnel,
-localhost only.
+(MIT), pinned to commit `a412a84` (v3.2.0, 85 tools) · Public only behind
+Cloudflare Access OAuth at `tp-mcp.peciulevicius.com` (see bottom).
 
 ## Why TrainingPeaks and not a Garmin connector
 
@@ -89,7 +89,7 @@ Daily Health Stats toggle above is off (or Garmin hasn't synced yet).
 - Unofficial: TrainingPeaks can change its internal API and break this, or
   object to cookie use under its ToS.
 - Full-account cookie: a leak means someone can read and edit your training
-  calendar. It stays on this machine, localhost-bound.
+  calendar. It stays on this machine; the only public path is the Access-gated tunnel hostname.
 - The coach **writes** to your calendar (workouts, notes, nutrition targets) —
   that's the point, but review what it changes.
 
