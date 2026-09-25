@@ -103,9 +103,9 @@ Section names in *italics* are headings below.
 - Pi-hole local DNS records, only after a Caddy decision — *Pi-hole — finish the deployment*
 - Optional `scp` push to the Scribe — *Notes*
 - Gluetun compose once a VPN provider is picked — *VPN for torrents*
-- 🔧 **Another agent is on these right now (2026-09-25), not touched in this
-  pass:** the remaining pinned image bumps, the Calibre library → SSD move —
-  *9. Maintenance backlog*, *Worth doing soon*
+- ✅ Done later on 2026-09-25 by that agent: same-major pinned image bumps and
+  the Calibre library → SSD move (see changelog). Left for you: KOReader OPDS
+  check, the major-version upgrades (plans under *21 pinned images*)
 
 ---
 
@@ -526,10 +526,11 @@ whole-house outage now alerts.
 publicly exposed, and it controls DNS for the whole network. A pinned tag never
 moves, so Watchtower being enabled is not evidence anything is current.
 
-- [ ] Bump **Pi-hole** first, then work through the other pinned images
-- [ ] Move the **Calibre library off SMB** onto the internal SSD — SQLite over
-      SMB is the root cause of every Calibre-Web failure so far. Scripted —
-      see "Move the Calibre library off SMB onto the SSD" below
+- [x] ~~Bump **Pi-hole** first, then work through the other pinned images~~ —
+      done 2026-09-25 (same-major bumps only; majors have plans below)
+- [x] ~~Move the **Calibre library off SMB** onto the internal SSD~~ — done
+      2026-09-25, now `~/services/calibre/library`; KOReader check and NAS
+      cleanup left — see "Move the Calibre library off SMB onto the SSD" below
 - [ ] Delete ~2.3 GB of locked `.smbdelete` duplicates (needs NAS-side access)
 
 #### Quick wins left over from 2026-09-20
@@ -674,11 +675,49 @@ Oldest and most exposed first:
 - [x] ~~**Pi-hole `2024.07.0`**~~ — → **v6 `2026.09.0`** on 2026-09-25
       (env vars migrated, Glance widget → `pihole-v6`; see changelog)
 - [x] ~~**it-tools `2023.11.2`**~~ — → `2024.10.22-7ca5933` on 2026-09-25
-- [ ] **Jellyfin `10.10.6`**, **Uptime Kuma `1.23.16`** (Grafana was removed
-      2026-09-22)
-- [ ] The rest: audiobookshelf, bazarr, calibre-web, couchdb, freshrss,
-      jellyseerr, linkwarden, mariadb, redis, sonarr/radarr,
-      stirling-pdf, syncthing, transmission
+- [x] ~~**Jellyfin `10.10.6`**, **Uptime Kuma `1.23.16`**~~ — patched to
+      **10.10.7** and **1.23.17** on 2026-09-25 (last of their lines)
+- [ ] **Majors NOT taken — each has a one-way data migration.** Plan per item;
+      do one per sitting, never two at once:
+  - **Jellyfin 10.10 → 10.11**: 10.11 moves the library DB to EF Core,
+    one-way, and can take 10–30+ min on first start (don't restart it
+    mid-migration). Backup: stop, tar `~/services/jellyfin/data/config`
+    (~200MB, cache excluded). Rollback: restore the tar + `10.10.7` tag — a
+    10.11 DB will not open on 10.10. Check client app versions first.
+  - **Uptime Kuma 1.23 → 2.x**: 2.0 migrates SQLite in place (heartbeat table
+    rewrite; minutes on a 1.3GB `kuma.db` — trim heartbeat retention first)
+    and can optionally move to MariaDB. Backup: stop, copy `data/`. Rollback:
+    restore `data/` + `1.23.17`. Watch the Discord notifier and the
+    `status.` page after.
+  - **Syncthing 1 → 2**: v2 replaces the LevelDB index with SQLite (migrated
+    on first start, one-way) and drops some legacy options. Backup
+    `data/config`; rollback = restore it + `1.30.0` (index rescans). Upgrade
+    the phone/desktop peers soon after — v2 still talks to v1 peers.
+  - **Radarr 5 → 6**, **Prowlarr 1 → 2**: DB schema migrations on start
+    (forward-only); each app writes its own `Backups/` zip — take one via
+    System → Backup first, plus a tar of its data dir. Rollback = restore
+    zip into the old tag. Do Prowlarr first; re-run Sonarr/Radarr app tests.
+  - **Paperless-ngx 2 → 3**: Django migrations + possible OCR/config renames.
+    `pg_dump` + `document_exporter` to `data/export` first; rollback = restore
+    the dump into the 2.20.15 tag. Only if Paperless survives the
+    keep/remove decision.
+  - **Stirling PDF 0.46 → 1.x+**: image renamed (`stirlingtools/stirling-pdf`),
+    settings.yml layout changed; stateless otherwise (no login enabled) —
+    low risk, just re-check `settings.yml` after.
+  - **Nextcloud 30 → 31 → 32 …**: 30 is end-of-life. Must step one major at
+    a time (`occ upgrade` each), maintenance mode, MariaDB dump first
+    (`backup-databases.sh`), check apps compatibility per step. Biggest job
+    here — schedule an evening.
+  - **Postgres 16 → 17/18, MariaDB 11.4 → 12/13, Redis 7 → 8**: data-dir
+    format changes; Postgres needs dump/restore into a fresh volume. Stay on
+    16 / 11.4 LTS / 7.4 until a reason appears — all floating tags were
+    verified current on 2026-09-25.
+- [x] ~~The rest~~ — 2026-09-25, same-major only: audiobookshelf 2.36.1,
+      bazarr 1.6.1, calibre-web 0.6.27, couchdb 3.5.2, freshrss 1.30.0,
+      jellyseerr 2.7.3, linkwarden v2.16.3, paperless 2.20.15, sonarr 4.0.20,
+      radarr 5.28.0, prowlarr 1.37.0, stirling-pdf 0.46.2, syncthing 1.30.0,
+      transmission 4.1.3. mariadb/redis/postgres/nextcloud use floating tags
+      and were already on the latest digest
 - [x] ~~vaultwarden~~ — 1.35.4 → **1.37.3** on 2026-09-21
 
 **Process, not a one-off:** bump deliberately, one service at a time, reading
@@ -714,11 +753,12 @@ kept as `.env.pre-ssd-migration`), recreates the containers and checks their
 Rollback is in the script header. Tested against a stand-in library and a
 stubbed `docker`, not yet on the Mac mini.
 
-- [ ] Re-stage the changed backup script first — `cp
+- [x] ~~Re-stage the changed backup script first~~ — already staged (no diff) on 2026-09-25 — `cp
       ~/.dotfiles/services/rclone/rclone-backup.sh ~/services/rclone/` (it now
       reads the library path from `~/services/calibre/.env`)
-- [ ] `~/.dotfiles/scripts/utils/migrate-calibre-to-ssd.sh` (dry run), then
-      `--apply`
+- [x] ~~`~/.dotfiles/scripts/utils/migrate-calibre-to-ssd.sh` (dry run), then
+      `--apply`~~ — done 2026-09-25; 38 books / 147 files match, checksums +
+      integrity_check clean
 - [x] ~~Repoint the `BOOKS_DIR` bind mount~~ — compose files already read
       `${BOOKS_DIR}`; the script edits the three `.env` files
 - [x] ~~Update `rclone-backup.sh`~~ — it, `backup-external.sh` and
@@ -727,9 +767,14 @@ stubbed `docker`, not yet on the Mac mini.
 - [x] ~~Decide where the large read-along EPUBs live~~ — with them, on the
       SSD. One 733MB book fits; revisit only if read-alongs become a shelf
 - [ ] Verify OPDS still serves to KOReader afterwards, and that Calibre-Web
-      opens a shelf (the old `disk I/O error` path)
-- [ ] After a week: delete `/Volumes/books` from the NAS via UGOS, then update
-      the Calibre rows in `HOME_SERVER_REFERENCE.md` and `NAS.md`
+      opens a shelf (the old `disk I/O error` path) — server side checked
+      2026-09-25 (login 200, OPDS answers 401 Basic, no DB errors); the
+      logged-in KOReader + shelf check needs you
+- [ ] Next morning (2026-09-26): `~/logs/rclone-backup.log` shows the Calibre
+      books backup reading from `~/services/calibre/library`
+- [ ] After a week (~2026-10-02): delete `/Volumes/books` from the NAS via
+      UGOS, then update `NAS.md` (`HOME_SERVER_REFERENCE.md` rows already
+      point at the SSD and call the NAS copy a frozen rollback)
 
 ### Regenerate missing Immich thumbnails
 
