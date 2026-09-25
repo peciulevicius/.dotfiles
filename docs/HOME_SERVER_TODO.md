@@ -61,8 +61,8 @@ Grouped by "what happens if I ignore this", not by number.
       `dziugas@peciulevicius.com`.
 - [ ] 👤 Install the branded signature (from `peciulevicius.com/email/signature`
       once deployed) in Odysseus, iPhone Mail, Purelymail webmail.
-- [ ] BIMI `default._bimi` TXT record once `/bimi/logo.svg` is live (Claude, via
-      Cloudflare API).
+- [x] BIMI `default._bimi` TXT record — added 2026-09-25 (logo live at
+      `/bimi/logo.svg`).
 - [ ] 👤 Decide on a Google account photo for Gmail recipients (conflicts with
       de-Googling — default: no).
 
