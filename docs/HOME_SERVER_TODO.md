@@ -80,13 +80,12 @@ Made during the 2026-09-21 Vaultwarden scare (212 cleartext passwords,
       Token button, so run `~/.dotfiles/scripts/utils/kuma-reset-push-token.sh`
       (rotates the token in `kuma.db`, rewrites `HEARTBEAT_URL` in
       `~/services/rclone/.env`, sends a test push; never prints the token).
-- [ ] 👤 **Email** — DNS done 2026-09-25 (ownership TXT, SPF replaced, 3× DKIM,
-      DMARC, autoconfig, autodiscover SRV). Remaining:
-      1. Purelymail → Add New Domain → `peciulevicius.com` → Check DNS → Save.
-      2. Cloudflare dashboard → Email → Email Routing → **Disable** (the API
-         token can't) → then Claude adds the Purelymail MX + checks with `dig`.
-      3. Purelymail → Users → add `dziugas@peciulevicius.com`; Routing →
-         catch-all `*@peciulevicius.com` → `dziugas@`.
+- [ ] 👤 **Email** — DNS + MX live on Purelymail 2026-09-25, Email Routing
+      disabled, domain saved, `dziugas@` user created. Remaining:
+      1. Purelymail → Routing → catch-all `*@peciulevicius.com` → `dziugas@`.
+      2. Test: mail `inbox@peciulevicius.com` from Gmail, check webmail.
+      3. Repoint kindle_sync / Calibre-Web / Kuma SMTP (EMAIL.md §7), revoke
+         the Gmail app password, iPhone Mail, Gmail forward.
 - [ ] 👤 **TrainingPeaks cookie** — the `read -rs` paste hangs: macOS Terminal
       caps a typed line at 1024 bytes and the cookie is longer. Use the
       clipboard version in `services/trainingpeaks-mcp/README.md`.

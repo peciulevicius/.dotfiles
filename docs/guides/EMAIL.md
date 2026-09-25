@@ -1,6 +1,6 @@
 # Email — running your own domain's mail
 
-**Status (2026-09-25):** Purelymail bought · all Purelymail DNS records in place except MX · Cloudflare Email Routing still receiving until it is disabled in the dashboard
+**Status (2026-09-25):** MX switched to Purelymail · all 7 records live · Cloudflare Email Routing disabled · domain + `dziugas@` user added · catch-all + consumers + iPhone still to do
 **Domain:** `peciulevicius.com` (registered + DNS at Cloudflare)
 **Guide owner:** Gap 1 of [DEGOOGLE.md](./DEGOOGLE.md)
 
@@ -182,7 +182,10 @@ Email Routing`), and the `/email/routing/disable` endpoint rejects a token that
 only has *Email Routing Rules: Edit* (`10000 Authentication error`). Found
 2026-09-25: every other record went in via the API, the MX swap waited for the
 click. Everything except MX can go in first — the ownership TXT is all
-Purelymail needs to accept the domain.
+Purelymail needs to accept the domain. Its "Check DNS records" then reports
+*MX record not found* (still Cloudflare's `route*.mx.cloudflare.net`) — that is
+expected at this stage and **Save still works**. Disabling Email Routing
+removes Cloudflare's MX records itself; add Purelymail's MX right after.
 
 ---
 
