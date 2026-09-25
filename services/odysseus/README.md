@@ -135,6 +135,7 @@ services:
   odysseus:
     volumes:
       - ${HOME}/.training:/training   # AI coach memory, backed up to R2
+      - ${HOME}/obsidian-vault:/app/data/personal_docs/obsidian:ro   # RAG over the vault
 ```
 
 - **`!reset` is required.** A plain `ports: []` *merges* with upstream's list
@@ -145,6 +146,22 @@ services:
   it must print nothing.
 - `/training` is only reachable by Odysseus's file tools because
   `data/settings.json` has `"tool_path_extra_roots": ["/training"]`.
+
+## RAG over the Obsidian vault (2026-09-25)
+
+The vault is mounted **read-only** at `/app/data/personal_docs/obsidian` —
+Odysseus only accepts RAG directories inside `personal_docs`
+(`_resolve_allowed_personal_dir`), so a mount elsewhere (e.g. `/vault`) can't
+be added. Tracked in `data/personal_docs/indexed_directories.json`.
+
+- First index (57 chunks from 32 notes) was built from the CLI:
+  ```bash
+  docker exec -w /app odysseus-odysseus-1 python3 -c "from src.rag_singleton import get_rag_manager; print(get_rag_manager().index_personal_documents('/app/data/personal_docs/obsidian', owner='peciulevicius'))"
+  ```
+  Re-run it (or use Settings → Personal docs → refresh) after big vault changes.
+- ⚠️ **Privacy trade-off, accepted by the user 2026-09-25:** retrieved snippets
+  go to whichever model the chat uses — with a cloud model, vault text
+  (incl. health/finance notes) is sent to the provider.
 
 ## MCP servers (AI coach)
 

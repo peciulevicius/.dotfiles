@@ -8,6 +8,13 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-25 — Odysseus RAG over the Obsidian vault
+
+- Vault mounted read-only into `personal_docs/obsidian` (host override file),
+  indexed 57 chunks; search returns Training Log, Gear & Nutrition, HOME.
+  Details + re-index command in `services/odysseus/README.md`.
+- User accepted that snippets go to cloud models when those are used.
+
 ## 2026-09-25 — TODO truth pass: verified, ticked, collapsed
 
 Every open item in `HOME_SERVER_TODO.md` was checked against the live system
