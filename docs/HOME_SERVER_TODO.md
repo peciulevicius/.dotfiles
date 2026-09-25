@@ -79,12 +79,18 @@ Section names in *italics* are headings below.
 - Phone: battery, ADP, search/browser, Pixel checks — *Phone* and *Quick wins* (De-Google)
 - NAS UI settings, stale NAS folders, drive sleep — *NAS — remaining follow-ups*
 
+- 👤 Decide: index `~/obsidian-vault` in Odysseus RAG? Retrieved note snippets
+  are sent to whichever model the chat uses — with cloud models that means
+  health/finance/journal text goes to the provider. Options: whole vault,
+  vault minus private folders, or local-model-only chats — *8. Odysseus*
+
 ### 🤖 Claude can do next
 
 - Run `mail-switch-purelymail.sh` once the password file exists — *🔝 Next up* 2
 - Website: apply `v1.5.0` via `supabase db push` (after your login), merge PR #46 (after the Worker move); janioniu PR #5 — *🌐 Other repo backlogs*
 - Optional: OpenCode + `qwen2.5-coder:7b` for offline snippets — *⚡ Batch 2026-09-24*
-- Odysseus: mount `~/obsidian-vault` for RAG, chat-export import, CalDAV after Nextcloud — *8. Odysseus*
+- Odysseus: chat-export import, CalDAV after Nextcloud — *8. Odysseus*. Vault RAG
+  mount is ready to do but waits on the 👤 privacy decision below.
 - Uptime Kuma: remove the stale **Mealie** monitor, add Odysseus/CouchDB checks — *9. Maintenance backlog*
 - Rotate Immich's DB password (restarts Immich — say go) — *9. Maintenance backlog*
 - `rm -rf ~/services/mealie ~/services/grafana` (say go) — *9. Maintenance backlog*
