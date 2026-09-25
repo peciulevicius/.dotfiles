@@ -46,8 +46,8 @@ Section names in *italics* are headings below.
 ### 👤 Needs you (UI / device / credentials / decision)
 
 - Purelymail password file, Calibre-Web SMTP, revoke Gmail app password, Gmail→Kindle filter — *🔝 Next up* 1, 3, 4, 5
-- Coach: upload skill zip, Cloudflare Access for `tp-mcp`, custom connector, "Coach" Project — *🏃 Coach in the Claude app*
-- Website: `supabase login` + DB password, `checkOrigin` decision, Pages → Worker move; janioniu: commit your local TODO edits — *🌐 Other repo backlogs*
+- Coach: upload skill zip, add the `tp-mcp` custom connector in claude.ai, "Coach" Project — *🏃 Coach in the Claude app*
+- Website: `supabase login` + DB password, `checkOrigin` decision, Pages → Worker move; janioniu: commit your local TODO edits, confirm placeholder facts with Dad, Purelymail domain — *🌐 Other repo backlogs* and below
 - Gravatar, branded signature, Google account photo — *✉️ Email identity*
 - T7 external backup run — *📋 Open user steps*
 - Email: catch-all, inbound test, iPhone Mail, deliverability / mail-tester — *📋 Open user steps*
@@ -66,6 +66,7 @@ Section names in *italics* are headings below.
 - DB-dump retention — *💾 Disk*
 - T5 offsite trip — *Get one copy of the photos out of the building*
 - Immich missing thumbnails job — *Regenerate missing Immich thumbnails*
+- KOReader OPDS + Calibre-Web shelf check — *Move the Calibre library off SMB onto the SSD*
 - What T5 is for — *External backups are manual now*
 - Router DHCP reservation — *Router DHCP reservation for the NAS*
 - Pi-hole: Caddy decision, router DNS — *Pi-hole — finish the deployment*
@@ -79,23 +80,9 @@ Section names in *italics* are headings below.
 - Phone: battery, ADP, search/browser, Pixel checks — *Phone* and *Quick wins* (De-Google)
 - NAS UI settings, stale NAS folders, drive sleep — *NAS — remaining follow-ups*
 
-- [x] ~~Decide: index the vault in Odysseus RAG~~ — yes (whole vault), done 2026-09-25
-
-- 👤 **Broader Cloudflare API token** (replaces `dotfiles-dns` in
-  `~/.config/homelab/cloudflare.env`): account-level *Zone: Edit + DNS: Edit*
-  (all zones), *Workers Scripts: Edit*, *Workers Routes: Edit*, *Turnstile:
-  Edit*, *Email Routing Addresses/Rules: Edit*, *Zone Settings: Edit*,
-  *Access: Apps and Policies: Edit* (for the claude.ai TrainingPeaks connector
-  behind Cloudflare Access OAuth). Unlocks
-  Claude doing: janioniuvynuogynas.lt zone + DNS + Worker custom domains +
-  Turnstile + email routing, and the peciulevicius.com Pages → Worker move via
-  a GitHub Actions `wrangler deploy` (like janioniu) instead of dashboard clicks.
-- [x] janioniuvynuogynas.lt: nameservers switched (👤), Cloudflare zone active
-  14:04, apex + `www` on the Worker, Turnstile keys + `SITE_URL` set, PR #5
-  merged and deployed — **live at https://janioniuvynuogynas.lt** (2026-09-25).
-  Open there (add to that repo's TODO when its uncommitted edits are sorted):
-  - Claude: unknown paths return **500 instead of 404** (e.g. `/lt/kontaktai`)
-  - Claude: `www` serves the site instead of redirecting to the apex
+- janioniuvynuogynas.lt is live (404 fix + `www` redirect in PR #6, see
+  changelog). Open there (add to that repo's TODO when its uncommitted edits
+  are sorted):
   - 👤 placeholder phone `+370 600 00 000` and other facts are now on the real
     domain — confirm with Dad
   - 👤 your local checkout has uncommitted `docs/TODO.md` + `environments.md`
@@ -105,24 +92,24 @@ Section names in *italics* are headings below.
 - 👤 janioniuvynuogynas.lt email: **add the domain to the existing Purelymail
   account** (no extra cost) instead of Cloudflare Email Routing → Gmail; create
   `info@janioniuvynuogynas.lt` (or route it to whoever answers). Claude adds the
-  Purelymail DNS records once the zone exists (needs the broader token). Resend
+  Purelymail DNS records afterwards (zone and token are in place). Resend
   keeps using `send.janioniuvynuogynas.lt`, so no MX clash. Supersedes the
   "Email Routing → your Gmail" line in that repo's TODO step 3.
 
 ### 🤖 Claude can do next
 
 - Run `mail-switch-purelymail.sh` once the password file exists — *🔝 Next up* 2
-- Website: apply `v1.5.0` via `supabase db push` (after your login), merge PR #46 (after the Worker move); janioniu PR #5 — *🌐 Other repo backlogs*
+- Website: apply `v1.5.0` via `supabase db push` (after your login), merge PR #46 (after the Worker move) — *🌐 Other repo backlogs*
 - Optional: OpenCode + `qwen2.5-coder:7b` for offline snippets — *⚡ Batch 2026-09-24*
-- Odysseus: chat-export import, CalDAV after Nextcloud — *8. Odysseus*. Vault RAG done.
+- Odysseus: chat-export import, CalDAV after Nextcloud, RAG over Paperless + Linkwarden — *8. Odysseus*
 - Rotate Immich's DB password (restarts Immich — say go) — *9. Maintenance backlog*
 - `rm -rf ~/services/mealie ~/services/grafana` (say go) — *9. Maintenance backlog*
 - Pi-hole local DNS records, only after a Caddy decision — *Pi-hole — finish the deployment*
 - Optional `scp` push to the Scribe — *Notes*
 - Gluetun compose once a VPN provider is picked — *VPN for torrents*
-- ✅ Done later on 2026-09-25 by that agent: same-major pinned image bumps and
-  the Calibre library → SSD move (see changelog). Left for you: KOReader OPDS
-  check, the major-version upgrades (plans under *21 pinned images*)
+- Major-version image upgrades, one per sitting — *21 pinned images*
+- Calibre follow-ups: backup log check (2026-09-26), NAS copy removal
+  (~2026-10-02) — *Move the Calibre library off SMB onto the SSD*
 
 ---
 
@@ -132,24 +119,22 @@ Section names in *italics* are headings below.
   DB password → Claude applies `v1.5.0` via `supabase db push`; 👤 decide
   `checkOrigin` (one-click unsubscribe); 👤 Pages → Worker move, then Claude
   merges **PR #46** (Astro 7 + Tailwind 4); newsletter end-to-end test.
-- `~/dev/janioniu-vynuogynas/docs/TODO.md` — **PR #5** (same-major deps, cookie
-  banners removed) ready to merge; Astro 7 recommended *before* launch (critical
-  audit advisory); launch blockers (DNS still on Hostinger parking, placeholder
-  phone, Turnstile/Resend setup). Your uncommitted edits in `docs/TODO.md` +
-  `docs/environments.md` there still need committing.
+- `~/dev/janioniu-vynuogynas/docs/TODO.md` — live at
+  https://janioniuvynuogynas.lt since 2026-09-25 (PRs #5 + #6 merged). Still
+  open: Astro 7 (critical audit advisory), placeholder phone, Resend setup.
+  Your uncommitted edits in `docs/TODO.md` + `docs/environments.md` there
+  still need committing.
 
 ## 🏃 Coach in the Claude app / phone — walkthrough with Claude
 
 - [ ] 👤 Upload `config/claude/skills/adaptive-endurance-coach/` (zip) in
       claude.ai → Settings → Capabilities → Skills.
-- [x] Cloudflare Access app (Managed OAuth, own emails only) + tunnel ingress for
-      `tp-mcp.peciulevicius.com` → `127.0.0.1:8092` — done 2026-09-25; unauth `/mcp` = 401.
 - [ ] 👤 claude.ai → Connectors → Add custom connector →
       `https://tp-mcp.peciulevicius.com/mcp`; confirm `tp_auth_status` from the
-      phone. Check the official Strava connector is enabled.
+      phone. Check the official Strava connector is enabled. (Fallback OAuth
+      client id is in your chat with Claude, not in this repo.)
 - [ ] 👤 Claude Project "Coach" with the skill + pinned summary (the app can't read
       `~/.training`).
-- [x] Docs: SERVICES.md (AI Coach table), Glance monitors, both READMEs — verified 2026-09-25.
 
 ## ✉️ Email identity
 
@@ -159,8 +144,6 @@ Section names in *italics* are headings below.
       once deployed) in Odysseus, iPhone Mail, Purelymail webmail. Keep it a
       light HTML *signature*, not a heavy template — image-heavy mail scores
       worse with spam filters.
-- [x] BIMI `default._bimi` TXT record — added 2026-09-25 (logo live at
-      `/bimi/logo.svg`).
 - [ ] 👤 Decide on a Google account photo for Gmail recipients (conflicts with
       de-Googling — default: no).
 
@@ -173,15 +156,13 @@ is written out so it survives being read cold in a year.
 
 | # | Step | Why it is here and not later |
 |---|---|---|
-| **1** | ✅ ~~Delete the plaintext vault exports~~ | Done 2026-09-21 |
 | **2** | 🔴 Move TOTP off Google Authenticator | Seeds sync to the account being left — lockout risk |
 | **3** | 🔴 Rotate the Vaultwarden admin token | Leaked into a container config on 2026-09-21 |
-| **4** | ✅ ~~Buy Purelymail + DNS~~ | Done 2026-09-25 — see changelog |
 | **5** | 🔁 Repoint the 3 Gmail consumers, then revoke | Two of them fail **silently** — now tracked in 🔝 Next up |
 | **6** | 🔑 One pass: password + email per service | Same ~14 logins — separating them doubles the work |
 | **7** | 🧩 Vaultwarden Chrome extension | Blocked on the work laptop, not on us |
-| **8** | 🤖 Odysseus RAG + history import | Pure upside, nothing depends on it |
-| **8a** | 🔐 MacBook hook + dead-token fingerprint | Kuma token itself rotated 2026-09-25 |
+| **8** | 🤖 Odysseus history import | Pure upside, nothing depends on it |
+| **8a** | 🔐 MacBook hook + Tailscale re-auth | Kuma token rotated, fingerprint ignored 2026-09-25 |
 | **9** | 🧹 Pinned images, SMB, wallpapers | Maintenance backlog |
 
 ---
@@ -212,12 +193,6 @@ token, email DNS cutover, coach build) are in the changelog.
       (`~/logs/external-backup-T7.last`), then again whenever it's >30 days
       old — that's the reminder. Same for T5 before it goes offsite.
       (No stamp yet on 2026-09-25.)
-- [x] 👤 **Healthchecks.io heartbeat** — done 2026-09-25:
-      `~/.config/homelab/heartbeat.env` has `HEARTBEAT_PING_URL`, the `*/5`
-      cron runs, and `~/logs/heartbeat.log` has been silent (errors only)
-      since 08:30.
-- [x] 👤 **Uptime Kuma "Rclone Backup" push token** — rotated 2026-09-25 with
-      `scripts/utils/kuma-reset-push-token.sh`.
 - [ ] 👤 **Email** — DNS + MX live on Purelymail 2026-09-25, Email Routing
       disabled, domain saved, `dziugas@` user created. Remaining:
       1. Purelymail → Routing → catch-all `*@peciulevicius.com` → `dziugas@`.
@@ -226,17 +201,7 @@ token, email DNS cutover, coach build) are in the changelog.
          the Gmail app password, iPhone Mail, Gmail forward. → consumers and
          revoke are tracked in 🔝 Next up; 👤 iPhone Apple Mail + Sieve filters
          and the Gmail redirect decision (*De-Google → Email*) stay here.
-      4. [x] Odysseus → Email — done 2026-09-25: `app.db` has one enabled
-         account, `dziugas@` on `imap.purelymail.com:993` (STARTTLS off) +
-         `smtp.purelymail.com:465` SSL. For reference: Odysseus's IMAP
-         **STARTTLS box is ticked by default — untick it for 993** (implicit
-         TLS). Left on, the test fails with `socket error: unterminated line:
-         b'\x15\x03\x03…'` (a TLS alert read as text).
-      5. ⚠️ **Kindle Scribe exports go to the Amazon account's email (Gmail).**
-         → decided: Gmail filter until the account-email pass — 🔝 Next up #5.
-         (Alternative: change the Amazon account email to
-         `kindle@peciulevicius.com`, which the catch-all delivers.)
-      6. Deliverability: first mails to Gmail landed in Spam (new domain, no
+      4. Deliverability: first mails to Gmail landed in Spam (new domain, no
          reputation; SPF/DKIM/DMARC all pass). Mark *Not spam*, add
          `dziugas@` to contacts, keep sending real mail; check once with
          mail-tester.com (aim ≥ 9/10).
@@ -334,13 +299,8 @@ Critical accounts first: Apple ID, banks, GitHub, Cloudflare, Stripe.
 - [ ] 👤 Bitwarden **Vault Health** report → clear the remaining reused-password
       flags
 
-✅ Already done: **Vaultwarden master password**, **CouchDB**, **Transmission**
-and **Pi-hole** — the only services whose password is a runtime env var. All
-32/28-char random, verified working, old credentials rejected. 🔴 Pi-hole's old
-password was 5 characters and contained a common word, on a publicly exposed
-panel — treat it as exposed.
-
-⚠️ **Everything else cannot be changed from a file.** Init-only env vars are
+⚠️ **Only Vaultwarden's master, CouchDB, Transmission and Pi-hole could be
+changed from a file (all done — changelog); everything else cannot.** Init-only env vars are
 inert once the account exists (`ADMIN_USER` / `GRAFANA_USER` included — renames
 happen in each app's UI), and app accounts are salted hashes. Nextcloud,
 Paperless and FreshRSS have CLI resets; the rest are UI only. Commands are in
@@ -375,9 +335,9 @@ endpoint; native Ollama kept for short, tool-free chats. Why cloud:
 [services/odysseus/README.md](https://github.com/peciulevicius/.dotfiles/blob/main/services/odysseus/README.md)
 "Which model for which job". Full plan: [guides/SELF_HOSTED_AI.md](guides/SELF_HOSTED_AI.md).
 
-- [ ] **Point RAG at `~/obsidian-vault`** — not mounted into the container yet
-      (checked 2026-09-25). Later also Paperless + Linkwarden: a small model
-      over *your* documents beats a big model that has never seen them.
+- [ ] Later: point RAG at Paperless + Linkwarden too (the vault is indexed):
+      a small model over *your* documents beats a big model that has never
+      seen them.
 - [ ] 👤 **Bring Claude + ChatGPT history home.** Memories were imported
       2026-09-24 (131, 12 pinned); chat *history* was not.
       - [ ] 👤 Export both (ChatGPT: Data Controls → Export; Claude: Privacy → Export)
@@ -413,9 +373,6 @@ the Uptime Kuma backup push token, public since **2026-05-09**. Rotated
 2026-09-25; the pre-commit hook, CI and the weekly audit guard against a
 repeat.
 
-- [x] Add the dead token's gitleaks fingerprint to `.gitleaksignore` so
-      full-history scans stop flagging it (`.gitleaksignore` is empty as of
-      2026-09-25).
 - [ ] 👤 **Enable the hook on the MacBook's clone too** — run
       `~/.dotfiles/scripts/sync.sh` there once (it sets `core.hooksPath`), then
       `brew install gitleaks`. (The statusline commit on 2026-09-23 came from a
@@ -436,8 +393,6 @@ Nothing is known-broken; both are just unverified.
 - [ ] 👤 **Confirm 2FA is enabled on the Cloudflare account itself** — it
       controls DNS, the Tunnel and R2; arguably the single highest-value
       account in the setup.
-- [x] Add Cloudflare to [CREDENTIAL_MIGRATION.md](CREDENTIAL_MIGRATION.md) — done 2026-09-25 —
-      not tracked there as an account at all (only the tunnel credentials file).
 
 ### 8c. 🔌 Power outage recovery — added 2026-09-22
 
@@ -516,9 +471,6 @@ whole-house outage now alerts.
       `rm -rf ~/services/mealie ~/services/grafana` (both confirmed
       empty/unused before removal; both still present 2026-09-25).
       `rclone-backup.sh` already excludes both.
-- [x] **Uptime Kuma still has an active "Mealie" monitor** — fixed 2026-09-25: Mealie monitor deleted, Odysseus (:7001) + CouchDB (`/_up`) monitors added with the same notifications; stale Readarr app removed from Prowlarr; `~/services/glance/.env` chmod 600. (found 2026-09-25 —
-      Mealie was removed 2026-09-21/22). Remove it; while there, add monitors
-      for Odysseus and CouchDB, which have none.
 - [ ] 👤 **Decide: Nextcloud — keep or remove?** Only 83MB of real user files in
       it (the rest is app code + DB engine). Its non-redundant features:
       **Calendar/Contacts sync** (CalDAV/CardDAV — nothing else here does
@@ -541,11 +493,6 @@ whole-house outage now alerts.
 publicly exposed, and it controls DNS for the whole network. A pinned tag never
 moves, so Watchtower being enabled is not evidence anything is current.
 
-- [x] ~~Bump **Pi-hole** first, then work through the other pinned images~~ —
-      done 2026-09-25 (same-major bumps only; majors have plans below)
-- [x] ~~Move the **Calibre library off SMB** onto the internal SSD~~ — done
-      2026-09-25, now `~/services/calibre/library`; KOReader check and NAS
-      cleanup left — see "Move the Calibre library off SMB onto the SSD" below
 - [ ] Delete ~2.3 GB of locked `.smbdelete` duplicates (needs NAS-side access)
 
 #### Quick wins left over from 2026-09-20
@@ -604,8 +551,7 @@ gets tight (update staging recurs as apps update).
 | `~/dev` | 4.9GB |
 
 - [ ] 👤 Consider whether old DB dumps in `~/backups` need 30 days of retention
-- Calibre library → SSD and the `.smbdelete` duplicates: see *9. Maintenance
-  backlog* and *Worth doing soon*.
+- The `.smbdelete` duplicates: see *9. Maintenance backlog*.
 
 ⚠️ **Never `docker image prune -a` or `docker system prune -a`.** They delete
 every image not backing a *running* container — including the 2.77GB
@@ -634,14 +580,6 @@ unwanted: Remotely Save → Nextcloud WebDAV or R2.
       answering with an empty device wipes the vault. Snapshot:
       `~/backups/vault-snapshots/`.
 
-### 🛡️ Standing risks
-
-- ✅ **Tailscale key expiry** — disabled on `macmini` and `ugreen-nas`
-  (verified 2026-09-25). The MacBook's key has expired — see *8a*.
-- ✅ **Cloud offsite copy of photos — done 2026-09-21.** 72.4GB, all originals,
-  in R2, restore-checked monthly by `r2-verify.sh`. iCloud is cancelled, so this
-  + the T5-to-parents plan (below) is what makes photos 3-2-1.
-
 ---
 
 ## Do these first — you lose data or access without them
@@ -660,20 +598,6 @@ The R2 cloud copy (Plan B) is done and verified; see the changelog and
 
 ## Worth doing soon
 
-### Move Calibre's metadata.db off the SMB share
-
-`/Volumes/books/metadata.db` is SQLite on an SMB mount — the thing this setup's
-own rule says never to do (same reason Immich's Postgres lives on the internal
-SSD). It has not corrupted yet; the 2026-09-19 "malformed" error turned out to
-be a stale bind mount, not the file. But SQLite's locking is not reliable over
-SMB and Calibre *writes* this database.
-
-- [x] ~~Decide the layout~~ — decided 2026-09-24: **move the whole library**,
-      not a metadata-only split. It is 1.1GB, a split would need Calibre,
-      Calibre-Web *and* LazyLibrarian to agree on two paths, and the book
-      folders are exactly what Calibre-Web renames (the `.smbdelete` source).
-      Steps and script in the next section.
-
 ### ⚠️ 21 pinned images that Watchtower can never update
 
 Watchtower is enabled, which creates a false sense of currency: **a pinned tag
@@ -687,11 +611,6 @@ a healthy-looking server, compare versions first.**
 
 Oldest and most exposed first:
 
-- [x] ~~**Pi-hole `2024.07.0`**~~ — → **v6 `2026.09.0`** on 2026-09-25
-      (env vars migrated, Glance widget → `pihole-v6`; see changelog)
-- [x] ~~**it-tools `2023.11.2`**~~ — → `2024.10.22-7ca5933` on 2026-09-25
-- [x] ~~**Jellyfin `10.10.6`**, **Uptime Kuma `1.23.16`**~~ — patched to
-      **10.10.7** and **1.23.17** on 2026-09-25 (last of their lines)
 - [ ] **Majors NOT taken — each has a one-way data migration.** Plan per item;
       do one per sitting, never two at once:
   - **Jellyfin 10.10 → 10.11**: 10.11 moves the library DB to EF Core,
@@ -727,60 +646,22 @@ Oldest and most exposed first:
     format changes; Postgres needs dump/restore into a fresh volume. Stay on
     16 / 11.4 LTS / 7.4 until a reason appears — all floating tags were
     verified current on 2026-09-25.
-- [x] ~~The rest~~ — 2026-09-25, same-major only: audiobookshelf 2.36.1,
-      bazarr 1.6.1, calibre-web 0.6.27, couchdb 3.5.2, freshrss 1.30.0,
-      jellyseerr 2.7.3, linkwarden v2.16.3, paperless 2.20.15, sonarr 4.0.20,
-      radarr 5.28.0, prowlarr 1.37.0, stirling-pdf 0.46.2, syncthing 1.30.0,
-      transmission 4.1.3. mariadb/redis/postgres/nextcloud use floating tags
-      and were already on the latest digest
-- [x] ~~vaultwarden~~ — 1.35.4 → **1.37.3** on 2026-09-21
 
 **Process, not a one-off:** bump deliberately, one service at a time, reading
 release notes and backing up data first — that is why they are pinned, and
 pinning is still the right call. But schedule it; quarterly is enough.
 `docker compose pull` will not help while the tag is fixed.
 
-**Scheduled since 2026-09-24:** `scripts/utils/check-image-updates.py`
-compares every pinned tag with the registry (patch/minor/major, database
-majors flagged as needing a data migration) and runs quarterly from cron,
-posting the list to Discord. Run it any time with `--outdated`. First run,
-2026-09-24: 25 of 26 pins behind — patch-level and safe to take first:
-couchdb 3.5.2, sonarr 4.0.20, calibre-web 0.6.27; the big ones are Pi-hole
-(2024.07 → 2026.09, v6 config migration), Uptime Kuma 1 → 2, Syncthing 1 → 2,
-Radarr 5 → 6, Prowlarr 1 → 2, Paperless 2 → 3, Stirling PDF 0.36 → 2.x.
+**Scheduled since 2026-09-24:** `scripts/utils/check-image-updates.py` runs
+quarterly from cron and posts outdated pins to Discord (`--outdated` to run
+it by hand). All same-major bumps were taken 2026-09-25 (changelog); only the
+majors above remain.
 
 ### ⚠️ Move the Calibre library off SMB onto the SSD
 
-The root cause of a whole day of failures: `metadata.db` is **SQLite on an SMB
-share**, which this setup's own rule forbids. Every symptom traced back to it —
-`disk I/O error` opening a shelf, `Device or resource busy` renaming a book,
-`.smbdelete` duplicate files, and `database disk image is malformed` from a
-stale mount.
+Done 2026-09-25 with `scripts/utils/migrate-calibre-to-ssd.sh` — library now
+at `~/services/calibre/library` (why and how: changelog). Follow-ups left:
 
-**It is affordable now:** the whole library is **1.1GB** and the SSD has 24GB
-free.
-
-📜 **Scripted 2026-09-24: `scripts/utils/migrate-calibre-to-ssd.sh`.** Dry
-run by default; `--apply` stops all three containers, rsyncs, verifies by
-checksum + `PRAGMA integrity_check`, sets `BOOKS_DIR` in each `.env` (old one
-kept as `.env.pre-ssd-migration`), recreates the containers and checks their
-`/books` mount. Any failure before the switch restarts them on the old path.
-Rollback is in the script header. Tested against a stand-in library and a
-stubbed `docker`, not yet on the Mac mini.
-
-- [x] ~~Re-stage the changed backup script first~~ — already staged (no diff) on 2026-09-25 — `cp
-      ~/.dotfiles/services/rclone/rclone-backup.sh ~/services/rclone/` (it now
-      reads the library path from `~/services/calibre/.env`)
-- [x] ~~`~/.dotfiles/scripts/utils/migrate-calibre-to-ssd.sh` (dry run), then
-      `--apply`~~ — done 2026-09-25; 38 books / 147 files match, checksums +
-      integrity_check clean
-- [x] ~~Repoint the `BOOKS_DIR` bind mount~~ — compose files already read
-      `${BOOKS_DIR}`; the script edits the three `.env` files
-- [x] ~~Update `rclone-backup.sh`~~ — it, `backup-external.sh` and
-      `r2-verify.sh` all read `BOOKS_DIR` from `~/services/calibre/.env` now;
-      backup 1 excludes `calibre/library/**` so it isn't uploaded twice
-- [x] ~~Decide where the large read-along EPUBs live~~ — with them, on the
-      SSD. One 733MB book fits; revisit only if read-alongs become a shelf
 - [ ] Verify OPDS still serves to KOReader afterwards, and that Calibre-Web
       opens a shelf (the old `disk I/O error` path) — server side checked
       2026-09-25 (login 200, OPDS answers 401 Basic, no DB errors); the

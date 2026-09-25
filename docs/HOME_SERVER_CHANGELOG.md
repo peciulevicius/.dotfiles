@@ -8,6 +8,23 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-25 — TODO clean-up: finished items
+
+Every ticked, struck-through or "done" line was deleted from
+`HOME_SERVER_TODO.md` so it holds only open work. Most were already recorded in
+the entries below; these were not:
+
+- **janioniuvynuogynas.lt live** — nameservers moved from Hostinger to
+  Cloudflare, apex + `www` on the Worker, Turnstile keys + `SITE_URL` set, PR #5
+  merged; PR #6 (merged same day) fixed unknown paths returning 500 instead of
+  404 and redirected `www` (and the `lt` variants) to the apex.
+- **`.gitleaksignore`** now carries the rotated Kuma push token's fingerprint,
+  so full-history scans stop flagging it.
+- **Cloudflare account** (login + 2FA, API token) added to
+  `CREDENTIAL_MIGRATION.md` — it was only tracked as the tunnel credentials file.
+- Coach docs (SERVICES.md AI Coach table, Glance monitors, both READMEs)
+  verified current.
+
 ## 2026-09-25 — TrainingPeaks MCP reachable from claude.ai
 
 - New automation token (`~/.config/homelab/cloudflare.env`, account-wide:
