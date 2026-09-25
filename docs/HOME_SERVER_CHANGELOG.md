@@ -8,6 +8,14 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-25 — Pinned image bumps (same-major only)
+
+One service at a time; compose + image digest saved to
+`~/backups/<svc>-2026-09-25/` before each, so rollback is the old tag.
+
+- **it-tools** `2023.11.2-7d94e11` → `2024.10.22-7ca5933` (latest upstream;
+  stateless). Home, a deep link and `tools.peciulevicius.com` all 200.
+
 ## 2026-09-25 — Pi-hole 2024.07.0 → v6 (2026.09.0)
 
 - Highest-priority pin: over a year old, public at `pihole.peciulevicius.com`.

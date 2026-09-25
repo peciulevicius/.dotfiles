@@ -817,7 +817,7 @@ Oldest and most exposed first:
 
 - [x] ~~**Pi-hole `2024.07.0`**~~ — → **v6 `2026.09.0`** on 2026-09-25
       (env vars migrated, Glance widget → `pihole-v6`; see changelog)
-- [ ] **it-tools `2023.11.2`** — public, and the oldest pin here
+- [x] ~~**it-tools `2023.11.2`**~~ — → `2024.10.22-7ca5933` on 2026-09-25
 - [ ] **Jellyfin `10.10.6`**, **Uptime Kuma `1.23.16`** (Grafana was removed
       2026-09-22)
 - [ ] The rest: audiobookshelf, bazarr, calibre-web, couchdb, freshrss,

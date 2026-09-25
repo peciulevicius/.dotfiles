@@ -6,7 +6,7 @@ name: it-tools
 services:
   it-tools:
     container_name: it_tools
-    image: corentinth/it-tools:2023.11.2-7d94e11
+    image: corentinth/it-tools:2024.10.22-7ca5933
     restart: unless-stopped
     ports:
       - "${TOOLS_PORT:-8085}:80"
