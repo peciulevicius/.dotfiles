@@ -457,6 +457,13 @@ docker compose up -d
 # Open: http://localhost:8084
 ```
 
+**Version:** `stirlingtools/stirling-pdf:2.14.3` since 2026-09-26 (was
+`frooodle/s-pdf:0.46.2`). 1.x+ turns **login on by default** with
+`admin`/`stirling` — the compose file sets `SECURITY_ENABLELOGIN=false`
+(the 0.x `DOCKER_ENABLE_SECURITY` switch is dead). Drop that line and the
+public `pdf.` hostname serves a login page with a well-known default password.
+Health: `curl localhost:8084/api/v1/info/status` → `{"version":…,"status":"UP"}`.
+
 ---
 
 ### IT-Tools

@@ -8,6 +8,26 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-26 — Overnight major image upgrades (Stirling PDF, Prowlarr, Radarr)
+
+One at a time, each verified before the next. Before each: container stopped,
+config dir tarred and old image digest recorded in
+`~/backups/<svc>-2026-09-26/` (not in the repo). Old images removed only after
+the new one passed.
+
+- **Stirling PDF `frooodle/s-pdf:0.46.2` → `stirlingtools/stirling-pdf:2.14.3`.**
+  Took 2.14.3, not 3.0.0 — 3.0.0 was released 2026-09-24, two days earlier.
+  Breaking change that mattered: 1.x+ enables login by default
+  (`admin`/`stirling`) and ignores the old `DOCKER_ENABLE_SECURITY` — replaced
+  with `SECURITY_ENABLELOGIN=false`, otherwise the public `pdf.` hostname would
+  have served a login page with a published default password. Existing
+  `settings.yml` was read as-is (`enableLogin: false`). Verified: status
+  `2.14.3 UP`, a two-page merge through `/api/v1/general/merge-pdfs` (PDFKit
+  confirms 2 pages, text `Page A|Page B`), `pdf.peciulevicius.com` 200 without
+  login, Glance's `check-url` (`http://stirling_pdf:8080/`) 200 from inside the
+  Glance container, container `healthy`. Memory after start ~1.3GB (was ~360MB
+  on 0.46) — watch it.
+
 ## 2026-09-25 — Pi-hole blocklists; website PR sweeps
 
 - Pi-hole: HaGeZi Multi Pro + TIF medium added (1.18M domains), common

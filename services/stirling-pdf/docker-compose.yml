@@ -6,7 +6,9 @@ name: stirling-pdf
 services:
   stirling-pdf:
     container_name: stirling_pdf
-    image: frooodle/s-pdf:0.46.2
+    # 2.x: image moved from frooodle/s-pdf to stirlingtools/stirling-pdf.
+    # 3.0.0 (2026-09-24) skipped on purpose — two days old at upgrade time.
+    image: stirlingtools/stirling-pdf:2.14.3
     restart: unless-stopped
     ports:
       - "${PDF_PORT:-8084}:8080"
@@ -15,7 +17,10 @@ services:
       - ./data/logs:/logs
     environment:
       TZ: ${TZ:-Europe/Vilnius}
-      DOCKER_ENABLE_SECURITY: "false"
+      # 1.x+ enables login by default (admin/stirling) — keep it off; the
+      # tool is stateless and fronted by the tunnel. DOCKER_ENABLE_SECURITY
+      # was the 0.x switch and no longer does anything.
+      SECURITY_ENABLELOGIN: "false"
 
 networks:
   default:

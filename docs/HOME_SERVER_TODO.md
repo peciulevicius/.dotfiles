@@ -653,9 +653,9 @@ Oldest and most exposed first:
     `pg_dump` + `document_exporter` to `data/export` first; rollback = restore
     the dump into the 2.20.15 tag. Only if Paperless survives the
     keep/remove decision.
-  - **Stirling PDF 0.46 → 1.x+**: image renamed (`stirlingtools/stirling-pdf`),
-    settings.yml layout changed; stateless otherwise (no login enabled) —
-    low risk, just re-check `settings.yml` after.
+  - **Stirling PDF 2.14 → 3.x**: 2.14.3 taken 2026-09-26 (changelog). 3.0.0
+    was two days old then — wait for a 3.0.x point release, re-read its
+    notes, check `SECURITY_ENABLELOGIN=false` still applies.
   - **Nextcloud 30 → 31 → 32 …**: 30 is end-of-life. Must step one major at
     a time (`occ upgrade` each), maintenance mode, MariaDB dump first
     (`backup-databases.sh`), check apps compatibility per step. Biggest job

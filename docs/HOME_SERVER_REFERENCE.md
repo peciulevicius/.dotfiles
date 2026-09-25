@@ -46,7 +46,7 @@ swap is fine, even at 2.5GB. Growing swap plus pressure under ~20% is the real
 alarm.
 
 Biggest single consumers (2026-09-19): `immich_server` (~839MB), `paperless`
-(~374MB), `stirling_pdf` (~360MB), `flaresolverr` (~302MB), `calibre` (~299MB).
+(~374MB), `stirling_pdf` (~360MB on 0.46; ~1.3GB right after start on 2.14 — JVM `MaxRAMPercentage=50`), `flaresolverr` (~302MB), `calibre` (~299MB).
 
 **Containers safe to stop while traveling:**
 `nextcloud`, `nextcloud_db`, `pihole`, `bazarr`, `sonarr`, `radarr`, `prowlarr`, `transmission`, `jellyseerr`, `immich_machine_learning`
