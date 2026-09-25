@@ -110,6 +110,10 @@ One service at a time; compose + image digest saved to
   refresh-token auth — if the mobile app shows logged out, just sign in
   again. Migrations are forward-only: rollback = restore
   `~/backups/audiobookshelf-2026-09-25/data.tgz` + old tag, not just the tag.
+- **Stirling PDF** `0.36.5` → `0.46.2` (last 0.x). `/api/v1/info/status` UP
+  0.46.2, `pdf.peciulevicius.com` 200, a real merge of two test PDFs via the
+  API returned a valid PDF. **1.x/2.x/3.x not taken** — major rewrites
+  (new image name, login/DB changes).
 
 ## 2026-09-25 — Pi-hole 2024.07.0 → v6 (2026.09.0)
 

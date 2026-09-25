@@ -6,7 +6,7 @@ name: stirling-pdf
 services:
   stirling-pdf:
     container_name: stirling_pdf
-    image: frooodle/s-pdf:0.36.5
+    image: frooodle/s-pdf:0.46.2
     restart: unless-stopped
     ports:
       - "${PDF_PORT:-8084}:8080"
