@@ -192,6 +192,12 @@ name, two copies of a 769MB file, and the book 404ing.
 The cause is renaming large files on an **SMB share with the library open by two
 services** — the same class of problem as never putting a database on SMB.
 
+> **Since 2026-09-25 the library lives on the internal SSD**
+> (`~/services/calibre/library`), so the SMB half of this cause is gone. The
+> rule stays until a rename has been tried and verified on the SSD — the
+> second service holding a handle is still a factor. Paths in the repair
+> below are now under `~/services/calibre/library`.
+
 ### Repair
 
 ```bash
@@ -217,6 +223,9 @@ excluded from the R2 backup.
 Kindle?"* — a `read-along` tag shows up as a browsable category in the OPDS feed.
 
 ## SMB leaves `.smbdelete*` files behind
+
+(Calibre-specific examples below are historical — the library left SMB on
+2026-09-25. The mechanism still applies to every other share.)
 
 When a file is deleted on an SMB share while a process still holds it open, the
 server renames it to `.smbdeleteXXXX` instead of removing it. These are
@@ -296,7 +305,7 @@ copy.
 | Immich thumbnails | Internal SSD | `~/services/immich/data/thumbs` (SSD for fast scrolling; regenerable) |
 | Media (movies, TV, downloads) | NAS | `/Volumes/media/` |
 | Audiobooks | NAS | `/Volumes/audiobooks/` |
-| Calibre books | NAS | `/Volumes/books/` |
+| Calibre library (books + `metadata.db`) | Internal SSD | `~/services/calibre/library` — moved off SMB 2026-09-25 (SQLite must not live on SMB). Path is `BOOKS_DIR` in the calibre, calibre-web and lazylibrarian `.env`s. The old NAS copy `/Volumes/books` is a **frozen rollback** until ~2026-10-02, then deleted |
 | CouchDB (Obsidian LiveSync) | Internal SSD | `~/services/couchdb/data` (database — never on SMB) |
 | Obsidian vault | Internal SSD | `~/obsidian-vault` |
 | Docker data | Internal SSD | `~/Library/Containers/com.docker.docker` |
@@ -352,7 +361,7 @@ to the parents' house — the two are complementary, not either/or.
 | Sonarr TV | `/media/tv` | `/Volumes/media/tv` |
 | Transmission downloads | `/downloads` | `/Volumes/media/downloads` |
 | Audiobookshelf | `/audiobooks` | `/Volumes/audiobooks` |
-| Calibre library | `/books` | `/Volumes/books` |
+| Calibre library | `/books` | `~/services/calibre/library` (internal SSD; was `/Volumes/books` until 2026-09-25) |
 | Immich photos | `/usr/src/app/upload` | `/Volumes/immich/upload` |
 | Immich thumbnails | `/usr/src/app/upload/thumbs` | `~/services/immich/data/thumbs` (internal SSD) |
 | Immich DB | `/var/lib/postgresql/data` | `~/services/immich/data/postgres` (internal SSD) |

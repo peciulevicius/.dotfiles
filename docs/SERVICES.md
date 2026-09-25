@@ -349,7 +349,7 @@ docker compose up -d
 2. Upload books via the web UI (Admin → Add books)
 3. **Kindle:** Settings → enable "Send to Kindle" with your Kindle email
 4. **Mobile/e-reader:** connect via OPDS at `http://100.81.171.49:8083/opds`
-5. Books stored on the NAS at `/Volumes/books`
+5. Library (books + `metadata.db`) on the internal SSD at `~/services/calibre/library` — moved off the NAS 2026-09-25 because SQLite over SMB kept breaking
 
 ```bash
 cd ~/services/calibre-web
