@@ -84,12 +84,21 @@ Section names in *italics* are headings below.
 - 👤 **Broader Cloudflare API token** (replaces `dotfiles-dns` in
   `~/.config/homelab/cloudflare.env`): account-level *Zone: Edit + DNS: Edit*
   (all zones), *Workers Scripts: Edit*, *Workers Routes: Edit*, *Turnstile:
-  Edit*, *Email Routing Addresses/Rules: Edit*, *Zone Settings: Edit*. Unlocks
+  Edit*, *Email Routing Addresses/Rules: Edit*, *Zone Settings: Edit*,
+  *Access: Apps and Policies: Edit* (for the claude.ai TrainingPeaks connector
+  behind Cloudflare Access OAuth). Unlocks
   Claude doing: janioniuvynuogynas.lt zone + DNS + Worker custom domains +
   Turnstile + email routing, and the peciulevicius.com Pages → Worker move via
   a GitHub Actions `wrangler deploy` (like janioniu) instead of dashboard clicks.
 - 👤 Hostinger → `janioniuvynuogynas.lt` → Nameservers → set the two Cloudflare
   nameservers Claude gives you (after the zone exists) — janioniu launch step 1.
+
+- 👤 janioniuvynuogynas.lt email: **add the domain to the existing Purelymail
+  account** (no extra cost) instead of Cloudflare Email Routing → Gmail; create
+  `info@janioniuvynuogynas.lt` (or route it to whoever answers). Claude adds the
+  Purelymail DNS records once the zone exists (needs the broader token). Resend
+  keeps using `send.janioniuvynuogynas.lt`, so no MX clash. Supersedes the
+  "Email Routing → your Gmail" line in that repo's TODO step 3.
 
 ### 🤖 Claude can do next
 
