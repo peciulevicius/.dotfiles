@@ -82,6 +82,8 @@ One service at a time; compose + image digest saved to
   consumer-side check that matters here.
 - **Sonarr** `4.0.14` → `4.0.20` (patch). API reports 4.0.20.3014; the only
   health item before ("new update available") is gone, none new.
+- **Radarr** `5.18.4` → `5.28.0` (last 5.x). API reports 5.28.0.10274; only
+  health item is the v6 update notice. **6.x not taken** (major).
 
 ## 2026-09-25 — Pi-hole 2024.07.0 → v6 (2026.09.0)
 
