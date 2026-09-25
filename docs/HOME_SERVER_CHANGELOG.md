@@ -27,6 +27,13 @@ the new one passed.
   login, Glance's `check-url` (`http://stirling_pdf:8080/`) 200 from inside the
   Glance container, container `healthy`. Memory after start ~1.3GB (was ~360MB
   on 0.46) — watch it.
+- **Prowlarr `1.37.0` → `2.6.5`** (linuxserver). 2.0 = .NET 8 and removal of
+  Basic auth (falls back to Forms) — no impact, all three *arr apps already
+  use Forms. DB migrated forward on first start (to schema 43+). Verified:
+  API reports `2.6.5.5623` on .NET 8.0.27, all 6 indexers still listed and
+  enabled, `/api/v1/indexer/testall` 6/6 valid, `/api/v1/applications/testall`
+  Sonarr + Radarr both valid, health list empty (the only prior entry was
+  "update available").
 
 ## 2026-09-25 — Pi-hole blocklists; website PR sweeps
 

@@ -645,10 +645,10 @@ Oldest and most exposed first:
     on first start, one-way) and drops some legacy options. Backup
     `data/config`; rollback = restore it + `1.30.0` (index rescans). Upgrade
     the phone/desktop peers soon after — v2 still talks to v1 peers.
-  - **Radarr 5 → 6**, **Prowlarr 1 → 2**: DB schema migrations on start
-    (forward-only); each app writes its own `Backups/` zip — take one via
-    System → Backup first, plus a tar of its data dir. Rollback = restore
-    zip into the old tag. Do Prowlarr first; re-run Sonarr/Radarr app tests.
+  - **Radarr 5 → 6**: DB schema migration on start (forward-only); the app
+    writes its own `Backups/` zip — take one via System → Backup first, plus
+    a tar of its data dir. Rollback = restore zip into the old tag. Re-run the
+    Prowlarr → Radarr app test after. (Prowlarr 1 → 2 done 2026-09-26.)
   - **Paperless-ngx 2 → 3**: Django migrations + possible OCR/config renames.
     `pg_dump` + `document_exporter` to `data/export` first; rollback = restore
     the dump into the 2.20.15 tag. Only if Paperless survives the
