@@ -274,8 +274,11 @@ This is the actual requirement: handwrite in a meeting, **find it later**.
 
 **That is exactly what `kindle_sync.py` was built for, and it already works:**
 
-1. Scribe → **Share → Searchable PDF**. Amazon runs **handwriting OCR** and
-   produces a real text layer alongside the PDF.
+1. Scribe → **Share → Email** to `kindle@peciulevicius.com`, with format
+   **Convert to text (TXT)** and **✓ Attach searchable PDF**. Amazon runs
+   **handwriting OCR** and mails links to both files. ⚠️ *Keep handwriting
+   (PDF)* alone produces no `.txt` — `kindle_sync.py` requires the text link
+   and skips the mail.
 2. The email lands, the hourly cron picks it up, the script pulls **both** the
    `.txt` and the `.pdf`.
 3. Both are filed into `📥 Imports/YYYY-MM-DD_HH-MM_name.md` in the vault.

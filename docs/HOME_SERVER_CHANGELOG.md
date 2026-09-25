@@ -8,6 +8,18 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-25 — Global gitignore fixes; website clean-up PR
+
+- `config/git/.gitignore_global` no longer ignores `lib/`, `var/` or `*.sql`
+  globally: they silently dropped new `src/lib/*` files and Supabase migrations
+  from commits in every JS/Supabase repo (found by the website agents, who had
+  to `git add -f`). Dumps (`*.dump`, `dump.sql`, …) are still ignored.
+- peciulevicius.com PR #45 (PostHog removed, own newsletter finished, realtime
+  and RLS hardened) and a follow-up Astro 7 / Tailwind 4 PR — backlog in that
+  repo's `docs/TODO.md`.
+- Kindle Scribe exports now go to `kindle@peciulevicius.com`; format must be
+  *Convert to text* + *Attach searchable PDF* (NOTES.md).
+
 ## 2026-09-25 — Odysseus model fixes; mail-switch script in repo
 
 - Diagnosed qwen2.5:7b failing with TP/Strava: Ollama's default ~4k context
