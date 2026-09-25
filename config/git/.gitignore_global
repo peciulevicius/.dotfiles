@@ -232,7 +232,13 @@ credentials.json
 
 *.log
 logs/
-*.sql
+# Not *.sql: that silently dropped Supabase migrations (supabase/migrations/*.sql)
+# from commits in every repo. Ignore dumps only.
+*.dump
+*.sql.gz
+dump.sql
+*_dump.sql
+*-dump.sql
 *.sqlite
 *.sqlite3
 *.db
