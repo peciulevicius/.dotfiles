@@ -84,7 +84,7 @@ pages:
                 check-url: http://it_tools:80/
                 icon: si:hackthebox
               - title: Pi-hole
-                url: https://pihole.peciulevicius.com
+                url: https://pihole.peciulevicius.com/admin/
                 check-url: http://pihole:80/admin/
                 icon: si:pihole
               - title: Portainer
@@ -150,7 +150,7 @@ pages:
                     url: https://tools.peciulevicius.com
                     icon: si:hackthebox
                   - title: Pi-hole
-                    url: https://pihole.peciulevicius.com
+                    url: https://pihole.peciulevicius.com/admin/
                     icon: si:pihole
 
               - title: Direct (no tunnel — for uploads >100MB)

@@ -25,7 +25,7 @@ Run your own cloud on a Mac mini (or any Docker host). 26 services covering phot
 
 | Service | URL | Port | Replaces |
 |---------|-----|------|----------|
-| [Pi-hole](#pi-hole) | pihole.peciulevicius.com | 8053, 53 | Router DNS + ad blocker |
+| [Pi-hole](#pi-hole) | pihole.peciulevicius.com/admin/ (the bare domain returns 403 since v6) | 8053, 53 | Router DNS + ad blocker |
 | [Stirling PDF](#stirling-pdf) | pdf.peciulevicius.com | 8084 | Adobe Acrobat |
 | [IT-Tools](#it-tools) | tools.peciulevicius.com | 8085 | Online dev tools |
 | [Audiobookshelf](#audiobookshelf) | listen.peciulevicius.com | 13378 | Audible |
