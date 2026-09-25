@@ -15,6 +15,8 @@ One service at a time; compose + image digest saved to
 
 - **it-tools** `2023.11.2-7d94e11` → `2024.10.22-7ca5933` (latest upstream;
   stateless). Home, a deep link and `tools.peciulevicius.com` all 200.
+- **CouchDB** `3.5.0` → `3.5.2` (patch). `/_up` ok, server reports 3.5.2,
+  `obsidian` DB present, `couchdb.peciulevicius.com` 200.
 
 ## 2026-09-25 — Pi-hole 2024.07.0 → v6 (2026.09.0)
 
