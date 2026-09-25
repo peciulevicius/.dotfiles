@@ -136,6 +136,12 @@ Glance (`home.`), Stirling PDF (`pdf.`), IT-Tools (`tools.`), Calibre desktop
 | Discord webhook | `~/.config/homelab/notify.env` |
 | Cloudflare tunnel credentials | `~/.cloudflared/*.json` |
 | R2 / rclone | `~/.config/rclone/rclone.conf` |
+| Cloudflare account login + 2FA | Vaultwarden — the account owns DNS, the tunnel, R2, Pages/Workers; 2FA must not live in Google Authenticator |
+| Cloudflare API token `dotfiles-dns` (DNS edit, peciulevicius.com only) | `~/.config/homelab/cloudflare.env` |
+| Purelymail `dziugas@` password | Vaultwarden + `~/.config/homelab/purelymail.env` (mail-switch script) |
+| Healthchecks.io ping URL | `~/.config/homelab/heartbeat.env` |
+| TrainingPeaks cookie / Strava tokens | `~/services/trainingpeaks-mcp/.env`, `~/services/strava-mcp/data/.strava-mcp.env` |
+| Supabase DB password (peciulevicius.com) | Vaultwarden + `~/.config/homelab/supabase.env` |
 
 ---
 

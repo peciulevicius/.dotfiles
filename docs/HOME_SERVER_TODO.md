@@ -83,9 +83,7 @@ Section names in *italics* are headings below.
 
 - Run `mail-switch-purelymail.sh` once the password file exists — *🔝 Next up* 2
 - Website: apply `v1.5.0` via `supabase db push` (after your login), merge PR #46 (after the Worker move); janioniu PR #5 — *🌐 Other repo backlogs*
-- Docs for the coach stack (SERVICES.md, Glance, trainingpeaks-mcp README) — *🏃 Coach in the Claude app*
 - Optional: OpenCode + `qwen2.5-coder:7b` for offline snippets — *⚡ Batch 2026-09-24*
-- Add Cloudflare to `CREDENTIAL_MIGRATION.md` — *8b. Cloudflare/R2 security check*
 - Odysseus: mount `~/obsidian-vault` for RAG, chat-export import, CalDAV after Nextcloud — *8. Odysseus*
 - Uptime Kuma: remove the stale **Mealie** monitor, add Odysseus/CouchDB checks — *9. Maintenance backlog*
 - Rotate Immich's DB password (restarts Immich — say go) — *9. Maintenance backlog*
@@ -124,7 +122,7 @@ Section names in *italics* are headings below.
       phone. Check the official Strava connector is enabled.
 - [ ] 👤 Claude Project "Coach" with the skill + pinned summary (the app can't read
       `~/.training`).
-- [ ] Docs: SERVICES.md, Glance, trainingpeaks-mcp README (homelab-service skill).
+- [x] Docs: SERVICES.md (AI Coach table), Glance monitors, both READMEs — verified 2026-09-25.
 
 ## ✉️ Email identity
 
@@ -411,7 +409,7 @@ Nothing is known-broken; both are just unverified.
 - [ ] 👤 **Confirm 2FA is enabled on the Cloudflare account itself** — it
       controls DNS, the Tunnel and R2; arguably the single highest-value
       account in the setup.
-- [ ] Add Cloudflare to [CREDENTIAL_MIGRATION.md](CREDENTIAL_MIGRATION.md) —
+- [x] Add Cloudflare to [CREDENTIAL_MIGRATION.md](CREDENTIAL_MIGRATION.md) — done 2026-09-25 —
       not tracked there as an account at all (only the tunnel credentials file).
 
 ### 8c. 🔌 Power outage recovery — added 2026-09-22
