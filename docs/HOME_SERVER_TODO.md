@@ -645,10 +645,6 @@ Oldest and most exposed first:
     on first start, one-way) and drops some legacy options. Backup
     `data/config`; rollback = restore it + `1.30.0` (index rescans). Upgrade
     the phone/desktop peers soon after — v2 still talks to v1 peers.
-  - **Radarr 5 → 6**: DB schema migration on start (forward-only); the app
-    writes its own `Backups/` zip — take one via System → Backup first, plus
-    a tar of its data dir. Rollback = restore zip into the old tag. Re-run the
-    Prowlarr → Radarr app test after. (Prowlarr 1 → 2 done 2026-09-26.)
   - **Paperless-ngx 2 → 3**: Django migrations + possible OCR/config renames.
     `pg_dump` + `document_exporter` to `data/export` first; rollback = restore
     the dump into the 2.20.15 tag. Only if Paperless survives the
@@ -660,6 +656,10 @@ Oldest and most exposed first:
     a time (`occ upgrade` each), maintenance mode, MariaDB dump first
     (`backup-databases.sh`), check apps compatibility per step. Biggest job
     here — schedule an evening.
+  - 👤 **After ~2026-10-03, if Stirling/Prowlarr/Radarr are still fine:**
+    `rm -rf ~/backups/{stirling-pdf,prowlarr,radarr}-2026-09-26` (pre-upgrade
+    tars + old image digests; rollback = old tag from `old-image.txt` +
+    untar over `data/`).
   - **Postgres 16 → 17/18, MariaDB 11.4 → 12/13, Redis 7 → 8**: data-dir
     format changes; Postgres needs dump/restore into a fresh volume. Stay on
     16 / 11.4 LTS / 7.4 until a reason appears — all floating tags were

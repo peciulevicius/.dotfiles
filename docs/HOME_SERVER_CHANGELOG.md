@@ -34,6 +34,17 @@ the new one passed.
   enabled, `/api/v1/indexer/testall` 6/6 valid, `/api/v1/applications/testall`
   Sonarr + Radarr both valid, health list empty (the only prior entry was
   "update available").
+- **Radarr `5.28.0` → `6.4.4`** (linuxserver). 6.0 = .NET 8, Basic auth
+  removed (Forms already in use), movie-file tokens no longer allowed in the
+  *folder* format (ours is `{Movie Title} ({Release Year})` — unaffected),
+  and new quality profiles default to "Original" language (existing six
+  profiles keep English). Queue was empty at upgrade time. Verified: API
+  reports `6.4.4.10685` on .NET 8.0.27, movies 30 / with file 23 — identical
+  before and after, Transmission download-client test valid, root folder
+  `/media/movies` accessible, 4 indexers still synced, Prowlarr → Radarr app
+  test valid, Jellyseerr's saved Radarr connection re-tested through
+  `/api/v1/settings/radarr/test` (6 profiles, root `/media/movies`), health
+  empty.
 
 ## 2026-09-25 — Pi-hole blocklists; website PR sweeps
 
