@@ -84,6 +84,10 @@ One service at a time; compose + image digest saved to
   health item before ("new update available") is gone, none new.
 - **Radarr** `5.18.4` → `5.28.0` (last 5.x). API reports 5.28.0.10274; only
   health item is the v6 update notice. **6.x not taken** (major).
+- **Prowlarr** `1.31.2` → `1.37.0` (last 1.x). API reports 1.37.0.5076; app
+  sync tests pass for Sonarr + Radarr. The third app, **Readarr**, fails — it
+  was removed 2026-09-19 and is still configured in Prowlarr (was already
+  failing before the bump); delete it there. **2.x not taken** (major).
 
 ## 2026-09-25 — Pi-hole 2024.07.0 → v6 (2026.09.0)
 

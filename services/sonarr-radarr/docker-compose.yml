@@ -36,7 +36,7 @@ services:
 
   prowlarr:
     container_name: prowlarr
-    image: lscr.io/linuxserver/prowlarr:1.31.2
+    image: lscr.io/linuxserver/prowlarr:1.37.0
     restart: unless-stopped
     ports:
       - "${PROWLARR_PORT:-9696}:9696"
