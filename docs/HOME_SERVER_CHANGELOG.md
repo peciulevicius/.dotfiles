@@ -17,6 +17,10 @@ One service at a time; compose + image digest saved to
   stateless). Home, a deep link and `tools.peciulevicius.com` all 200.
 - **CouchDB** `3.5.0` → `3.5.2` (patch). `/_up` ok, server reports 3.5.2,
   `obsidian` DB present, `couchdb.peciulevicius.com` 200.
+- **Calibre-Web** `0.6.24` → `0.6.27` (patch). Login + `books.peciulevicius.com`
+  200, OPDS answers 401 Basic (auth required, as before), container reads 38
+  books from `/books/metadata.db`. The `xdg-desktop-menu` traceback in the
+  log is the universal-calibre mod and harmless.
 
 ## 2026-09-25 — Pi-hole 2024.07.0 → v6 (2026.09.0)
 

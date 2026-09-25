@@ -6,7 +6,7 @@ name: calibre-web
 services:
   calibre-web:
     container_name: calibre_web
-    image: lscr.io/linuxserver/calibre-web:0.6.24
+    image: lscr.io/linuxserver/calibre-web:0.6.27
     restart: unless-stopped
     ports:
       - "${CW_PORT:-8083}:8083"
