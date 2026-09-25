@@ -103,6 +103,8 @@ Section names in *italics* are headings below.
   Amperfy dropped (Subsonic-only). Also install: Bitwarden, Ente Auth,
   Obsidian + LiveSync, ntfy, Swiftfin/Infuse, Odysseus home-screen web app.
 
+- 👤 Ad blocking anywhere: Tailscale DNS → Pi-hole (`100.81.171.49`, override local DNS); Brave iOS/AdGuard for YouTube — *Pi-hole → Ad blocking everywhere*
+
 ### 🤖 Claude can do next
 
 - Run `mail-switch-purelymail.sh` once the password file exists — *🔝 Next up* 2
@@ -714,6 +716,33 @@ No longer load-bearing — everything addresses the NAS as `DH4300PLUS-DP.local`
 ## Projects (no deadline)
 
 ### Pi-hole — finish the deployment
+
+#### Ad blocking everywhere — layered (added 2026-09-25)
+
+Pi-hole blocks by **domain**, so it stops ads/trackers that come from ad
+domains — in apps, smart TVs, everything on the network — but **not** ads
+served from the site's own domain (YouTube, Amazon sponsored listings,
+Instagram/Facebook, "AdChoices" served first-party). Those need an in-browser
+blocker. So: Pi-hole for the network + a content blocker in the browser.
+
+- [ ] 👤 **Pi-hole on every device, anywhere, via Tailscale:** admin console →
+      **DNS** → Nameservers → *Add nameserver* → Custom → `100.81.171.49`
+      (Pi-hole's **Tailscale** IP, not the LAN IP) → enable **Override local
+      DNS**. Verified 2026-09-25 that Pi-hole already answers on that IP
+      (`dig @100.81.171.49 example.com`, listening mode ALL). Test on cellular
+      with Tailscale on; watch the Pi-hole query log for the phone.
+      ⚠️ If the Mac mini is off, Tailscale devices lose DNS entirely while
+      the override is on — toggle Tailscale off in that case, or accept it.
+- [ ] Claude: add curated blocklists instead of piling on millions of random
+      entries (the default StevenBlack list is the only one now): **HaGeZi
+      Multi Pro** (+ HaGeZi TIF for threat intel) or **OISD big** — maintained,
+      low false-positive. Update gravity, spot-check common sites/apps.
+- [ ] 👤 **Router DNS → Pi-hole** (existing item below) so non-Tailscale
+      devices at home (TV, guests) are covered too.
+- [ ] 👤 Browser side: **Brave** Shields on (blocks YouTube ads on desktop);
+      on the **iPhone**, the YouTube *app* can't be fixed by DNS — watch in
+      **Brave for iOS** (blocks YouTube ads, background play) or add **AdGuard**
+      (Safari content blocker). If ever on Zen/Firefox: **uBlock Origin**.
 
 **Note:** since the v6 upgrade (2026-09-25) Glance's DNS widget logs in with `PIHOLE_PASSWORD` in `~/services/glance/.env` (the v5 `PIHOLE_API_KEY` is gone).
 
