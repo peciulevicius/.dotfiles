@@ -81,6 +81,16 @@ Section names in *italics* are headings below.
 
 - [x] ~~Decide: index the vault in Odysseus RAG~~ — yes (whole vault), done 2026-09-25
 
+- 👤 **Broader Cloudflare API token** (replaces `dotfiles-dns` in
+  `~/.config/homelab/cloudflare.env`): account-level *Zone: Edit + DNS: Edit*
+  (all zones), *Workers Scripts: Edit*, *Workers Routes: Edit*, *Turnstile:
+  Edit*, *Email Routing Addresses/Rules: Edit*, *Zone Settings: Edit*. Unlocks
+  Claude doing: janioniuvynuogynas.lt zone + DNS + Worker custom domains +
+  Turnstile + email routing, and the peciulevicius.com Pages → Worker move via
+  a GitHub Actions `wrangler deploy` (like janioniu) instead of dashboard clicks.
+- 👤 Hostinger → `janioniuvynuogynas.lt` → Nameservers → set the two Cloudflare
+  nameservers Claude gives you (after the zone exists) — janioniu launch step 1.
+
 ### 🤖 Claude can do next
 
 - Run `mail-switch-purelymail.sh` once the password file exists — *🔝 Next up* 2
