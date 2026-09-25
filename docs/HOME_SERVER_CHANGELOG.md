@@ -114,6 +114,12 @@ One service at a time; compose + image digest saved to
   0.46.2, `pdf.peciulevicius.com` 200, a real merge of two test PDFs via the
   API returned a valid PDF. **1.x/2.x/3.x not taken** — major rewrites
   (new image name, login/DB changes).
+- **Linkwarden** `v2.9.3` → `v2.16.3` (minor). `pg_dump` taken first
+  (`~/backups/linkwarden-2026-09-25/linkwarden.pgdump`) — the Prisma
+  migrations are forward-only, so rollback is restore-the-dump + old tag.
+  41 migrations applied ("All migrations have been successfully applied"),
+  healthy, links/collections/users identical before and after (619/54/1),
+  local + `links.peciulevicius.com` 200. Postgres stays 16.
 
 ## 2026-09-25 — Pi-hole 2024.07.0 → v6 (2026.09.0)
 
