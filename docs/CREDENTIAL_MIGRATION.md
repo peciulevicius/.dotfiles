@@ -54,7 +54,7 @@ than one at a time. Start with the ones whose mail feeds automation:
 | Vaultwarden | `https://vault.peciulevicius.com` | email | Master password changed 2026-09-19 |
 | CouchDB | `https://couchdb.peciulevicius.com` | `<username>` | 32-char random, `.env`-backed |
 | Transmission | `http://100.81.171.49:9091` | `<username>` | 28-char random, `.env`-backed |
-| Pi-hole | `https://pihole.peciulevicius.com` | *(password only)* | 32-char random. Old one was **5 characters** on a public panel controlling DNS — assume exposed |
+| Pi-hole | `https://pihole.peciulevicius.com` | *(password only)* | 32-char random. Old one was **5 characters** on a public panel controlling DNS — assume exposed. **Glance keeps a copy** (`PIHOLE_PASSWORD`, DNS widget) since the v6 upgrade |
 
 ---
 

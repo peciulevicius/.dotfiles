@@ -133,6 +133,7 @@ every consumer, not just the service whose password changed:
 | Rotated | Also stored in | Check |
 |---|---|---|
 | Transmission | Radarr, Sonarr (download client settings) | `/api/v3/downloadclient/test` |
+| Pi-hole | Glance (`PIHOLE_PASSWORD` in `~/services/glance/.env`, DNS-stats widget — since the v6 upgrade, 2026-09-25) | homepage DNS widget shows numbers, not an error |
 | Vaultwarden's own login | nothing — it's the source of truth | — |
 | Any `*@peciulevicius.com` alias | wherever that alias is the *login*, not just the notify address | per-service |
 

@@ -6,9 +6,9 @@ pages:
           - type: server-stats
 
           - type: dns-stats
-            service: pihole
+            service: pihole-v6
             url: http://host.docker.internal:8053
-            token: ${PIHOLE_API_KEY}
+            password: ${PIHOLE_PASSWORD}
 
           - type: repository
             repository: peciulevicius/.dotfiles
@@ -85,9 +85,7 @@ pages:
                 icon: si:hackthebox
               - title: Pi-hole
                 url: https://pihole.peciulevicius.com
-                check-url: http://pihole:80/
-                alt-status-codes:
-                  - 302
+                check-url: http://pihole:80/admin/
                 icon: si:pihole
               - title: Portainer
                 url: https://portainer.peciulevicius.com

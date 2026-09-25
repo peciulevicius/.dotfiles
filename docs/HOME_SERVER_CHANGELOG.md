@@ -8,6 +8,28 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-25 — Pi-hole 2024.07.0 → v6 (2026.09.0)
+
+- Highest-priority pin: over a year old, public at `pihole.peciulevicius.com`.
+  Now Core 6.4.3 / Web 6.6 / FTL 6.7.1.
+- v6 env vars: `WEBPASSWORD` → `FTLCONF_webserver_api_password`, `PIHOLE_DNS_`
+  → `FTLCONF_dns_upstreams`, `FTLCONF_LOCAL_IPV4` removed, plus
+  `FTLCONF_dns_listeningMode: ALL` (bridge network). `.env` keys unchanged —
+  compose maps the existing `PIHOLE_PASSWORD`/`UPSTREAM_DNS` to the new names.
+- The lighttpd `99-redirect.conf` mount was dropped (no lighttpd in v6).
+- Automatic migration: setupVars/pihole-FTL.conf → `pihole.toml`, gravity DB
+  v15 → v20, FTL DB v12 → v19; old files in `migration_backup_v6/`. One-way —
+  rollback is the pre-upgrade tarball in `~/backups/pihole-2026-09-25/` + the
+  old image (digest recorded there).
+- Glance's DNS widget broke by design (v5 token API is gone): now
+  `service: pihole-v6` + `PIHOLE_PASSWORD` in Glance's `.env`; the stale
+  `PIHOLE_API_KEY` was removed. Glance's monitor `check-url` → `/admin/`,
+  because v6 answers `/` with 403.
+- Verified: container healthy; `dig @127.0.0.1` resolves; `/admin/` 200
+  locally and through the tunnel; `/api/auth` accepts the password; upstreams
+  1.1.1.1/1.0.0.1 and 76k gravity domains carried over; Glance widget shows
+  live query counts. Uptime Kuma already checked `/admin/`.
+
 ## 2026-09-25 — Global gitignore fixes; website clean-up PR
 
 - `config/git/.gitignore_global` no longer ignores `lib/`, `var/` or `*.sql`

@@ -13,6 +13,15 @@ docker compose up -d
 # Open: http://localhost:8053/admin
 ```
 
+## v6 notes
+
+Upgraded to Pi-hole v6 on 2026-09-25. Config lives in
+`data/etc-pihole/pihole.toml`; the compose file sets it through `FTLCONF_*`
+env vars (those keys become read-only in the web UI). `/` returns 403 — point
+health checks at `/admin/`. The old lighttpd redirect file is gone (no lighttpd
+in v6). Glance's DNS widget logs in with the same password — rotate both
+together. See `docs/SERVICES.md` → Pi-hole.
+
 ## Router DNS Setup
 
 Set your router's DNS servers to:

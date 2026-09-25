@@ -815,9 +815,8 @@ a healthy-looking server, compare versions first.**
 
 Oldest and most exposed first:
 
-- [ ] **Pi-hole `2024.07.0`** — over a year old and **publicly reachable** at
-      `pihole.peciulevicius.com`, controlling DNS for the whole network.
-      Highest priority.
+- [x] ~~**Pi-hole `2024.07.0`**~~ — → **v6 `2026.09.0`** on 2026-09-25
+      (env vars migrated, Glance widget → `pihole-v6`; see changelog)
 - [ ] **it-tools `2023.11.2`** — public, and the oldest pin here
 - [ ] **Jellyfin `10.10.6`**, **Uptime Kuma `1.23.16`** (Grafana was removed
       2026-09-22)
@@ -953,7 +952,7 @@ No longer load-bearing — everything addresses the NAS as `DH4300PLUS-DP.local`
 
 ### Pi-hole — finish the deployment
 
-**Note:** PIHOLE_API_KEY is now configured in `~/services/glance/.env` — DNS stats widget is working.
+**Note:** since the v6 upgrade (2026-09-25) Glance's DNS widget logs in with `PIHOLE_PASSWORD` in `~/services/glance/.env` (the v5 `PIHOLE_API_KEY` is gone).
 
 **Goal:** Access `*.peciulevicius.com` on local WiFi without going through Cloudflare.
 

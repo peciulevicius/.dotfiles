@@ -417,6 +417,20 @@ blocked on 2026-09-08), against ~80,000 blocklist domains. That is low mainly
 because the router still does not point at Pi-hole — only manually configured
 devices use it. See TODO "Pi-hole — finish the deployment".
 
+**Version: v6** (`pihole/pihole:2026.09.0`, upgraded from 2024.07.0 on
+2026-09-25). v6 dropped lighttpd/PHP for FTL's embedded webserver and moved all
+settings into `/etc/pihole/pihole.toml`; env vars are `FTLCONF_<section>_<key>`
+(`FTLCONF_webserver_api_password`, `FTLCONF_dns_upstreams`,
+`FTLCONF_dns_listeningMode: ALL` — needed on a Docker bridge). Gotchas:
+- `/` returns **403** — health checks must hit `/admin/`
+- the v5 API token is gone; Glance's widget uses `service: pihole-v6` with the
+  web password (a second copy, in `~/services/glance/.env`)
+- values set by `FTLCONF_*` env vars are read-only in the web UI
+- the one-time migration moved the v5 files to
+  `data/etc-pihole/migration_backup_v6/`. It is one-way: rolling back means
+  restoring the pre-upgrade tarball in `~/backups/pihole-2026-09-25/` together
+  with the old image, not just changing the tag
+
 **How to use:**
 1. Open http://localhost:8053/admin, login with password from .env
 2. **Local DNS:** skip — see the warning under *Pi-hole Local DNS* below
