@@ -111,10 +111,13 @@ Section names in *italics* are headings below.
   has no build vars — a race. Then submit one real contact form to confirm
   Resend/Loops keys work (secrets now sync on each GitHub Actions deploy).
 
+- 👤 peciulevicius.com domain → Worker: Pages project → Custom domains → remove `peciulevicius.com`; then Worker `peciulevicius-com` → Settings → Domains & Routes → add `peciulevicius.com` + `www.peciulevicius.com` (Claude's API attempt was blocked by the DNS-change guard) — *website docs/TODO.md*
+- 👤 Supabase: `! supabase login` + save the DB password (`~/.config/homelab/supabase.env`) → Claude runs both pending migrations
+
 ### 🤖 Claude can do next
 
 - Run `mail-switch-purelymail.sh` once the password file exists — *🔝 Next up* 2
-- Website: apply `v1.5.0` via `supabase db push` (after your login), merge PR #46 (after the Worker move) — *🌐 Other repo backlogs*
+- Website: apply `v1.5.0` + `v1.6.0` via `supabase db push` (after your login); re-check the site after your domain move (#46 merged, Worker live on workers.dev) — *🌐 Other repo backlogs*
 - Optional: OpenCode + `qwen2.5-coder:7b` for offline snippets — *⚡ Batch 2026-09-24*
 - Odysseus: chat-export import, CalDAV after Nextcloud, RAG over Paperless + Linkwarden — *8. Odysseus*
 - Rotate Immich's DB password (restarts Immich — say go) — *9. Maintenance backlog*
