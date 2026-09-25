@@ -85,7 +85,6 @@ Section names in *italics* are headings below.
 - Website: apply `v1.5.0` via `supabase db push` (after your login), merge PR #46 (after the Worker move); janioniu PR #5 — *🌐 Other repo backlogs*
 - Docs for the coach stack (SERVICES.md, Glance, trainingpeaks-mcp README) — *🏃 Coach in the Claude app*
 - Optional: OpenCode + `qwen2.5-coder:7b` for offline snippets — *⚡ Batch 2026-09-24*
-- Add the dead Kuma token's fingerprint to `.gitleaksignore` — *8a. Public-repo hygiene*
 - Add Cloudflare to `CREDENTIAL_MIGRATION.md` — *8b. Cloudflare/R2 security check*
 - Odysseus: mount `~/obsidian-vault` for RAG, chat-export import, CalDAV after Nextcloud — *8. Odysseus*
 - Uptime Kuma: remove the stale **Mealie** monitor, add Odysseus/CouchDB checks — *9. Maintenance backlog*
@@ -389,7 +388,7 @@ the Uptime Kuma backup push token, public since **2026-05-09**. Rotated
 2026-09-25; the pre-commit hook, CI and the weekly audit guard against a
 repeat.
 
-- [ ] Add the dead token's gitleaks fingerprint to `.gitleaksignore` so
+- [x] Add the dead token's gitleaks fingerprint to `.gitleaksignore` so
       full-history scans stop flagging it (`.gitleaksignore` is empty as of
       2026-09-25).
 - [ ] 👤 **Enable the hook on the MacBook's clone too** — run

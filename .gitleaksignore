@@ -1,0 +1,3 @@
+# Findings that are known and neutralised. One fingerprint per line.
+# Uptime Kuma push token hardcoded in history (2026-09); rotated 2026-09-25, old token rejected.
+7e5259752b363f0cbd4a7c789b1f5ea39cad2473:services/rclone/rclone-backup.sh:uptime-kuma-push-token:159
