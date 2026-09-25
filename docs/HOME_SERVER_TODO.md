@@ -97,7 +97,6 @@ Section names in *italics* are headings below.
 - Website: apply `v1.5.0` via `supabase db push` (after your login), merge PR #46 (after the Worker move); janioniu PR #5 — *🌐 Other repo backlogs*
 - Optional: OpenCode + `qwen2.5-coder:7b` for offline snippets — *⚡ Batch 2026-09-24*
 - Odysseus: chat-export import, CalDAV after Nextcloud — *8. Odysseus*. Vault RAG done.
-- Uptime Kuma: remove the stale **Mealie** monitor, add Odysseus/CouchDB checks — *9. Maintenance backlog*
 - Rotate Immich's DB password (restarts Immich — say go) — *9. Maintenance backlog*
 - `rm -rf ~/services/mealie ~/services/grafana` (say go) — *9. Maintenance backlog*
 - Pi-hole local DNS records, only after a Caddy decision — *Pi-hole — finish the deployment*
@@ -501,7 +500,7 @@ whole-house outage now alerts.
       `rm -rf ~/services/mealie ~/services/grafana` (both confirmed
       empty/unused before removal; both still present 2026-09-25).
       `rclone-backup.sh` already excludes both.
-- [ ] **Uptime Kuma still has an active "Mealie" monitor** (found 2026-09-25 —
+- [x] **Uptime Kuma still has an active "Mealie" monitor** — fixed 2026-09-25: Mealie monitor deleted, Odysseus (:7001) + CouchDB (`/_up`) monitors added with the same notifications; stale Readarr app removed from Prowlarr; `~/services/glance/.env` chmod 600. (found 2026-09-25 —
       Mealie was removed 2026-09-21/22). Remove it; while there, add monitors
       for Odysseus and CouchDB, which have none.
 - [ ] 👤 **Decide: Nextcloud — keep or remove?** Only 83MB of real user files in

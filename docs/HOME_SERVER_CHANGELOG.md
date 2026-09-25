@@ -8,6 +8,15 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-25 — Monitoring tidy-up
+
+- Uptime Kuma: deleted the removed Mealie's monitor; added **Odysseus**
+  (`host.docker.internal:7001`) and **CouchDB** (`:5984/_up`) monitors, cloned
+  from the Kuma self-check so they share its Discord + SMTP notifications
+  (done in `kuma.db` with the container stopped, backup kept). Both up.
+- Prowlarr: removed the stale Readarr application (Readarr was removed 2026-09-19).
+- `~/services/glance/.env` (now holds the Pi-hole password) → chmod 600.
+
 ## 2026-09-25 — Odysseus RAG over the Obsidian vault
 
 - Vault mounted read-only into `personal_docs/obsidian` (host override file),
