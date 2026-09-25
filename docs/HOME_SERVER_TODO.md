@@ -94,8 +94,22 @@ Made during the 2026-09-21 Vaultwarden scare (212 cleartext passwords,
          Odysseus's IMAP **STARTTLS box is ticked by default — untick it for
          993** (implicit TLS). Left on, the test fails with `socket error:
          unterminated line: b'\x15\x03\x03…'` (a TLS alert read as text).
+      5. ⚠️ **Kindle Scribe exports go to the Amazon account's email (Gmail).**
+         With Gmail forwarding skipped, `kindle_sync` on Purelymail sees none of
+         them. Fix one of: change the Amazon account email to
+         `kindle@peciulevicius.com` (catch-all delivers it), or a Gmail filter
+         forwarding only `from:do-not-reply@amazon.com`.
+      6. Deliverability: first mails to Gmail landed in Spam (new domain, no
+         reputation; SPF/DKIM/DMARC all pass). Mark *Not spam*, add
+         `dziugas@` to contacts, keep sending real mail; check once with
+         mail-tester.com (aim ≥ 9/10).
       ⚠️ `peciulevicius@purelymail.com` (admin) and `dziugas@peciulevicius.com`
       are **separate mailboxes** — log clients in as `dziugas@`, not the admin.
+
+- [ ] 💡 **Branded email signature** matching peciulevicius.com (colours,
+      font, logo link). Keep it a light HTML *signature*, not a heavy HTML
+      template — image-heavy mail scores worse with spam filters, and
+      Apple Mail/Odysseus both take a signature. Later, not urgent.
 
 ### 2. 🔴 Move TOTP off Google Authenticator — before any password change
 
