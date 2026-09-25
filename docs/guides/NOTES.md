@@ -274,7 +274,8 @@ This is the actual requirement: handwrite in a meeting, **find it later**.
 
 **That is exactly what `kindle_sync.py` was built for, and it already works:**
 
-1. Scribe → **Share → Email** to `kindle@peciulevicius.com`, with format
+1. Scribe → **Share → Email** to the Amazon account address (the Scribe's
+   default; switched from Gmail to `amazon@peciulevicius.com`), with format
    **Convert to text (TXT)** and **✓ Attach searchable PDF**. Amazon runs
    **handwriting OCR** and mails links to both files. ⚠️ *Keep handwriting
    (PDF)* alone produces no `.txt` — `kindle_sync.py` requires the text link
