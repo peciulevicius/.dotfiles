@@ -35,10 +35,15 @@ Grouped by "what happens if I ignore this", not by number.
 
 ## 🌐 Other repo backlogs
 
-- `~/dev/peciulevicius.com/docs/TODO.md` — clean-up + own newsletter batch
-  (branch `chore/cleanup-newsletter`, 2026-09-25), email branding, Astro 7.
-- `~/dev/janioniu-vynuogynas/docs/TODO.md` — launch blockers (DNS still on
-  Hostinger parking, placeholder phone, Turnstile/Resend setup).
+- `~/dev/peciulevicius.com/docs/TODO.md` — open there: 👤 Supabase CLI login +
+  DB password → Claude applies `v1.5.0` via `supabase db push`; 👤 decide
+  `checkOrigin` (one-click unsubscribe); 👤 Pages → Worker move, then Claude
+  merges **PR #46** (Astro 7 + Tailwind 4); newsletter end-to-end test.
+- `~/dev/janioniu-vynuogynas/docs/TODO.md` — **PR #5** (same-major deps, cookie
+  banners removed) ready to merge; Astro 7 recommended *before* launch (critical
+  audit advisory); launch blockers (DNS still on Hostinger parking, placeholder
+  phone, Turnstile/Resend setup). Your uncommitted edits in `docs/TODO.md` +
+  `docs/environments.md` there still need committing.
 
 ## 🏃 Coach in the Claude app / phone — walkthrough with Claude
 
