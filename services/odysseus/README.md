@@ -151,7 +151,7 @@ services:
 | Name | Transport | URL (from inside the container) |
 |---|---|---|
 | TrainingPeaks | `http` | `http://host.docker.internal:8092/mcp` |
-| Strava | `http` | `http://host.docker.internal:8093/mcp` *(after `strava-mcp auth`)* |
+| Strava | `http` | `http://host.docker.internal:8093/mcp` |
 
 Add them in **Settings → MCP → Add server → Streamable HTTP**, or as a row in
 `data/app.db` table `mcp_servers` (`transport='http'`, `is_enabled=1`) followed

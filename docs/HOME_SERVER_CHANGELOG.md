@@ -8,6 +8,15 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-25 — Strava MCP working, connected to Odysseus
+
+- Auth wizard done by the user; token file chmod 600.
+- Every tool failed with `'coroutine' object has no attribute 'get_athlete'`:
+  upstream asks for `fastmcp>=2.12.4`, pip picked 4.0.8, where
+  `ctx.get_state()` is async. Build now pins `fastmcp>=2.12.4,<3` (got
+  2.14.7); `query_activities` returns real runs/rides.
+- Added to Odysseus (`http://host.docker.internal:8093/mcp`) → 11 tools.
+
 ## 2026-09-25 — TrainingPeaks connected to Claude Code and Odysseus
 
 - Cookie saved via the clipboard command (1797 chars — the reason `read -s`

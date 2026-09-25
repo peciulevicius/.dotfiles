@@ -22,9 +22,13 @@ services:
         RUN python -m venv /opt/proxy \
             && /opt/proxy/bin/pip install --no-cache-dir "mcp-proxy==0.12.0" "mcp<2"
         ARG STRAVA_MCP_REF=2c6fa6991ffa2c4a443887728aaf8eaab5829cea
+        # fastmcp pinned <3: upstream declares fastmcp>=2.12.4, but fastmcp 3+
+        # made ctx.get_state() async and every tool then fails with
+        # "'coroutine' object has no attribute ..." (found 2026-09-25 on 4.0.8).
         RUN python -m venv /opt/strava \
             && /opt/strava/bin/pip install --no-cache-dir \
-               "mcp-strava @ git+https://github.com/eddmann/strava-mcp@$${STRAVA_MCP_REF}"
+               "mcp-strava @ git+https://github.com/eddmann/strava-mcp@$${STRAVA_MCP_REF}" \
+               "fastmcp>=2.12.4,<3"
         RUN useradd -m -u 10001 mcp && mkdir -p /data && chown mcp /data
         USER mcp
         ENV HOME=/data

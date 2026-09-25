@@ -57,8 +57,11 @@ Made during the 2026-09-21 Vaultwarden scare (212 cleartext passwords,
       `trainingpeaks-mcp` :8092, `strava-mcp` :8093, `~/.training` → R2).
       ✅ TrainingPeaks live 2026-09-25: cookie valid, Garmin HRV/sleep flowing
       into TP, registered in Claude Code (`claude mcp add`) and Odysseus
-      (85 tools, `/training` mounted). Remaining: 👤 Strava API app +
-      `strava-mcp auth` → add Strava MCP in Odysseus; first coaching session.
+      (85 tools, `/training` mounted). ✅ Strava authorized + connected to
+      Odysseus (11 tools). Remaining: 👤 first coaching session in Odysseus.
+      Not in the claude.ai app/phone: those can't reach localhost MCP, and
+      exposing the TP cookie publicly isn't worth it — use Odysseus over
+      Tailscale on the phone.
 - [x] ~~**Claude config**~~ — done (setup-claude.sh fixed, 3 new skills)
 - [x] ~~HOME_SERVER.md rewrite~~ — done
 - [ ] Local models: no bigger model (RAM ceiling ~8B); optional later — OpenCode
