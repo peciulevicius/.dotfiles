@@ -8,6 +8,14 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-25 — TrainingPeaks MCP reachable from claude.ai
+
+- New automation token (`~/.config/homelab/cloudflare.env`, account-wide:
+  Zone/DNS/Workers/Turnstile/Email Routing/Access/Tunnel) replaced the DNS-only one.
+- Access app "TrainingPeaks MCP" with Managed OAuth for claude.ai, then DNS +
+  tunnel ingress `tp-mcp.peciulevicius.com` → `:8092`. Unauthenticated `/mcp`
+  → 401; OAuth discovery endpoints answer. Details in the service README.
+
 ## 2026-09-25 — Monitoring tidy-up
 
 - Uptime Kuma: deleted the removed Mealie's monitor; added **Odysseus**

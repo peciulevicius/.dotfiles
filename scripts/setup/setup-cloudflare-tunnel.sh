@@ -94,6 +94,7 @@ declare -A SERVICES=(
     ["listen"]=13378    # Audiobookshelf
     ["portainer"]=9000  # Portainer
     ["couchdb"]=5984    # CouchDB (Obsidian LiveSync)
+    ["tp-mcp"]=8092     # TrainingPeaks MCP for claude.ai — ⚠️ only behind the Cloudflare Access app "TrainingPeaks MCP" (Managed OAuth); never publish without it
 )
 
 # --- 6. Write config ---

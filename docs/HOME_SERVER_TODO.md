@@ -133,10 +133,8 @@ Section names in *italics* are headings below.
 
 - [ ] 👤 Upload `config/claude/skills/adaptive-endurance-coach/` (zip) in
       claude.ai → Settings → Capabilities → Skills.
-- [ ] 👤+Claude: Cloudflare Access application for `tp-mcp.peciulevicius.com`
-      (OAuth for MCP, policy = own email only), **then** add the tunnel ingress →
-      `127.0.0.1:8092`. Never publish the hostname before Access is in front —
-      the TrainingPeaks cookie is full account access.
+- [x] Cloudflare Access app (Managed OAuth, own emails only) + tunnel ingress for
+      `tp-mcp.peciulevicius.com` → `127.0.0.1:8092` — done 2026-09-25; unauth `/mcp` = 401.
 - [ ] 👤 claude.ai → Connectors → Add custom connector →
       `https://tp-mcp.peciulevicius.com/mcp`; confirm `tp_auth_status` from the
       phone. Check the official Strava connector is enabled.

@@ -92,3 +92,26 @@ Daily Health Stats toggle above is off (or Garmin hasn't synced yet).
   calendar. It stays on this machine, localhost-bound.
 - The coach **writes** to your calendar (workouts, notes, nutrition targets) —
   that's the point, but review what it changes.
+
+## Using it from the Claude app / phone (claude.ai custom connector)
+
+Published 2026-09-25 at **`https://tp-mcp.peciulevicius.com/mcp`** through the
+Cloudflare Tunnel, **behind Cloudflare Access** — application "TrainingPeaks
+MCP", policy = only `dziugas@peciulevicius.com` / the Gmail address, login by
+one-time PIN. Access runs **Managed OAuth** (dynamic client registration,
+allowed redirect URIs `https://claude.ai/api/mcp/auth_callback` and
+`https://claude.com/api/mcp/auth_callback`; 1 h access tokens, 30 d session),
+so claude.ai discovers it via `/.well-known/oauth-protected-resource` and runs a
+normal OAuth sign-in.
+
+- claude.ai → Settings → Connectors → Add custom connector → name
+  `TrainingPeaks`, URL above, **Require sign-in: ON**.
+- Unauthenticated `/mcp` returns **401** — verify after any change:
+  `curl -s -o /dev/null -w '%{http_code}' https://tp-mcp.peciulevicius.com/mcp`
+- ⚠️ Never add the tunnel hostname without the Access app in front: the
+  TrainingPeaks cookie in `.env` is full account access. On a rebuild, the
+  Access app lives in the Cloudflare account, so it survives; the ingress line
+  comes from `scripts/setup/setup-cloudflare-tunnel.sh`.
+- Adding a One-time PIN identity provider via API needs *Access: Organizations,
+  Identity Providers, and Groups: Edit*, which the automation token lacks; the
+  default Access login already offers the email PIN.
