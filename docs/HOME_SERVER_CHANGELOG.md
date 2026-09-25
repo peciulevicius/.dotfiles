@@ -8,6 +8,17 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-25 — Odysseus model fixes; mail-switch script in repo
+
+- Diagnosed qwen2.5:7b failing with TP/Strava: Ollama's default ~4k context
+  truncates the 13–19k-token coach prompt. Decision: coach runs on cloud
+  models. Details in `services/odysseus/README.md`.
+- Task/utility model `claude-sonnet-5` → `claude-haiku-4-5-20251001`: Sonnet 5
+  rejects `temperature`, which Odysseus only strips for Opus; auto-titles had
+  failed 35× since the switch.
+- `scripts/utils/mail-switch-purelymail.sh` (kindle_sync + Kuma SMTP →
+  Purelymail) moved into the repo so the TODO step doesn't point at a temp dir.
+
 ## 2026-09-25 — Strava MCP working, connected to Odysseus
 
 - Auth wizard done by the user; token file chmod 600.

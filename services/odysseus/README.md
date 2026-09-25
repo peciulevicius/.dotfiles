@@ -160,6 +160,24 @@ ports; the MCP containers are on their own networks, so service names don't
 resolve. Startup log line to look for:
 `MCP server connected: TrainingPeaks (…) - 85 tools via http`.
 
+## Which model for which job (learned 2026-09-25)
+
+- **Coach / anything with MCP tools → a cloud model.** `qwen2.5:7b` failed
+  with *"All model candidates returned no substantive output"*: the coach
+  prompt is ~13–19k tokens (skill + memories + tool schemas), Odysseus assumes
+  qwen's advertised 131k context, but Ollama runs with its **default ~4k
+  `num_ctx`** (no `OLLAMA_CONTEXT_LENGTH` set), so the prompt is silently
+  truncated. Raising it to 32k costs ~2 GB KV cache on a host already at the
+  RAM ceiling, and 7B tool-calling across 100+ tools is unreliable anyway.
+  Local models stay for short, tool-free chats.
+- **Sonnet 5 / Fable must not be the task or utility model.** Odysseus strips
+  `temperature` only for Opus ≥ 4.7 (`_anthropic_rejects_temperature` in
+  `src/llm_core.py`); Sonnet 5 rejects it too, so every auto-title (and any
+  utility call) 400'd with *"`temperature` is deprecated for this model"* —
+  35 times in a day. Task/utility model is now `claude-haiku-4-5-20251001`
+  (accepts temperature, cheapest). For chats, Opus 5.5 works; for cheaper
+  coaching use `claude-sonnet-4-6` until upstream handles Sonnet 5.
+
 ## Access
 
 | From | URL |

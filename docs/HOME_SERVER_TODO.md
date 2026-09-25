@@ -7,6 +7,29 @@ Grouped by "what happens if I ignore this", not by number.
 
 ---
 
+## 🔝 Next up (2026-09-25) — switch mail consumers off Gmail
+
+1. [ ] Save the `dziugas@` password (Terminal.app, not chat):
+   ```bash
+   mkdir -p ~/.config/homelab && read -rs "P?dziugas@ password: " && printf 'PM_USER=dziugas@peciulevicius.com\nPM_PASS=%s\n' "$P" > ~/.config/homelab/purelymail.env && chmod 600 ~/.config/homelab/purelymail.env && unset P && echo saved
+   ```
+2. [ ] Run `~/.dotfiles/scripts/utils/mail-switch-purelymail.sh` — tests IMAP
+   login, repoints `pkm/config.py` (kindle_sync) and Kuma's SMTP notification
+   (~10 s Kuma downtime), backs up both, never prints the password. Then Kuma →
+   "Uptime Kuma" notification → **Test**.
+3. [ ] Calibre-Web (password is encrypted in `app.db`, so UI only): Admin →
+   Edit E-mail Server Settings → `smtp.purelymail.com`, 465, SSL/TLS, login +
+   from `dziugas@peciulevicius.com` → Save → Test.
+4. [ ] Revoke the Gmail app password (Google Account → Security → App
+   passwords). ⚠️ It was printed in a Claude session on 2026-09-25 — don't
+   postpone this.
+5. [ ] ⚠️ Kindle Scribe exports go to the **Amazon account email (Gmail)** — with
+   no Gmail forward, kindle_sync sees nothing. Change the Amazon account email
+   to `kindle@peciulevicius.com` (catch-all), or a Gmail filter forwarding only
+   `from:do-not-reply@amazon.com`.
+
+---
+
 ## ▶ Start here — do these in this order
 
 Last worked: **2026-09-21**. Finished work is in
