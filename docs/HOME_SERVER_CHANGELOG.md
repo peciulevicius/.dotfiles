@@ -69,6 +69,10 @@ One service at a time; compose + image digest saved to
 - **Jellyfin** `10.10.6` → `10.10.7` (last 10.10 patch). Healthy, `/System/Info/Public`
   reports 10.10.7, `watch.peciulevicius.com/health` 200. **10.11 deliberately
   not taken** — it migrates the library DB to EF Core one-way; plan in the TODO.
+- **Uptime Kuma** `1.23.16` → `1.23.17` (last 1.x patch). Healthy, local +
+  `status.peciulevicius.com` 200, all monitors beating again after restart
+  (only the stale **Mealie** monitor is down — Mealie was removed; delete that
+  monitor). **2.x deliberately not taken** — one-way DB migration; plan in TODO.
 
 ## 2026-09-25 — Pi-hole 2024.07.0 → v6 (2026.09.0)
 

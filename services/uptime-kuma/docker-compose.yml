@@ -6,7 +6,7 @@ name: uptime-kuma
 services:
   uptime-kuma:
     container_name: uptime_kuma
-    image: louislam/uptime-kuma:1.23.16
+    image: louislam/uptime-kuma:1.23.17
     restart: unless-stopped
     ports:
       - "${UK_PORT:-3001}:3001"
