@@ -92,6 +92,9 @@ One service at a time; compose + image digest saved to
   still initialized against Jellyfin, settings migrations applied cleanly, no
   errors; reachable over Tailscale. (Upstream has since merged into
   *Seerr* — a rename to track, not done here.)
+- **FreshRSS** `1.24.3` → `1.30.0` (minor). constants.php reports 1.30.0, local +
+  `rss.peciulevicius.com` 200, user and feeds intact, a manual
+  `actualize-user.php` refresh ran cleanly.
 
 ## 2026-09-25 — Pi-hole 2024.07.0 → v6 (2026.09.0)
 
