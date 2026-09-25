@@ -36,6 +36,7 @@ CORE_FORMULAS=(
   rclone      # Cloud backup (B2/S3 sync)
   cloudflared # Cloudflare Tunnel (HTTPS for self-hosted services)
   syncthing   # Peer-to-peer file sync (Obsidian vault across devices)
+  supabase/tap/supabase  # Supabase CLI — migrations for peciulevicius.com (supabase db push)
 )
 
 
