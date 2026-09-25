@@ -93,8 +93,16 @@ One service at a time; compose + image digest saved to
   errors; reachable over Tailscale. (Upstream has since merged into
   *Seerr* — a rename to track, not done here.)
 - **FreshRSS** `1.24.3` → `1.30.0` (minor). constants.php reports 1.30.0, local +
-  `rss.peciulevicius.com` 200, user and feeds intact, a manual
-  `actualize-user.php` refresh ran cleanly.
+  `rss.peciulevicius.com` 200, user and its one feed intact (no feed errors).
+  A manual `actualize-user.php` prints "failed!" — that only means 0 feeds
+  were due (the script exits non-zero when nothing updated), not an error.
+- **Audiobookshelf** `2.17.7` → `2.36.1` (minor, same major). `/status` reports
+  2.36.1; six schema migrations (2.19.1 → 2.35.0) all logged UPGRADE END;
+  library items / books / users / progress identical before and after
+  (31/31/1/2); `listen.peciulevicius.com` 200. ⚠️ 2.26 introduced the new
+  refresh-token auth — if the mobile app shows logged out, just sign in
+  again. Migrations are forward-only: rollback = restore
+  `~/backups/audiobookshelf-2026-09-25/data.tgz` + old tag, not just the tag.
 
 ## 2026-09-25 — Pi-hole 2024.07.0 → v6 (2026.09.0)
 
