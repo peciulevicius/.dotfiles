@@ -1,0 +1,40 @@
+# TrainingPeaks MCP — gives the AI coach (adaptive-endurance-coach skill) read
+# and write access to TrainingPeaks: workouts, fitness (CTL/ATL/TSB), metrics
+# (weight, sleep, HRV, RHR, body comp…), nutrition, ATP, events.
+#
+# Upstream (JamsusMaximus/trainingpeaks-mcp) speaks stdio only, so mcp-proxy
+# exposes it over HTTP: Streamable HTTP at /mcp, SSE at /sse. The two live in
+# separate venvs because mcp-proxy 0.12 breaks on mcp 2.x, which tp-mcp needs.
+#
+# ⚠️ Unofficial: auth is your browser's Production_tpAuth cookie (full account
+# access, expires every few weeks). Never expose this publicly — it binds to
+# 127.0.0.1 for Claude Code, and Odysseus reaches it over this compose
+# network. See README.md.
+services:
+  trainingpeaks-mcp:
+    container_name: trainingpeaks-mcp
+    image: trainingpeaks-mcp:local
+    build:
+      context: .
+      dockerfile_inline: |
+        FROM python:3.12-slim
+        RUN apt-get update && apt-get install -y --no-install-recommends git \
+            && rm -rf /var/lib/apt/lists/*
+        RUN python -m venv /opt/proxy \
+            && /opt/proxy/bin/pip install --no-cache-dir "mcp-proxy==0.12.0" "mcp<2"
+        ARG TP_MCP_REF=a412a84eb4f9c8f03e108a1f27beb053d83a207d
+        RUN python -m venv /opt/tp \
+            && /opt/tp/bin/pip install --no-cache-dir \
+               "tp-mcp @ git+https://github.com/JamsusMaximus/trainingpeaks-mcp@$${TP_MCP_REF}"
+        RUN useradd -m -u 10001 mcp
+        USER mcp
+        EXPOSE 8000
+        CMD ["/opt/proxy/bin/mcp-proxy", "--host", "0.0.0.0", "--port", "8000", \
+             "--pass-environment", "--", "/opt/tp/bin/tp-mcp", "serve"]
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "127.0.0.1:${TP_MCP_PORT:-8092}:8000"
+    labels:
+      # Built locally — there is no registry image for Watchtower to pull.
+      com.centurylinklabs.watchtower.enable: "false"

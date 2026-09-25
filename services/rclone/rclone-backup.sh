@@ -29,9 +29,9 @@ if [[ -f "$ENV_FILE" ]]; then
   source "$ENV_FILE"
 fi
 
-RCLONE_REMOTE="${RCLONE_REMOTE:-b2-backup}"
+RCLONE_REMOTE="${RCLONE_REMOTE:-r2}"
 DOCKER_DIR="${DOCKER_DIR:-$HOME/services}"
-BACKUP_DEST="${BACKUP_DEST:-${RCLONE_REMOTE}:peciulevicius-services-backup/services}"
+BACKUP_DEST="${BACKUP_DEST:-${RCLONE_REMOTE}:peciulevicius-backups/services}"
 RCLONE_FLAGS="${RCLONE_FLAGS:---transfers=4 --checkers=8 --fast-list --stats=60s --delete-excluded}"
 
 ERRORS=0
@@ -64,6 +64,9 @@ log_info "Backing up $DOCKER_DIR → $BACKUP_DEST"
 SYNC_CMD=(rclone sync "$DOCKER_DIR" "$BACKUP_DEST")
 # Secrets — never upload
 SYNC_CMD+=(--exclude "**/.env")
+# strava-mcp keeps its OAuth tokens in data/.strava-mcp.env (not named .env,
+# so the rule above misses it). Regenerable with its `auth` wizard.
+SYNC_CMD+=(--exclude "strava-mcp/data/.strava-mcp.env")
 # Large media — on NAS/T5
 SYNC_CMD+=(--exclude "audiobookshelf/data/audiobooks/**")
 SYNC_CMD+=(--exclude "audiobookshelf/data/metadata/**")
@@ -125,7 +128,7 @@ fi
 
 # Backup 2: Obsidian vault
 OBSIDIAN_DIR="$HOME/obsidian-vault"
-OBSIDIAN_DEST="${OBSIDIAN_DEST:-${RCLONE_REMOTE}:peciulevicius-services-backup/obsidian-vault}"
+OBSIDIAN_DEST="${OBSIDIAN_DEST:-${RCLONE_REMOTE}:peciulevicius-backups/obsidian-vault}"
 
 if [[ -d "$OBSIDIAN_DIR" ]]; then
   log_info "Backing up $OBSIDIAN_DIR → $OBSIDIAN_DEST"
@@ -231,6 +234,32 @@ if [[ "${BACKUP_IMMICH_PHOTOS:-false}" == "true" ]]; then
     log_err "Immich upload dir not mounted at $IMMICH_DIR — NOT backed up (NAS share missing)"
     ((ERRORS++))
   fi
+fi
+
+# Backup 6: AI coach athlete memory (~/.training) — written by the
+# adaptive-endurance-coach skill from Claude Code and Odysseus: profile, race
+# calendar, injuries, nutrition plan, decision log, plan versions. Tiny, and
+# irreplaceable — it's the coaching history the next decision is based on.
+# Only an error if the directory is missing entirely (it's created at setup).
+TRAINING_DIR="$HOME/.training"
+TRAINING_DEST="${TRAINING_DEST:-${RCLONE_REMOTE}:peciulevicius-backups/training}"
+
+if [[ -d "$TRAINING_DIR" ]]; then
+  log_info "Backing up $TRAINING_DIR → $TRAINING_DEST"
+  TRAINING_CMD=(rclone sync "$TRAINING_DIR" "$TRAINING_DEST")
+  TRAINING_CMD+=(--exclude ".DS_Store")
+  TRAINING_CMD+=($RCLONE_FLAGS)
+  [[ "$DRY_RUN" == "true" ]] && TRAINING_CMD+=(--dry-run)
+
+  if "${TRAINING_CMD[@]}" 2>&1 | tee -a "$LOG_FILE"; then
+    log_ok "Training memory backup complete"
+  else
+    log_err "Training memory backup failed — check $LOG_FILE"
+    ((ERRORS++))
+  fi
+else
+  log_err "Training memory not found at $TRAINING_DIR — NOT backed up"
+  ((ERRORS++))
 fi
 
 # Uptime Kuma push URL lives in .env — the token in it lets anyone report this

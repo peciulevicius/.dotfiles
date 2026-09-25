@@ -53,10 +53,13 @@ Made during the 2026-09-21 Vaultwarden scare (212 cleartext passwords,
       API token; then DNS switch (replace SPF, MX, DKIM×3, DMARC, ownership),
       catch-all, tests, repoint kindle_sync / Calibre-Web / Kuma SMTP, 👤 revoke
       Gmail app password, 👤 iPhone Apple Mail + Sieve filters, 👤 Gmail forward
-- [ ] **AI coach** — `adaptive-endurance-coach` skill (Claude Code + Odysseus),
-      `trainingpeaks-mcp` service (👤 TP cookie), Strava MCP for Odysseus
-      (👤 Strava API app), 👤 Garmin→TP Daily Health Stats toggle,
-      `~/.training/` backed up to R2
+- [ ] **AI coach** — ✅ built 2026-09-25 (skill in Claude Code + Odysseus,
+      `trainingpeaks-mcp` :8092, `strava-mcp` :8093, `~/.training` → R2).
+      Remaining: 👤 Garmin→TP Daily Health Stats toggle; 👤 TP cookie into
+      `~/services/trainingpeaks-mcp/.env` (Terminal, per its README); 👤 Strava
+      API app + `strava-mcp auth`; then Odysseus restart (bind mount +
+      `tool_path_extra_roots`), add both MCP servers in Odysseus, `claude mcp
+      add` for TrainingPeaks, first coaching session
 - [x] ~~**Claude config**~~ — done (setup-claude.sh fixed, 3 new skills)
 - [x] ~~HOME_SERVER.md rewrite~~ — done
 - [ ] Local models: no bigger model (RAM ceiling ~8B); optional later — OpenCode

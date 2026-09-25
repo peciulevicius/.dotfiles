@@ -1,0 +1,42 @@
+# Strava MCP — Strava activities, athlete profile and training analysis for
+# the AI coach inside Odysseus. (Claude Code already has the official claude.ai
+# Strava connector; this exists because Odysseus can't use that connector.)
+#
+# eddmann/strava-mcp in single-user stdio mode, exposed over HTTP by mcp-proxy
+# (Streamable HTTP at /mcp, SSE at /sse). Its own HTTP mode is a multi-user
+# OAuth server built for AWS Lambda — overkill for one athlete.
+#
+# Tokens live in ./data/.strava-mcp.env (HOME=/data), written by the one-time
+# `auth` wizard and rewritten on every refresh — Strava rotates refresh tokens,
+# so this file must stay writable and persistent. See README.md.
+services:
+  strava-mcp:
+    container_name: strava-mcp
+    image: strava-mcp:local
+    build:
+      context: .
+      dockerfile_inline: |
+        FROM python:3.12-slim
+        RUN apt-get update && apt-get install -y --no-install-recommends git \
+            && rm -rf /var/lib/apt/lists/*
+        RUN python -m venv /opt/proxy \
+            && /opt/proxy/bin/pip install --no-cache-dir "mcp-proxy==0.12.0" "mcp<2"
+        ARG STRAVA_MCP_REF=2c6fa6991ffa2c4a443887728aaf8eaab5829cea
+        RUN python -m venv /opt/strava \
+            && /opt/strava/bin/pip install --no-cache-dir \
+               "mcp-strava @ git+https://github.com/eddmann/strava-mcp@$${STRAVA_MCP_REF}"
+        RUN useradd -m -u 10001 mcp && mkdir -p /data && chown mcp /data
+        USER mcp
+        ENV HOME=/data
+        WORKDIR /opt/strava
+        EXPOSE 8000
+        CMD ["/opt/proxy/bin/mcp-proxy", "--host", "0.0.0.0", "--port", "8000", \
+             "--pass-environment", "--", "/opt/strava/bin/strava-mcp"]
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - ./data:/data
+    ports:
+      - "127.0.0.1:${STRAVA_MCP_PORT:-8093}:8000"
+    labels:
+      com.centurylinklabs.watchtower.enable: "false"

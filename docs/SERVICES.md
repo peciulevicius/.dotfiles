@@ -44,6 +44,17 @@ Run your own cloud on a Mac mini (or any Docker host). 26 services covering phot
 | [Transmission](#transmission) | Tailscale only | 9091 | BitTorrent client |
 | [LazyLibrarian](#lazylibrarian) | Tailscale only | 5299 | Ebook & audiobook automation |
 
+### AI Coach (MCP servers)
+
+No web UI — these are data connectors for the `adaptive-endurance-coach` skill
+in Claude Code and Odysseus. Bound to **localhost only** (not Tailscale, not
+public).
+
+| Service | URL | Port | Purpose |
+|---------|-----|------|---------|
+| [TrainingPeaks MCP](#trainingpeaks-mcp) | localhost only | 8092 | Workouts, fitness, Garmin health metrics, nutrition — read + write |
+| [Strava MCP](#strava-mcp) | localhost only | 8093 | Strava activities for Odysseus (Claude Code uses the claude.ai connector) |
+
 ### Monitoring
 
 | Service | URL | Port | Purpose |
@@ -604,6 +615,35 @@ cd ~/services/lazylibrarian
 docker compose up -d
 # Open: http://100.81.171.49:5299
 ```
+
+---
+
+### TrainingPeaks MCP
+
+**What:** MCP server (85 tools) giving the AI coach read/write access to
+TrainingPeaks — workouts, CTL/ATL/TSB, ATP, events, nutrition, and
+`tp_get_metrics`, which carries the Garmin data (sleep, HRV, RHR, Body Battery,
+stress, weight, body comp) that Garmin Connect pushes into TrainingPeaks.
+
+**Why:** TrainingPeaks is the coach's source of truth; routing Garmin through it
+avoids a fragile unofficial Garmin login.
+
+**How:** stdio server behind `mcp-proxy`, `http://127.0.0.1:8092/mcp`.
+⚠️ Auth is your browser's `Production_tpAuth` cookie — unofficial, full account
+access, expires every few weeks. Setup/refresh: `services/trainingpeaks-mcp/README.md`.
+
+---
+
+### Strava MCP
+
+**What:** Strava activities, profile and training analysis for the coach inside
+Odysseus (`query_activities`, `analyze_training`, `compare_activities`…).
+
+**Why:** Odysseus can't use the claude.ai Strava connector that Claude Code has.
+
+**How:** eddmann/strava-mcp stdio mode behind `mcp-proxy`,
+`http://127.0.0.1:8093/mcp`. Needs a one-time Strava API app + auth wizard:
+`services/strava-mcp/README.md`.
 
 ---
 

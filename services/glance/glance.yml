@@ -67,6 +67,14 @@ pages:
                 url: http://100.81.171.49:7001
                 check-url: http://odysseus-odysseus-1:7000/api/health
                 icon: si:ollama
+              - title: TrainingPeaks MCP
+                url: http://127.0.0.1:8092/status
+                check-url: http://trainingpeaks-mcp:8000/status
+                icon: si:trainingpeaks
+              - title: Strava MCP
+                url: http://127.0.0.1:8093/status
+                check-url: http://strava-mcp:8000/status
+                icon: si:strava
               - title: Stirling PDF
                 url: https://pdf.peciulevicius.com
                 check-url: http://stirling_pdf:8080/

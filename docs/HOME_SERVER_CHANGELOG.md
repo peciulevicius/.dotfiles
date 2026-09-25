@@ -8,6 +8,33 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-25 — AI coach stack built (auth pending)
+
+- **`adaptive-endurance-coach` skill** (MIT, vendored) in Claude Code
+  (`config/claude/skills/`) and Odysseus (`data/skills/coaching/`, single
+  top-level SKILL.md — no nested copies). Adds a "This setup" section mapping
+  tool names between Claude Code and Odysseus. Shared athlete memory in
+  `~/.training/`, backed up to R2 as **Backup 6**.
+- **`trainingpeaks-mcp`** (upstream v3.2.0, 85 tools) on `127.0.0.1:8092`
+  behind `mcp-proxy` (upstream is stdio-only; `mcp-proxy` lives in its own
+  venv because it breaks on the newer `mcp` library tp-mcp needs). Verified
+  reachable from Odysseus's own MCP client. `tp_get_metrics` returns TP's
+  daily metrics unfiltered, so Garmin's pushed health + body-comp data comes
+  through — **no Garmin connector needed**. Unofficial cookie auth; the cookie
+  is full-account access and expires every few weeks (refresh steps in its
+  README).
+- **`strava-mcp`** (eddmann) on `127.0.0.1:8093` for Odysseus — Claude Code
+  keeps using the claude.ai connector. OAuth tokens in `data/.strava-mcp.env`,
+  excluded from R2 (it isn't named `.env`, so it would have been uploaded).
+- Both localhost-only (never Tailscale/tunnel), on Glance, in
+  `setup-services.sh` and SERVICES.md.
+- `rclone-backup.sh` fallbacks fixed (`b2-backup` → `r2`,
+  `peciulevicius-services-backup` → `peciulevicius-backups`).
+- Waiting on the user: Garmin→TP Daily Health Stats toggle, the TP cookie,
+  a Strava API app + one OAuth run. Then one Odysseus restart for the
+  `~/.training` bind mount + `tool_path_extra_roots`, and the two MCP servers
+  added in its UI.
+
 ## 2026-09-24 — Pinned images get a quarterly review
 
 `scripts/utils/check-image-updates.py` reads each pinned tag from

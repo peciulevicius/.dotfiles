@@ -42,6 +42,8 @@ SERVICES=(
   couchdb
   storyteller
   odysseus
+  trainingpeaks-mcp
+  strava-mcp
 )
 
 SERVICE_PORTS=(
@@ -72,6 +74,8 @@ SERVICE_PORTS=(
   "couchdb:5984"
   "storyteller:8087"
   "odysseus:7001"
+  "trainingpeaks-mcp:8092"
+  "strava-mcp:8093"
 )
 
 log_ok()   { echo -e "${GREEN}✓${NC} $1"; }

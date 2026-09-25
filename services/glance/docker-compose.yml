@@ -30,6 +30,8 @@ services:
       - lazylibrarian
       - couchdb
       - odysseus_default
+      - trainingpeaks-mcp_default
+      - strava-mcp_default
 
 networks:
   default:
@@ -68,4 +70,8 @@ networks:
   couchdb:
     external: true
   odysseus_default:
+    external: true
+  trainingpeaks-mcp_default:
+    external: true
+  strava-mcp_default:
     external: true

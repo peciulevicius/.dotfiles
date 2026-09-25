@@ -11,7 +11,7 @@ config/claude/
 ├── settings.example.json  # Reference copy
 ├── statusline.sh          # 3-line status display (model, tokens, usage bars)
 ├── agents/                # 19 specialist sub-agents
-├── skills/                # 32 reusable skill packs
+├── skills/                # 33 reusable skill packs
 ├── rules/                 # 10 rule files (loaded on demand via @rules/)
 ├── commands/              # 2 slash commands (/new-project, /dotfiles)
 └── hooks/                 # Shell hooks (notify-done.sh, etc.)
@@ -64,7 +64,7 @@ All files are symlinked to `~/.claude/` by `scripts/setup/setup-claude.sh`.
 | `support-engineer` | Troubleshooting, docs |
 | `technical-writer` | READMEs, guides |
 
-## Skills (32)
+## Skills (33)
 
 Invoke with `/name`, or Claude triggers them when the task matches (skills
 marked *manual* have `disable-model-invocation: true`).
@@ -119,6 +119,7 @@ private memory at runtime)
 
 | Skill | What it does |
 |-------|---------|
+| `adaptive-endurance-coach` | Triathlon coach + sports nutrition (MIT, vendored from mprecilio20/adaptive-endurance-coach). TrainingPeaks is the source of truth via the local `trainingpeaks-mcp`; athlete memory in `~/.training/` |
 | `personal-finance` | Budget tables, investing principles, read-only IBKR portfolio review, Lithuanian tax basics |
 | `pkm-notes` | Obsidian + Kindle Scribe → `kindle_sync.py` pipeline, capture-first triage, reading list |
 
