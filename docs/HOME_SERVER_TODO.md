@@ -90,10 +90,17 @@ Section names in *italics* are headings below.
   Claude doing: janioniuvynuogynas.lt zone + DNS + Worker custom domains +
   Turnstile + email routing, and the peciulevicius.com Pages → Worker move via
   a GitHub Actions `wrangler deploy` (like janioniu) instead of dashboard clicks.
-- 👤 Hostinger → `janioniuvynuogynas.lt` → DNS / Nameservers → **Change
-  nameservers** → `edward.ns.cloudflare.com` + `samara.ns.cloudflare.com`
-  (Cloudflare zone created 2026-09-25, status pending until the switch) —
-  janioniu launch step 1. Then Claude: Worker custom domains, Turnstile, DNS.
+- [x] janioniuvynuogynas.lt: nameservers switched (👤), Cloudflare zone active
+  14:04, apex + `www` on the Worker, Turnstile keys + `SITE_URL` set, PR #5
+  merged and deployed — **live at https://janioniuvynuogynas.lt** (2026-09-25).
+  Open there (add to that repo's TODO when its uncommitted edits are sorted):
+  - Claude: unknown paths return **500 instead of 404** (e.g. `/lt/kontaktai`)
+  - Claude: `www` serves the site instead of redirecting to the apex
+  - 👤 placeholder phone `+370 600 00 000` and other facts are now on the real
+    domain — confirm with Dad
+  - 👤 your local checkout has uncommitted `docs/TODO.md` + `environments.md`
+    edits and is now behind `main` (PR #5 touched TODO.md) — commit/stash, then
+    `git pull`
 
 - 👤 janioniuvynuogynas.lt email: **add the domain to the existing Purelymail
   account** (no extra cost) instead of Cloudflare Email Routing → Gmail; create
