@@ -324,7 +324,7 @@ before relying on it (a NAS-based target is an open TODO).
 |---|---|
 | **A service can't see its files** | [NAS.md](NAS.md) ladder: mount gone? → `mount-nas.sh`; NAS reachable? `nc -z DH4300PLUS-DP.local 445`; wrong path in `.env`? container started before the mount? → `docker compose restart` |
 | **New movie/audiobook not appearing** | SMB file watchers miss changes. Wait for the 30-min rescan or `docker restart jellyfin audiobookshelf`. Radarr/Sonarr queue shows `downloadClientUnavailable`? → credentials to Transmission are stale (see `credential-rotation`) |
-| **Power outage** | Mac mini powers back on (if `autorestartatconnect` is set) but stops at the **FileVault password** — someone types it once. Then shares mount via LaunchAgent and watchdogs restart containers. Uptime Kuma runs on the same box, so **nothing alerts during a whole-house outage** — an external dead-man's switch (Healthchecks.io) is an open TODO |
+| **Power outage** | Mac mini powers back on (if `autorestartatconnect` is set) but stops at the **FileVault password** — someone types it once. Then shares mount via LaunchAgent and watchdogs restart containers. Uptime Kuma runs on the same box and is down too; the external Healthchecks.io dead-man's switch (`scripts/utils/heartbeat.sh`, live since 2026-09-25) is what alerts |
 | **NAS down** | Shares vanish; NAS-backed services stop seeing data (the watchdog remounts once it's back). Check power, then nas.peciulevicius.com → Storage |
 | **One NAS disk fails** | RAID 5 keeps running degraded — replace the disk promptly; a second failure loses the array |
 | **NAS lost entirely** | Photos: R2 `immich-photos` + T7/T5. DB dumps: R2 + drives. Books: R2 `calibre-books`. Media: re-download. Rebuild shares, then §3.8 |

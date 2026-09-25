@@ -8,6 +8,49 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-25 — TODO truth pass: verified, ticked, collapsed
+
+Every open item in `HOME_SERVER_TODO.md` was checked against the live system
+(read-only: `docker ps`, `crontab -l`, `tailscale status`, `pmset`, `dig`,
+SQLite reads of Kuma/Calibre-Web/Odysseus config, file existence under
+`~/.config/homelab` — no secret values read). The TODO went 1,428 → ~1,070
+lines, with a 👤 / Claude "Who does what" index under *Next up*. Done or
+superseded, and moved out:
+
+- **Purelymail** bought; `peciulevicius.com` + the `dziugas@` mailbox live;
+  MX/SPF/DKIM/DMARC/BIMI all on Purelymail (`dig MX` →
+  `mailserver.purelymail.com`); Cloudflare Email Routing disabled. Old steps
+  superseded: "Email Routing → forward to Gmail", "pick Purelymail vs Migadu",
+  the signup gotcha (kept in `guides/EMAIL.md`).
+- **Healthchecks.io dead-man's switch live** — `heartbeat.env` in place, `*/5`
+  cron, log silent (errors only) since 08:30.
+- **Kuma "Rclone Backup" push token rotated** (`kuma-reset-push-token.sh`);
+  the leaked one is dead. Its `.gitleaksignore` fingerprint is still open.
+- **Odysseus**: cloud models (default Opus 5.5, task/utility Haiku 4.5,
+  Anthropic endpoint) replace the `qwen2.5:7b` / `llama3.2:3b` default plan;
+  the Anthropic-key question is settled (in use). **IMAP/SMTP account for
+  `dziugas@` on Purelymail configured 2026-09-25** (993 implicit TLS, 465
+  SSL). Homelab + coaching skills and memories imported. Dropped as
+  superseded: `ai.peciulevicius.com` (Tailscale-only by decision), the
+  Phase-1 compose/port-7000 plan, Cookbook, `qwen3:8b`.
+- **Tailscale key expiry disabled** on `macmini` and `ugreen-nas` (no expiry
+  in `tailscale status`). Found instead: the MacBook Air's key expired
+  2026-09-02 — now a TODO.
+- **NAS SSH enabled** (port 22 answers).
+- **Disk**: Trash (2.7GB) and `~/Downloads` (1.1GB) emptied; 32GiB free (84%).
+- **Karakeep ×3 and actual-budget** containers are gone; the Storyteller
+  container is removed too (compose kept, `restart: "no"`).
+- **Kindle sync** verified running hourly (still on Gmail until the switch).
+- **Plaintext vault exports** (2026-09-21 scare) — deleted same day,
+  `~/Downloads` has no `bitwarden_export*`.
+- **Mac mini auto-login** dropped: FileVault stays on (2026-09-22 decision),
+  so auto-login isn't possible.
+
+Also collapsed the duplicates (Google Authenticator ×3, the credential pass
+×3, Odysseus ×4, LiveSync ×2, Disk ×2, power-outage ×2, Kindle OTA/Searchable
+PDF ×2) into one section each. Removed the 2026-09-21 "nothing in the stack
+uses email" audit note, because it was wrong: three consumers use Gmail.
+
 ## 2026-09-25 — Pinned image bumps (same-major only)
 
 One service at a time; compose + image digest saved to
