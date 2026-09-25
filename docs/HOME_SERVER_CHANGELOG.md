@@ -21,6 +21,8 @@ One service at a time; compose + image digest saved to
   200, OPDS answers 401 Basic (auth required, as before), container reads 38
   books from `/books/metadata.db`. The `xdg-desktop-menu` traceback in the
   log is the universal-calibre mod and harmless.
+- **Bazarr** `1.5.1` → `1.6.1` (minor). API reports 1.6.1, health list empty,
+  no errors in the log.
 
 ## 2026-09-25 — Pi-hole 2024.07.0 → v6 (2026.09.0)
 
