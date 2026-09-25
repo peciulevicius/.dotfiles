@@ -8,6 +8,17 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-25 — All Claude skills in one place
+
+The three homelab skills (`homelab-service`, `credential-rotation`,
+`homelab-audit`) moved from the repo's `.claude/skills/` into
+`config/claude/skills/`, next to the other 33. Having skills in two places was
+confusing, and the "project-only" scoping bought nothing — those skills only
+trigger on homelab work, so they're harmless in other projects. The repo's
+`.claude/` now holds only its `CLAUDE.md` (plus the gitignored
+`settings.local.json`). `setup-claude.sh update` relinked them; all docs that
+pointed at the old path are updated.
+
 ## 2026-09-25 — AI coach stack built (auth pending)
 
 - **`adaptive-endurance-coach` skill** (MIT, vendored) in Claude Code

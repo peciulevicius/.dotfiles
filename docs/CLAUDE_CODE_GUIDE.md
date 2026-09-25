@@ -29,7 +29,7 @@ Everything Claude Code uses lives in `~/.claude/`. All 6 are managed from this d
 |---|------|------------|--------|
 | 1 | `~/.claude/CLAUDE.md` | Global instructions loaded every session | ✅ |
 | 2 | `~/.claude/rules/` | Detailed guidelines split by topic | ✅ 10 files |
-| 3 | `~/.claude/skills/` | Auto-triggered or slash-invoked skill packs | ✅ 23 skills |
+| 3 | `~/.claude/skills/` | Auto-triggered or slash-invoked skill packs | ✅ 36 skills |
 | 4 | `~/.claude/agents/` | Specialist subagents for delegation | ✅ 19 agents |
 | 5 | `~/.claude/settings.json` | Permissions, statusline, hooks | ✅ |
 | 6 | `~/.claude/commands/` | Manual slash commands (`/new-project`, `/dotfiles`) | ✅ 2 commands |
@@ -497,7 +497,7 @@ config/claude/
 ├── settings.example.json  # reference copy
 ├── statusline.sh          # statusline script
 ├── agents/                # 19 agents → ~/.claude/agents/
-├── skills/                # 23 skills → ~/.claude/skills/
+├── skills/                # 36 skills → ~/.claude/skills/
 ├── rules/                 # 10 rules → ~/.claude/rules/
 ├── commands/              # 8 commands → ~/.claude/commands/
 └── hooks/                 # shell hooks (notify-done.sh, etc.)

@@ -32,6 +32,10 @@ All services accessible via: localhost, Tailscale (`100.81.171.49`), and `*.peci
 - `docs/HOME_SERVER_TODO.md` — **active TODO list for the homelab. Start here.**
 - `docs/HOME_SERVER.md` — full setup + disaster-recovery guide for a new Mac
   mini (rewritten 2026-09-24 for the NAS architecture)
+- `config/claude/` — **all** Claude Code config (skills, agents, commands,
+  rules, hooks, global CLAUDE.md), linked into `~/.claude` by
+  `scripts/setup/setup-claude.sh`. This repo's own `.claude/` holds only this
+  file.
 - `docs/HOME_SERVER_CHANGELOG.md` — completed work. Check before proposing
   anything — several ideas have been tried and reverted already.
 
@@ -162,7 +166,7 @@ all in that guide.
   (`.github/workflows/checks.yml`) re-runs gitleaks on every push as a
   backstop for clones without the hook, plus `shellcheck -S error` and a
   strict `mkdocs build` — a red check on a push is a real problem, fix it.
-- **Use the project skills** in `.claude/skills/` — they encode steps that
+- **Use the homelab skills** (in `config/claude/skills/`, linked globally) — they encode steps that
   were missed repeatedly:
   - `homelab-service` — any add/remove/change of a service (staging, Glance,
     tunnel, backups, credentials, docs)

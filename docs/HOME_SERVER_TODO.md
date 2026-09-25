@@ -65,6 +65,24 @@ Made during the 2026-09-21 Vaultwarden scare (212 cleartext passwords,
 - [ ] Local models: no bigger model (RAM ceiling ~8B); optional later — OpenCode
       + `qwen2.5-coder:7b` for offline snippets only
 
+### 📋 Open user steps — as of 2026-09-25
+
+- [ ] 👤 **T7 external backup** — plug in the T7, run
+      `~/.dotfiles/scripts/backup/backup-external.sh /Volumes/T7`, unplug.
+      The weekly audit fails until the first run is stamped
+      (`~/logs/external-backup-T7.last`), then again whenever it's >30 days
+      old — that's the reminder. Same for T5 before it goes offsite.
+- [ ] 👤 **Healthchecks.io heartbeat** — check created 2026-09-25 (5-min period,
+      10-min grace). Remaining: save the ping URL from Terminal (not chat) into
+      `~/.config/homelab/heartbeat.env` as `HEARTBEAT_PING_URL=`, then
+      `scripts/utils/heartbeat.sh --test` → "sent: ok".
+- [ ] 👤 **Uptime Kuma "Rclone Backup" push token** — Edit monitor → Reset
+      Token → Save → put the new base URL in `~/services/rclone/.env`.
+- [ ] 👤 **Email** — Purelymail "Add New Domain" page is open with the
+      ownership value visible; waiting on the Cloudflare API token so the DNS
+      records go in first, then Check DNS → Save → create `dziugas@` user →
+      catch-all routing.
+
 ### 2. 🔴 Move TOTP off Google Authenticator — before any password change
 
 **The single highest-risk item in the whole de-Googling effort.** Google
@@ -199,7 +217,7 @@ and weekly audit now guard against a repeat.
 - [x] ~~Weekly automated audit~~ — `scripts/utils/homelab-audit.sh`, Sundays
       9AM via `run-with-notify.sh` → Discord on failure.
 - [x] ~~Project skills~~ — `homelab-service`, `credential-rotation`,
-      `homelab-audit` in `.claude/skills/`.
+      `homelab-audit` in `config/claude/skills/` (moved from `.claude/skills/` 2026-09-25).
 - [ ] Optional: **import the homelab skills into Odysseus** — it reads the
       same `SKILL.md` format natively and can import from a public GitHub
       URL (this repo). Useful mainly as reference inside Odysseus chats; its

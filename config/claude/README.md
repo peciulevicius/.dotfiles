@@ -11,7 +11,7 @@ config/claude/
 ├── settings.example.json  # Reference copy
 ├── statusline.sh          # 3-line status display (model, tokens, usage bars)
 ├── agents/                # 19 specialist sub-agents
-├── skills/                # 33 reusable skill packs
+├── skills/                # 36 reusable skill packs
 ├── rules/                 # 10 rule files (loaded on demand via @rules/)
 ├── commands/              # 2 slash commands (/new-project, /dotfiles)
 └── hooks/                 # Shell hooks (notify-done.sh, etc.)
@@ -64,7 +64,7 @@ All files are symlinked to `~/.claude/` by `scripts/setup/setup-claude.sh`.
 | `support-engineer` | Troubleshooting, docs |
 | `technical-writer` | READMEs, guides |
 
-## Skills (33)
+## Skills (36)
 
 Invoke with `/name`, or Claude triggers them when the task matches (skills
 marked *manual* have `disable-model-invocation: true`).
@@ -123,9 +123,9 @@ private memory at runtime)
 | `personal-finance` | Budget tables, investing principles, read-only IBKR portfolio review, Lithuanian tax basics |
 | `pkm-notes` | Obsidian + Kindle Scribe → `kindle_sync.py` pipeline, capture-first triage, reading list |
 
-Project-only skills for the homelab (`homelab-service`, `credential-rotation`,
-`homelab-audit`) live in the repo's own `.claude/skills/`, not here — they load
-only when working inside `~/.dotfiles`.
+The homelab skills (`homelab-service`, `credential-rotation`, `homelab-audit`)
+live here too since 2026-09-25 — one place for every skill. They only trigger
+on homelab work, so they're harmless in other projects.
 
 ## Rules (10)
 

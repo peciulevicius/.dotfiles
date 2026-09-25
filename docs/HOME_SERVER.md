@@ -158,7 +158,7 @@ Odysseus is the one service built from source: run
 can read everything else) → Immich → the rest → Glance last (it joins every
 service's Docker network, so those networks must exist).
 
-The `homelab-service` Claude skill (`.claude/skills/homelab-service/`) has the
+The `homelab-service` Claude skill (`config/claude/skills/homelab-service/`) has the
 full add/remove/change checklist for any single service.
 
 ### 3.6 Cloudflare Tunnel
@@ -350,4 +350,4 @@ are in [HOME_SERVER_REFERENCE.md](HOME_SERVER_REFERENCE.md).
 | Services, ports, mobile apps | [SERVICES.md](SERVICES.md) |
 | NAS, mounts, watchdogs | [NAS.md](NAS.md) |
 | Scripts | [UTILITY_SCRIPTS.md](UTILITY_SCRIPTS.md) |
-| Checklists for Claude Code | `.claude/skills/` — `homelab-service`, `credential-rotation`, `homelab-audit` |
+| Checklists for Claude Code | `config/claude/skills/` — `homelab-service`, `credential-rotation`, `homelab-audit` |
