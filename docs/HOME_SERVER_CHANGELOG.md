@@ -8,6 +8,14 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-25 — Phone apps: server side ready
+
+- FreshRSS API access enabled (`cli/reconfigure.php --api-enabled`) for Reeder.
+- Checked reachability for the apps' APIs: FreshRSS greader, Paperless,
+  Linkwarden (v2.16), Pi-hole v6 auth (Pi-hole Remote needs v6 — now met).
+- Per-app connection table added to `SERVICES.md`; Amperfy dropped (it speaks
+  Subsonic/Ampache, not Jellyfin — Finamp is the Jellyfin client).
+
 ## 2026-09-25 — TODO clean-up: finished items
 
 Every ticked, struck-through or "done" line was deleted from

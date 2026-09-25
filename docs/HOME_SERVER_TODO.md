@@ -96,6 +96,13 @@ Section names in *italics* are headings below.
   keeps using `send.janioniuvynuogynas.lt`, so no MX clash. Supersedes the
   "Email Routing → your Gmail" line in that repo's TODO step 3.
 
+- 👤 **Phone apps** — connect Reeder (set FreshRSS API password first),
+  Swift Paperless, Linkwarden, Pi-hole Remote (create an app password) —
+  step-by-step table in `SERVICES.md` → *Connecting each app*. Finamp waits for
+  the music library; Nextcloud app waits for the keep-or-remove decision;
+  Amperfy dropped (Subsonic-only). Also install: Bitwarden, Ente Auth,
+  Obsidian + LiveSync, ntfy, Swiftfin/Infuse, Odysseus home-screen web app.
+
 ### 🤖 Claude can do next
 
 - Run `mail-switch-purelymail.sh` once the password file exists — *🔝 Next up* 2

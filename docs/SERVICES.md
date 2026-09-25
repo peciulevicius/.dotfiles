@@ -767,7 +767,7 @@ CardDAV instead of a dedicated app).
 
 | Service | App(s) | Platform | Notes |
 |---|---|---|---|
-| **Jellyfin (music)** | Finamp (free) or Amperfy (free core, paid extras) | iOS + Android | Streams, doesn't require downloading first |
+| **Jellyfin (music)** | **Finamp** (free, Jellyfin-native) | iOS + Android | Streams + offline downloads. ⚠️ Amperfy speaks **Subsonic/Ampache**, not Jellyfin — only useful if Navidrome is ever added |
 | **Paperless-ngx** | Swift Paperless, Paperless Mobile, PaperNext | iOS + Android | All third-party, all actively maintained. Swift Paperless is iOS-native |
 | **Linkwarden** | Official Linkwarden app | iOS 15.1+ / Android | Share-sheet save, offline caching |
 | **FreshRSS** | Reeder, NetNewsWire, ReadKit, Fluent Reader, Unread | mostly iOS | Enable **Google Reader API** access (not Fever — more limited) and set an API password in FreshRSS settings first |
@@ -775,6 +775,30 @@ CardDAV instead of a dedicated app).
 | **Syncthing** | Möbius Sync | iOS/iPadOS only | No official iOS app exists at all. Free tier capped at 20MB; $4.99 one-time unlocks unlimited |
 | **Uptime Kuma** | KumaAlert, "Uptime Kuma Manager" | iOS + Android + watchOS/WearOS | No official app; these add push alerts and widgets a bare PWA can't |
 | **Pi-hole** | Pi-hole Remote | iOS/iPadOS/Apple TV/Watch | Toggle blocking, manage lists, widgets, Siri |
+
+### Connecting each app — step by step (verified 2026-09-25)
+
+Server-side prerequisites were checked/enabled on 2026-09-25. Use the public
+hostnames (they work on cellular); use the Tailscale URL only for services
+that aren't on the tunnel.
+
+| App | Server URL | Login | Notes |
+|---|---|---|---|
+| **Reeder** (FreshRSS) | `https://rss.peciulevicius.com/api/greader.php` | FreshRSS username + **API password** | API access **enabled 2026-09-25**. First set the API password: FreshRSS → Settings → Profile → *API management* → API password → Save. In Reeder: Add account → **FreshRSS** (Google Reader API) |
+| **Swift Paperless** / Paperless Mobile | `https://papers.peciulevicius.com` | Paperless username + password | Share-sheet upload of scans/PDFs works once logged in |
+| **Linkwarden** (official app) | `https://links.peciulevicius.com` | Linkwarden email/username + password | Server v2.16 — app login supported. Enable the share extension in iOS to save links from Safari |
+| **Pi-hole Remote** | `https://pihole.peciulevicius.com` (port 443, HTTPS) | Pi-hole **app password** | App requires Pi-hole v6 ✓ (v6 since 2026-09-25). Create an app password: Pi-hole → Settings → Web interface / API → *Expert* → **Configure app password** → copy it (shown once) → save it in Vaultwarden too |
+| **Finamp** (Jellyfin music) | `https://watch.peciulevicius.com` | Jellyfin user | ⏸ Blocked until the **music library** exists in Jellyfin (TODO) |
+| **Nextcloud** | `https://cloud.peciulevicius.com` | Nextcloud user (app password recommended: Settings → Security → *Devices & sessions*) | ⏸ Wait for the keep-or-remove decision (TODO). If kept: Files app + iOS **CalDAV/CardDAV** accounts (`https://cloud.peciulevicius.com/remote.php/dav`) for calendar/contacts |
+
+**Also worth installing** (tracked in `HOME_SERVER_TODO.md`): **Bitwarden**
+(self-hosted server `https://vault.peciulevicius.com`), **Ente Auth** (for
+the Google Authenticator migration), **Obsidian** (+ Self-hosted LiveSync →
+`https://couchdb.peciulevicius.com`), **ntfy** (Odysseus reminders — the ntfy
+server runs in the Odysseus stack), **Swiftfin** or **Infuse** (Jellyfin
+video, nicer than the official app), and **Odysseus** as a home-screen web
+app (`http://100.81.171.49:7001` in Safari → Share → *Add to Home Screen*,
+Tailscale on).
 
 ⚠️ **`kindle_sync.py`, Calibre-Web (via KOReader's OPDS), and Odysseus don't
 have a meaningful mobile-app story beyond what's already documented in their
