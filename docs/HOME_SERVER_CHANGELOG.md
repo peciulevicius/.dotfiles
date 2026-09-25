@@ -77,6 +77,9 @@ One service at a time; compose + image digest saved to
   the one folder is `idle` with 45 files and 0 errors (both peers were
   offline before and after — not caused by the bump). **2.x not taken** — it
   replaces the LevelDB index with SQLite (one-way); plan in TODO.
+- **Transmission** `4.0.6` → `4.1.3` (minor). RPC up (401 unauthenticated as
+  expected); Radarr's and Sonarr's download-client tests both pass — the
+  consumer-side check that matters here.
 
 ## 2026-09-25 — Pi-hole 2024.07.0 → v6 (2026.09.0)
 
