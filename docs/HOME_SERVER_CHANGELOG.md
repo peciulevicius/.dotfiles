@@ -120,6 +120,12 @@ One service at a time; compose + image digest saved to
   41 migrations applied ("All migrations have been successfully applied"),
   healthy, links/collections/users identical before and after (619/54/1),
   local + `links.peciulevicius.com` 200. Postgres stays 16.
+- **Paperless-ngx** `2.14.7` → `2.20.15` (last 2.x). `pg_dump` first
+  (`~/backups/paperless-ngx-2026-09-25/paperless.pgdump`); Django migrations
+  all applied (0 unapplied), healthy, documents/tags/users identical
+  (14/1/3), local + `papers.peciulevicius.com` 200. `document_sanity_checker`
+  reports only INFO-level "no OCR data" on image-only docs (pre-existing).
+  **3.x not taken** (major) — and Paperless is still a keep/remove decision.
 
 ## 2026-09-25 — Pi-hole 2024.07.0 → v6 (2026.09.0)
 
