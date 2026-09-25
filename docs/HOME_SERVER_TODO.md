@@ -30,6 +30,41 @@ Grouped by "what happens if I ignore this", not by number.
 
 ---
 
+## 🌐 Other repo backlogs
+
+- `~/dev/peciulevicius.com/docs/TODO.md` — clean-up + own newsletter batch
+  (branch `chore/cleanup-newsletter`, 2026-09-25), email branding, Astro 7.
+- `~/dev/janioniu-vynuogynas/docs/TODO.md` — launch blockers (DNS still on
+  Hostinger parking, placeholder phone, Turnstile/Resend setup).
+
+## 🏃 Coach in the Claude app / phone — walkthrough with Claude
+
+- [ ] 👤 Upload `config/claude/skills/adaptive-endurance-coach/` (zip) in
+      claude.ai → Settings → Capabilities → Skills.
+- [ ] 👤+Claude: Cloudflare Access application for `tp-mcp.peciulevicius.com`
+      (OAuth for MCP, policy = own email only), **then** add the tunnel ingress →
+      `127.0.0.1:8092`. Never publish the hostname before Access is in front —
+      the TrainingPeaks cookie is full account access.
+- [ ] 👤 claude.ai → Connectors → Add custom connector →
+      `https://tp-mcp.peciulevicius.com/mcp`; confirm `tp_auth_status` from the
+      phone. Check the official Strava connector is enabled.
+- [ ] Claude Project "Coach" with the skill + pinned summary (the app can't read
+      `~/.training`).
+- [ ] Docs: SERVICES.md, Glance, trainingpeaks-mcp README (homelab-service skill).
+
+## ✉️ Email identity
+
+- [ ] 👤 Gravatar: logo on `hello@peciulevicius.com`, own photo on
+      `dziugas@peciulevicius.com`.
+- [ ] 👤 Install the branded signature (from `peciulevicius.com/email/signature`
+      once deployed) in Odysseus, iPhone Mail, Purelymail webmail.
+- [ ] BIMI `default._bimi` TXT record once `/bimi/logo.svg` is live (Claude, via
+      Cloudflare API).
+- [ ] 👤 Decide on a Google account photo for Gmail recipients (conflicts with
+      de-Googling — default: no).
+
+---
+
 ## ▶ Start here — do these in this order
 
 Last worked: **2026-09-21**. Finished work is in
