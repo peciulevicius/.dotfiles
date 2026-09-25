@@ -88,6 +88,10 @@ One service at a time; compose + image digest saved to
   sync tests pass for Sonarr + Radarr. The third app, **Readarr**, fails — it
   was removed 2026-09-19 and is still configured in Prowlarr (was already
   failing before the bump); delete it there. **2.x not taken** (major).
+- **Jellyseerr** `2.5.0` → `2.7.3` (minor). `/api/v1/status` reports 2.7.3,
+  still initialized against Jellyfin, settings migrations applied cleanly, no
+  errors; reachable over Tailscale. (Upstream has since merged into
+  *Seerr* — a rename to track, not done here.)
 
 ## 2026-09-25 — Pi-hole 2024.07.0 → v6 (2026.09.0)
 

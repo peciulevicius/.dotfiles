@@ -6,7 +6,7 @@ name: jellyseerr
 services:
   jellyseerr:
     container_name: jellyseerr
-    image: fallenbagel/jellyseerr:2.5.0
+    image: fallenbagel/jellyseerr:2.7.3
     restart: unless-stopped
     ports:
       - "${JELLYSEERR_PORT:-5055}:5055"
