@@ -55,11 +55,10 @@ Made during the 2026-09-21 Vaultwarden scare (212 cleartext passwords,
       Gmail app password, 👤 iPhone Apple Mail + Sieve filters, 👤 Gmail forward
 - [ ] **AI coach** — ✅ built 2026-09-25 (skill in Claude Code + Odysseus,
       `trainingpeaks-mcp` :8092, `strava-mcp` :8093, `~/.training` → R2).
-      Remaining: 👤 Garmin→TP Daily Health Stats toggle; 👤 TP cookie into
-      `~/services/trainingpeaks-mcp/.env` (Terminal, per its README); 👤 Strava
-      API app + `strava-mcp auth`; then Odysseus restart (bind mount +
-      `tool_path_extra_roots`), add both MCP servers in Odysseus, `claude mcp
-      add` for TrainingPeaks, first coaching session
+      ✅ TrainingPeaks live 2026-09-25: cookie valid, Garmin HRV/sleep flowing
+      into TP, registered in Claude Code (`claude mcp add`) and Odysseus
+      (85 tools, `/training` mounted). Remaining: 👤 Strava API app +
+      `strava-mcp auth` → add Strava MCP in Odysseus; first coaching session.
 - [x] ~~**Claude config**~~ — done (setup-claude.sh fixed, 3 new skills)
 - [x] ~~HOME_SERVER.md rewrite~~ — done
 - [ ] Local models: no bigger model (RAM ceiling ~8B); optional later — OpenCode
@@ -86,9 +85,6 @@ Made during the 2026-09-21 Vaultwarden scare (212 cleartext passwords,
       2. Test: mail `inbox@peciulevicius.com` from Gmail, check webmail.
       3. Repoint kindle_sync / Calibre-Web / Kuma SMTP (EMAIL.md §7), revoke
          the Gmail app password, iPhone Mail, Gmail forward.
-- [ ] 👤 **TrainingPeaks cookie** — the `read -rs` paste hangs: macOS Terminal
-      caps a typed line at 1024 bytes and the cookie is longer. Use the
-      clipboard version in `services/trainingpeaks-mcp/README.md`.
 
 ### 2. 🔴 Move TOTP off Google Authenticator — before any password change
 

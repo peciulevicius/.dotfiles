@@ -8,6 +8,21 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-25 — TrainingPeaks connected to Claude Code and Odysseus
+
+- Cookie saved via the clipboard command (1797 chars — the reason `read -s`
+  hung). `tp_auth_status` valid; `tp_get_metrics` returns Garmin-uploaded HRV,
+  sleep stages etc., confirming no Garmin connector is needed.
+- `claude mcp add --scope user --transport http trainingpeaks http://127.0.0.1:8092/mcp`.
+- Odysseus: `~/.training:/training` bind mount + `tool_path_extra_roots`,
+  TrainingPeaks MCP row (`http://host.docker.internal:8092/mcp`); restart
+  showed 85 tools connected and skills stayed at 4 (duplicate-adoption bug
+  stays fixed).
+- **Fixed a latent override bug**: `ports: []` never removed SearXNG's 8080
+  mapping (compose merges lists); the recreate failed on *port is already
+  allocated* and Odysseus sat in `Created` for ~2 min. Now `ports: !reset []`.
+  Documented in `services/odysseus/README.md`.
+
 ## 2026-09-25 — Purelymail DNS in, Kuma token script, TP cookie paste fix
 
 - **Email DNS** added via the Cloudflare API (token in

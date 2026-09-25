@@ -125,10 +125,40 @@ the lever if a 7B becomes the routine default.
 
 ## Local overrides
 
-`docker-compose.override.yml` (on the host, not in this repo) drops SearXNG's
-host port: upstream publishes `127.0.0.1:8080`, which collides with Nextcloud.
-Odysseus reaches it internally at `http://searxng:8080`, so the mapping is
-unnecessary. Keeping it in an override means `git pull` never clobbers it.
+`docker-compose.override.yml` lives on the host (`~/services/odysseus/`), not in
+this repo — upstream's `git pull` would otherwise clobber it. Full content:
+
+```yaml
+services:
+  searxng:
+    ports: !reset []        # upstream publishes 127.0.0.1:8080 = Nextcloud's port
+  odysseus:
+    volumes:
+      - ${HOME}/.training:/training   # AI coach memory, backed up to R2
+```
+
+- **`!reset` is required.** A plain `ports: []` *merges* with upstream's list
+  and changes nothing; it only appeared to work because Nextcloud happened to
+  start later. Found 2026-09-25 when recreating Odysseus left SearXNG (and so
+  Odysseus, which depends on it) stuck in `Created` with *port is already
+  allocated*. Check with `docker compose config searxng | grep published` —
+  it must print nothing.
+- `/training` is only reachable by Odysseus's file tools because
+  `data/settings.json` has `"tool_path_extra_roots": ["/training"]`.
+
+## MCP servers (AI coach)
+
+| Name | Transport | URL (from inside the container) |
+|---|---|---|
+| TrainingPeaks | `http` | `http://host.docker.internal:8092/mcp` |
+| Strava | `http` | `http://host.docker.internal:8093/mcp` *(after `strava-mcp auth`)* |
+
+Add them in **Settings → MCP → Add server → Streamable HTTP**, or as a row in
+`data/app.db` table `mcp_servers` (`transport='http'`, `is_enabled=1`) followed
+by a restart. `host.docker.internal` reaches the host's `127.0.0.1`-bound
+ports; the MCP containers are on their own networks, so service names don't
+resolve. Startup log line to look for:
+`MCP server connected: TrainingPeaks (…) - 85 tools via http`.
 
 ## Access
 
