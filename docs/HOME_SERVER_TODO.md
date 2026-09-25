@@ -105,6 +105,12 @@ Section names in *italics* are headings below.
 
 - 👤 Ad blocking anywhere: Tailscale DNS → Pi-hole (`100.81.171.49`, override local DNS); Brave iOS/AdGuard for YouTube — *Pi-hole → Ad blocking everywhere*
 
+- 👤 janioniu: Cloudflare → Workers & Pages → `janioniu-vynuogynas` → Settings →
+  **Build** → turn off production deploys from Workers Builds (keep PR
+  previews). Right now every merge deploys twice and the Workers Builds copy
+  has no build vars — a race. Then submit one real contact form to confirm
+  Resend/Loops keys work (secrets now sync on each GitHub Actions deploy).
+
 ### 🤖 Claude can do next
 
 - Run `mail-switch-purelymail.sh` once the password file exists — *🔝 Next up* 2
@@ -733,10 +739,11 @@ blocker. So: Pi-hole for the network + a content blocker in the browser.
       with Tailscale on; watch the Pi-hole query log for the phone.
       ⚠️ If the Mac mini is off, Tailscale devices lose DNS entirely while
       the override is on — toggle Tailscale off in that case, or accept it.
-- [ ] Claude: add curated blocklists instead of piling on millions of random
-      entries (the default StevenBlack list is the only one now): **HaGeZi
-      Multi Pro** (+ HaGeZi TIF for threat intel) or **OISD big** — maintained,
-      low false-positive. Update gravity, spot-check common sites/apps.
+- [x] Curated blocklists added 2026-09-25: **HaGeZi Multi Pro** + **HaGeZi TIF
+      medium** alongside StevenBlack → 1.18M domains in gravity. Spot-checked:
+      YouTube, Amazon, GitHub, Apple, Claude, Strava, TrainingPeaks, Purelymail,
+      Tailscale resolve; doubleclick → 0.0.0.0. If a site breaks, check the
+      Pi-hole query log and allowlist the domain.
 - [ ] 👤 **Router DNS → Pi-hole** (existing item below) so non-Tailscale
       devices at home (TV, guests) are covered too.
 - [ ] 👤 Browser side: **Brave** Shields on (blocks YouTube ads on desktop);

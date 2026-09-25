@@ -8,6 +8,19 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-25 — Pi-hole blocklists; website PR sweeps
+
+- Pi-hole: HaGeZi Multi Pro + TIF medium added (1.18M domains), common
+  services spot-checked. Tailscale DNS override still a 👤 step.
+- peciulevicius.com: PRs #47 (v1.6.0 cleanup migration file, fixes), #48
+  (drop Google Fonts), #49 (/privacy page, corrected) merged → v1.11.1. #46
+  rebased, waits for the Pages → Worker move.
+- janioniuvynuogynas.lt: #4 ImgBot, #7 launch prep, #9 Astro 7 + adapter 14
+  (audit 8 → 0 prod advisories), #10 semantic-release (first release v1.0.0)
+  merged. Found and fixed: production contact/waitlist forms returned 500 —
+  secrets only reached the build, never the Worker; deploy.yml now syncs
+  runtime secrets. Stale remote branches deleted.
+
 ## 2026-09-25 — Phone apps: server side ready
 
 - FreshRSS API access enabled (`cli/reconfigure.php --api-enabled`) for Reeder.
