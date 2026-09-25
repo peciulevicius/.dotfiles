@@ -388,7 +388,7 @@ See [HOME_SERVER_REFERENCE.md](HOME_SERVER_REFERENCE.md) for the current backup 
 
 **What:** Network-wide ad blocker and local DNS server. Blocks ads at the DNS level for every device on your network — no browser extensions needed. Also provides local DNS so `*.peciulevicius.com` resolves on your home WiFi without going through Cloudflare.
 
-**Why:** Ads blocked network-wide (phones, smart TVs, everything). Local DNS fixes the "can't access home.peciulevicius.com on WiFi" issue.
+**Why:** Ads blocked network-wide (phones, smart TVs, everything). Local DNS for `*.peciulevicius.com` is **not** set up — see the warning under *Pi-hole Local DNS*.
 
 **What DNS blocking can and cannot do.** Pi-hole answers DNS queries, so it can
 only block things served from a domain it can refuse. That works well for
@@ -419,9 +419,9 @@ devices use it. See TODO "Pi-hole — finish the deployment".
 
 **How to use:**
 1. Open http://localhost:8053/admin, login with password from .env
-2. **Local DNS:** Settings → Local DNS → DNS Records → add all `*.peciulevicius.com` → Mac mini local IP
+2. **Local DNS:** skip — see the warning under *Pi-hole Local DNS* below
 3. **Router:** Set your router's primary DNS to Mac mini IP, secondary to 1.1.1.1
-4. All devices on the network now have ads blocked + local DNS resolution
+4. All devices on the network now have ads blocked
 
 ```bash
 cd ~/services/pihole
@@ -773,15 +773,12 @@ Manual steps after deploying all services on a new machine.
 
 ### Pi-hole Local DNS
 
-Add DNS records so `*.peciulevicius.com` resolves to the Mac mini on the local network (bypasses Cloudflare when on home WiFi):
-
-1. Open Pi-hole admin: http://localhost:8053/admin
-2. Go to Local DNS → DNS Records
-3. Add an entry for each subdomain pointing to the Mac mini's local IP:
-   - `home`, `vault`, `photos`, `cloud`, `papers`, `rss`, `status`, `books`
-   - `pihole`, `pdf`, `tools`, `links`, `recipes`, `listen`
-   - `watch`, `sonarr`, `radarr`, `prowlarr`, `downloads`
-   - All as `<subdomain>.peciulevicius.com` → Mac mini local IP
+⚠️ **Don't add `*.peciulevicius.com` local DNS records on their own — it breaks
+every service on the LAN.** Nothing on the Mac mini listens on 443; TLS and the
+subdomain → port mapping live *inside* the Cloudflare tunnel, so a record
+pointing `photos` at the LAN IP gives connection refused on every Pi-hole
+client. It only works with a local reverse proxy (e.g. Caddy with DNS-01) —
+an open decision in `HOME_SERVER_TODO.md` (Pi-hole section).
 
 ### Router DNS
 
@@ -789,7 +786,7 @@ Set the router's DNS to use Pi-hole:
 - Primary DNS: Mac mini local IP
 - Fallback DNS: `1.1.1.1`
 
-This enables network-wide ad blocking and local DNS resolution for all devices on WiFi.
+This enables network-wide ad blocking for all devices on WiFi. (Safe on its own — it's the local records that aren't.)
 
 ### Media Stack
 
