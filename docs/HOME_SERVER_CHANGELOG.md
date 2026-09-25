@@ -23,6 +23,9 @@ One service at a time; compose + image digest saved to
   log is the universal-calibre mod and harmless.
 - **Bazarr** `1.5.1` → `1.6.1` (minor). API reports 1.6.1, health list empty,
   no errors in the log.
+- **Jellyfin** `10.10.6` → `10.10.7` (last 10.10 patch). Healthy, `/System/Info/Public`
+  reports 10.10.7, `watch.peciulevicius.com/health` 200. **10.11 deliberately
+  not taken** — it migrates the library DB to EF Core one-way; plan in the TODO.
 
 ## 2026-09-25 — Pi-hole 2024.07.0 → v6 (2026.09.0)
 
