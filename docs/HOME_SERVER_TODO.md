@@ -116,6 +116,11 @@ Section names in *italics* are headings below.
 
 ### 🤖 Claude can do next
 
+- Rotate the **Radarr + Sonarr API keys** (printed in a Claude session
+  transcript 2026-09-26 while fixing Jellyseerr — Tailscale-only services, low
+  risk) using the `credential-rotation` skill: regenerate in each app, then
+  update every consumer (Prowlarr apps, Jellyseerr, Bazarr, Glance if used).
+
 - Run `mail-switch-purelymail.sh` once the password file exists — *🔝 Next up* 2
 - Website: apply `v1.5.0` + `v1.6.0` via `supabase db push` (after your login); re-check the site after your domain move (#46 merged, Worker live on workers.dev) — *🌐 Other repo backlogs*
 - Optional: OpenCode + `qwen2.5-coder:7b` for offline snippets — *⚡ Batch 2026-09-24*

@@ -8,6 +8,12 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-26 — Jellyseerr: Radarr/Sonarr marked as default servers
+
+- Both were `isDefault: false`, so approved requests had no default target and
+  could silently not reach Radarr/Sonarr. Set to default via the Jellyseerr
+  settings API (found during the overnight Radarr 6 upgrade check).
+
 ## 2026-09-26 — Overnight major image upgrades (Stirling PDF, Prowlarr, Radarr)
 
 One at a time, each verified before the next. Before each: container stopped,
