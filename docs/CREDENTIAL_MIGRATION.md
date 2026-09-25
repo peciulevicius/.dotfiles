@@ -35,6 +35,16 @@ spam you know exactly which service leaked it.
 
 Doing this later means a second pass through all eighteen.
 
+### External accounts on Gmail → per-service aliases
+
+Same pass, outside the homelab. Decided 2026-09-25 to do these together rather
+than one at a time. Start with the ones whose mail feeds automation:
+
+| Account | New login email | Why it matters |
+|---|---|---|
+| Amazon | `amazon@peciulevicius.com` | Kindle Scribe exports default to the account email → `kindle_sync` (until then a Gmail filter forwards them) |
+| *(add as you go)* | `<service>@peciulevicius.com` | |
+
 ---
 
 ## ✅ Done

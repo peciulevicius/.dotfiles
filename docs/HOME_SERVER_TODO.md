@@ -23,12 +23,13 @@ Grouped by "what happens if I ignore this", not by number.
 4. [ ] Revoke the Gmail app password (Google Account → Security → App
    passwords). ⚠️ It was printed in a Claude session on 2026-09-25 — don't
    postpone this.
-5. [ ] 👤 Amazon → Account → Login & security → change the account email from
-   Gmail to `amazon@peciulevicius.com` (catch-all → `dziugas@`). The Scribe's
-   share-by-email default is the account email, so exports then need no typing.
-   Export format: *Convert to text (TXT)* + *✓ Attach searchable PDF*. Lands in
-   `dziugas@`'s INBOX (the only folder `kindle_sync` reads — no Sieve rule may
-   move it); picked up only after step 2 repoints kindle_sync to Purelymail.
+5. [ ] 👤 Kindle exports keep going to **Gmail** (the Amazon account email) until
+   the account-email pass below. So kindle_sync still sees them after step 2,
+   add a **Gmail filter**: `from:do-not-reply@amazon.com subject:"from your
+   Kindle"` → Forward to `dziugas@peciulevicius.com` (Gmail asks you to confirm
+   the forwarding address — the code lands in `dziugas@`). Or pick the saved
+   `kindle@peciulevicius.com` address on the Scribe share screen each time.
+   Export format: *Convert to text (TXT)* + *✓ Attach searchable PDF*.
 
 ---
 
