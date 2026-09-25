@@ -76,12 +76,20 @@ Made during the 2026-09-21 Vaultwarden scare (212 cleartext passwords,
       10-min grace). Remaining: save the ping URL from Terminal (not chat) into
       `~/.config/homelab/heartbeat.env` as `HEARTBEAT_PING_URL=`, then
       `scripts/utils/heartbeat.sh --test` → "sent: ok".
-- [ ] 👤 **Uptime Kuma "Rclone Backup" push token** — Edit monitor → Reset
-      Token → Save → put the new base URL in `~/services/rclone/.env`.
-- [ ] 👤 **Email** — Purelymail "Add New Domain" page is open with the
-      ownership value visible; waiting on the Cloudflare API token so the DNS
-      records go in first, then Check DNS → Save → create `dziugas@` user →
-      catch-all routing.
+- [ ] 👤 **Uptime Kuma "Rclone Backup" push token** — Kuma 1.23 has no Reset
+      Token button, so run `~/.dotfiles/scripts/utils/kuma-reset-push-token.sh`
+      (rotates the token in `kuma.db`, rewrites `HEARTBEAT_URL` in
+      `~/services/rclone/.env`, sends a test push; never prints the token).
+- [ ] 👤 **Email** — DNS done 2026-09-25 (ownership TXT, SPF replaced, 3× DKIM,
+      DMARC, autoconfig, autodiscover SRV). Remaining:
+      1. Purelymail → Add New Domain → `peciulevicius.com` → Check DNS → Save.
+      2. Cloudflare dashboard → Email → Email Routing → **Disable** (the API
+         token can't) → then Claude adds the Purelymail MX + checks with `dig`.
+      3. Purelymail → Users → add `dziugas@peciulevicius.com`; Routing →
+         catch-all `*@peciulevicius.com` → `dziugas@`.
+- [ ] 👤 **TrainingPeaks cookie** — the `read -rs` paste hangs: macOS Terminal
+      caps a typed line at 1024 bytes and the cookie is longer. Use the
+      clipboard version in `services/trainingpeaks-mcp/README.md`.
 
 ### 2. 🔴 Move TOTP off Google Authenticator — before any password change
 

@@ -8,6 +8,22 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-25 — Purelymail DNS in, Kuma token script, TP cookie paste fix
+
+- **Email DNS** added via the Cloudflare API (token in
+  `~/.config/homelab/cloudflare.env`): Purelymail ownership TXT, SPF
+  *replaced* (Cloudflare's include removed), 3× DKIM CNAME, DMARC CNAME,
+  autoconfig CNAME, autodiscover SRV. Resend's `send.` records untouched.
+  **MX not swapped yet** — Email Routing blocks every MX write and the token
+  can't disable it; needs one dashboard click. Details in `guides/EMAIL.md` §5.
+- **`scripts/utils/kuma-reset-push-token.sh`** — Kuma 1.23's edit form has no
+  Reset Token button (the docs we'd written assumed one). The script rotates
+  a push monitor's token in `kuma.db` with the container stopped, rewrites the
+  consumer's `.env` and sends a test push, without printing the token.
+- **TrainingPeaks cookie** — the `read -rs` command hung on Enter: macOS
+  Terminal's 1024-byte line cap is shorter than the cookie. README now reads
+  it from the clipboard with `pbpaste` and clears the clipboard after.
+
 ## 2026-09-25 — All Claude skills in one place
 
 The three homelab skills (`homelab-service`, `credential-rotation`,

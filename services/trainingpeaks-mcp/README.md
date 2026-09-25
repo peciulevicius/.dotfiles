@@ -58,14 +58,18 @@ silently, never echoed or stored in shell history):
 2. Open DevTools → **Application** (Chrome) / **Storage** (Safari/Firefox) →
    Cookies → `https://app.trainingpeaks.com` → copy the **value** of
    `Production_tpAuth`.
-3. Run:
+3. With the value still on the clipboard, run:
    ```bash
-   read -rs "TP?Paste Production_tpAuth value: " && echo && \
-     sed -i '' '/^TP_AUTH_COOKIE=/d' ~/services/trainingpeaks-mcp/.env && \
-     printf 'TP_AUTH_COOKIE=%s\n' "$TP" >> ~/services/trainingpeaks-mcp/.env && \
-     unset TP && chmod 600 ~/services/trainingpeaks-mcp/.env
+   sed -i '' '/^TP_AUTH_COOKIE=/d' ~/services/trainingpeaks-mcp/.env && \
+     printf 'TP_AUTH_COOKIE=%s\n' "$(pbpaste | tr -d '[:space:]')" >> ~/services/trainingpeaks-mcp/.env && \
+     chmod 600 ~/services/trainingpeaks-mcp/.env && pbcopy </dev/null && \
+     awk -F= '/^TP_AUTH_COOKIE=/{print "saved, length", length($2)}' ~/services/trainingpeaks-mcp/.env
    cd ~/services/trainingpeaks-mcp && docker compose up -d --force-recreate
    ```
+   It reads the clipboard instead of a typed paste: macOS Terminal caps
+   a typed line at 1024 bytes (`MAX_CANON`), the cookie is longer, so a
+   `read -s` paste silently hangs on Enter. The clipboard is cleared
+   afterwards. Expect a length in the hundreds; `0` means nothing was copied.
 
 When the cookie expires, the coach will report `tp_auth_status` invalid —
 repeat the same three steps.

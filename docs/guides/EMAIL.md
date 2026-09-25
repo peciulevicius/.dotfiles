@@ -1,6 +1,6 @@
 # Email — running your own domain's mail
 
-**Status:** Cloudflare Email Routing live (receive-only) · Purelymail not yet bought
+**Status (2026-09-25):** Purelymail bought · all Purelymail DNS records in place except MX · Cloudflare Email Routing still receiving until it is disabled in the dashboard
 **Domain:** `peciulevicius.com` (registered + DNS at Cloudflare)
 **Guide owner:** Gap 1 of [DEGOOGLE.md](./DEGOOGLE.md)
 
@@ -176,6 +176,14 @@ claim your mail and delivery becomes non-deterministic.
 **Cloudflare → `peciulevicius.com` → Email → Email Routing → disable**, confirm
 its MX records are gone, *then* add Purelymail's.
 
+This step is a **dashboard click, not an API call**. While Email Routing is on,
+the API refuses to add or delete any MX record (`890190` / `1046 — managed by
+Email Routing`), and the `/email/routing/disable` endpoint rejects a token that
+only has *Email Routing Rules: Edit* (`10000 Authentication error`). Found
+2026-09-25: every other record went in via the API, the MX swap waited for the
+click. Everything except MX can go in first — the ownership TXT is all
+Purelymail needs to accept the domain.
+
 ---
 
 ## 6. Catch-all — why the credential sweep gets cheap
@@ -205,7 +213,7 @@ propagate over minutes to hours, and mail sent during the gap can bounce.
 
 - [ ] **1. Sign up** (§4). Long username on a shared domain.
 - [ ] **2. Add `peciulevicius.com`**, get the ownership token.
-- [ ] **3. Create the real mailbox** — `peciulevicius@peciulevicius.com`.
+- [ ] **3. Create the real mailbox** — `dziugas@peciulevicius.com`.
       Password generated in Bitwarden, saved with the autofill URL.
 - [ ] **4. Disable Cloudflare Email Routing**, verify its MX records are gone.
 - [ ] **5. Add all seven records** (§5), grey cloud.
