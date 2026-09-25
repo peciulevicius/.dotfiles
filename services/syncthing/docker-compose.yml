@@ -6,7 +6,7 @@ name: syncthing
 services:
   syncthing:
     container_name: syncthing
-    image: syncthing/syncthing:1.29.6
+    image: syncthing/syncthing:1.30.0
     restart: unless-stopped
     ports:
       - "${SYNC_GUI_PORT:-8384}:8384"   # Web UI

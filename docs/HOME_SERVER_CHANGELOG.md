@@ -73,6 +73,10 @@ One service at a time; compose + image digest saved to
   `status.peciulevicius.com` 200, all monitors beating again after restart
   (only the stale **Mealie** monitor is down — Mealie was removed; delete that
   monitor). **2.x deliberately not taken** — one-way DB migration; plan in TODO.
+- **Syncthing** `1.29.6` → `1.30.0` (last 1.x). Healthy, REST reports v1.30.0,
+  the one folder is `idle` with 45 files and 0 errors (both peers were
+  offline before and after — not caused by the bump). **2.x not taken** — it
+  replaces the LevelDB index with SQLite (one-way); plan in TODO.
 
 ## 2026-09-25 — Pi-hole 2024.07.0 → v6 (2026.09.0)
 
