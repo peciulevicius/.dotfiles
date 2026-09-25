@@ -58,6 +58,28 @@ Also collapsed the duplicates (Google Authenticator ×3, the credential pass
 PDF ×2) into one section each. Removed the 2026-09-21 "nothing in the stack
 uses email" audit note, because it was wrong: three consumers use Gmail.
 
+## 2026-09-25 — Calibre library moved off SMB onto the internal SSD
+
+- Ran `scripts/utils/migrate-calibre-to-ssd.sh` (dry run, then `--apply`):
+  `/Volumes/books` → `~/services/calibre/library`, 1.08GB. Checksum pass
+  clean, `PRAGMA integrity_check` ok on both copies, `BOOKS_DIR` switched in
+  the calibre / calibre-web / lazylibrarian `.env`s (old ones kept as
+  `.env.pre-ssd-migration` — rollback is in the script header). The 6
+  `.smbdelete*` orphans were left behind by design.
+- Why: `metadata.db` is SQLite, and SQLite on SMB was the root cause of every
+  Calibre-Web failure (disk I/O error, busy renames, `.smbdelete` copies,
+  "malformed" from a stale mount).
+- Verified: 38 books / 72 formats / 147 files before and after; all three
+  containers mount `/books` from the SSD; Calibre-Web login +
+  `books.peciulevicius.com` 200 with no DB errors in its log, OPDS answers
+  (401 Basic — needs the user's login, so the KOReader check is still
+  manual); LazyLibrarian `ebook_dir=/books` unchanged, writable, "Database
+  check found 0 errors".
+- Backups needed no change: the staged `rclone-backup.sh` was already current
+  (reads `BOOKS_DIR` from calibre's `.env`, excludes `calibre/library/**` from
+  the services set so it isn't uploaded twice).
+- `/Volumes/books` stays on the NAS as the rollback until ~2026-10-02.
+
 ## 2026-09-25 — Pinned image bumps (same-major only)
 
 One service at a time; compose + image digest saved to
