@@ -90,8 +90,10 @@ Section names in *italics* are headings below.
   Claude doing: janioniuvynuogynas.lt zone + DNS + Worker custom domains +
   Turnstile + email routing, and the peciulevicius.com Pages → Worker move via
   a GitHub Actions `wrangler deploy` (like janioniu) instead of dashboard clicks.
-- 👤 Hostinger → `janioniuvynuogynas.lt` → Nameservers → set the two Cloudflare
-  nameservers Claude gives you (after the zone exists) — janioniu launch step 1.
+- 👤 Hostinger → `janioniuvynuogynas.lt` → DNS / Nameservers → **Change
+  nameservers** → `edward.ns.cloudflare.com` + `samara.ns.cloudflare.com`
+  (Cloudflare zone created 2026-09-25, status pending until the switch) —
+  janioniu launch step 1. Then Claude: Worker custom domains, Turnstile, DNS.
 
 - 👤 janioniuvynuogynas.lt email: **add the domain to the existing Purelymail
   account** (no extra cost) instead of Cloudflare Email Routing → Gmail; create
