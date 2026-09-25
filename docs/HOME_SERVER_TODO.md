@@ -88,6 +88,11 @@ Made during the 2026-09-21 Vaultwarden scare (212 cleartext passwords,
       2. Test: mail `inbox@peciulevicius.com` from Gmail, check webmail.
       3. Repoint kindle_sync / Calibre-Web / Kuma SMTP (EMAIL.md §7), revoke
          the Gmail app password, iPhone Mail, Gmail forward.
+      4. Odysseus → Email: add **only** `dziugas@` (IMAP `imap.purelymail.com`
+         993 SSL, SMTP `smtp.purelymail.com` 465 SSL). Not Gmail — Gmail will
+         forward into `dziugas@`, and its app password is being revoked.
+      ⚠️ `peciulevicius@purelymail.com` (admin) and `dziugas@peciulevicius.com`
+      are **separate mailboxes** — log clients in as `dziugas@`, not the admin.
 
 ### 2. 🔴 Move TOTP off Google Authenticator — before any password change
 
