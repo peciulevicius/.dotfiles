@@ -91,6 +91,9 @@ Made during the 2026-09-21 Vaultwarden scare (212 cleartext passwords,
       4. Odysseus → Email: add **only** `dziugas@` (IMAP `imap.purelymail.com`
          993 SSL, SMTP `smtp.purelymail.com` 465 SSL). Not Gmail — Gmail will
          forward into `dziugas@`, and its app password is being revoked.
+         Odysseus's IMAP **STARTTLS box is ticked by default — untick it for
+         993** (implicit TLS). Left on, the test fails with `socket error:
+         unterminated line: b'\x15\x03\x03…'` (a TLS alert read as text).
       ⚠️ `peciulevicius@purelymail.com` (admin) and `dziugas@peciulevicius.com`
       are **separate mailboxes** — log clients in as `dziugas@`, not the admin.
 
