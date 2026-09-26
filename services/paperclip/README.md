@@ -18,7 +18,7 @@ on 2026.916.1 — the same version pinned here).
 | Exposure | Tailscale + localhost only. **No tunnel hostname.** Not reachable on the LAN IP. |
 | Auth | `authenticated` / `private` mode, email + password (Better Auth). Sign-ups closed after the first admin claimed the instance. |
 | Database | Embedded PostgreSQL inside the container (`data/instances/default/db`) |
-| RAM | ~850–900MB idle, capped at 1.5GB (`mem_limit`) |
+| RAM | ~0.8GB after start, ~1.2GB idle once both companies are loaded; capped at 2GB (`mem_limit`, raised from 1.5GB 2026-09-26) |
 | Health | `GET /api/health` → `{"status":"ok",…}` |
 
 ## Why it is built this way
@@ -108,9 +108,13 @@ Connections"* — that is correct.
 
 ### Codex / Gemini / OpenCode
 
-Same pattern, each needs its own credential — none are set up:
+Same pattern, each needs its own credential:
 
-- **Codex:** `OPENAI_API_KEY` in `.env`, or `docker exec -it paperclip codex login`.
+- **Codex — logged in (ChatGPT subscription), 2026-09-26.** Done with
+  `docker exec -it paperclip codex login --device-auth`; check with
+  `docker exec paperclip codex login status`. Paperclip symlinks that
+  `auth.json` into each `codex_local` agent's own `CODEX_HOME`, so every Codex
+  agent shares the one subscription login.
 - **Gemini:** `docker exec -it paperclip gemini` → OAuth (persists in
   `data/.gemini/`), or a `GEMINI_API_KEY` that is *restricted to the Gemini
   API* in Google Cloud (unrestricted keys are rejected). Given the de-Googling
@@ -138,28 +142,200 @@ Same pattern, each needs its own credential — none are set up:
   7B model is weak at multi-step agent work; treat it as a toy or a cheap
   "scanner" role, not a CEO.
 
+- **Gemini: not set up** (de-Googling — the user decides). **No local Ollama
+  models for agents either**: RAM is too tight (see below).
+
 ### ⚠️ Memory while agents run
 
-Idle is ~900MB of the 1.5GB cap. Each Claude Code run adds a Node process
-(~300–500MB). Keep to **one agent working at a time** at first; if runs die
-with exit 137, the cap was hit — raise `mem_limit` only after checking
-`memory_pressure` and `sysctl vm.swapusage` on the host.
+With two companies loaded the server idles at ~1.2GB anon RSS. At the old
+1.5GB cap `memory.events` showed the limit hit 1500+ times before any agent
+had run, and each Claude Code / Codex run adds a CLI process (~300–500MB) — a
+guaranteed exit 137. Raised to **2GB** on 2026-09-26, allowed by the rule
+*raise only when host `memory_pressure` free ≥ 30%* (it was 37%; swap
+7.4–7.5 of 8GB, unchanged). Keep to **one agent working at a time**; if runs
+die with exit 137, check `memory_pressure` and `sysctl vm.swapusage` before
+raising again. Check the container's own pressure with
+`docker exec paperclip cat /sys/fs/cgroup/memory.events` (`max` counts hits).
 
-## First company + first task
+## Companies (configured 2026-09-26)
 
-1. Open the URL and log in. The wizard asks for an **organization** name (the
-   docs say "company" — same thing), then your first agent: name it, runtime
-   **Claude Code**. Skip the "connect a model" screen if you used option A/B.
-2. If the CEO's first run fails with *"terminal access failure"*, the CLI
-   isn't logged in — do A or B above, then **Inbox → Retry**.
-3. **Board → Settings → General:** write a Description (the company's
-   mission) and turn on **Require board approval for new hires**.
-4. **Agents → (CEO) → Instructions → AGENTS.md:** append what its job is.
-5. **Projects → New project**, then create a task inside it and **assign it
-   to the CEO** — assigning is what wakes an agent (so does an @mention).
-   Task modes: *Agent* (does the work), *Ask* (answer only), *Plan* (plan for
-   your review).
-6. Approve hire requests from the CEO under **Decisions / Inbox**.
+Two companies ("organizations" in the UI). Both have **Require board approval
+for new hires** on, and **every agent has timer heartbeats off**
+(`runtimeConfig.heartbeat.enabled: false`, `wakeOnDemand: true`), so an agent
+wakes only when a task is assigned to it, it is @mentioned, or a routine
+fires.
+
+### Homelab — weekly health & security reporting
+
+Mission: *Weekly health and security reporting for Džiugas's Mac mini homelab.
+Read reports, spot problems, recommend next actions as decisions. Never change
+servers — changes are done by Džiugas with Claude Code.*
+
+| Agent | Role | Runtime | Status |
+|---|---|---|---|
+| Homelab Lead (CTO / Homelab Lead) | `ceo`, reports to the board | Claude Code | active (idle) |
+| Security Analyst | `security` → Lead | Codex | **paused** |
+| Storage & Backup Analyst | `devops` → Lead | Claude Code (→ Hermes/OpenCode on OpenRouter later) | **paused** |
+
+- Project **Weekly Reports** (in progress). Leftover wizard project
+  *Onboarding* with task PEC-1 is untouched.
+- Routine **Homelab weekly report**: Sunday **10:00 Europe/Vilnius**, assigned
+  to the Lead, `skip_if_active`, `skip_missed`. The Lead reads `/reports`,
+  writes one short report document on the run's task and raises one board
+  decision per problem. It delegates to an analyst only by asking the board to
+  resume that analyst — so a normal week costs **one** Claude Code run.
+
+**Why the agents can't touch anything:** they have no route to the host. The
+only input is a read-only directory the host fills — the reports feed below.
+The "never change servers" rule is in every AGENTS.md too, but the mount is
+what enforces it.
+
+#### Reports feed
+
+```
+host cron, Sun 09:30  scripts/utils/paperclip-reports.sh
+   └─ writes  ~/services/paperclip/reports/{latest.md, weekly-YYYY-MM-DD.md}
+                  │  mounted read-only
+                  ▼
+container     /reports   ← read by the Sunday 10:00 routine
+```
+
+The script (09:30, after the 09:00 audit cron) writes one markdown file:
+`homelab-audit.sh` output (run fresh), the tail of the newest
+`~/logs/rclone-*.log`, `docker ps -a` names/status plus top memory users,
+`df`/`memory_pressure`/swap, Uptime Kuma's last status per active monitor
+(`sqlite3 -readonly` on `kuma.db`, name + status + time only), and the
+*Who does what* index from `docs/HOME_SERVER_TODO.md`. It never reads a
+`.env`; a final Perl pass redacts `password|secret|token|api_key|webhook=…`
+values and Discord webhook URLs as a backstop, and strips ANSI colours. Eight
+weeks of `weekly-*.md` are kept for week-over-week comparison.
+
+⚠️ **Mounted at `/reports`, not `/paperclip/reports`.** The image's
+entrypoint runs `chown -R` on `/paperclip` as root at every start; a
+read-only mount inside it makes `chown` fail and the container crash-loops
+(hit on 2026-09-26, fixed by moving the mount).
+
+Run it by hand any time: `~/.dotfiles/scripts/utils/paperclip-reports.sh`,
+then **Routines → Homelab weekly report → Run now** to test the agent side.
+
+### Studio — faceless indie studio
+
+Mission: *Faceless indie studio: find, validate, design, build and launch
+small useful apps and content under an anonymous brand. Nothing ships, gets
+published, or spends money without board approval.*
+
+| Agent | Role | Runtime | Status |
+|---|---|---|---|
+| CEO | `ceo`, reports to the board | Claude Code | active (idle) |
+| Product Manager | `pm` → CEO | Codex | active (idle) |
+| Researcher | `researcher` → CEO | Claude Code (→ Hermes/OpenCode on OpenRouter later) | active (idle) |
+
+- The wizard's CEO was reused. An earlier Product Manager (Claude Code) had
+  been terminated in the UI; the new one was filed as a hire request and
+  approved, the same path the approval wall forces on the CEO.
+- AGENTS.md per role: Paperclip's generated text stays on top; a short
+  *"Your job — … (added by the board)"* section is appended (≤15 lines). The
+  CEO and Researcher sections carry the idea rubric from the private Obsidian
+  note (*adjacent paid product? · 100 buyers without ads? · MVP in ~6 weeks of
+  evenings?* plus problem/payer/revenue/first-10/kill criteria) and the
+  ruled-out list (faceless content **as** the business; ads-dependent, big-team
+  or regulated ideas). Stack defaults and "no secrets, PRs only, board approves
+  merges" are in CEO and PM. Brand names and anonymity detail stay in the vault,
+  not in Paperclip.
+- Projects: **Idea Pipeline** (in progress — the one active project),
+  *Studio Brand* (planned), *Onboarding* (wizard leftover, STU-1 untouched).
+- First task **STU-2** *"Generate 20 app ideas against the rubric, score them,
+  recommend 3 with 6-week MVP scopes"*: assigned to the CEO, **Planning** mode,
+  status **backlog**. Paperclip doesn't wake an assignee for a backlog task
+  (`issue-assignment-wakeup.ts` returns early), so nothing runs until you move
+  it to **Todo**.
+- Routine **Daily standup**: weekdays **17:00 Europe/Vilnius**, CEO
+  facilitates, adapted from NetworkChuck's tested prompt (fan-out sub-task per
+  active agent → collect → Q&A → one digest; "blocked with blockers" as the
+  wait state). **Created paused.** Cost when on: every weekday ~1 CEO run +
+  2 briefs + up to 2 Q&A + routed questions ≈ **5–7 agent runs/day, ~25–35 a
+  week**, split across the Claude and ChatGPT subscriptions. It closes early
+  when nobody worked, but it still wakes the CEO. Turn it on only while
+  the Idea Pipeline is actually moving.
+
+## Keeping usage down (the rules this setup follows)
+
+1. **Timer heartbeats off** on every agent. Wakes come from assignments,
+   @mentions and routines only. If you enable one, use ≥ 24h
+   (`intervalSec: 86400`).
+2. **Paused unless needed.** Homelab analysts stay paused; resume one for a
+   specific task, pause it again after.
+3. **One active project per company.** Park the rest as *planned*.
+4. **Routines are the only schedule.** Homelab: one run a week. Studio
+   standup: paused until there's work to stand up about.
+5. **Backlog is a safe parking spot**: assigned-but-backlog never wakes
+   anyone. Move to Todo to start.
+6. **Budgets** (`budgetMonthlyCents`) only cap API-key spend. With
+   subscription logins, watch **Audit → Costs** and the plans' own limits.
+
+## Adding or changing agents
+
+The approval wall is on in both companies, so a direct create returns
+`409: Direct agent creation requires board approval`. Either:
+
+- **Ask the CEO/Lead in a task** ("hire a … on Codex") — it files a hire
+  request with its `paperclip-create-agent` skill; approve it under
+  **Approvals**. Or
+- **API, as the board.** Sign in once to get a session cookie (keep the
+  password out of shell history and output):
+
+  ```bash
+  PW=$(grep '^PAPERCLIP_ADMIN_PASSWORD=' ~/services/paperclip/.env | cut -d= -f2-)
+  jq -n --arg e dziugas@peciulevicius.com --arg p "$PW" '{email:$e,password:$p}' |
+    curl -s -c /tmp/pc.cj -H 'Content-Type: application/json' \
+      -H 'Origin: http://127.0.0.1:3100' --data @- \
+      http://127.0.0.1:3100/api/auth/sign-in/email -o /dev/null -w '%{http_code}\n'
+  pc() { curl -s -b /tmp/pc.cj -H 'Origin: http://127.0.0.1:3100' -H 'Content-Type: application/json' "$@"; }
+  pc http://127.0.0.1:3100/api/companies | jq '.[]|{id,name}'
+  # hire request (creates a pending agent + approval); adapterType can also be
+  # codex_local or opencode_local:
+  pc -X POST http://127.0.0.1:3100/api/companies/<companyId>/agent-hires -d '{
+    "name":"…","role":"researcher","reportsTo":"<managerId>",
+    "adapterType":"claude_local",
+    "runtimeConfig":{"heartbeat":{"enabled":false,"wakeOnDemand":true}},
+    "permissions":{"canCreateAgents":false}}'
+  pc -X POST http://127.0.0.1:3100/api/approvals/<approvalId>/approve -d '{}'
+  pc -X POST http://127.0.0.1:3100/api/agents/<agentId>/pause
+  # append to AGENTS.md: GET then PUT /api/agents/<id>/instructions-bundle/file {path,content}
+  rm /tmp/pc.cj
+  ```
+
+  Other endpoints used for this setup: `PATCH /api/companies/<id>`
+  (`description`, `requireBoardApprovalForNewAgents`), `PATCH /api/agents/<id>`,
+  `POST /api/companies/<id>/projects`, `POST /api/companies/<id>/issues`
+  (`status:"backlog"`, `workMode:"planning"`), `POST
+  /api/companies/<id>/routines` + `POST /api/routines/<id>/triggers`
+  (`{"kind":"schedule","cronExpression":"0 10 * * 0","timezone":"Europe/Vilnius"}`).
+  Full reference: `/app/docs/api/*.md` inside the container.
+
+- Paperclip defaults every local agent to skip its CLI's permission prompts
+  (`dangerouslySkipPermissions` / `dangerouslyBypassApprovalsAndSandbox`) —
+  headless runs can't answer them. That's acceptable only because the agent is
+  confined to this container (see *Why it is built this way*).
+
+### Switching Researcher / Storage Analyst to OpenRouter (later)
+
+They run on Claude Code for now because there's no `OPENROUTER_API_KEY` yet.
+Once the key is in `~/services/paperclip/.env` (`docker compose up -d`), switch
+each to **OpenCode** (`opencode_local`, model `openrouter/<model>`) or a
+**Hermes** agent on OpenRouter: agent → **Harness / Runtime**, or `PATCH
+/api/agents/<id>` with the new `adapterType`/`adapterConfig`. That moves the
+cheap, high-volume research/scan work off the Claude plan.
+
+### Export / import
+
+**Board → Settings → Export** (pick Agents, Projects, Skills, Routines, Tasks)
+downloads one zip — a full copy of a company minus approvals, costs and
+activity. CLI inside the container:
+`paperclipai company export <id> --out ./x` and
+`paperclipai company import ./x --target new --new-company-name "…" --dry-run`
+(then `--yes`; add `--collision skip` to avoid `-2` duplicates of bundled
+skills). Secrets bound to agent env by ID don't travel — unbind before export.
 
 ## Operations
 

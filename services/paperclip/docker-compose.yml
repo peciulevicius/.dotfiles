@@ -25,7 +25,11 @@ services:
     restart: unless-stopped
     # Upstream's backstop against leaked agent subprocesses (tini is PID 1).
     pids_limit: 2048
-    mem_limit: 1536m
+    # 1536m -> 2g on 2026-09-26: idle anon RSS had grown to ~1.2GiB with two
+    # companies, memory.events showed the cap hit 1500+ times, and each agent
+    # run adds a 300-500MB CLI process. Raised only because host free memory
+    # was 37% (rule: raise only when memory_pressure free >= 30%).
+    mem_limit: 2g
     ports:
       # Localhost + the Mac mini's Tailscale IP only — not LAN, not the tunnel.
       - "127.0.0.1:${PAPERCLIP_PORT:-3100}:3100"
@@ -48,6 +52,13 @@ services:
       PAPERCLIP_TELEMETRY_DISABLED: "1"
     volumes:
       - ./data:/paperclip
+      # Weekly reports feed for the Homelab company, written on the HOST by
+      # scripts/utils/paperclip-reports.sh (cron, Sunday 09:30). Read-only:
+      # agents read reports and raise decisions, they never change servers.
+      # ⚠️ Mounted at /reports, NOT under /paperclip: the image's entrypoint
+      # runs `chown -R /paperclip` as root on every start and exits non-zero on
+      # a read-only mount there -> crash loop (hit 2026-09-26).
+      - ./reports:/reports:ro
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://127.0.0.1:3100/api/health"]
       interval: 60s

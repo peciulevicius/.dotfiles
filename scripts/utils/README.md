@@ -53,6 +53,22 @@ it). Setup: `scripts/cron/README.md`, "Setting up the heartbeat".
 
 ---
 
+## paperclip-reports.sh
+
+Weekly read-only snapshot for the Paperclip **Homelab** company (cron, Sunday
+09:30, after the 09:00 audit). Writes `~/services/paperclip/reports/latest.md`
+plus a dated copy (8 weeks kept): audit output, last rclone log tail, container
+list, disk/memory, Uptime Kuma last status per monitor, and the TODO index.
+Mounted `:ro` at `/reports` in the container; the Sunday 10:00 routine reads it.
+Never reads `.env`; a redaction pass blanks secret-looking values as a
+backstop. Details: `services/paperclip/README.md` → *Reports feed*.
+
+```bash
+~/.dotfiles/scripts/utils/paperclip-reports.sh   # prints the file it wrote
+```
+
+---
+
 ## utils.sh
 
 Shared print/formatting helper functions (coloured output, section banners).

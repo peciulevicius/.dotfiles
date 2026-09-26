@@ -61,11 +61,21 @@ Section names in *italics* are headings below.
 - **Paperclip** (deployed 2026-09-26, `http://100.81.171.49:3100`): move the
   admin email/password from `~/services/paperclip/.env` into Vaultwarden and
   delete those two lines (no reset email exists — Vaultwarden is the only
-  recovery); run `claude setup-token` and add `CLAUDE_CODE_OAUTH_TOKEN` to
-  that `.env` (or `docker exec -it paperclip claude` → `/login`); then create
-  the first organization + CEO + task per `services/paperclip/README.md`.
-  Watch `sysctl vm.swapusage` during the first agent runs — swap headroom is
-  only ~1–1.6 GB.
+  recovery). Claude Code + Codex are logged in and both companies are
+  configured (2026-09-26, `services/paperclip/README.md` → *Companies*). Left
+  for you:
+  - **Studio:** open task **STU-2** (backlog, Planning mode) and move it to
+    **Todo** when you want the CEO to start the 20-ideas plan.
+  - **Studio:** *Routines → Daily standup* is **paused** on purpose (~25–35
+    agent runs/week when on) — toggle it on only while the pipeline is moving.
+  - **Homelab:** optionally *Routines → Homelab weekly report → Run now* once
+    to see a first report before Sunday 10:00.
+  - **OpenRouter key:** create one, add `OPENROUTER_API_KEY=` to
+    `~/services/paperclip/.env`, `docker compose up -d` — then 🤖 switches the
+    Researcher and Storage Analyst to OpenCode/Hermes on OpenRouter.
+  - (Only if the Codex login ever expires:
+    `docker exec -it paperclip codex login --device-auth`.)
+  Watch `sysctl vm.swapusage` during the first agent runs.
 - Pi-hole: Caddy decision, router DNS — *Pi-hole — finish the deployment*
 - Old photo archives into Immich (needs T7 + judgement) — *Import old photo archives into Immich*
 - Paperless tags/types — *Paperless-NGX — organise documents*
@@ -112,6 +122,12 @@ Section names in *italics* are headings below.
 - 👤 **~2026-10-03:** `rm ~/services/uptime-kuma/data/kuma.db.bak-2026-09-26-*` (and other pre-change backups) — the weekly audit now flags any `*.bak-*` / `*.pre-*` file under `~/services` older than 7 days, so this reminds itself via Discord
 
 ### 🤖 Claude can do next
+
+- **Paperclip → OpenRouter**, once 👤 adds `OPENROUTER_API_KEY`: switch the
+  Studio **Researcher** and Homelab **Storage & Backup Analyst** from Claude
+  Code to OpenCode (`opencode_local`, `openrouter/<model>`) or Hermes on
+  OpenRouter — `services/paperclip/README.md` → *Switching … to OpenRouter*.
+  No Gemini, no local Ollama models for agents (RAM).
 
 - Rotate the **Radarr + Sonarr API keys** (printed in a Claude session
   transcript 2026-09-26 while fixing Jellyseerr — Tailscale-only services, low

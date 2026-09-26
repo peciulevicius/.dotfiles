@@ -698,8 +698,17 @@ sessions.
 Postgres, `authenticated/private` mode with sign-ups closed. Agents run
 **inside** the container (the image bundles the CLIs) and each needs its own
 login — the host's Claude Code login lives in the Keychain and can't be
-shared. ~900MB idle, 1.5GB cap. Tailscale + localhost only. Adding agents and a
-first company: `services/paperclip/README.md`.
+shared (Claude Code and Codex are logged in). ~1.2GB idle, 2GB cap. Tailscale +
+localhost only.
+
+**Companies (2026-09-26):** *Homelab* — a Lead (Claude Code) plus paused
+Security (Codex) and Storage & Backup (Claude Code) analysts; a Sunday 10:00
+routine reads a read-only reports feed (`~/services/paperclip/reports` →
+`/reports:ro`, written by `scripts/utils/paperclip-reports.sh` at 09:30) and
+raises decisions — it never changes servers. *Studio* — CEO (Claude Code),
+Product Manager (Codex), Researcher (Claude Code), project *Idea Pipeline*, a
+paused weekday standup. All heartbeats off. Details, API recipes and
+usage rules: `services/paperclip/README.md`.
 
 ```bash
 cd ~/services/paperclip

@@ -33,3 +33,8 @@ PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin
 
 # Weekly homelab audit (Sunday 9am) — drift, containers, backups, disk, secrets
 0 9 * * 0 ~/.dotfiles/scripts/utils/run-with-notify.sh "Homelab audit" ~/.dotfiles/scripts/utils/homelab-audit.sh >> ~/logs/homelab-audit.log 2>&1
+
+# Paperclip reports feed (Sunday 9:30, after the audit) — read-only snapshot
+# into ~/services/paperclip/reports, mounted :ro at /reports in the container.
+# The Homelab company's weekly routine reads it at 10:00. No secrets go in.
+30 9 * * 0 ~/.dotfiles/scripts/utils/run-with-notify.sh "Paperclip reports" ~/.dotfiles/scripts/utils/paperclip-reports.sh >> ~/logs/paperclip-reports.log 2>&1

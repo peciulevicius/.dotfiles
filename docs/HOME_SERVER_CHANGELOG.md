@@ -8,6 +8,31 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-26 — Paperclip companies configured (Homelab + Studio)
+
+- **Homelab** company: mission set, board approval for hires on. Wizard CEO
+  renamed **Homelab Lead** (Claude Code); **Security Analyst** (Codex) and
+  **Storage & Backup Analyst** (Claude Code) hired and **paused**. Project
+  *Weekly Reports*, routine *Homelab weekly report* Sunday 10:00 Vilnius.
+- **Reports feed:** new `scripts/utils/paperclip-reports.sh` (cron Sunday
+  09:30) writes a read-only snapshot — audit, backup log, containers,
+  disk/memory, Kuma statuses, TODO index; no `.env`, redaction backstop — to
+  `~/services/paperclip/reports`, mounted `:ro` at `/reports`. **Why a feed and
+  not access:** agents with a shell on the host would be one prompt away from
+  changing servers; a read-only file makes "report, don't touch" structural.
+- First attempt mounted it at `/paperclip/reports:ro` → crash loop: the
+  entrypoint `chown -R`s `/paperclip` as root. Moved to `/reports`.
+- **Studio** company: mission set. CEO reused (Claude Code); **Product
+  Manager** (Codex) and **Researcher** (Claude Code) hired via hire request +
+  approval. AGENTS.md sections carry the idea rubric, ruled-out list, stack and
+  security rules (≤15 lines each). *Idea Pipeline* is the active project; task
+  STU-2 (20 ideas → top 3 with 6-week MVPs) waits in **backlog** so nothing
+  runs until the user starts it. *Daily standup* routine created **paused**
+  (≈25–35 runs/week).
+- All agents: timer heartbeats off. `mem_limit` 1.5GB → **2GB** (idle had
+  reached ~1.2GB anon; host free 37%, above the 30% rule).
+- Researcher/Storage Analyst stay on Claude Code until an OpenRouter key exists.
+
 ## 2026-09-26 — Audit reminds about stale pre-change backups
 
 - `homelab-audit.sh` fails (→ weekly Discord) when a `*.bak-*` / `*.pre-*` file

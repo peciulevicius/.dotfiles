@@ -27,6 +27,7 @@ stdin (`crontab < file` or `cat file | crontab -`) and always verify with
 | Every 30 min | Restart Jellyfin + Audiobookshelf so they see new NAS files (`smb-watcher-rescan.sh`) | `~/logs/smb-rescan.log` |
 | Every 5 min | Heartbeat to Healthchecks.io (`heartbeat.sh`) — alerts from outside when pings stop, or when Docker is unresponsive | `~/logs/heartbeat.log` |
 | Sunday 09:00 | Homelab audit — drift, containers, backups, disk, secrets (`homelab-audit.sh`) | `~/logs/homelab-audit.log` |
+| Sunday 09:30 | Paperclip reports feed — read-only snapshot for the Homelab agents (`paperclip-reports.sh`) | `~/logs/paperclip-reports.log` |
 | Quarterly, 1st 10:00 | Pinned images with a newer upstream release (`check-image-updates.py`) — a reminder, not an auto-update | `~/logs/image-updates.log` |
 
 ⚠️ **Check before reinstalling.** Until 2026-09-24 this file had fallen

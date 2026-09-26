@@ -43,6 +43,9 @@ free, ~2.5 GB swap.
 10.2–10.3 GB of 11 GB used. After — **6.07 GiB** containers total, 36–38%
 free, swap 9.7–10.0 GB used (did not grow). Paperclip itself: ~790–890MB idle
 under a 1.5GB `mem_limit`; each Claude Code agent run adds ~300–500MB on top.
+Later the same day, with two companies configured, it idled at ~1.2GB anon
+and hit the cap 1500+ times → `mem_limit` raised to **2GB** (host free 37%,
+swap 7.4–7.5 of 8GB before and after; the swap total had shrunk to 8GB).
 Swap has only ~1–1.6 GB headroom — it is the constraint to watch, not
 container RAM.
 
@@ -83,6 +86,19 @@ alone wants 2GB. See [guides/OCTOPUS_DEPLOY.md](guides/OCTOPUS_DEPLOY.md).
   14 days) plus `secrets/master.key` are backed up.
 - Health reports `databaseBackup: warning` until the first daily dump exists
   (24h after first start) — expected, not a fault.
+- **Never mount anything read-only under `/paperclip`.** The entrypoint runs
+  `chown -R /paperclip` as root on every start and crash-loops on a `:ro`
+  mount there. The reports feed is at `/reports:ro` for that reason.
+- Companies: **Homelab** (`8ee5781c-…`) and **Studio** (`2efa3f91-…`), both
+  with board approval for hires. Direct `POST /agents` returns 409 while that
+  is on — use `agent-hires` + approve.
+- A task assigned while in **backlog** never wakes the agent; moving it to
+  Todo does. Heartbeats are off on every agent.
+- Codex agents share the container's ChatGPT login (`data/.codex/auth.json`,
+  symlinked into each agent's `CODEX_HOME`). Paperclip defaults local agents to
+  skip permission prompts — acceptable only because they're confined here.
+- Board API auth: `POST /api/auth/sign-in/email` with an `Origin:
+  http://127.0.0.1:3100` header, reuse the cookie. Recipe in the README.
 
 ---
 
