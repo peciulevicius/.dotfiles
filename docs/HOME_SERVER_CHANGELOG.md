@@ -8,6 +8,13 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-26 — Liked-songs list merged (private, in the vault)
+
+- Spotify liked songs (Exportify CSV) + YouTube Music library (Takeout) +
+  Spotify "Linkin Park Best of" merged and de-duplicated → 1,673 songs, 929+
+  artists, stored in the Obsidian vault (`🙋 Personal/Music/`), not in this
+  public repo. Used as the buying list for the Jellyfin music library.
+
 ## 2026-09-26 — Transmission behind a Tailscale sidecar (Mullvad-ready)
 
 - New `transmission-ts` container (`tailscale/tailscale:v1.102.5`, kernel mode,

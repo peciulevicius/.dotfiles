@@ -411,11 +411,21 @@ whole-house outage now alerts.
       Boox, reMarkable) give you everything at once — see the three-way
       trade-off table in `guides/BOOKS.md`. If bought, it can sync to the
       **already-running Nextcloud** via WebDAV, no new infrastructure needed.
-- [ ] 👤 **Add a music library to Jellyfin.** No new service needed — Jellyfin
-      already natively supports music as a library type, same app, same
-      login. Create `/Volumes/media/music`, drop files in, add it as a
-      library in Jellyfin's admin. Stream-only with **Finamp** (free,
-      iOS/Android) or **Amperfy** (iOS). Both point at the same Jellyfin.
+- [ ] **Music library in Jellyfin** (plan agreed 2026-09-26):
+      - [ ] Claude: create `/Volumes/media/music` (`Incoming/` + `Library/`),
+            add a Jellyfin **Music** library on `Library/` (needs the Jellyfin
+            API key below), realtime monitoring on.
+      - [ ] Claude: a small **beets** container watching `Incoming/` — tags,
+            fetches cover art, renames into `Library/Artist/Album/` — so adding
+            music is "drop files in Incoming".
+      - [ ] 👤 **Finamp** on the phone → `https://watch.peciulevicius.com`
+            (Amperfy dropped: Subsonic/Ampache only).
+      - [ ] 👤 Buy music as DRM-free files — Bandcamp (FLAC/MP3, app has a
+            download button), Qobuz (FLAC), iTunes (DRM-free AAC; export from
+            the Music app) — and drop the files into `Incoming/`. Start with the
+            27 "4+ liked tracks" albums in the vault note
+            `🙋 Personal/Music/Music Library.md` (full merged list of 1,673
+            liked songs: `library.csv` there).
       Related stopgap (2026-09-22, still cron'd every 30 min):
       `scripts/utils/smb-watcher-rescan.sh` restarts Jellyfin + Audiobookshelf
       because neither's file watcher reliably sees new files over SMB. Each
