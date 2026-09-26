@@ -8,6 +8,28 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-26 — TODO truth pass
+
+Every open item in `HOME_SERVER_TODO.md` re-checked against the live system.
+Finished and not yet recorded elsewhere:
+
+- **Calibre-Web profile email is `dziugas@peciulevicius.com`** (checked in
+  `app.db`), so its *Send test email* lands in the Purelymail inbox.
+- **kindle_sync runs against `imap.purelymail.com`** from the 10:00 cron run
+  onwards (log).
+- **Branded email signature page is live** at
+  `peciulevicius.com/email/signature/` (200 on the Worker).
+- **Tailscale's `localhost` node identified** — it is the iPhone
+  (`iphone13mini`; iOS reports its hostname as `localhost`).
+- Stale lines fixed: the Pi-hole "pinned at 2024.07.0" warning (v6 since
+  2026-09-25), the mail-switch step references, the website's "PR #46 /
+  supabase login / apply v1.5.0" lines, janioniu's "Astro 7 still open".
+- Not done, still open (checked): T7 stamp missing, `autorestartatconnect`
+  unset, MacBook Tailscale key expired, `~/services/{mealie,grafana}` and
+  `~/credentials-import.md` still present, LazyLibrarian still 1 book "Have".
+  Tailscale DNS: the tailnet resolver already shows `100.81.171.49`, so the
+  nameserver looks added — Override-local-DNS + cellular test left open.
+
 ## 2026-09-26 — Mail consumers off Gmail; Calibre-Web password rotated
 
 - `mail-switch-purelymail.sh`: kindle_sync IMAP and Kuma SMTP → Purelymail

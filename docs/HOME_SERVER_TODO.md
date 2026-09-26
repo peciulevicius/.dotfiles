@@ -4,31 +4,32 @@ Outstanding work only. Finished items live in
 [HOME_SERVER_CHANGELOG.md](HOME_SERVER_CHANGELOG.md).
 
 👤 = needs you (a UI, a device, a password or a decision). Unmarked = Claude
-can do it in a session. Last truth pass: **2026-09-25** — every open item was
+can do it in a session. Last truth pass: **2026-09-26** — every open item was
 checked against the live system; done items moved to the changelog.
 
 ---
 
-## 🔝 Next up (2026-09-25) — switch mail consumers off Gmail
+## 🔝 Next up — finish the mail switch
 
-✅ Steps 1–3 done 2026-09-26: password file saved, `mail-switch-purelymail.sh`
-ran (IMAP ok, kindle_sync → Purelymail, Kuma SMTP → Purelymail), Calibre-Web
-SMTP → Purelymail by hand. Remaining:
-- [ ] 👤 Kuma → "Uptime Kuma" notification → **Test**; Calibre-Web → Tasks →
-      test mail *Finished*; Calibre-Web profile email → `dziugas@`
+kindle_sync, Kuma SMTP and Calibre-Web SMTP all run on Purelymail since
+2026-09-26 (changelog). Remaining:
+- [ ] 👤 Kuma → "Uptime Kuma" notification → **Test**; Calibre-Web → Admin →
+      *Send test email* → Tasks shows *Finished* (the profile email is already
+      `dziugas@`, checked 2026-09-26)
 - [ ] 👤 Amazon → Manage Content & Devices → Preferences → Personal Document
       Settings → **approve `dziugas@peciulevicius.com`** as a sender, or
       Calibre-Web "Send to Kindle" silently stops working
 - [ ] 👤 Revoke the Gmail app password (Google Account → Security → App
    passwords). ⚠️ It was printed in a Claude session on 2026-09-25 (and to a
    terminal on 2026-09-21) — don't postpone this.
-5. [ ] 👤 Kindle exports keep going to **Gmail** (the Amazon account email) until
-   the account-email pass below. So kindle_sync still sees them after step 2,
-   add a **Gmail filter**: `from:do-not-reply@amazon.com subject:"from your
-   Kindle"` → Forward to `dziugas@peciulevicius.com` (Gmail asks you to confirm
-   the forwarding address — the code lands in `dziugas@`). Or pick the saved
-   `kindle@peciulevicius.com` address on the Scribe share screen each time.
-   Export format: *Convert to text (TXT)* + *✓ Attach searchable PDF*.
+- [ ] 👤 Kindle exports keep going to **Gmail** (the Amazon account email) until
+   the account-email pass below, but kindle_sync now reads Purelymail. So it
+   still sees them, add a **Gmail filter**: `from:do-not-reply@amazon.com
+   subject:"from your Kindle"` → Forward to `dziugas@peciulevicius.com` (Gmail
+   asks you to confirm the forwarding address — the code lands in `dziugas@`).
+   Or pick the saved `kindle@peciulevicius.com` address on the Scribe share
+   screen each time. Export format: *Convert to text (TXT)* + *✓ Attach
+   searchable PDF*.
 
 ---
 
@@ -40,7 +41,7 @@ Section names in *italics* are headings below.
 
 - Mail wrap-up: Kuma + Calibre-Web test mails, approve `dziugas@` as an Amazon sender, revoke the Gmail app password, Gmail→Kindle filter — *🔝 Next up*
 - Coach: upload skill zip, add the `tp-mcp` custom connector in claude.ai, "Coach" Project — *🏃 Coach in the Claude app*
-- Website: `checkOrigin` decision (Worker move + migrations done 2026-09-26); janioniu: commit your local TODO edits, confirm placeholder facts with Dad, Purelymail domain — *🌐 Other repo backlogs* and below
+- Website: `checkOrigin` decision, `IP_HASH_SALT` secret, Resend domain check; janioniu: sort your local TODO edits, confirm placeholder facts with Dad, Purelymail domain, Workers Builds toggle — *🌐 Other repo backlogs* and below
 - Gravatar, branded signature, Google account photo — *✉️ Email identity*
 - T7 external backup run — *📋 Open user steps*
 - Email: catch-all, inbound test, iPhone Mail, deliverability / mail-tester — *📋 Open user steps*
@@ -73,21 +74,20 @@ Section names in *italics* are headings below.
 - Phone: battery, ADP, search/browser, Pixel checks — *Phone* and *Quick wins* (De-Google)
 - NAS UI settings, stale NAS folders, drive sleep — *NAS — remaining follow-ups*
 
-- janioniuvynuogynas.lt is live (404 fix + `www` redirect in PR #6, see
-  changelog). Open there (add to that repo's TODO when its uncommitted edits
-  are sorted):
-  - 👤 placeholder phone `+370 600 00 000` and other facts are now on the real
-    domain — confirm with Dad
+- janioniuvynuogynas.lt (live; its own backlog is that repo's `docs/TODO.md`):
+  - 👤 placeholder phone `+370 600 00 000` is still on the live site
+    (2026-09-26), with the other unconfirmed facts — confirm with Dad
   - 👤 your local checkout has uncommitted `docs/TODO.md` + `environments.md`
-    edits and is now behind `main` (PR #5 touched TODO.md) — commit/stash, then
-    `git pull`
+    edits and is 26+ commits behind `main`; the 2026-09-26 TODO truth pass
+    rewrote `docs/TODO.md` on `main`, so stash, `git pull`, then re-apply by
+    hand (it will conflict)
 
 - 👤 janioniuvynuogynas.lt email: **add the domain to the existing Purelymail
   account** (no extra cost) instead of Cloudflare Email Routing → Gmail; create
   `info@janioniuvynuogynas.lt` (or route it to whoever answers). Claude adds the
-  Purelymail DNS records afterwards (zone and token are in place). Resend
-  keeps using `send.janioniuvynuogynas.lt`, so no MX clash. Supersedes the
-  "Email Routing → your Gmail" line in that repo's TODO step 3.
+  Purelymail DNS records afterwards (zone and token are in place; no MX exists
+  yet, 2026-09-26). Resend keeps using `send.janioniuvynuogynas.lt`, so no MX
+  clash.
 
 - 👤 **Phone apps** — connect Reeder (set FreshRSS API password first),
   Swift Paperless, Linkwarden, Pi-hole Remote (create an app password) —
@@ -96,7 +96,7 @@ Section names in *italics* are headings below.
   Amperfy dropped (Subsonic-only). Also install: Bitwarden, Ente Auth,
   Obsidian + LiveSync, ntfy, Swiftfin/Infuse, Odysseus home-screen web app.
 
-- 👤 Ad blocking anywhere: Tailscale DNS → Pi-hole (`100.81.171.49`, override local DNS); Brave iOS/AdGuard for YouTube — *Pi-hole → Ad blocking everywhere*
+- 👤 Ad blocking anywhere: confirm Tailscale DNS → Pi-hole (nameserver looks set, see the section), cellular test; Brave iOS/AdGuard for YouTube — *Pi-hole → Ad blocking everywhere*
 
 - 👤 janioniu: Cloudflare → Workers & Pages → `janioniu-vynuogynas` → Settings →
   **Build** → turn off production deploys from Workers Builds (keep PR
@@ -113,7 +113,6 @@ Section names in *italics* are headings below.
   risk) using the `credential-rotation` skill: regenerate in each app, then
   update every consumer (Prowlarr apps, Jellyseerr, Bazarr, Glance if used).
 
-- Run `mail-switch-purelymail.sh` once the password file exists — *🔝 Next up* 2
 - Optional: OpenCode + `qwen2.5-coder:7b` for offline snippets — *⚡ Batch 2026-09-24*
 - Odysseus: chat-export import, CalDAV after Nextcloud, RAG over Paperless + Linkwarden — *8. Odysseus*
 - Rotate Immich's DB password (restarts Immich — say go) — *9. Maintenance backlog*
@@ -129,15 +128,17 @@ Section names in *italics* are headings below.
 
 ## 🌐 Other repo backlogs
 
-- `~/dev/peciulevicius.com/docs/TODO.md` — open there: 👤 Supabase CLI login +
-  DB password → Claude applies `v1.5.0` via `supabase db push`; 👤 decide
-  `checkOrigin` (one-click unsubscribe); 👤 Pages → Worker move, then Claude
-  merges **PR #46** (Astro 7 + Tailwind 4); newsletter end-to-end test.
+- `~/dev/peciulevicius.com/docs/TODO.md` — on the Worker, migrations v1.5.0 +
+  v1.6.0 applied (2026-09-26). Open there: 👤 decide `checkOrigin` (one-click
+  unsubscribe still 403s); 👤 `IP_HASH_SALT` secret; 👤 confirm the Resend
+  domain; Claude runs the newsletter end-to-end test; optional 👤 delete the
+  paused Pages project.
 - `~/dev/janioniu-vynuogynas/docs/TODO.md` — live at
-  https://janioniuvynuogynas.lt since 2026-09-25 (PRs #5 + #6 merged). Still
-  open: Astro 7 (critical audit advisory), placeholder phone, Resend setup.
-  Your uncommitted edits in `docs/TODO.md` + `docs/environments.md` there
-  still need committing.
+  https://janioniuvynuogynas.lt, Astro 7 + v1.0.0 done. Open there: 👤 Resend
+  sending domain (no DNS records yet), Purelymail for `info@`, Workers Builds
+  toggle, placeholder phone/facts, real contact-form test, PostHog/Loops/Web
+  Analytics/Search Console. Your uncommitted local edits there will conflict
+  on pull (see above).
 
 ## 🏃 Coach in the Claude app / phone — walkthrough with Claude
 
@@ -154,8 +155,8 @@ Section names in *italics* are headings below.
 
 - [ ] 👤 Gravatar: logo on `hello@peciulevicius.com`, own photo on
       `dziugas@peciulevicius.com`.
-- [ ] 👤 Install the branded signature (from `peciulevicius.com/email/signature`
-      once deployed) in Odysseus, iPhone Mail, Purelymail webmail. Keep it a
+- [ ] 👤 Install the branded signature (from `peciulevicius.com/email/signature/`,
+      live) in Odysseus, iPhone Mail, Purelymail webmail. Keep it a
       light HTML *signature*, not a heavy template — image-heavy mail scores
       worse with spam filters.
 - [ ] 👤 Decide on a Google account photo for Gmail recipients (conflicts with
@@ -172,7 +173,7 @@ is written out so it survives being read cold in a year.
 |---|---|---|
 | **2** | 🔴 Move TOTP off Google Authenticator | Seeds sync to the account being left — lockout risk |
 | **3** | 🔴 Rotate the Vaultwarden admin token | Leaked into a container config on 2026-09-21 |
-| **5** | 🔁 Repoint the 3 Gmail consumers, then revoke | Two of them fail **silently** — now tracked in 🔝 Next up |
+| **5** | 🔁 Revoke the Gmail app password | Consumers repointed 2026-09-26; revoke tracked in 🔝 Next up |
 | **6** | 🔑 One pass: password + email per service | Same ~14 logins — separating them doubles the work |
 | **7** | 🧩 Vaultwarden Chrome extension | Blocked on the work laptop, not on us |
 | **8** | 🤖 Odysseus history import | Pure upside, nothing depends on it |
@@ -211,10 +212,9 @@ token, email DNS cutover, coach build) are in the changelog.
       disabled, domain saved, `dziugas@` user created. Remaining:
       1. Purelymail → Routing → catch-all `*@peciulevicius.com` → `dziugas@`.
       2. Test: mail `inbox@peciulevicius.com` from Gmail, check webmail.
-      3. Repoint kindle_sync / Calibre-Web / Kuma SMTP (EMAIL.md §7), revoke
-         the Gmail app password, iPhone Mail, Gmail forward. → consumers and
-         revoke are tracked in 🔝 Next up; 👤 iPhone Apple Mail + Sieve filters
-         and the Gmail redirect decision (*De-Google → Email*) stay here.
+      3. iPhone Apple Mail + Sieve filters (log in as `dziugas@`). Consumers
+         were repointed 2026-09-26; revoke is in 🔝 Next up; the Gmail
+         redirect decision is under *De-Google → Email*.
       4. Deliverability: first mails to Gmail landed in Spam (new domain, no
          reputation; SPF/DKIM/DMARC all pass). Mark *Not spam*, add
          `dziugas@` to contacts, keep sending real mail; check once with
@@ -259,29 +259,22 @@ treated as disclosed.
 > including secrets passed as arguments. Pipe secrets via stdin to a container
 > started with `--rm`, and verify it actually exited.
 
-### 5. 🔁 Repoint the three Gmail consumers — then revoke
+### 5. 🔁 Gmail consumers repointed — revoke left
 
-**Tracked as 🔝 Next up** at the top. Background kept here because it's the
-part that's easy to get wrong: **three things use Gmail, and two hide their
-config in SQLite** rather than environment variables, so an `env`-based audit
-reports "nothing uses email" and is wrong (the 2026-09-21 audit made exactly
-that mistake). Full detail in [guides/EMAIL.md](guides/EMAIL.md) §2.
-
-- `pkm/kindle_sync.py` — `IMAP_SERVER`, `EMAIL_ADDRESS`, `EMAIL_PASSWORD` in
-  `pkm/config.py` (gitignored, Mac mini only).
-- **Calibre-Web** — 🔴 **fails silently** and has no fallback; use its *Send
-  test email* button after the change.
-- **Uptime Kuma** — the `smtp` notification. Its Discord notification is
-  unaffected, so alerting stays audible throughout.
-- **Only then** revoke the Gmail app password at
-  <https://myaccount.google.com/apppasswords>.
+All three were moved to Purelymail on 2026-09-26 (changelog); the test mails
+and the revoke are in 🔝 Next up. Lesson kept here: **two of the three hid
+their config in SQLite** (Calibre-Web, Uptime Kuma) rather than environment
+variables, so an `env`-based audit reports "nothing uses email" and is wrong
+(the 2026-09-21 audit made exactly that mistake). Calibre-Web fails
+**silently** with no fallback. Full detail in [guides/EMAIL.md](guides/EMAIL.md) §2.
+Revoke at <https://myaccount.google.com/apppasswords>.
 
 ### 6. 🔑 One pass per service — password AND email together
 
 Both changes need the same ~14 logins. **Doing them separately means 28.**
 Checklist, no secrets: [CREDENTIAL_MIGRATION.md](CREDENTIAL_MIGRATION.md) —
-4 of ~18 services done. Worksheet with real values: `~/credentials-import.md`
-(deliberately outside this public repo; still present 2026-09-25).
+5 of ~18 services done. Worksheet with real values: `~/credentials-import.md`
+(deliberately outside this public repo; still present 2026-09-26).
 
 **The rule: one unique generated password per service, master copy in
 Vaultwarden** (decided 2026-09-19: one non-default username everywhere; one
@@ -393,8 +386,9 @@ repeat.
       clone without it.) Can't be checked from the Mac mini.
 - [ ] 👤 **MacBook Air's Tailscale key expired 2026-09-02** (`tailscale status`,
       2026-09-25). Log in again and **Disable key expiry** for it in the admin
-      console. Also identify the node named `localhost` (expires 2027-03-04)
-      and disable its expiry if it's a device you keep.
+      console. The node named `localhost` (expires 2027-03-04) is the iPhone
+      (`iphone13mini` — iOS reports its hostname as `localhost`); disable its
+      expiry too.
 
 ### 8b. 🔒 Cloudflare/R2 security check — added 2026-09-21
 
@@ -503,10 +497,6 @@ whole-house outage now alerts.
       archive across years. Keep if you expect to scan real paperwork
       (tax/medical/receipts) later; remove if not.
 
-⚠️ **Pi-hole is the one that matters here:** pinned at `pihole/pihole:2024.07.0`,
-publicly exposed, and it controls DNS for the whole network. A pinned tag never
-moves, so Watchtower being enabled is not evidence anything is current.
-
 - [ ] Delete ~2.3 GB of locked `.smbdelete` duplicates (needs NAS-side access)
 
 #### Quick wins left over from 2026-09-20
@@ -539,8 +529,8 @@ moves, so Watchtower being enabled is not evidence anything is current.
 - [ ] 👤 Stock app → **Share → Searchable PDF** → confirm the mail arrives. This
       is the Obsidian pipeline, and it is the thing most likely to have broken
       quietly during all the Kindle work (and the mail switch). kindle_sync
-      itself runs hourly — last run 2026-09-25 13:00, "No new Kindle export
-      emails".
+      itself runs hourly — since 2026-09-26 10:00 against
+      `imap.purelymail.com`, "No new Kindle export emails".
 
 ---
 
@@ -548,7 +538,7 @@ moves, so Watchtower being enabled is not evidence anything is current.
 
 Background for the steps above, plus items outside the sequence.
 
-### 💾 Disk — 32GiB free of 228GB (84%) on 2026-09-25
+### 💾 Disk — 27GiB free of 228GB (87%) on 2026-09-26
 
 Was **15 GiB free (92%)** before the 2026-09-21 cleanup (Docker build cache
 6.05GB, Homebrew 477MB, applied Squirrel/ShipIt update staging ~2.1GB); Trash
@@ -731,16 +721,14 @@ blocker. So: Pi-hole for the network + a content blocker in the browser.
 - [ ] 👤 **Pi-hole on every device, anywhere, via Tailscale:** admin console →
       **DNS** → Nameservers → *Add nameserver* → Custom → `100.81.171.49`
       (Pi-hole's **Tailscale** IP, not the LAN IP) → enable **Override local
-      DNS**. Verified 2026-09-25 that Pi-hole already answers on that IP
-      (`dig @100.81.171.49 example.com`, listening mode ALL). Test on cellular
-      with Tailscale on; watch the Pi-hole query log for the phone.
+      DNS**. 2026-09-26: `tailscale dns status` on the Mac mini already lists
+      `100.81.171.49` as the tailnet resolver, so the nameserver looks added —
+      confirm **Override local DNS** is on in the console, then test on
+      cellular with Tailscale on and watch the Pi-hole query log for the phone.
       ⚠️ If the Mac mini is off, Tailscale devices lose DNS entirely while
       the override is on — toggle Tailscale off in that case, or accept it.
-- [x] Curated blocklists added 2026-09-25: **HaGeZi Multi Pro** + **HaGeZi TIF
-      medium** alongside StevenBlack → 1.18M domains in gravity. Spot-checked:
-      YouTube, Amazon, GitHub, Apple, Claude, Strava, TrainingPeaks, Purelymail,
-      Tailscale resolve; doubleclick → 0.0.0.0. If a site breaks, check the
-      Pi-hole query log and allowlist the domain.
+- Curated blocklists (HaGeZi Multi Pro + TIF medium, 2026-09-25, changelog):
+  if a site breaks, check the Pi-hole query log and allowlist the domain.
 - [ ] 👤 **Router DNS → Pi-hole** (existing item below) so non-Tailscale
       devices at home (TV, guests) are covered too.
 - [ ] 👤 Browser side: **Brave** Shields on (blocks YouTube ads on desktop);
@@ -786,9 +774,9 @@ trackers, telemetry and most web/banner ads — but **not YouTube or Spotify ads
 which are served from the same domains as the content itself. See the ad-blocking
 notes in `docs/SERVICES.md`.
 
-Currently only ~3.6% of queries are blocked (12,812 queries / 459 blocked), which
-is low because the router still does not point at Pi-hole — only manually
-configured devices use it.
+Last measured before the v6 upgrade and HaGeZi lists: ~3.6% of queries blocked
+(12,812 queries / 459 blocked) — low because the router still does not point at
+Pi-hole, so only manually configured devices use it.
 
 ### Import old photo archives into Immich
 
@@ -861,7 +849,7 @@ re-researched. Revisit only if it gets its own machine.
 Kindle sync all exist and go unused. The problem is capture friction, not the
 tool — swapping Obsidian for something else reproduces the same failure later.
 Sync: see *🔗 Obsidian LiveSync* (server done, devices pending). Kindle sync is
-verified running hourly on the Mac mini (2026-09-25).
+verified running hourly on the Mac mini, over Purelymail IMAP (2026-09-26).
 
 - [ ] 👤 **One** quick-capture Shortcut on the iPhone home screen, ≤2 taps,
       appending to the daily note
@@ -924,8 +912,9 @@ next actions live here.
 
 **Where you actually are:** Vaultwarden, Nextcloud, Immich, Tailscale, own domain
 with per-service subdomains — all done, and **email is now on Purelymail**
-(2026-09-25). Remaining gaps: **moving the mail consumers + accounts over,
-phone, calendar/contacts, AI.** Don't restart from step one.
+(2026-09-25), with the three mail consumers moved over (2026-09-26). Remaining
+gaps: **moving accounts over, phone, calendar/contacts, AI.** Don't restart
+from step one.
 
 Google Authenticator → see **2. Move TOTP off Google Authenticator** — do it
 before anything else here.
@@ -945,12 +934,12 @@ before anything else here.
 Provider, DNS and mailbox are done (changelog 2026-09-25). Runbook:
 **[guides/EMAIL.md](./guides/EMAIL.md)**. Standing decision: **never self-host
 the mail server** (residential IP, blocklists, blocked port 25, no reverse DNS).
-Consumers → *🔝 Next up*; catch-all/tests/deliverability → *📋 Open user steps*.
+Revoke + Kindle filter → *🔝 Next up*; catch-all/tests/deliverability → *📋 Open user steps*.
 
 - [ ] 👤 **Decide the Gmail redirect**: full forward (Gmail → Settings →
       Forwarding → all mail to `dziugas@`, and `dziugas@` as default "Send mail
       as") so everything lands in one inbox, or the Kindle-only filter from
-      *🔝 Next up* #5 and let Gmail wither.
+      *🔝 Next up* and let Gmail wither.
 - [ ] 👤 Import the Gmail Takeout `.mbox` into Purelymail (optional — only if
       you want the history in one place).
 - [ ] 👤 Remove Google as a Cloudflare Access identity provider — **after** the
