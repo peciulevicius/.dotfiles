@@ -8,6 +8,16 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-26 — First external-drive backups (T5 + T7)
+
+- `backup-external.sh` run to both drives: Immich originals + encoded video,
+  DB dumps, audiobooks, Calibre books. Stamps written; `homelab-audit.sh` now
+  reports all checks passed. Repeat ~monthly (audit warns at 30 days); T5 still
+  to go offsite.
+- `.gitignore`: `pkm/config.py*` so backups of the credentials file (the
+  mail-switch left one in the repo, holding the revoked Gmail password — moved
+  to `~/backups/pkm/`) can never be committed.
+
 ## 2026-09-26 — GDPR data-request tool
 
 - New `scripts/utils/gdpr-export.mjs`: dependency-free Node script that exports

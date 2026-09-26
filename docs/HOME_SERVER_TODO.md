@@ -40,7 +40,6 @@ Section names in *italics* are headings below.
 - Coach: upload skill zip, add the `tp-mcp` custom connector in claude.ai, "Coach" Project — *🏃 Coach in the Claude app*
 - Website: `checkOrigin` decision, `IP_HASH_SALT` secret, Resend domain check; janioniu: sort your local TODO edits, confirm placeholder facts with Dad, Purelymail domain, Workers Builds toggle — *🌐 Other repo backlogs* and below
 - Gravatar, branded signature, Google account photo — *✉️ Email identity*
-- T7 external backup run — *📋 Open user steps*
 - Email: catch-all, inbound test, iPhone Mail, deliverability / mail-tester — *📋 Open user steps*
 - Reset Odysseus 2FA; first coaching session in Odysseus — *⚡ Batch 2026-09-24*
 - Rotate the Vaultwarden admin token (Claude can do the hash + `.env`; you save it) — *3. Rotate the Vaultwarden admin token*
@@ -198,12 +197,6 @@ token, email DNS cutover, coach build) are in the changelog.
 
 ### 📋 Open user steps — as of 2026-09-25
 
-- [ ] 👤 **T7 external backup** — plug in the T7, run
-      `~/.dotfiles/scripts/backup/backup-external.sh /Volumes/T7`, unplug.
-      The weekly audit fails until the first run is stamped
-      (`~/logs/external-backup-T7.last`), then again whenever it's >30 days
-      old — that's the reminder. Same for T5 before it goes offsite.
-      (No stamp yet on 2026-09-25.)
 - [ ] 👤 **Email** — DNS + MX live on Purelymail 2026-09-25, Email Routing
       disabled, domain saved, `dziugas@` user created. Remaining:
       1. Purelymail → Routing → catch-all `*@peciulevicius.com` → `dziugas@`.

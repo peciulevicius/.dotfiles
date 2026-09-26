@@ -15,7 +15,8 @@ services/**/library/
 obsidian-vault/
 
 # PKM — config.py has credentials, track config.example.py only
-pkm/config.py
+pkm/config.py*
+!pkm/config.example.py
 pkm/.venv/
 pkm/.processed_ids
 
