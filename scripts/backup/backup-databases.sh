@@ -2,9 +2,15 @@
 # Dump databases from Docker containers to ~/backups/
 # Run weekly via cron: 0 4 * * 0 ~/.dotfiles/scripts/backup/backup-databases.sh
 #
-# On-demand services (scripts/utils/ondemand.sh) keep their DB containers
-# stopped. A stopped DB container is started on its own — never the app —
-# dumped, and stopped again, so their dumps stay fresh without the app running.
+# Scale-to-zero (Caddy + Sablier, services/caddy) and ondemand.sh both keep
+# their DB containers stopped most of the time. A stopped DB container is
+# started on its own — never the app — dumped, and stopped again, so their
+# dumps stay fresh without the app running. Sablier only reconciles
+# "sablier.enable=true but not started by Sablier" once, on its own startup
+# (--provider.auto-stop-on-startup, default true) — it does not continuously
+# watch for externally-started containers unless
+# --provider.auto-stop-externally-started is set (it isn't here), so a
+# `docker start` from this script is safe: Sablier won't stop it mid-dump.
 #
 # Usage: ./backup-databases.sh [--dry-run]
 

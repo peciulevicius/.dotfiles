@@ -86,28 +86,55 @@ instead of removed:
 
 | Name (`ondemand …`) | Containers | Idle RAM | Why on-demand |
 |---|---|---|---|
-| `paperless-ngx` | paperless, paperless_db, paperless_broker | ~615MB | 14 documents, scanned in batches |
-| `nextcloud` | nextcloud, nextcloud_db | ~130MB | 83MB of files; keep-or-remove undecided |
-| `odysseus` | odysseus-{odysseus,searxng,chromadb,ntfy}-1 | ~470MB | used occasionally; ⚠️ ntfy push to the phone is off while stopped |
 | `flaresolverr` | flaresolverr (in `sonarr-radarr`) | ~150MB | no Prowlarr indexer carries the `flaresolverr` tag |
 
-**2026-09-27: Stirling PDF and IT-Tools moved from this manual list to
-automatic scale-to-zero** (Caddy + Sablier, `services/caddy/`) — they're
-gone from `ondemand.sh ENTRIES` because nobody needs to run `ondemand start`
-for them any more; opening `pdf.`/`tools.peciulevicius.com` starts them.
+**2026-09-27: Stirling PDF, IT-Tools (phase 1), Paperless, Nextcloud,
+Odysseus, Linkwarden, Jellyseerr and Bazarr (phase 2) all moved from this
+manual list to automatic scale-to-zero** (Caddy + Sablier,
+`services/caddy/`) — gone from `ondemand.sh ENTRIES` because nobody needs to
+run `ondemand start` for them any more; opening their hostname (or, for the
+three Tailscale-only ones, the same `100.81.171.49:<port>` as before) starts
+them. `flaresolverr` is the only thing left on manual `ondemand.sh` — it has
+no hostname a browser opens, so there's nothing for Sablier to gate.
 
 | Group (Sablier) | Containers | Running RAM | Idle RAM |
 |---|---|---|---|
 | `stirling-pdf` | stirling_pdf | ~977MB (JVM) | 0 |
 | `it-tools` | it_tools | ~8MB | 0 |
-| `caddy` + `sablier` (always on) | caddy, sablier | ~23MB + ~53MB | — (never sleeps) |
+| `paperless` | paperless, paperless_db, paperless_broker | ~536+28+10MB | 0 |
+| `nextcloud` | nextcloud, nextcloud_db | ~79+104MB | 0 |
+| `linkwarden` | linkwarden, linkwarden_db | ~349+24MB | 0 |
+| `jellyseerr` | jellyseerr | ~195MB | 0 |
+| `bazarr` | bazarr | ~188MB | 0 |
+| `odysseus` | odysseus-{odysseus,searxng,chromadb}-1 | ~470MB (from the old on-demand measurement) | 0 |
+| `caddy` + `sablier` (always on) | caddy, sablier | ~18–23MB each | — (never sleeps) |
 
-Measured 2026-09-27: cold start (stopped → first byte of the real app) was
-under 10s for both; idle-stop confirmed with a 2-minute test session
-duration before setting the real 30-minute one. See
-`services/caddy/README.md` for how it works and the rollout status of the
-other services still to move (Paperless, Nextcloud, Odysseus, Linkwarden,
-Jellyseerr, Bazarr, Calibre-Web, Audiobookshelf, Jellyfin).
+`odysseus-ntfy-1` is deliberately **not** in the `odysseus` Sablier group —
+it stays always-on (push must keep working while the rest of the stack
+sleeps) and isn't counted above.
+
+Measured 2026-09-27: cold start (stopped → first byte of the real app)
+ranged ~5–45s depending on the app (Paperless's 3-container group is the
+slowest; single containers like Jellyseerr/Bazarr/IT-Tools are under 15s).
+Idle-stop confirmed for every group with a 2-minute test session duration
+before setting the real 30-minute one (all 12 phase-1+2 containers were
+stopped again within ~2 minutes of their last request, staggered by when
+each was last hit).
+
+**Gotcha found during phase 2**: Bazarr, Jellyseerr and Nextcloud shipped
+**no Docker healthcheck** in their images. Without one, Sablier reports a
+container "ready" as soon as it's merely `running`, not once its HTTP server
+has actually bound — Caddy's very first reverse-proxied request to Bazarr
+got a `502 connection refused` because of this exact race. Fixed by adding
+an explicit `healthcheck:` to each of those three compose files (`curl`/
+`wget` against a local endpoint); Sablier then waits for `healthy`, not just
+`running`. Paperless, Nextcloud's DB, Stirling PDF and Linkwarden already
+shipped a healthcheck in their images — check with
+`docker inspect <container> --format '{{.Config.Healthcheck}}'` before
+assuming a new phase-3 service is safe without one.
+
+See `services/caddy/README.md` for how it works and the rollout status of
+the remaining phase (3: Calibre-Web, Audiobookshelf, Jellyfin).
 
 How it works and what it touches:
 - `ondemand list | start <name> | stop <name> | stop-all` (zsh alias for
@@ -121,18 +148,30 @@ How it works and what it touches:
   (and for `sonarr-radarr` that includes FlareSolverr). Run
   `ondemand stop-all` afterwards.
 - `homelab-audit.sh` reads `ondemand.sh containers` and treats them as
-  expected-stopped.
-- `backup-databases.sh` starts **only** `paperless_db` / `nextcloud_db`,
-  dumps, and stops them again (trap on exit) — tested 2026-09-26.
+  expected-stopped — **and, separately, any container labelled
+  `sablier.enable=true`** (derived from the Docker label, not hardcoded), so
+  the phase 1/2 Sablier-managed containers are covered too.
+- `backup-databases.sh` starts **only** `paperless_db` / `linkwarden_db` /
+  `nextcloud_db`, dumps, and stops them again (trap on exit) — tested
+  2026-09-26 (ondemand.sh era) and re-verified 2026-09-27 with all three now
+  Sablier-managed: Sablier did not interfere.
 - rclone file backups keep working; files at rest are actually better (no
   live-SQLite BadDigest on Odysseus's DBs).
 - Glance: no monitors for them (they'd sit red), bookmarks in an *On demand*
-  group, and the docker-containers widget is `running-only: true`.
+  group, and the docker-containers widget is `running-only: true`. Same
+  treatment for the phase 1/2 Sablier-managed services — their monitor
+  `check-url` entries (Jellyfin/Audiobookshelf/Calibre-Web/Linkwarden/
+  Jellyseerr/Bazarr) still exist for phase 3 and get removed as each moves.
 - Uptime Kuma: their monitors (ids 3, 5, 13, 14, 25) are **paused**, not
-  deleted — un-pause in the UI if one moves back to always-on.
+  deleted — un-pause in the UI if one moves back to always-on. 👤 The
+  phase 1/2 Sablier-managed services' monitors need the same manual pause —
+  no config-file/API for it, tracked in the TODO.
 - Moving a service back to always-on: remove it from `ENTRIES` in
   `ondemand.sh`, start it, un-pause its Kuma monitor, restore its Glance
-  monitor.
+  monitor. For a Sablier-managed one instead: remove the
+  `sablier.enable`/`sablier.group` labels and the Caddyfile block, restore
+  its direct tunnel route or port publish (see `services/caddy/README.md`
+  "Rollback").
 
 **How to read swap on macOS:** "Pages free" is always near zero by design — macOS
 uses spare RAM as cache, so a low free-page count is not a warning. Judge by

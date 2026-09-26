@@ -13,6 +13,11 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
+    # Scale-to-zero via Caddy + Sablier (services/caddy). Starts/stops with
+    # the rest of the `paperless` group — see services/caddy/README.md.
+    labels:
+      - "sablier.enable=true"
+      - "sablier.group=paperless"
 
   paperless-db:
     container_name: paperless_db
@@ -29,11 +34,17 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    labels:
+      - "sablier.enable=true"
+      - "sablier.group=paperless"
 
   paperless:
     container_name: paperless
     image: ghcr.io/paperless-ngx/paperless-ngx:2.20.15
     restart: unless-stopped
+    labels:
+      - "sablier.enable=true"
+      - "sablier.group=paperless"
     ports:
       - "${PAPERLESS_PORT:-8000}:8000"
     volumes:

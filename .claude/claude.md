@@ -19,12 +19,13 @@ Personal dotfiles + self-hosted services stack for macOS (primary), Arch Linux, 
 
 ## Services
 
-Mac mini M4 has ~45 containers (2026-09-27), ~31 running: two (Stirling PDF,
-IT-Tools) scale to zero automatically via **Caddy + Sablier**
-(`services/caddy/` — starts on the first request, stops when idle; more
-services join in later phases, see `services/caddy/README.md` "Rollout").
-Paperless, Nextcloud, Odysseus and FlareSolverr are still **manually
-on-demand**, stopped by default and started with `ondemand start <name>`
+Mac mini M4 has ~45 containers (2026-09-27), ~31 running: eight
+(Stirling PDF, IT-Tools, Paperless-ngx, Nextcloud, Odysseus, Linkwarden,
+Jellyseerr, Bazarr) scale to zero automatically via **Caddy + Sablier**
+(`services/caddy/` — starts on the first request, stops when idle; Calibre-Web,
+Audiobookshelf and Jellyfin join in phase 3, see `services/caddy/README.md`
+"Rollout"). FlareSolverr is the only thing left **manually on-demand**,
+stopped by default and started with `ondemand start <name>`
 (`scripts/utils/ondemand.sh`). Plus rclone backup + cloudflared tunnel — see
 `docs/SERVICES.md` for the current list.
 See `docs/SERVICES.md` for full list. Key services: Immich, Vaultwarden, Nextcloud, Jellyfin, Sonarr/Radarr, Transmission, Pi-hole.
@@ -130,8 +131,8 @@ Goal: read self-hosted Calibre-Web EPUBs on it without Amazon in the middle.
 
 Goal: own the chat history, memories and RAG corpus; rent the inference.
 
-- Odysseus is **on-demand** since 2026-09-26 (stopped by default to save
-  RAM): `ondemand start odysseus` before using it.
+- Odysseus **scales to zero** (Caddy + Sablier, 2026-09-27): opening
+  `100.81.171.49:7001` starts it automatically, no `ondemand start` needed.
 - Target: **Odysseus** (<https://github.com/odysseus-dev/odysseus>, AGPL-3.0,
   port 7000, macOS supported). Open WebUI is the fallback.
 - Phase 1 is a workspace with **cloud** backends — this is sovereignty, not

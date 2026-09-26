@@ -30,18 +30,16 @@ LIVE="$HOME/services"
 
 # name|~/services dir|compose services (empty = whole stack)|local URL|remote URL
 #
-# 2026-09-27: stirling-pdf and it-tools moved to automatic scale-to-zero
-# (Caddy + Sablier, services/caddy phase 1) — they start themselves on the
-# first request and stop themselves when idle, so they're gone from this
-# list. The rest of this list (paperless-ngx, nextcloud, odysseus) is moving
-# the same way in later phases; see services/caddy/README.md "Rollout" for
-# what's done. flaresolverr stays here for good: it's called directly by
-# Prowlarr over the Docker network, never through a browser hostname, so
-# there's nothing for Sablier/Caddy to front.
+# 2026-09-27: stirling-pdf, it-tools (phase 1), paperless-ngx, nextcloud,
+# odysseus, linkwarden, jellyseerr and bazarr (phase 2) all moved to
+# automatic scale-to-zero (Caddy + Sablier, services/caddy) — they start
+# themselves on the first request and stop themselves when idle, so they're
+# gone from this list. See services/caddy/README.md "Rollout" for what's
+# left (phase 3: Calibre-Web, Audiobookshelf, Jellyfin). flaresolverr stays
+# here for good: it's called directly by Prowlarr over the Docker network,
+# never through a browser hostname, so there's nothing for Sablier/Caddy to
+# front.
 ENTRIES=(
-  "paperless-ngx|paperless-ngx||http://localhost:8000|https://papers.peciulevicius.com"
-  "nextcloud|nextcloud||http://localhost:8080|https://cloud.peciulevicius.com"
-  "odysseus|odysseus||http://localhost:7001|http://100.81.171.49:7001 (Tailscale)"
   "flaresolverr|sonarr-radarr|flaresolverr|http://localhost:8191|(internal — used by Prowlarr only)"
 )
 

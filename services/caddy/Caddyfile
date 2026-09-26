@@ -50,3 +50,88 @@ http://tools.peciulevicius.com:8880 {
 		reverse_proxy it_tools:80
 	}
 }
+
+# ── Phase 2 (2026-09-27): Paperless, Nextcloud, Odysseus, Linkwarden, ──────
+# ── Jellyseerr, Bazarr ──────────────────────────────────────────────────────
+
+http://papers.peciulevicius.com:8880 {
+	route /* {
+		sablier http://sablier:10000 {
+			group paperless
+			session_duration 30m
+			blocking {
+				timeout 60s
+			}
+		}
+		reverse_proxy paperless:8000
+	}
+}
+
+http://cloud.peciulevicius.com:8880 {
+	route /* {
+		sablier http://sablier:10000 {
+			group nextcloud
+			session_duration 30m
+			blocking {
+				timeout 60s
+			}
+		}
+		reverse_proxy nextcloud:80
+	}
+}
+
+http://links.peciulevicius.com:8880 {
+	route /* {
+		sablier http://sablier:10000 {
+			group linkwarden
+			session_duration 30m
+			blocking {
+				timeout 60s
+			}
+		}
+		reverse_proxy linkwarden:3000
+	}
+}
+
+# Tailscale-only apps — Caddy listens on the Tailscale IP itself (bound in
+# docker-compose.yml), not on :8880. cloudflared never sees these.
+
+http://100.81.171.49:5055 {
+	route /* {
+		sablier http://sablier:10000 {
+			group jellyseerr
+			session_duration 30m
+			blocking {
+				timeout 60s
+			}
+		}
+		reverse_proxy jellyseerr:5055
+	}
+}
+
+http://100.81.171.49:6767 {
+	route /* {
+		sablier http://sablier:10000 {
+			group bazarr
+			session_duration 30m
+			blocking {
+				timeout 60s
+			}
+		}
+		reverse_proxy bazarr:6767
+	}
+}
+
+http://100.81.171.49:7001 {
+	route /* {
+		sablier http://sablier:10000 {
+			group odysseus
+			session_duration 30m
+			dynamic {
+				display_name "Odysseus"
+				theme "hacker-terminal"
+			}
+		}
+		reverse_proxy odysseus-odysseus-1:7000
+	}
+}

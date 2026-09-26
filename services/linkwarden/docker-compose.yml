@@ -8,6 +8,11 @@ services:
     container_name: linkwarden
     image: ghcr.io/linkwarden/linkwarden:v2.16.3
     restart: unless-stopped
+    # Scale-to-zero via Caddy + Sablier (services/caddy). Starts/stops with
+    # the rest of the `linkwarden` group — see services/caddy/README.md.
+    labels:
+      - "sablier.enable=true"
+      - "sablier.group=linkwarden"
     ports:
       - "${LW_PORT:-3005}:3000"
     volumes:
@@ -23,6 +28,9 @@ services:
     container_name: linkwarden_db
     image: postgres:16-alpine
     restart: unless-stopped
+    labels:
+      - "sablier.enable=true"
+      - "sablier.group=linkwarden"
     volumes:
       - ./data/pgdata:/var/lib/postgresql/data
     environment:

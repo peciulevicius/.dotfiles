@@ -3,11 +3,21 @@
 Chat, agents, research, RAG and memory, with **your** history on your own disk.
 Gap 4 of the de-Googling effort: *own the file, rent the compute.*
 
-> ⏸ **On-demand** (since 2026-09-26) — stopped by default to save RAM.
-> `ondemand start odysseus` (alias for `scripts/utils/ondemand.sh`) prints the
-> URL; `ondemand stop odysseus` when done. All four containers (odysseus, searxng, chromadb, ntfy) stop together, so
-> ntfy reminders to the phone don't arrive while it's stopped. `data/` is still
-> in the nightly R2 backup — at rest, which avoids live-SQLite upload errors.
+> ⚡ **Scale-to-zero** (2026-09-27) — Caddy + Sablier
+> (`~/.dotfiles/services/caddy/README.md`) now own the Tailscale-facing port
+> (`100.81.171.49:7001`), so opening that address starts odysseus + searxng +
+> chromadb (`sablier.group=odysseus`) and they stop themselves after 30
+> minutes idle — no manual `ondemand start`/`stop` any more. **ntfy is
+> deliberately excluded from the group and stays always-on**, so push
+> reminders to the phone keep arriving even while the rest of the stack is
+> asleep. `APP_BIND` in `.env` is `127.0.0.1` now (was `0.0.0.0`) since Caddy
+> is what's reachable on Tailscale; `localhost:7001` still works locally.
+> The `sablier.enable`/`sablier.group` labels live only in the live
+> `docker-compose.yml` in this repo's clone (this file itself, from
+> `github.com/odysseus-dev/odysseus`) — reapply them after a `git pull` or
+> re-clone; see the Caddy README's "Odysseus is special" section.
+> `data/` is still in the nightly R2 backup — at rest, which avoids
+> live-SQLite upload errors.
 
 **Port:** 7001 · **Source:** <https://github.com/odysseus-dev/odysseus> · AGPL-3.0
 

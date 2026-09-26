@@ -8,8 +8,15 @@ services:
     container_name: bazarr
     image: lscr.io/linuxserver/bazarr:1.6.1
     restart: unless-stopped
+    # Scale-to-zero via Caddy + Sablier (services/caddy). Caddy now owns the
+    # Tailscale-facing port (100.81.171.49:6767) so it can wake this
+    # container; this bind is loopback-only debug access. See
+    # services/caddy/README.md "Tailscale-only apps".
+    labels:
+      - "sablier.enable=true"
+      - "sablier.group=bazarr"
     ports:
-      - "${BAZARR_PORT:-6767}:6767"
+      - "127.0.0.1:${BAZARR_PORT:-6767}:6767"
     volumes:
       - ./data/config:/config
       - ${MEDIA_DIR:-/Volumes/media}:/media
@@ -17,6 +24,17 @@ services:
       PUID: ${PUID:-1000}
       PGID: ${PGID:-1000}
       TZ: ${TZ:-Europe/Vilnius}
+    # No image-provided healthcheck (confirmed via `docker inspect`) — without
+    # one, Sablier reports the container "ready" as soon as it's merely
+    # running, before Bazarr's HTTP server has bound, and Caddy's first
+    # reverse_proxy attempt gets a 502 ("connection refused"). Caught during
+    # phase 2 testing 2026-09-27.
+    healthcheck:
+      test: ["CMD", "curl", "-fs", "http://localhost:6767/"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
 
 networks:
   default:

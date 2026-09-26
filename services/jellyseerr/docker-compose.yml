@@ -8,12 +8,30 @@ services:
     container_name: jellyseerr
     image: fallenbagel/jellyseerr:2.7.3
     restart: unless-stopped
+    # Scale-to-zero via Caddy + Sablier (services/caddy). Caddy now owns the
+    # Tailscale-facing port (100.81.171.49:5055) so it can wake this
+    # container; this bind is loopback-only debug access. See
+    # services/caddy/README.md "Tailscale-only apps".
+    labels:
+      - "sablier.enable=true"
+      - "sablier.group=jellyseerr"
     ports:
-      - "${JELLYSEERR_PORT:-5055}:5055"
+      - "127.0.0.1:${JELLYSEERR_PORT:-5055}:5055"
     volumes:
       - ./data/config:/app/config
     environment:
       TZ: ${TZ:-Europe/Vilnius}
+    # No image-provided healthcheck — without one, Sablier reports the
+    # container "ready" as soon as it's merely running, before the Node
+    # server has bound, and Caddy's first reverse_proxy attempt can 502.
+    # No curl in this image, only wget. Added during phase 2, 2026-09-27
+    # (bazarr hit the exact race this guards against).
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:5055/api/v1/status"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
 
 networks:
   default:

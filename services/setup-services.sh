@@ -118,6 +118,9 @@ stage_service() {
     [[ -f "$svc_dir/docker-compose.yml" ]] && log_info "[dry-run] Would copy docker-compose.yml"
     [[ -f "$svc_dir/Dockerfile" ]] && log_info "[dry-run] Would copy Dockerfile"
     [[ -f "$svc_dir/Caddyfile" ]] && log_info "[dry-run] Would copy Caddyfile"
+    for yml in "$svc_dir"/*.yml; do
+      [[ -f "$yml" && "$(basename "$yml")" != "docker-compose.yml" ]] && log_info "[dry-run] Would copy $(basename "$yml")"
+    done
     [[ -f "$svc_dir/.env.example" ]] && log_info "[dry-run] Would copy .env.example → .env (if not exists)"
     return
   fi
@@ -133,6 +136,18 @@ stage_service() {
     [[ -f "$svc_dir/$extra" ]] || continue
     cp "$svc_dir/$extra" "$dest_dir/$extra"
     log_ok "$svc: copied $extra"
+  done
+
+  # Other top-level YAML config the container reads (e.g. glance.yml) — any
+  # *.yml besides docker-compose.yml itself. Found missing 2026-09-27: glance
+  # edits sat un-staged because nothing here ever copied glance.yml.
+  for yml in "$svc_dir"/*.yml; do
+    [[ -f "$yml" ]] || continue
+    local base
+    base="$(basename "$yml")"
+    [[ "$base" == "docker-compose.yml" ]] && continue
+    cp "$yml" "$dest_dir/$base"
+    log_ok "$svc: copied $base"
   done
 
   if [[ -f "$svc_dir/.env.example" ]]; then

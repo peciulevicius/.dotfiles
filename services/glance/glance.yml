@@ -45,9 +45,13 @@ pages:
                 url: http://100.81.171.49:5299
                 check-url: http://lazylibrarian:5299/
                 icon: si:bookstack
+              # Scale-to-zero (Caddy + Sablier, services/caddy) since
+              # 2026-09-27 — no check-url: hitting the container directly
+              # would either show a false "down" while it's asleep, or (if
+              # pointed at the public hostname instead) silently wake it on
+              # every poll. Bookmark only.
               - title: Linkwarden
                 url: https://links.peciulevicius.com
-                check-url: http://linkwarden:3000/
                 icon: si:bookstack
               - title: CouchDB (Obsidian sync)
                 url: https://couchdb.peciulevicius.com
@@ -87,13 +91,13 @@ pages:
                 alt-status-codes:
                   - 307
                 icon: di:ugreen
+              # Scale-to-zero (Caddy + Sablier) since 2026-09-27 — no
+              # check-url, same reasoning as Linkwarden above.
               - title: Jellyseerr
                 url: http://100.81.171.49:5055
-                check-url: http://jellyseerr:5055/
                 icon: si:jellyfin
               - title: Bazarr
                 url: http://100.81.171.49:6767
-                check-url: http://bazarr:6767/
                 icon: di:bazarr
               - title: Transmission
                 url: http://100.81.171.49:9091

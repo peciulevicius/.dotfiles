@@ -10,14 +10,14 @@ Run your own cloud on a Mac mini (or any Docker host). Self-hosted services cove
 |---------|-----|------|----------|
 | [Immich](#immich) | photos.peciulevicius.com | 2283 | Google Photos |
 | [Vaultwarden](#vaultwarden) | vault.peciulevicius.com | 8001 | Bitwarden Cloud |
-| [Nextcloud](#nextcloud) ⏸ | cloud.peciulevicius.com | 8080 | Google Drive |
+| [Nextcloud](#nextcloud) ⚡ | cloud.peciulevicius.com | 8080 | Google Drive |
 | [Uptime Kuma](#uptime-kuma) | status.peciulevicius.com | 3001 | StatusCake |
 | [FreshRSS](#freshrss) | rss.peciulevicius.com | 8082 | Feedly |
 | [Syncthing](#syncthing) | Tailscale only | 8384 | Dropbox |
 | [Portainer](#portainer) | Tailscale only | 9000 | Docker Desktop |
 | [Watchtower](#watchtower) | — | — | Manual updates |
 | [Glance](#glance) | home.peciulevicius.com | 7575 | Start page |
-| [Paperless-ngx](#paperless-ngx) ⏸ | papers.peciulevicius.com | 8000 | Paper filing |
+| [Paperless-ngx](#paperless-ngx) ⚡ | papers.peciulevicius.com | 8000 | Paper filing |
 | [Calibre-Web](#calibre-web) | books.peciulevicius.com | 8083 | Kindle Cloud |
 | [Rclone](#rclone) | — | — | Cloud backup |
 | [ntfy](#ntfy) | Tailscale only | 8095 | Pushover / ntfy.sh |
@@ -30,7 +30,7 @@ Run your own cloud on a Mac mini (or any Docker host). Self-hosted services cove
 | [Stirling PDF](#stirling-pdf) ⚡ | pdf.peciulevicius.com | 8084 | Adobe Acrobat |
 | [IT-Tools](#it-tools) ⚡ | tools.peciulevicius.com | 8085 | Online dev tools |
 | [Audiobookshelf](#audiobookshelf) | listen.peciulevicius.com | 13378 | Audible |
-| [Linkwarden](#linkwarden) | links.peciulevicius.com | 3005 | Pocket / Raindrop |
+| [Linkwarden](#linkwarden) ⚡ | links.peciulevicius.com | 3005 | Pocket / Raindrop |
 | [Caddy + Sablier](#caddy--sablier) | (internal — 127.0.0.1:8880 + Tailscale IP) | 8880 | Scale-to-zero reverse proxy |
 
 ### Media Stack
@@ -38,11 +38,11 @@ Run your own cloud on a Mac mini (or any Docker host). Self-hosted services cove
 | Service | URL | Port | Purpose |
 |---------|-----|------|---------|
 | [Jellyfin](#jellyfin) | watch.peciulevicius.com | 8096 | Media server (Plex alternative) |
-| [Jellyseerr](#jellyseerr) | Tailscale only | 5055 | Media request & discovery UI |
+| [Jellyseerr](#jellyseerr) ⚡ | Tailscale only | 5055 | Media request & discovery UI |
 | [Sonarr](#sonarr-radarr-prowlarr) | Tailscale only | 8989 | TV show management |
 | [Radarr](#sonarr-radarr-prowlarr) | Tailscale only | 7878 | Movie management |
 | [Prowlarr](#sonarr-radarr-prowlarr) | Tailscale only | 9696 | Indexer manager |
-| [Bazarr](#bazarr) | Tailscale only | 6767 | Automated subtitle management |
+| [Bazarr](#bazarr) ⚡ | Tailscale only | 6767 | Automated subtitle management |
 | [Transmission](#transmission) | Tailscale only | 9091 | BitTorrent client (behind `transmission-ts` Tailscale sidecar) |
 | [LazyLibrarian](#lazylibrarian) | Tailscale only | 5299 | Ebook & audiobook automation |
 
@@ -92,12 +92,12 @@ ondemand stop-all
 
 | Name | Containers | URL |
 |---|---|---|
-| `paperless-ngx` | paperless, paperless_db, paperless_broker | papers.peciulevicius.com |
-| `nextcloud` | nextcloud, nextcloud_db | cloud.peciulevicius.com |
-| `stirling-pdf` | stirling_pdf | pdf.peciulevicius.com |
-| `it-tools` | it_tools | tools.peciulevicius.com |
-| `odysseus` | odysseus, searxng, chromadb, ntfy | Tailscale `100.81.171.49:7001` |
 | `flaresolverr` | flaresolverr (part of `sonarr-radarr`) | internal — Prowlarr's Cloudflare solver, no indexer uses it |
+
+**2026-09-27: paperless-ngx, nextcloud, stirling-pdf, it-tools and odysseus
+moved from this list to the Scale-to-zero section above** (Caddy + Sablier)
+— `flaresolverr` is the only one left, and stays here for good since it has
+no hostname a browser opens for Sablier to gate.
 
 While stopped, the tunnel hostname returns a Cloudflare 502 — that's expected.
 Glance lists them as bookmarks under *On demand*, without a monitor; their
@@ -180,8 +180,12 @@ docker compose up -d
 
 ### Nextcloud
 
-> ⏸ **On-demand** — stopped by default. `ondemand start nextcloud` first,
-> `ondemand stop nextcloud` when done.
+> ⚡ **Scale-to-zero** (2026-09-27) — starts itself on the first request to
+> `cloud.peciulevicius.com` (fronted by `services/caddy`), stops itself after
+> 30 minutes idle. No manual start/stop. A healthcheck was added
+> (`curl -fs http://localhost/status.php`) so Sablier only reports it ready
+> once Apache/PHP has actually finished booting, not just once the container
+> is running — without it the very first proxied request 502s.
 
 **What:** Google Drive + Docs + Calendar + Contacts replacement. File storage, document editing, shared folders.
 
@@ -299,8 +303,10 @@ docker compose up -d
 
 ### Paperless-ngx
 
-> ⏸ **On-demand** — stopped by default. `ondemand start paperless-ngx` first,
-> `ondemand stop paperless-ngx` when done.
+> ⚡ **Scale-to-zero** (2026-09-27) — starts itself (with its Postgres DB and
+> Redis broker, `sablier.group=paperless`) on the first request to
+> `papers.peciulevicius.com` (fronted by `services/caddy`), stops itself
+> after 30 minutes idle. No manual start/stop.
 
 **What:** Digital document archive with OCR. Scan or upload receipts, contracts, invoices, letters — it OCRs them and makes them searchable.
 
@@ -569,6 +575,11 @@ docker compose up -d
 
 ### Linkwarden
 
+> ⚡ **Scale-to-zero** (2026-09-27) — starts itself (with its Postgres DB,
+> `sablier.group=linkwarden`) on the first request to
+> `links.peciulevicius.com` (fronted by `services/caddy`), stops itself
+> after 30 minutes idle. No manual start/stop.
+
 **What:** Bookmark manager that archives web pages. Save links, organize with collections and tags, and never lose a page to link rot — Linkwarden saves a copy of every page.
 
 **Why:** Bookmarks that survive deleted pages. Full-text search across all saved content.
@@ -656,6 +667,14 @@ docker compose up -d          # starts transmission-ts first, then transmission
 
 ### Jellyseerr
 
+> ⚡ **Scale-to-zero** (2026-09-27) — Caddy now owns the Tailscale-facing port
+> (`100.81.171.49:5055`) instead of Jellyseerr publishing it directly, so
+> opening that address starts the container and it stops itself after 30
+> minutes idle. `localhost:5055` still works for local debugging. A
+> healthcheck (`wget --spider http://localhost:5055/api/v1/status`) was
+> added — without one Sablier reports "ready" as soon as the container is
+> running, before the app has actually bound its port.
+
 **What:** Media request and discovery UI for Jellyfin. Browse movies/TV shows in a Netflix-like interface, click "Request", and it sends to Sonarr/Radarr automatically.
 
 **Why:** Way easier than searching in Sonarr/Radarr directly. Browse trending, filter by genre, see what's available.
@@ -674,6 +693,15 @@ docker compose up -d
 ---
 
 ### Bazarr
+
+> ⚡ **Scale-to-zero** (2026-09-27) — Caddy now owns the Tailscale-facing port
+> (`100.81.171.49:6767`) instead of Bazarr publishing it directly, so opening
+> that address starts the container and it stops itself after 30 minutes
+> idle. `localhost:6767` still works for local debugging. A healthcheck
+> (`curl -fs http://localhost:6767/`) was added — this is the service that
+> caught the race in the first place: without a healthcheck Sablier reported
+> "ready" before Bazarr's HTTP server had bound, and the first proxied
+> request got a 502.
 
 **What:** Automated subtitle management. Connects to Sonarr/Radarr, checks your library, and auto-downloads subtitles from OpenSubtitles and other providers.
 

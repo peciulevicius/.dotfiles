@@ -45,7 +45,7 @@ work, then set the real duration and reload cloudflared.
 | Phase | Services | Strategy | Idle | Status |
 |---|---|---|---|---|
 | 1 | Stirling-PDF, IT-Tools | dynamic | 30m | done 2026-09-27 |
-| 2 | Paperless, Nextcloud, Odysseus, Linkwarden, Jellyseerr, Bazarr | blocking (dynamic for Odysseus) | 30m | planned, not yet live |
+| 2 | Paperless, Nextcloud, Odysseus, Linkwarden, Jellyseerr, Bazarr | blocking (dynamic for Odysseus) | 30m | done 2026-09-27 |
 | 3 | Calibre-Web, Audiobookshelf, Jellyfin | blocking | 30m / 2h / 2h | planned, not yet live |
 
 ## Groups
@@ -96,11 +96,13 @@ untouched — it must stay always-on.
 
 `scripts/backup/backup-databases.sh` starts a stopped DB container directly
 with `docker start` (not through Caddy/Sablier), dumps it, and stops it again
-itself. Sablier only manages sessions it created via its own proxy — a
-container started by something else is invisible to it, so there's no fight
-over who stops `paperless_db` or `nextcloud_db` mid-dump. To be verified once
-phase 2 (Paperless, Nextcloud) is live: run the backup while Sablier's
-containers are asleep and confirm Sablier doesn't touch them.
+itself. Sablier's own reconciliation (`--provider.auto-stop-on-startup`,
+default `true`) only runs once, at Sablier's own boot — it does not
+continuously watch for externally-started containers unless
+`--provider.auto-stop-externally-started` is set (it isn't here). Verified
+2026-09-27: ran the backup with `paperless_db`, `linkwarden_db` and
+`nextcloud_db` all asleep — all three dumped cleanly and Sablier never
+touched them.
 
 ## Monitoring
 
@@ -155,6 +157,19 @@ Per phase, per hostname:
 - Sablier's `dynamic` loading page polls the app itself, not Caddy — don't
   point `dynamic`'s `display_name`/theme assets at anything that also needs
   waking.
+- **A container with no Docker healthcheck can make Sablier report "ready"
+  before it actually is.** Without one, Sablier's readiness check is just
+  "is the container in the `running` state" — for an app whose HTTP server
+  takes a couple more seconds to bind after the process starts (common:
+  Node, Python/gunicorn, PHP-FPM), Caddy's very first reverse-proxied
+  request can land in that gap and get a `502`. Caught on Bazarr in phase 2;
+  fixed there and pre-emptively on Jellyseerr and Nextcloud by adding a
+  `healthcheck:` to their compose files. Before adding a new
+  Sablier-managed service, check
+  `docker inspect <container> --format '{{.Config.Healthcheck}}'` — if it's
+  `<nil>`, add one (`curl`/`wget` against a local endpoint is usually enough;
+  check what the image actually has with
+  `docker exec <container> sh -c 'which curl wget nc'` before picking one).
 - Editing `Caddyfile` or `docker-compose.yml` here follows the same
   copy-not-symlink rule as every other service: re-copy to
   `~/services/caddy/` and `docker compose up -d --build caddy` (rebuild is

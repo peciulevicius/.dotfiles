@@ -40,6 +40,12 @@ services:
     ports:
       # Tunnel target — cloudflared talks to this over loopback only.
       - "127.0.0.1:8880:8880"
+      # Phase 2 (2026-09-27): Tailscale-only apps. Caddy owns the
+      # Tailscale-facing port instead of the app publishing it directly —
+      # see README "Tailscale-only apps".
+      - "${TAILSCALE_IP:-100.81.171.49}:5055:5055"   # Jellyseerr
+      - "${TAILSCALE_IP:-100.81.171.49}:6767:6767"   # Bazarr
+      - "${TAILSCALE_IP:-100.81.171.49}:7001:7001"   # Odysseus
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy-data:/data
@@ -48,6 +54,13 @@ services:
       # Phase 1 (2026-09-27): Stirling-PDF, IT-Tools
       - stirling-pdf
       - it-tools
+      # Phase 2 (2026-09-27): Paperless, Nextcloud, Odysseus, Linkwarden,
+      # Jellyseerr, Bazarr
+      - paperless-ngx
+      - nextcloud
+      - odysseus_default
+      - linkwarden
+      - media
 
 volumes:
   caddy-data:
@@ -57,4 +70,14 @@ networks:
   stirling-pdf:
     external: true
   it-tools:
+    external: true
+  paperless-ngx:
+    external: true
+  nextcloud:
+    external: true
+  odysseus_default:
+    external: true
+  linkwarden:
+    external: true
+  media:
     external: true

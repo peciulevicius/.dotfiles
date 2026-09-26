@@ -501,38 +501,41 @@ whole-house outage now alerts.
       empty/unused before removal; both still present 2026-09-25).
       `rclone-backup.sh` already excludes both.
 - [ ] **Scale-to-zero rollout (Caddy + Sablier, `services/caddy/README.md`)
-      — phase 1 done 2026-09-27** (Stirling PDF, IT-Tools: tested cold-start
-      through the public hostname and idle-stop with a 2m test duration, real
-      duration is 30m). Remaining phases: 2 — Paperless, Nextcloud, Odysseus,
-      Linkwarden, Jellyseerr, Bazarr; 3 — Calibre-Web, Audiobookshelf,
-      Jellyfin (2h idle for the media two). See the README's rollout table
-      for current status.
+      — phases 1 + 2 done 2026-09-27.** Phase 1: Stirling PDF, IT-Tools.
+      Phase 2: Paperless, Nextcloud, Odysseus, Linkwarden, Jellyseerr, Bazarr
+      — all tested cold-start through the real public hostname / Tailscale
+      port and idle-stop with a 2m test duration before setting the real 30m;
+      Bazarr's missing Docker healthcheck caused a 502 race, fixed there plus
+      pre-emptively on Jellyseerr and Nextcloud (see the README "Gotchas").
+      Remaining: phase 3 — Calibre-Web, Audiobookshelf, Jellyfin (2h idle for
+      the media two). See the README's rollout table for current status.
       - [ ] 👤 Uptime Kuma has no config-file/API for creating or pausing
-        monitors — pause the Stirling PDF / IT-Tools monitors (if any exist)
-        and add one active monitor each for Caddy (`127.0.0.1:8880`, e.g. via
-        the tunnel) and Sablier, so the proxy itself being down is still
-        caught even though the apps behind it are expected to look stopped.
+        monitors — pause the monitors for every phase 1/2 service that has
+        one (Stirling PDF, IT-Tools, Paperless-ngx, Nextcloud, Linkwarden,
+        Jellyseerr, Bazarr — Odysseus wasn't monitored) and add one active
+        monitor each for Caddy (`127.0.0.1:8880`, e.g. via the tunnel) and
+        Sablier, so the proxy itself being down is still caught even though
+        the apps behind it are expected to look stopped.
       - [ ] 👤 Test Jellyfin on the TV app, Audiobookshelf on the phone app,
         and KOReader's OPDS feed (Calibre-Web) each after they've gone to
         sleep — confirm all three reconnect within the timeout instead of
         just showing an error, and that Audiobookshelf progress sync survives
         a stop/start cycle.
-- [ ] 👤 **Nextcloud + Paperless-ngx are on-demand (2026-09-26) — decide
-      later, no rush.** Both are stopped by default to free RAM, but stay in
-      the repo, staged and backed up (weekly DB dump still runs — it starts
-      only the DB container). Start with `ondemand start nextcloud` /
-      `ondemand start paperless-ngx`. The keep-or-remove question is parked,
-      not answered. What each would be kept for:
+- [ ] 👤 **Nextcloud + Paperless-ngx keep-or-remove — decide later, no rush.**
+      Both scale to zero automatically now (2026-09-27, see above) instead of
+      needing a manual `ondemand start`, but the keep-or-remove question
+      itself is unrelated to that and still parked, not answered. What each
+      would be kept for:
       - *Nextcloud* — 83MB of real files; its only non-redundant features are
         CalDAV/CardDAV (see *Calendar + Contacts* — that plan needs it
-        **running**, so doing it means taking Nextcloud off the on-demand
-        list) and the WebDAV target for a Supernote, if one is ever bought.
-        ⚠️ Don't use Nextcloud's Notes app (2.3★, disconnects); Obsidian is the
-        notes tool.
+        reachable, which scale-to-zero still allows, just with a cold-start
+        delay on the first request) and the WebDAV target for a Supernote, if
+        one is ever bought. ⚠️ Don't use Nextcloud's Notes app (2.3★,
+        disconnects); Obsidian is the notes tool.
       - *Paperless-ngx* — 14 real scanned documents; OCR + a tagged,
         searchable archive, which an Odysseus chat upload is not. While
-        stopped it doesn't consume or OCR anything, so scan in batches with
-        it started.
+        asleep it doesn't consume or OCR anything, so scan in batches with
+        it open.
 
 - [ ] Delete ~2.3 GB of locked `.smbdelete` duplicates (needs NAS-side access)
 

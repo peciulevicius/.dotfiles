@@ -8,6 +8,68 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-27 — Scale-to-zero phase 2: Paperless, Nextcloud, Odysseus, Linkwarden, Jellyseerr, Bazarr
+
+Extended `services/caddy/` (phase 1: Stirling PDF, IT-Tools) to six more
+services — three tunnel-facing (Paperless, Nextcloud, Linkwarden) and three
+Tailscale-only (Odysseus, Jellyseerr, Bazarr). Full detail in
+`services/caddy/README.md`.
+
+- **Groups**: `sablier.enable=true` + `sablier.group=<name>` labels added to
+  all containers in each multi-container app — `paperless` (paperless,
+  paperless_db, paperless_broker), `nextcloud` (nextcloud, nextcloud_db),
+  `linkwarden` (linkwarden, linkwarden_db), `odysseus` (odysseus, searxng,
+  chromadb — **not** ntfy, which must stay always-on for push). Single
+  containers (`jellyseerr`, `bazarr`) got a same-named group for consistency.
+- **Tailscale port ownership**: Jellyseerr, Bazarr and Odysseus used to
+  publish their ports directly on all interfaces (reachable at
+  `100.81.171.49:<port>`). Their own compose `ports:`/`.env` binds were
+  narrowed to `127.0.0.1` and Caddy's compose now publishes the same three
+  port numbers on the Tailscale IP instead, reverse-proxying over the shared
+  Docker network — so the Tailscale address a device already used keeps
+  working, but now goes through Sablier. Odysseus's `docker-compose.yml`
+  lives in the separate Odysseus repo clone (`~/services/odysseus/`, not
+  this dotfiles repo) — its labels and `.env` `APP_BIND` change are a local
+  patch only, documented in `services/caddy/README.md` and
+  `services/odysseus/README.md` so a re-clone/pull doesn't silently drop
+  scale-to-zero.
+- **Real bug caught**: Bazarr, Jellyseerr and Nextcloud ship **no Docker
+  healthcheck**. Without one, Sablier reports a container "ready" the moment
+  it's merely `running`, not once its HTTP server has actually bound —
+  Caddy's first reverse-proxied request to Bazarr got a real `502 connection
+  refused` from this exact race (confirmed in Caddy's own access log:
+  `dial tcp …:6767: connect: connection refused`). Fixed by adding an
+  explicit `healthcheck:` to all three compose files (`curl`/`wget` against
+  a local endpoint — checked what each image actually ships first;
+  Jellyseerr has no `curl`, only `wget`). Paperless, Nextcloud's DB,
+  Stirling PDF and Linkwarden already shipped one in their images and never
+  needed this.
+- **Tested end-to-end** through the real public hostnames
+  (`papers.`/`cloud.`/`links.peciulevicius.com`) and the real Tailscale IP
+  (`100.81.171.49:5055`/`:6767`/`:7001`), with a 2-minute test
+  `session_duration` first (confirmed cold-start success and idle-stop for
+  all six, ~10–45s cold start depending on the app, group members starting
+  together for Paperless), then set to the real 30 minutes.
+  `backup-databases.sh` re-verified working with Paperless/Linkwarden/
+  Nextcloud's DB containers now Sablier-managed instead of `ondemand.sh`
+  — ran the backup with all three asleep, all three dumped cleanly, Sablier
+  never interfered (its `--provider.auto-stop-on-startup` only reconciles
+  once, at Sablier's own boot, not continuously).
+- Moved `paperless-ngx`, `nextcloud` and `odysseus` out of
+  `scripts/utils/ondemand.sh` `ENTRIES` — only `flaresolverr` is left there
+  (no hostname for Sablier/Caddy to gate). Removed the `check-url` for
+  Linkwarden, Jellyseerr and Bazarr in `services/glance/glance.yml` (kept as
+  plain bookmarks) so Glance doesn't show them falsely "down" while asleep.
+- **Also fixed**: `services/setup-services.sh` never copied a service's
+  extra top-level `*.yml` files (only `docker-compose.yml`,
+  `.env.example`, and shell scripts) — `glance.yml` had been silently
+  un-staged this whole time despite the homelab-service skill's explicit
+  "re-stage both files" instruction. Every past `glance.yml` edit landed in
+  the repo but needed a manual `cp` to actually take effect; not anymore.
+- Not yet done: phase 3 (Calibre-Web, Audiobookshelf, Jellyfin), the Kuma
+  monitor pause step (no API — manual, tracked in the TODO), and the
+  physical device tests (Jellyfin TV, Audiobookshelf phone, KOReader OPDS).
+
 ## 2026-09-27 — Scale-to-zero phase 1: Caddy + Sablier (Stirling PDF, IT-Tools)
 
 New `services/caddy/` — a custom Caddy build (xcaddy, `caddy:2.11.4-builder`,
