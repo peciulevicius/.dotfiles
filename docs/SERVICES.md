@@ -20,6 +20,7 @@ Run your own cloud on a Mac mini (or any Docker host). Self-hosted services cove
 | [Paperless-ngx](#paperless-ngx) ⏸ | papers.peciulevicius.com | 8000 | Paper filing |
 | [Calibre-Web](#calibre-web) | books.peciulevicius.com | 8083 | Kindle Cloud |
 | [Rclone](#rclone) | — | — | Cloud backup |
+| [ntfy](#ntfy) | Tailscale only | 8095 | Pushover / ntfy.sh |
 
 ### Utility Services
 
@@ -750,7 +751,11 @@ routine reads a read-only reports feed (`~/services/paperclip/reports` →
 `/reports:ro`, written by `scripts/utils/paperclip-reports.sh` at 09:30) and
 raises decisions — it never changes servers. *Studio* — CEO (Claude Code),
 Product Manager (Codex), Researcher (Claude Code), project *Idea Pipeline*, a
-paused weekday standup. All heartbeats off. Details, API recipes and
+paused weekday standup. All heartbeats off. *Coach* (2026-09-27, **drafted, not
+yet created** — needs an interactive board login this batch didn't have): one
+Claude Code Sonnet agent, TrainingPeaks + Strava MCP, a 06:30 daily check-in
+routine, pushes to the standalone `ntfy` service. `/training` (`~/.training`)
+is already mounted read-write into the container. Details, API recipes and
 usage rules: `services/paperclip/README.md`.
 
 ```bash
@@ -758,6 +763,25 @@ cd ~/services/paperclip
 docker compose up -d
 curl -s 127.0.0.1:3100/api/health | jq .status
 ```
+
+---
+
+### ntfy
+
+**What:** standalone push-notification server ([binwiederhier/ntfy](https://github.com/binwiederhier/ntfy)),
+separate from the one bundled in the on-demand Odysseus stack. Publish to a
+topic with a `curl`/HTTP call, the phone app (subscribed to that topic) gets a
+push.
+
+**Why:** the Coach agent's daily check-in (see Paperclip below) needs to reach
+the phone regardless of what else is asleep, and with real auth on the topic —
+Odysseus's bundled ntfy is on-demand and has no auth at all.
+
+**How:** `auth-default-access: deny-all`; a `publisher` user (write-only on a
+private, randomly-suffixed topic) and a `phone` user (read-only), each with
+their own access token — never the account password. Tailscale + localhost
+only, no tunnel hostname (the ntfy app supports a self-hosted server address
+directly). Setup, tokens, and the phone app steps: `services/ntfy/README.md`.
 
 ---
 
@@ -824,6 +848,8 @@ Every service is accessible three ways: localhost (on the Mac mini), Tailscale (
 | Transmission | 9091 | http://100.81.171.49:9091 |
 | LazyLibrarian | 5299 | http://100.81.171.49:5299 |
 | Paperclip (agents) | 3100 | http://100.81.171.49:3100 |
+| ntfy (push) | 8095 | http://100.81.171.49:8095 |
+
 **Mobile apps (use Tailscale URLs to bypass Cloudflare Access gate):**
 
 | App | Server URL |
@@ -832,6 +858,7 @@ Every service is accessible three ways: localhost (on the Mac mini), Tailscale (
 | Immich | http://100.81.171.49:2283 |
 | Jellyfin | http://100.81.171.49:8096 |
 | Audiobookshelf | http://100.81.171.49:13378 |
+| ntfy | http://100.81.171.49:8095 (subscribe with the read token from `~/services/ntfy/.env`) |
 
 All localhost URLs follow the pattern `http://localhost:<port>`.
 
