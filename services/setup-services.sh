@@ -35,6 +35,7 @@ SERVICES=(
   linkwarden
   jellyfin
   sonarr-radarr
+  lidarr
   lazylibrarian
   transmission
   jellyseerr
@@ -68,6 +69,7 @@ SERVICE_PORTS=(
   "linkwarden:3005"
   "jellyfin:8096"
   "sonarr-radarr:8989,7878,9696"
+  "lidarr:8686"
   "lazylibrarian:5299"
   "transmission:9091"
   "jellyseerr:5055"

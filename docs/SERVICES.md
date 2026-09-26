@@ -1,6 +1,6 @@
 # Self-Hosted Services
 
-Run your own cloud on a Mac mini (or any Docker host). 26 services covering photos, passwords, files, documents, media, monitoring, and more.
+Run your own cloud on a Mac mini (or any Docker host). Self-hosted services covering photos, passwords, files, documents, media, monitoring, and more.
 
 ## Service Overview
 
@@ -40,6 +40,7 @@ Run your own cloud on a Mac mini (or any Docker host). 26 services covering phot
 | [Sonarr](#sonarr-radarr-prowlarr) | Tailscale only | 8989 | TV show management |
 | [Radarr](#sonarr-radarr-prowlarr) | Tailscale only | 7878 | Movie management |
 | [Prowlarr](#sonarr-radarr-prowlarr) | Tailscale only | 9696 | Indexer manager |
+| [Lidarr](#lidarr) | Tailscale only | 8686 | Music collection management |
 | [Bazarr](#bazarr) | Tailscale only | 6767 | Automated subtitle management |
 | [Transmission](#transmission) | Tailscale only | 9091 | BitTorrent client (behind `transmission-ts` Tailscale sidecar) |
 | [LazyLibrarian](#lazylibrarian) | Tailscale only | 5299 | Ebook & audiobook automation |
@@ -564,6 +565,22 @@ docker compose up -d
 cd ~/services/sonarr-radarr
 docker compose up -d
 ```
+
+---
+
+### Lidarr
+
+**What:** Music collection manager. Lidarr monitors artists and albums, searches through Prowlarr, sends releases to Transmission, and organizes completed imports into the music library.
+
+**Setup:** Stage the service with `./services/setup-services.sh lidarr`, then create the music library directory and start it:
+
+```bash
+mkdir -p /Volumes/media/{music,downloads}
+cd ~/services/lidarr
+docker compose up -d
+```
+
+Open http://localhost:8686. Add `/media/music` as the root folder, connect Prowlarr as the indexer manager, and add Transmission at `http://transmission:9091` as the download client. Lidarr shares the existing `media` Docker network and `/media` mount, so downloads and music stay visible at the same paths across the media stack.
 
 ---
 

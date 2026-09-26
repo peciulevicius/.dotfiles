@@ -113,6 +113,10 @@ pages:
                 url: http://100.81.171.49:6767
                 check-url: http://bazarr:6767/
                 icon: di:bazarr
+              - title: Lidarr
+                url: http://100.81.171.49:8686
+                check-url: http://lidarr:8686/
+                icon: di:lidarr
               - title: Transmission
                 url: http://100.81.171.49:9091
                 # `transmission` is a network alias on the transmission-ts
@@ -200,6 +204,9 @@ pages:
                   - title: Radarr
                     url: http://100.81.171.49:7878
                     icon: si:radarr
+                  - title: Lidarr
+                    url: http://100.81.171.49:8686
+                    icon: di:lidarr
                   - title: Prowlarr
                     url: http://100.81.171.49:9696
                     icon: di:prowlarr
@@ -215,6 +222,9 @@ pages:
                   - title: Bazarr
                     url: http://100.81.171.49:6767
                     icon: di:bazarr
+                  - title: Lidarr
+                    url: http://100.81.171.49:8686
+                    icon: di:lidarr
                   - title: beets (music)
                     url: http://100.81.171.49:8337
                     icon: di:beets
@@ -316,6 +326,9 @@ pages:
                   - title: Bazarr
                     url: http://100.81.171.49:6767
                     icon: di:bazarr
+                  - title: Lidarr
+                    url: http://100.81.171.49:8686
+                    icon: di:lidarr
                   - title: Transmission
                     url: http://100.81.171.49:9091
                     icon: si:transmission
