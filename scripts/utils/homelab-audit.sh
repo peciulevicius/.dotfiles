@@ -53,16 +53,19 @@ done < <(find "$DOTFILES/services" -mindepth 2 -maxdepth 2 \( -name '*.sh' -o -n
 head_ "Containers"
 if command -v docker >/dev/null 2>&1; then
   down=0
+  # On-demand services (ondemand.sh, 2026-09-26) are stopped by default to save
+  # RAM; restart=no also marks one (e.g. storyteller). Stopped is normal for both.
+  ondemand=" $("$DOTFILES/scripts/utils/ondemand.sh" containers 2>/dev/null | tr '\n' ' ') "
   while IFS='|' read -r name status policy; do
-    # restart=no marks on-demand services (e.g. storyteller) — stopped is normal
     [[ "$policy" == "no" ]] && continue
+    [[ "$ondemand" == *" $name "* ]] && continue
     if [[ "$status" != running ]]; then
       bad "$name is $status (restart policy: $policy)"; down=1
     fi
   done < <(docker ps -aq | xargs -r docker inspect --format '{{.Name}}|{{.State.Status}}|{{.HostConfig.RestartPolicy.Name}}' 2>/dev/null | sed 's#^/##')
   unhealthy=$(docker ps --filter health=unhealthy --format '{{.Names}}')
   [[ -n "$unhealthy" ]] && { bad "unhealthy: $unhealthy"; down=1; }
-  [[ $down -eq 0 ]] && ok "$(docker ps -q | wc -l | tr -d ' ') running, none down or unhealthy"
+  [[ $down -eq 0 ]] && ok "$(docker ps -q | wc -l | tr -d ' ') running, none down or unhealthy ($(wc -w <<<"$ondemand" | tr -d ' ') on-demand skipped)"
 else
   bad "docker not available"
 fi

@@ -2,6 +2,12 @@
 
 Google Drive / Docs replacement. Files, calendar, contacts, and more.
 
+> ⏸ **On-demand** (since 2026-09-26) — stopped by default to save RAM.
+> `ondemand start nextcloud` (alias for `scripts/utils/ondemand.sh`) prints the
+> URL; `ondemand stop nextcloud` when done. The weekly DB dump still runs: `backup-databases.sh` starts only
+> `nextcloud_db`, dumps it and stops it again. CalDAV/CardDAV sync would need it
+> always on — take it off the on-demand list first.
+
 ## Ports
 
 | Port | Service |

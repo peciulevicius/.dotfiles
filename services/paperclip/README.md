@@ -18,7 +18,7 @@ on 2026.916.1 — the same version pinned here).
 | Exposure | Tailscale + localhost only. **No tunnel hostname.** Not reachable on the LAN IP. |
 | Auth | `authenticated` / `private` mode, email + password (Better Auth). Sign-ups closed after the first admin claimed the instance. |
 | Database | Embedded PostgreSQL inside the container (`data/instances/default/db`) |
-| RAM | ~0.8GB after start, ~1.2GB idle once both companies are loaded; capped at 2GB (`mem_limit`, raised from 1.5GB 2026-09-26) |
+| RAM | ~0.8GB after start, ~1.2GB idle once both companies are loaded; capped at 3GB (`mem_limit`: 1.5GB → 2GB → 3GB, all 2026-09-26) |
 | Health | `GET /api/health` → `{"status":"ok",…}` |
 
 ## Why it is built this way
@@ -219,7 +219,12 @@ With two companies loaded the server idles at ~1.2GB anon RSS. At the old
 had run, and each Claude Code / Codex run adds a CLI process (~300–500MB) — a
 guaranteed exit 137. Raised to **2GB** on 2026-09-26, allowed by the rule
 *raise only when host `memory_pressure` free ≥ 30%* (it was 37%; swap
-7.4–7.5 of 8GB, unchanged). Keep to **one agent working at a time**; if runs
+7.4–7.5 of 8GB, unchanged). Raised again to **3GB** the same evening: at 2GB `memory.events` `max` had
+reached 12,687 with no agent running. Paid for by making six rarely used
+services on-demand (~2.2 GiB freed in the Docker VM — see
+`docs/HOME_SERVER_REFERENCE.md` → *Memory budget and on-demand services*).
+Not 3.5GB: host free stayed at 33% and swap didn't shrink, because RAM freed
+inside the VM isn't returned to macOS. Keep to **one agent working at a time**; if runs
 die with exit 137, check `memory_pressure` and `sysctl vm.swapusage` before
 raising again. Check the container's own pressure with
 `docker exec paperclip cat /sys/fs/cgroup/memory.events` (`max` counts hits).

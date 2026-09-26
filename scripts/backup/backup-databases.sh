@@ -1,6 +1,10 @@
 #!/bin/bash
-# Dump databases from running Docker containers to ~/backups/
+# Dump databases from Docker containers to ~/backups/
 # Run weekly via cron: 0 4 * * 0 ~/.dotfiles/scripts/backup/backup-databases.sh
+#
+# On-demand services (scripts/utils/ondemand.sh) keep their DB containers
+# stopped. A stopped DB container is started on its own — never the app —
+# dumped, and stopped again, so their dumps stay fresh without the app running.
 #
 # Usage: ./backup-databases.sh [--dry-run]
 
@@ -31,14 +35,49 @@ done
 
 mkdir -p "$BACKUP_DIR"
 
+# DB containers this run started; stopped again on exit, even after a failure.
+STARTED=()
+stop_started() {
+  local c
+  for c in ${STARTED[@]+"${STARTED[@]}"}; do
+    if docker stop "$c" >/dev/null 2>&1; then
+      log_info "$c stopped again (on-demand)"
+    else
+      log_err "$c could not be stopped again — stop it by hand"
+    fi
+  done
+}
+trap stop_started EXIT
+
+# ensure_running <container> <readiness command…>
+# Running → nothing to do. Exists but stopped (on-demand) → start just this
+# container and wait until the DB answers. Doesn't exist → fail.
+ensure_running() {
+  local container="$1"; shift
+  docker ps --format '{{.Names}}' | grep -q "^${container}$" && return 0
+  docker ps -a --format '{{.Names}}' | grep -q "^${container}$" || return 1
+  [[ "$DRY_RUN" == "true" ]] && { log_info "[dry-run] Would start stopped $container temporarily"; return 0; }
+
+  log_info "$container is stopped (on-demand) — starting it just for the dump"
+  docker start "$container" >/dev/null || return 1
+  STARTED+=("$container")
+  for _ in $(seq 1 60); do
+    docker exec "$container" "$@" >/dev/null 2>&1 && return 0
+    sleep 1
+  done
+  log_err "$container did not become ready within 60s"
+  return 1
+}
+
 dump_postgres() {
   local container="$1"
   local user="$2"
   local label="$3"
   local file="$BACKUP_DIR/${label}-${DATE}.sql"
 
-  if ! docker ps --format '{{.Names}}' | grep -q "^${container}$"; then
-    log_warn "$label: container '$container' not running, skipping"
+  if ! ensure_running "$container" pg_isready -U "$user"; then
+    log_err "$label: container '$container' missing or not ready, skipping"
+    ((ERRORS++))
     return
   fi
 
@@ -64,8 +103,10 @@ dump_mysql() {
   local label="$2"
   local file="$BACKUP_DIR/${label}-${DATE}.sql"
 
-  if ! docker ps --format '{{.Names}}' | grep -q "^${container}$"; then
-    log_warn "$label: container '$container' not running, skipping"
+  # shellcheck disable=SC2016  # $MYSQL_ROOT_PASSWORD expands inside the container
+  if ! ensure_running "$container" sh -c 'mariadb-admin ping -u root -p"$MYSQL_ROOT_PASSWORD"'; then
+    log_err "$label: container '$container' missing or not ready, skipping"
+    ((ERRORS++))
     return
   fi
 

@@ -19,7 +19,11 @@ Personal dotfiles + self-hosted services stack for macOS (primary), Arch Linux, 
 
 ## Services
 
-Mac mini M4 runs ~42 containers (2026-09-26) + rclone backup + cloudflared tunnel — see `docs/SERVICES.md` for the current list.
+Mac mini M4 has ~42 containers (2026-09-26), ~30 running: six rarely used
+services (Paperless, Nextcloud, Stirling PDF, IT-Tools, Odysseus, FlareSolverr)
+are **on-demand**, stopped by default and started with `ondemand start <name>`
+(`scripts/utils/ondemand.sh`). Plus rclone backup + cloudflared tunnel — see
+`docs/SERVICES.md` for the current list.
 See `docs/SERVICES.md` for full list. Key services: Immich, Vaultwarden, Nextcloud, Jellyfin, Sonarr/Radarr, Transmission, Pi-hole.
 
 All services accessible via: localhost, Tailscale (`100.81.171.49`), and `*.peciulevicius.com` (Cloudflare Tunnel).
@@ -123,6 +127,8 @@ Goal: read self-hosted Calibre-Web EPUBs on it without Amazon in the middle.
 
 Goal: own the chat history, memories and RAG corpus; rent the inference.
 
+- Odysseus is **on-demand** since 2026-09-26 (stopped by default to save
+  RAM): `ondemand start odysseus` before using it.
 - Target: **Odysseus** (<https://github.com/odysseus-dev/odysseus>, AGPL-3.0,
   port 7000, macOS supported). Open WebUI is the fallback.
 - Phase 1 is a workspace with **cloud** backends — this is sovereignty, not
@@ -130,7 +136,7 @@ Goal: own the chat history, memories and RAG corpus; rent the inference.
 - **Models run natively via Homebrew, never in Docker.** Docker on macOS has no
   GPU passthrough, so containerised Ollama is CPU-only. This is the likely real
   cause of the earlier failed attempt recorded in the changelog.
-- Hardware ceiling is ~8B quantised. 16GB unified, shared with ~42 containers.
+- Hardware ceiling is ~8B quantised. 16GB unified, shared with ~30 running containers.
   Do not propose 30B+ models.
 
 ### Octopus Deploy — ruled out, `docs/guides/OCTOPUS_DEPLOY.md`

@@ -8,6 +8,46 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-26 — On-demand services to free RAM; Paperclip 2g → 3g
+
+**Why:** macOS swap was 7.7 of 8 GB with 34% free and the Docker VM at its
+10 GB ceiling; Paperclip had hit its 2 GB cap 12,687 times while idle. Rather
+than remove rarely used services (Nextcloud/Paperless keep-or-remove was still
+undecided), they are now **stopped by default** and started when needed.
+
+- **On-demand set** (user decision): Paperless-ngx (+db, broker), Nextcloud
+  (+db), Stirling PDF, IT-Tools, the Odysseus stack (odysseus, searxng,
+  chromadb, ntfy) and **FlareSolverr** — Prowlarr has the FlareSolverr proxy
+  on tag `flaresolverr`, but none of the 6 indexers carries that tag, so
+  nothing used it. All composes already had `restart: unless-stopped`
+  (none `always`), so `docker compose stop` survives Docker/Mac restarts;
+  Watchtower skips stopped containers (`WATCHTOWER_INCLUDE_STOPPED=false`).
+- **`scripts/utils/ondemand.sh`** (`ondemand` zsh alias): `list`, `start`,
+  `stop`, `stop-all`, `containers`. One map in the script is the source of
+  truth for the audit and the backup.
+- **Measured:** 42 → 30 running containers, `docker stats` total 6.60 →
+  **4.37 GiB** (~2.2 GiB freed in the VM). macOS free 34% → 33%, swap 7.7 of
+  8.0 → 7.9 of 9.2 GB — **no macOS relief**, because RAM freed inside the VM
+  stays with the VM as page cache. Only lowering Docker Desktop's memory
+  ceiling returns it (recommended 8 GB, left to the user — needs a Docker
+  restart).
+- **Paperclip `mem_limit` 2g → 3g**, recreated, healthy (~950MB after start).
+  Not 3.5g: that needed ≥45% host free and falling swap.
+- **Monitoring:** Glance monitors for the five web services removed (they'd
+  sit red); bookmarks moved to an *On demand* group (with Storyteller), and
+  the docker-containers widget set to `running-only: true`. Uptime Kuma
+  monitors 3, 5, 13, 14, 25 paused (`active=0`, Kuma stopped, backup
+  `kuma.db.bak-20260926-ondemand`). `homelab-audit.sh` skips on-demand
+  containers → audit green apart from the pre-existing 91% disk warning.
+- **Backups:** `backup-databases.sh` now starts a stopped DB container on its
+  own (never the app), waits for `pg_isready` / `mariadb-admin ping`, dumps
+  and stops it again via an EXIT trap. A missing DB container is now an error,
+  not a silent skip. Tested: paperless (482K) and nextcloud (3.6M) dumps
+  complete, both DB containers back to Exited. rclone file backups unchanged
+  — files at rest also avoid Odysseus's live-SQLite BadDigest.
+- **Not changed:** Docker Desktop settings. Resource Saver only engages
+  with zero running containers, so it can't help here.
+
 ## 2026-09-26 — Paperclip: Gemini CLI dropped, Marketing dept, departments
 
 - **Gemini CLI dropped.** Google ended personal sign-in for the CLI, Vertex

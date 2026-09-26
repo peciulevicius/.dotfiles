@@ -2,6 +2,12 @@
 
 Document scanner, OCR, and organiser. Scan receipts, bills, and documents once — find them forever.
 
+> ⏸ **On-demand** (since 2026-09-26) — stopped by default to save RAM.
+> `ondemand start paperless-ngx` (alias for `scripts/utils/ondemand.sh`) prints the
+> URL; `ondemand stop paperless-ngx` when done. Nothing is consumed or OCR'd while it's stopped — scan in batches with it
+> started. The weekly DB dump still runs: `backup-databases.sh` starts only
+> `paperless_db`, dumps it and stops it again.
+
 ## Ports
 
 | Port | Service |

@@ -3,6 +3,12 @@
 Chat, agents, research, RAG and memory, with **your** history on your own disk.
 Gap 4 of the de-Googling effort: *own the file, rent the compute.*
 
+> ⏸ **On-demand** (since 2026-09-26) — stopped by default to save RAM.
+> `ondemand start odysseus` (alias for `scripts/utils/ondemand.sh`) prints the
+> URL; `ondemand stop odysseus` when done. All four containers (odysseus, searxng, chromadb, ntfy) stop together, so
+> ntfy reminders to the phone don't arrive while it's stopped. `data/` is still
+> in the nightly R2 backup — at rest, which avoids live-SQLite upload errors.
+
 **Port:** 7001 · **Source:** <https://github.com/odysseus-dev/odysseus> · AGPL-3.0
 
 ## The one thing to get right

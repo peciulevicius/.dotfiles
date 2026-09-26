@@ -189,6 +189,9 @@ case "$(uname -s)" in
 
     # Open current directory in Finder
     alias finder='open -a Finder .'
+
+    # Homelab on-demand services (Mac mini): ondemand list|start|stop <name>
+    [[ -d "$HOME/services" ]] && alias ondemand="$HOME/.dotfiles/scripts/utils/ondemand.sh"
     ;;
   Linux*)
     # Linux specific

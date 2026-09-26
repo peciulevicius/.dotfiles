@@ -34,7 +34,12 @@ services:
     # companies, memory.events showed the cap hit 1500+ times, and each agent
     # run adds a 300-500MB CLI process. Raised only because host free memory
     # was 37% (rule: raise only when memory_pressure free >= 30%).
-    mem_limit: 2g
+    # 2g -> 3g on 2026-09-26: memory.events max had reached 12,687 at 2g with
+    # no agent running. Paid for by making Paperless, Nextcloud, Stirling,
+    # IT-Tools, Odysseus and FlareSolverr on-demand (~2.2GB freed in the VM).
+    # Not 3.5g: host free stayed 33% and swap didn't drop (rule for 3.5g was
+    # free >= 45% and falling swap).
+    mem_limit: 3g
     ports:
       # Localhost + the Mac mini's Tailscale IP only — not LAN, not the tunnel.
       - "127.0.0.1:${PAPERCLIP_PORT:-3100}:3100"

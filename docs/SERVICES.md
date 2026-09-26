@@ -10,14 +10,14 @@ Run your own cloud on a Mac mini (or any Docker host). Self-hosted services cove
 |---------|-----|------|----------|
 | [Immich](#immich) | photos.peciulevicius.com | 2283 | Google Photos |
 | [Vaultwarden](#vaultwarden) | vault.peciulevicius.com | 8001 | Bitwarden Cloud |
-| [Nextcloud](#nextcloud) | cloud.peciulevicius.com | 8080 | Google Drive |
+| [Nextcloud](#nextcloud) ⏸ | cloud.peciulevicius.com | 8080 | Google Drive |
 | [Uptime Kuma](#uptime-kuma) | status.peciulevicius.com | 3001 | StatusCake |
 | [FreshRSS](#freshrss) | rss.peciulevicius.com | 8082 | Feedly |
 | [Syncthing](#syncthing) | Tailscale only | 8384 | Dropbox |
 | [Portainer](#portainer) | Tailscale only | 9000 | Docker Desktop |
 | [Watchtower](#watchtower) | — | — | Manual updates |
 | [Glance](#glance) | home.peciulevicius.com | 7575 | Start page |
-| [Paperless-ngx](#paperless-ngx) | papers.peciulevicius.com | 8000 | Paper filing |
+| [Paperless-ngx](#paperless-ngx) ⏸ | papers.peciulevicius.com | 8000 | Paper filing |
 | [Calibre-Web](#calibre-web) | books.peciulevicius.com | 8083 | Kindle Cloud |
 | [Rclone](#rclone) | — | — | Cloud backup |
 
@@ -26,8 +26,8 @@ Run your own cloud on a Mac mini (or any Docker host). Self-hosted services cove
 | Service | URL | Port | Replaces |
 |---------|-----|------|----------|
 | [Pi-hole](#pi-hole) | pihole.peciulevicius.com/admin/ (the bare domain returns 403 since v6) | 8053, 53 | Router DNS + ad blocker |
-| [Stirling PDF](#stirling-pdf) | pdf.peciulevicius.com | 8084 | Adobe Acrobat |
-| [IT-Tools](#it-tools) | tools.peciulevicius.com | 8085 | Online dev tools |
+| [Stirling PDF](#stirling-pdf) ⏸ | pdf.peciulevicius.com | 8084 | Adobe Acrobat |
+| [IT-Tools](#it-tools) ⏸ | tools.peciulevicius.com | 8085 | Online dev tools |
 | [Audiobookshelf](#audiobookshelf) | listen.peciulevicius.com | 13378 | Audible |
 | [Linkwarden](#linkwarden) | links.peciulevicius.com | 3005 | Pocket / Raindrop |
 
@@ -65,6 +65,37 @@ public).
 
 | Service | URL | Port | Purpose |
 |---------|-----|------|---------|
+
+### On-demand services (⏸)
+
+Stopped by default since 2026-09-26 to free RAM on the 16GB Mac mini (~2.2 GiB
+in the Docker VM). They are still in the repo, staged in `~/services`, and
+backed up — only the containers are stopped. Start one when you need it, stop
+it when done:
+
+```bash
+ondemand list                  # state of each (alias for scripts/utils/ondemand.sh)
+ondemand start paperless-ngx   # prints the URL
+ondemand stop paperless-ngx
+ondemand stop-all
+```
+
+| Name | Containers | URL |
+|---|---|---|
+| `paperless-ngx` | paperless, paperless_db, paperless_broker | papers.peciulevicius.com |
+| `nextcloud` | nextcloud, nextcloud_db | cloud.peciulevicius.com |
+| `stirling-pdf` | stirling_pdf | pdf.peciulevicius.com |
+| `it-tools` | it_tools | tools.peciulevicius.com |
+| `odysseus` | odysseus, searxng, chromadb, ntfy | Tailscale `100.81.171.49:7001` |
+| `flaresolverr` | flaresolverr (part of `sonarr-radarr`) | internal — Prowlarr's Cloudflare solver, no indexer uses it |
+
+While stopped, the tunnel hostname returns a Cloudflare 502 — that's expected.
+Glance lists them as bookmarks under *On demand*, without a monitor; their
+Uptime Kuma monitors are paused; the weekly audit skips them; the weekly DB
+dump starts only their DB container. ⚠️ `docker compose up -d` in one of these
+dirs starts it again — run `ondemand stop-all` afterwards. Details and the
+memory numbers: `HOME_SERVER_REFERENCE.md` → *Memory budget and on-demand
+services*. Storyteller is a separate case (`restart: no`, started by hand).
 
 ## Prerequisites
 
@@ -138,6 +169,9 @@ docker compose up -d
 ---
 
 ### Nextcloud
+
+> ⏸ **On-demand** — stopped by default. `ondemand start nextcloud` first,
+> `ondemand stop nextcloud` when done.
 
 **What:** Google Drive + Docs + Calendar + Contacts replacement. File storage, document editing, shared folders.
 
@@ -254,6 +288,9 @@ docker compose up -d
 ---
 
 ### Paperless-ngx
+
+> ⏸ **On-demand** — stopped by default. `ondemand start paperless-ngx` first,
+> `ondemand stop paperless-ngx` when done.
 
 **What:** Digital document archive with OCR. Scan or upload receipts, contracts, invoices, letters — it OCRs them and makes them searchable.
 
@@ -453,6 +490,9 @@ docker compose up -d
 
 ### Stirling PDF
 
+> ⏸ **On-demand** — stopped by default. `ondemand start stirling-pdf` first,
+> `ondemand stop stirling-pdf` when done.
+
 **What:** All-in-one PDF tool. Merge, split, compress, convert, rotate, add watermarks, OCR, and more — all locally processed.
 
 **Why:** No uploading PDFs to random websites. Everything runs on your server.
@@ -473,6 +513,9 @@ Health: `curl localhost:8084/api/v1/info/status` → `{"version":…,"status":"U
 ---
 
 ### IT-Tools
+
+> ⏸ **On-demand** — stopped by default. `ondemand start it-tools` first,
+> `ondemand stop it-tools` when done.
 
 **What:** Collection of developer utilities — hash generators, UUID generators, base64 encoders, JWT decoders, cron expression builders, and 50+ more tools.
 

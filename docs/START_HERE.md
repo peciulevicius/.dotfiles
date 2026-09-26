@@ -112,6 +112,7 @@ Full guide: [Claude Code Guide](./CLAUDE_CODE_GUIDE.md)
 | **See what needs doing next** | [HOME_SERVER_TODO.md](./HOME_SERVER_TODO.md) — outstanding work only |
 | See what's already been done, and why | [HOME_SERVER_CHANGELOG.md](./HOME_SERVER_CHANGELOG.md) — **check before proposing anything**; several ideas were tried and reverted |
 | Look up RAM, drive layout, container paths | [HOME_SERVER_REFERENCE.md](./HOME_SERVER_REFERENCE.md) |
+| Start a stopped (on-demand) service — Paperless, Nextcloud, Stirling, IT-Tools, Odysseus | `ondemand start <name>` · [SERVICES.md → On-demand services](./SERVICES.md#on-demand-services) |
 | Set up a Mac mini from scratch, or recover after a failure | [HOME_SERVER.md](./HOME_SERVER.md) — rewritten 2026-09-24 for the NAS architecture; facts live in [HOME_SERVER_REFERENCE.md](./HOME_SERVER_REFERENCE.md) |
 | See what each service is and its port | [SERVICES.md](./SERVICES.md) |
 | Understand the NAS and its mounts | [NAS.md](./NAS.md) |

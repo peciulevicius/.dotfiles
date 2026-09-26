@@ -49,7 +49,7 @@ Section names in *italics* are headings below.
 - MacBook: gitleaks hook + `sync.sh`, re-auth Tailscale (key expired 2026-09-02) — *8a. Public-repo hygiene*
 - R2 token scope, Cloudflare account 2FA — *8b. Cloudflare/R2 security check*
 - `pmset autorestartatconnect`, UPS decision, NAS auto power-on — *8c. Power outage recovery*
-- notebook.koplugin, Supernote, cancel YouTube Music/Premium, music-folder cleanup, Jellyfin/ABS API keys, Nextcloud/Paperless keep-or-remove — *9. Maintenance backlog*
+- notebook.koplugin, Supernote, cancel YouTube Music/Premium, music-folder cleanup, Jellyfin/ABS API keys, Nextcloud/Paperless (on-demand; decide later) — *9. Maintenance backlog*
 - Kindle wallpapers, KOReader speed workaround, `.smbdelete` cleanup, `read-along` tag, OTA check, Searchable PDF test — *Quick wins left over from 2026-09-20*
 - LiveSync plugin on each device — *🔗 Obsidian LiveSync*
 - DB-dump retention — *💾 Disk*
@@ -115,7 +115,7 @@ Section names in *italics* are headings below.
 - 👤 **Phone apps** — connect Reeder (set FreshRSS API password first),
   Swift Paperless, Linkwarden, Pi-hole Remote (create an app password) —
   step-by-step table in `SERVICES.md` → *Connecting each app*. Nextcloud app
-  waits for the keep-or-remove decision; Finamp/Amperfy not used (self-hosted
+  waits for the keep-or-remove decision (Nextcloud is on-demand for now); Finamp/Amperfy not used (self-hosted
   music dropped 2026-09-26, Spotify kept). Also install: Bitwarden, Ente Auth,
   Obsidian + LiveSync, ntfy, Swiftfin/Infuse, Odysseus home-screen web app.
 
@@ -483,23 +483,22 @@ whole-house outage now alerts.
       `rm -rf ~/services/mealie ~/services/grafana` (both confirmed
       empty/unused before removal; both still present 2026-09-25).
       `rclone-backup.sh` already excludes both.
-- [ ] 👤 **Decide: Nextcloud — keep or remove?** Only 83MB of real user files in
-      it (the rest is app code + DB engine). Its non-redundant features:
-      **Calendar/Contacts sync** (CalDAV/CardDAV — nothing else here does
-      that; contacts and calendar currently live **only on the iPhone**, see
-      *Calendar + Contacts*) and **the confirmed WebDAV target for a
-      Supernote's own-server note sync** (see `guides/BOOKS.md`), so it gains
-      a second real use only if a Supernote is ever bought. ⚠️ Don't use
-      Nextcloud's own Notes app if you keep it — genuinely bad app (2.3★,
-      constant disconnects, doesn't stay logged in); Obsidian is already the
-      right notes tool.
-- [ ] 👤 **Decide: Paperless-ngx — keep or remove?** Not empty like Mealie was —
-      **14 real scanned documents** exist. Low activity, but not zero. Its job
-      (OCR + searchable archive of scanned paperwork) is different from just
-      uploading a file into an Odysseus chat — Odysseus's upload is ephemeral
-      per-conversation context, not a tagged, dated, full-text-searchable
-      archive across years. Keep if you expect to scan real paperwork
-      (tax/medical/receipts) later; remove if not.
+- [ ] 👤 **Nextcloud + Paperless-ngx are on-demand (2026-09-26) — decide
+      later, no rush.** Both are stopped by default to free RAM, but stay in
+      the repo, staged and backed up (weekly DB dump still runs — it starts
+      only the DB container). Start with `ondemand start nextcloud` /
+      `ondemand start paperless-ngx`. The keep-or-remove question is parked,
+      not answered. What each would be kept for:
+      - *Nextcloud* — 83MB of real files; its only non-redundant features are
+        CalDAV/CardDAV (see *Calendar + Contacts* — that plan needs it
+        **running**, so doing it means taking Nextcloud off the on-demand
+        list) and the WebDAV target for a Supernote, if one is ever bought.
+        ⚠️ Don't use Nextcloud's Notes app (2.3★, disconnects); Obsidian is the
+        notes tool.
+      - *Paperless-ngx* — 14 real scanned documents; OCR + a tagged,
+        searchable archive, which an Odysseus chat upload is not. While
+        stopped it doesn't consume or OCR anything, so scan in batches with
+        it started.
 
 - [ ] Delete ~2.3 GB of locked `.smbdelete` duplicates (needs NAS-side access)
 
@@ -808,8 +807,8 @@ Pi-hole, so only manually configured devices use it.
 
 ### Paperless-NGX — organise documents
 
-Only if Paperless is kept — see the keep-or-remove decision in *9. Maintenance
-backlog*. Paperless-NGX doesn't support traditional folders — it uses **tags**,
+Only if Paperless is kept — it is on-demand for now (`ondemand start
+paperless-ngx`), see *9. Maintenance backlog*. Paperless-NGX doesn't support traditional folders — it uses **tags**,
 **document types**, and **correspondents** instead.
 
 - [ ] 👤 Create document types: e.g. "Invoice", "Contract", "Receipt", "Statement"
@@ -974,7 +973,10 @@ Revoke + Kindle filter → *🔝 Next up*; catch-all/tests/deliverability → *�
 
 #### Calendar + Contacts — unblocked, ~1 hour, more urgent than it looked
 
-Nextcloud is already running. Nothing is stopping this.
+Nextcloud is installed (on-demand since 2026-09-26 — `ondemand start
+nextcloud`). ⚠️ CalDAV/CardDAV sync needs it **always on**: doing this means
+removing `nextcloud` from `ENTRIES` in `scripts/utils/ondemand.sh`,
+un-pausing its Kuma monitor and putting its Glance monitor back.
 
 ⚠️ **Corrected 2026-09-22 — this isn't a de-Google migration, it's fixing an
 actual single point of failure.** Contacts and calendar live **only on the

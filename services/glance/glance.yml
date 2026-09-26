@@ -25,20 +25,10 @@ pages:
                 url: https://vault.peciulevicius.com
                 check-url: http://vaultwarden:80/
                 icon: si:bitwarden
-              - title: Nextcloud
-                url: https://cloud.peciulevicius.com
-                check-url: http://nextcloud:80/
-                alt-status-codes:
-                  - 400
-                icon: si:nextcloud
               - title: Immich
                 url: https://photos.peciulevicius.com
                 check-url: http://immich_server:2283/api/server/ping
                 icon: si:immich
-              - title: Paperless-ngx
-                url: https://papers.peciulevicius.com
-                check-url: http://paperless:8000/
-                icon: si:paperlessngx
               - title: Jellyfin
                 url: https://watch.peciulevicius.com
                 check-url: http://jellyfin:8096/health
@@ -63,10 +53,6 @@ pages:
                 url: https://couchdb.peciulevicius.com
                 check-url: http://couchdb:5984/_up
                 icon: si:apachecouchdb
-              - title: Odysseus (AI)
-                url: http://100.81.171.49:7001
-                check-url: http://odysseus-odysseus-1:7000/api/health
-                icon: si:ollama
               - title: Paperclip (agents)
                 url: http://100.81.171.49:3100
                 check-url: http://paperclip:3100/api/health
@@ -79,14 +65,6 @@ pages:
                 url: http://127.0.0.1:8093/status
                 check-url: http://strava-mcp:8000/status
                 icon: si:strava
-              - title: Stirling PDF
-                url: https://pdf.peciulevicius.com
-                check-url: http://stirling_pdf:8080/
-                icon: si:files
-              - title: IT-Tools
-                url: https://tools.peciulevicius.com
-                check-url: http://it_tools:80/
-                icon: si:hackthebox
               - title: Pi-hole
                 url: https://pihole.peciulevicius.com/admin/
                 check-url: http://pihole:80/admin/
@@ -128,15 +106,9 @@ pages:
                   - title: Vaultwarden
                     url: https://vault.peciulevicius.com
                     icon: si:bitwarden
-                  - title: Nextcloud
-                    url: https://cloud.peciulevicius.com
-                    icon: si:nextcloud
                   - title: Immich
                     url: https://photos.peciulevicius.com
                     icon: si:immich
-                  - title: Paperless-ngx
-                    url: https://papers.peciulevicius.com
-                    icon: si:paperlessngx
 
               - title: Media
                 links:
@@ -155,15 +127,32 @@ pages:
                   - title: Linkwarden
                     url: https://links.peciulevicius.com
                     icon: si:bookstack
+                  - title: Pi-hole
+                    url: https://pihole.peciulevicius.com/admin/
+                    icon: si:pihole
+
+              # Stopped by default to save RAM — no monitor (it would sit red).
+              # Start one first: `ondemand start <name>` (scripts/utils/ondemand.sh).
+              - title: On demand (ondemand start <name>)
+                links:
+                  - title: Nextcloud
+                    url: https://cloud.peciulevicius.com
+                    icon: si:nextcloud
+                  - title: Paperless-ngx
+                    url: https://papers.peciulevicius.com
+                    icon: si:paperlessngx
+                  - title: Odysseus (AI)
+                    url: http://100.81.171.49:7001
+                    icon: si:ollama
                   - title: Stirling PDF
                     url: https://pdf.peciulevicius.com
                     icon: si:files
                   - title: IT-Tools
                     url: https://tools.peciulevicius.com
                     icon: si:hackthebox
-                  - title: Pi-hole
-                    url: https://pihole.peciulevicius.com/admin/
-                    icon: si:pihole
+                  - title: Storyteller
+                    url: http://100.81.171.49:8087
+                    icon: si:bookstack
 
               - title: Direct (no tunnel — for uploads >100MB)
                 links:
@@ -182,9 +171,6 @@ pages:
 
               - title: System
                 links:
-                  - title: Storyteller (off by default)
-                    url: http://100.81.171.49:8087
-                    icon: si:bookstack
                   - title: Portainer
                     url: https://portainer.peciulevicius.com
                     icon: si:portainer
@@ -220,6 +206,10 @@ pages:
                     icon: mdi:paperclip
 
           - type: docker-containers
+            # On-demand services (ondemand.sh) are stopped by default and would
+            # otherwise list red. Unexpected stops are caught by the monitors
+            # above, Uptime Kuma and the weekly homelab-audit.sh.
+            running-only: true
 
       - size: small
         widgets:

@@ -2,6 +2,13 @@
 
 Media automation stack. Prowlarr manages indexers, Sonarr handles TV shows, Radarr handles movies. All three share a `/media` volume on the NAS.
 
+> ⏸ **FlareSolverr is on-demand** (since 2026-09-26) — stopped by default;
+> no Prowlarr indexer carries the `flaresolverr` tag, so nothing uses it.
+> If an indexer starts failing on a Cloudflare challenge: `ondemand start
+> flaresolverr`, tag that indexer `flaresolverr` in Prowlarr, and take it off
+> the on-demand list in `scripts/utils/ondemand.sh`. ⚠️ `docker compose up -d`
+> in this dir starts it again — run `ondemand stop flaresolverr` after.
+
 ## Setup
 
 ```bash

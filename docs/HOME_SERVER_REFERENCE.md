@@ -49,6 +49,75 @@ swap 7.4–7.5 of 8GB before and after; the swap total had shrunk to 8GB).
 Swap has only ~1–1.6 GB headroom — it is the constraint to watch, not
 container RAM.
 
+**2026-09-26 (evening), on-demand services — 42 → 30 running containers.**
+Paperless-ngx (3), Nextcloud (2), Stirling PDF, IT-Tools, the Odysseus stack
+(4) and FlareSolverr are now **stopped by default** (`scripts/utils/ondemand.sh`,
+see *On-demand services* below).
+
+| Metric | Before | After | Reading |
+|---|---|---|---|
+| Running containers | 42 | 30 | 12 on-demand, stopped |
+| Containers, total (`docker stats`) | 6.60 GiB | **4.37 GiB** | **~2.2 GiB freed in the VM** |
+| VM `free -m` used / available | — | 4.5 / 4.9 GiB | 3.3 GiB is Linux page cache |
+| macOS memory free | 34% | 33% | unchanged — see below |
+| Swap | 7.7 of 8.0 GB | 7.9 of 9.2 GB | macOS added a swap file; not shrinking |
+
+Freed per service: stirling_pdf ~850MB, paperless ~580MB (+db/redis ~35MB),
+odysseus ~370MB (+searxng/ntfy/chroma ~100MB), flaresolverr ~150MB,
+nextcloud ~110MB (+db ~18MB), it_tools ~10MB.
+
+⚠️ **Freeing RAM inside the Docker VM does not hand it back to macOS.** The
+VM keeps pages it has touched (the space just becomes Linux page cache), so
+the macOS free % and swap didn't move. The freed ~2.2 GiB is headroom for
+containers — it went to Paperclip (`mem_limit` 2g → **3g**) — not relief for
+macOS. The only lever that returns memory to macOS is a **lower VM ceiling**
+in Docker Desktop (Settings → Resources → Memory; currently 10240 MiB, swap
+2048 MiB). Recommended: **8 GB** — running containers sum to ~4.4 GiB, plus
+Paperclip's agent-run spikes (+1–1.5 GiB), plus ~2.2 GiB if every on-demand
+service is started at once, still fits. Needs a Docker Desktop restart, so
+it's a 👤 step. Resource Saver doesn't help here: it only kicks in when **no**
+containers are running.
+
+### Memory budget and on-demand services
+
+Rule of thumb for adding anything always-on: keep `docker stats` total under
+~5 GiB and macOS swap not growing. Rarely used services are **on-demand**
+instead of removed:
+
+| Name (`ondemand …`) | Containers | Idle RAM | Why on-demand |
+|---|---|---|---|
+| `paperless-ngx` | paperless, paperless_db, paperless_broker | ~615MB | 14 documents, scanned in batches |
+| `nextcloud` | nextcloud, nextcloud_db | ~130MB | 83MB of files; keep-or-remove undecided |
+| `stirling-pdf` | stirling_pdf | ~850MB | JVM, used a few times a month |
+| `it-tools` | it_tools | ~10MB | occasional; grouped for consistency |
+| `odysseus` | odysseus-{odysseus,searxng,chromadb,ntfy}-1 | ~470MB | used occasionally; ⚠️ ntfy push to the phone is off while stopped |
+| `flaresolverr` | flaresolverr (in `sonarr-radarr`) | ~150MB | no Prowlarr indexer carries the `flaresolverr` tag |
+
+How it works and what it touches:
+- `ondemand list | start <name> | stop <name> | stop-all` (zsh alias for
+  `scripts/utils/ondemand.sh`). `start` = `docker compose start`, or `up -d`
+  if containers don't exist yet; prints the URL.
+- Stopping uses `docker compose stop`, never `down`: containers and networks
+  stay, so Glance (which joins their networks) still starts. With
+  `restart: unless-stopped` they stay stopped across Docker/Mac restarts;
+  Watchtower has `WATCHTOWER_INCLUDE_STOPPED=false`.
+- ⚠️ A manual `docker compose up -d` in one of these dirs starts it again
+  (and for `sonarr-radarr` that includes FlareSolverr). Run
+  `ondemand stop-all` afterwards.
+- `homelab-audit.sh` reads `ondemand.sh containers` and treats them as
+  expected-stopped.
+- `backup-databases.sh` starts **only** `paperless_db` / `nextcloud_db`,
+  dumps, and stops them again (trap on exit) — tested 2026-09-26.
+- rclone file backups keep working; files at rest are actually better (no
+  live-SQLite BadDigest on Odysseus's DBs).
+- Glance: no monitors for them (they'd sit red), bookmarks in an *On demand*
+  group, and the docker-containers widget is `running-only: true`.
+- Uptime Kuma: their monitors (ids 3, 5, 13, 14, 25) are **paused**, not
+  deleted — un-pause in the UI if one moves back to always-on.
+- Moving a service back to always-on: remove it from `ENTRIES` in
+  `ondemand.sh`, start it, un-pause its Kuma monitor, restore its Glance
+  monitor.
+
 **How to read swap on macOS:** "Pages free" is always near zero by design — macOS
 uses spare RAM as cache, so a low free-page count is not a warning. Judge by
 *memory pressure percentage* and whether swap is **growing**. Stable or shrinking
@@ -58,8 +127,8 @@ alarm.
 Biggest single consumers (2026-09-19): `immich_server` (~839MB), `paperless`
 (~374MB), `stirling_pdf` (~360MB on 0.46; ~1.3GB right after start on 2.14 — JVM `MaxRAMPercentage=50`), `flaresolverr` (~302MB), `calibre` (~299MB).
 
-**Containers safe to stop while traveling:**
-`nextcloud`, `nextcloud_db`, `pihole`, `bazarr`, `sonarr`, `radarr`, `prowlarr`, `transmission` + `transmission-ts`, `jellyseerr`, `immich_machine_learning`
+**Containers safe to stop while traveling** (on top of the on-demand set):
+`pihole`, `bazarr`, `sonarr`, `radarr`, `prowlarr`, `transmission` + `transmission-ts`, `jellyseerr`, `immich_machine_learning`
 
 **This is the budget that rules out Octopus Deploy** — its SQL Server dependency
 alone wants 2GB. See [guides/OCTOPUS_DEPLOY.md](guides/OCTOPUS_DEPLOY.md).
