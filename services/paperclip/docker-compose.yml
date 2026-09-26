@@ -21,6 +21,11 @@ name: paperclip
 services:
   paperclip:
     container_name: paperclip
+    # Fixed hostname: Gemini CLI encrypts its stored API key/login with a key
+    # derived from hostname + username. Docker's default hostname is the
+    # container ID, which changes on every recreate, so the Gemini login broke
+    # ("Corrupted credentials file") after each `docker compose up -d`.
+    hostname: paperclip
     image: ghcr.io/paperclipai/paperclip:2026.916.1
     restart: unless-stopped
     # Upstream's backstop against leaked agent subprocesses (tini is PID 1).

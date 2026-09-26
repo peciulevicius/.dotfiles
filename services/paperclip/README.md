@@ -73,7 +73,8 @@ the recovery path.
 ## Adding agents
 
 Paperclip calls this "hiring". Every agent needs a **runtime** (adapter) and a
-**credential** for its model provider. Nothing paid is configured yet.
+**credential** for its model provider. The only pay-per-token credential is
+OpenRouter (capped at $3/month per agent, see *AI connections*).
 
 ### Claude Code (recommended first — you already have a subscription)
 
@@ -115,10 +116,18 @@ Same pattern, each needs its own credential:
   `docker exec paperclip codex login status`. Paperclip symlinks that
   `auth.json` into each `codex_local` agent's own `CODEX_HOME`, so every Codex
   agent shares the one subscription login.
-- **Gemini:** `docker exec -it paperclip gemini` → OAuth (persists in
-  `data/.gemini/`), or a `GEMINI_API_KEY` that is *restricted to the Gemini
-  API* in Google Cloud (unrestricted keys are rejected). Given the de-Googling
-  goal, prefer not to.
+- **Gemini:** there is **no Gemini connection type** in Paperclip (AI
+  connections exist only for Anthropic, OpenAI, OpenRouter and xAI), so
+  `gemini_local` agents always use the CLI's own login, like Codex. Either put
+  `GEMINI_API_KEY=` in `.env` (preferred — survives anything; the key must be
+  *restricted to the Gemini API* in Google Cloud) and `docker compose up -d`,
+  or `docker exec -it -u node paperclip gemini` → *Use Gemini API key* / OAuth.
+  ⚠️ The CLI encrypts that stored login with a key derived from **hostname +
+  username**. Docker's default hostname is the container ID, which changes on
+  every recreate, so the login silently became *"Corrupted credentials file"*
+  after the next `docker compose up -d` (found 2026-09-26). The compose file
+  now pins `hostname: paperclip`; the login made before that pin is
+  unreadable and has to be entered once more.
 - **Local model via Ollama (free, slow):** use the **OpenCode** runtime.
   Ollama runs natively on the host and the container reaches it at
   `http://host.docker.internal:11434` (verified reachable). Create
@@ -142,8 +151,57 @@ Same pattern, each needs its own credential:
   7B model is weak at multi-step agent work; treat it as a toy or a cheap
   "scanner" role, not a CEO.
 
-- **Gemini: not set up** (de-Googling — the user decides). **No local Ollama
-  models for agents either**: RAM is too tight (see below).
+- **Hermes / Pi: not available.** `hermes_local` and `pi_local` adapters are
+  compiled in, but the image ships neither CLI (`which hermes pi` → nothing),
+  and Hermes can't be pip-installed either: the image's Python 3.13 has no
+  `pip`/`ensurepip`, so `python3 -m venv` fails. Anything installed into
+  `./data` by hand would also be invisible to upgrades. Every role planned for
+  Hermes runs on **OpenCode + OpenRouter** instead — which is also the only
+  harness Paperclip's OpenRouter connection is compatible with.
+- **No local Ollama models for agents**: RAM is too tight (see below).
+
+### AI connections (2026-09-26)
+
+A *connection* is a Paperclip-managed credential an agent binds to
+(`runtimeConfig.aiConnection`). They are per company.
+
+| Company | Connection | Type | Used by |
+|---|---|---|---|
+| both | *My Claude subscription* | Anthropic, subscription (personal, default) | every `claude_local` agent |
+| both | **OpenRouter (shared)** | OpenRouter, API key, company-shared, installed company-wide | every `opencode_local` agent |
+| — | *(none)* Codex | CLI login (`codex login --device-auth`) | `codex_local` agents |
+| — | *(none)* Gemini | CLI login / `GEMINI_API_KEY` — no connection type exists | `gemini_local` agents |
+
+- The OpenRouter connection was created from `OPENROUTER_API_KEY` in `.env`
+  (`POST /api/companies/<id>/ai-connections`,
+  `{"provider":"openrouter","method":"api_key","ownership":"shared",…}`), then
+  installed for the whole company (`PUT /api/tool-connections/<id>/installs`
+  with `{"targetType":"company"}`). Without the install a bind fails with
+  *"This connection is not permitted for this agent"*.
+- OpenRouter is only compatible with `opencode_local`, and only with a model
+  written `openrouter/<vendor>/<model>`.
+- Cheap models in use (OpenRouter prices, $/M tokens in → out, checked
+  2026-09-26): `openrouter/deepseek/deepseek-v3.2` 0.27 → 0.40 (default),
+  `openrouter/qwen/qwen3-coder` 0.30 → 1.00 (QA), and
+  `openrouter/moonshotai/kimi-k2.5` 0.45 → 2.25 as the step-up option.
+  Re-check slugs with `curl -s https://openrouter.ai/api/v1/models | jq` —
+  `opencode models openrouter` in the container must list the same slug.
+
+**Priority rule when picking a runtime:** *subscriptions first* (Claude,
+ChatGPT/Codex — already paid) → *free tiers* (Gemini) → *OpenRouter* (pay per
+token, $3/month cap per agent). Claude Opus only for planning/architecture
+(Studio CEO + CTO, Homelab Lead); Sonnet (`claude-sonnet-5`) for the other
+Claude roles to save plan usage.
+
+**Switching an agent's harness.** An agent that already carries a Claude
+binding can't be moved to a harness with no connection (Gemini, Codex): `PATCH
+/api/agents/<id>` re-attaches the old binding and fails with *"Select an AI
+connection compatible with the new harness and model"*, and a truthy
+non-binding value breaks runs. Moving to OpenCode works in one PATCH (send
+`adapterType`, `adapterConfig.model: "openrouter/…"` and the OpenRouter
+binding together). For Gemini/Codex, hire a replacement with the same
+name/role/manager, copy its AGENTS.md section, then terminate the old agent —
+that is how the Studio Researcher moved to Gemini.
 
 ### ⚠️ Memory while agents run
 
@@ -171,11 +229,41 @@ Mission: *Weekly health and security reporting for Džiugas's Mac mini homelab.
 Read reports, spot problems, recommend next actions as decisions. Never change
 servers — changes are done by Džiugas with Claude Code.*
 
-| Agent | Role | Runtime | Status |
-|---|---|---|---|
-| Homelab Lead (CTO / Homelab Lead) | `ceo`, reports to the board | Claude Code | active (idle) |
-| Security Analyst | `security` → Lead | Codex | **paused** |
-| Storage & Backup Analyst | `devops` → Lead | Claude Code (→ Hermes/OpenCode on OpenRouter later) | **paused** |
+| Agent | Reports to | Runtime (model) | Budget cap | Status |
+|---|---|---|---|---|
+| Homelab Lead (CTO / Homelab Lead) | board | Claude Code (Opus 5) | plan limits | active (idle) |
+| Security Analyst — reads the weekly report | Lead | Codex | plan limits | **paused** |
+| Security Engineer — reviews every PR | Lead | Claude Code (Sonnet 5) | plan limits | **paused** |
+| DevOps/Homelab Engineer — opens dotfiles PRs | Lead | Codex + `GH_TOKEN` | plan limits | **paused** |
+| Docs & TODO Keeper | Lead | OpenCode → OpenRouter `deepseek-v3.2` + `GH_TOKEN` | $3/month | **paused** |
+| Storage & Backup Analyst | Lead | OpenCode → OpenRouter `deepseek-v3.2` | $3/month | **paused** |
+
+The two engineers work **only through PRs** on
+`github.com/peciulevicius/.dotfiles`: they have no route to the host, so the
+board merges and Džiugas applies merged changes on the Mac mini with Claude
+Code. Their AGENTS.md says so, plus "the repo is PUBLIC, never commit a
+secret".
+
+#### GitHub access for the Homelab engineers
+
+- `GITHUB_TOKEN_HOMELAB` (fine-grained PAT: this repo only, *Contents* +
+  *Pull requests* read/write) was copied from `.env` into a **Paperclip
+  secret** *GitHub token (dotfiles PRs)* in the Homelab company, and bound as
+  `adapterConfig.env.GH_TOKEN` (`{"type":"secret_ref",…,"version":"latest"}`)
+  on **DevOps/Homelab Engineer** and **Docs & TODO Keeper** only.
+- Git uses it through gh, never a stored credential:
+  `git -c credential.helper= -c credential.helper='!gh auth git-credential' clone|push …`,
+  `gh pr create`. Nothing writes the token to a file, remote URL or commit.
+  Verified from inside the container 2026-09-26 (`gh api
+  repos/peciulevicius/.dotfiles`, `git ls-remote`).
+- ⚠️ `env_file: .env` passes **every** `.env` line into the container, so
+  after the next recreate the token would also sit in the environment of every
+  agent in both companies. The container was deliberately *not* recreated
+  after the token was added. Before the next `docker compose up -d`, move the
+  `GITHUB_TOKEN_HOMELAB=` line out of `.env` (the Paperclip secret is now the
+  copy that matters; keep the original in Vaultwarden).
+- Rotate: new PAT → *Company settings → Secrets → GitHub token → new version*
+  (bindings use `latest`, nothing else to change).
 
 - Project **Weekly Reports** (in progress). Leftover wizard project
   *Onboarding* with task PEC-1 is untouched.
@@ -224,11 +312,33 @@ Mission: *Faceless indie studio: find, validate, design, build and launch
 small useful apps and content under an anonymous brand. Nothing ships, gets
 published, or spends money without board approval.*
 
-| Agent | Role | Runtime | Status |
-|---|---|---|---|
-| CEO | `ceo`, reports to the board | Claude Code | active (idle) |
-| Product Manager | `pm` → CEO | Codex | active (idle) |
-| Researcher | `researcher` → CEO | Claude Code (→ Hermes/OpenCode on OpenRouter later) | active (idle) |
+| Agent | Reports to | Runtime (model) | Budget cap | Status |
+|---|---|---|---|---|
+| CEO | board | Claude Code (Opus 5) | plan limits | active (idle) |
+| Product Manager | CEO | Codex | plan limits | active (idle) |
+| Researcher | CEO | Gemini CLI (`auto`) | free tier | **paused** until the Gemini login is redone |
+| Growth & Content | CEO | Gemini CLI (`auto`) | free tier | **paused** |
+| CTO | CEO | Claude Code (Opus 5) | plan limits | **paused** |
+| Security Engineer — reviews every PR | CTO | Claude Code (Sonnet 5) | plan limits | **paused** |
+| DevOps Engineer | CTO | Codex | plan limits | **paused** |
+| Engineering Manager | CTO | Codex | plan limits | **paused** |
+| Frontend Developer | Eng Manager | Codex | plan limits | **paused** |
+| Backend Developer | Eng Manager | Claude Code (Sonnet 5) | plan limits | **paused** |
+| Mobile Developer (Expo/React Native) | Eng Manager | Codex | plan limits | **paused** |
+| QA Engineer | Eng Manager | OpenCode → OpenRouter `qwen3-coder` | $3/month | **paused** |
+| UI/UX Designer | PM | Claude Code (Sonnet 5) | plan limits | **paused** |
+| Technical Writer | PM | OpenCode → OpenRouter `deepseek-v3.2` | $3/month | **paused** |
+
+- Every AGENTS.md ends with a board section (≤12 lines): role, may/may not,
+  "work only via tasks; code only as PRs; never commit secrets; repos may be
+  PUBLIC; the board merges", and for engineers the stack (TS strict,
+  Next.js/SvelteKit, Expo + NativeWind, Supabase + RLS, Zod, Tailwind, pnpm).
+  The Security Engineer is the review gate for every PR.
+- The Researcher was moved Claude Code → Gemini on 2026-09-26 by **hiring a
+  replacement and terminating the original** (see *Switching an agent's
+  harness*); its rubric section was copied over. The Gemini login in the
+  container is currently unreadable (hostname issue above), so it stays paused
+  until `GEMINI_API_KEY` is set or the login is redone.
 
 - The wizard's CEO was reused. An earlier Product Manager (Claude Code) had
   been terminated in the UI; the new one was filed as a hire request and
@@ -270,8 +380,33 @@ published, or spends money without board approval.*
    standup: paused until there's work to stand up about.
 5. **Backlog is a safe parking spot**: assigned-but-backlog never wakes
    anyone. Move to Todo to start.
-6. **Budgets** (`budgetMonthlyCents`) only cap API-key spend. With
-   subscription logins, watch **Audit → Costs** and the plans' own limits.
+6. **Budgets** (`budgetMonthlyCents`) only cap API-key spend: Paperclip's
+   only budget metric is `billed_cents` (hard stop at 100% auto-pauses the
+   agent, soft alert at 80%, resets on the 1st, UTC). Every OpenRouter agent
+   has a **$3/month** policy (`PATCH /api/agents/<id>/budgets`
+   `{"budgetMonthlyCents":300}` — setting the field on a PATCH of the agent
+   itself did *not* create the policy). There is no run or token cap for
+   subscription agents; the per-run limits used instead are
+   `maxTurnsPerRun: 100` (Claude Code) and `timeoutSec: 1800` (all new
+   agents). Watch **Audit → Costs** and the plans' own limits.
+
+### Un-pausing a department (phased rollout)
+
+Everything new is paused with timer heartbeats off, so the org costs nothing
+until you start a phase. To start one, resume the agents for that phase only —
+UI: agent → **Resume**, or `POST /api/agents/<id>/resume` — then assign a task
+(backlog → Todo). Pause them again when the phase is done. Suggested phases:
+
+1. **Studio planning:** CEO + Product Manager (already active) + Researcher
+   (after the Gemini login) → STU-2.
+2. **Studio build:** CTO → Engineering Manager → Frontend/Backend/Mobile, with
+   **Security Engineer and QA always resumed together with any developer**
+   (they are the PR gate). DevOps Engineer only when CI/deploy work exists.
+3. **Studio launch:** UI/UX Designer, Technical Writer, Growth & Content.
+4. **Homelab PRs:** DevOps/Homelab Engineer + Homelab Security Engineer (+
+   Docs & TODO Keeper for doc sweeps).
+
+Keep to one working agent at a time on this host (see *Memory*).
 
 ## Adding or changing agents
 
@@ -293,7 +428,8 @@ The approval wall is on in both companies, so a direct create returns
   pc() { curl -s -b /tmp/pc.cj -H 'Origin: http://127.0.0.1:3100' -H 'Content-Type: application/json' "$@"; }
   pc http://127.0.0.1:3100/api/companies | jq '.[]|{id,name}'
   # hire request (creates a pending agent + approval); adapterType can also be
-  # codex_local or opencode_local:
+  # codex_local, gemini_local or opencode_local (opencode also needs the
+  # OpenRouter binding in runtimeConfig.aiConnection, see AI connections):
   pc -X POST http://127.0.0.1:3100/api/companies/<companyId>/agent-hires -d '{
     "name":"…","role":"researcher","reportsTo":"<managerId>",
     "adapterType":"claude_local",
@@ -317,15 +453,6 @@ The approval wall is on in both companies, so a direct create returns
   (`dangerouslySkipPermissions` / `dangerouslyBypassApprovalsAndSandbox`) —
   headless runs can't answer them. That's acceptable only because the agent is
   confined to this container (see *Why it is built this way*).
-
-### Switching Researcher / Storage Analyst to OpenRouter (later)
-
-They run on Claude Code for now because there's no `OPENROUTER_API_KEY` yet.
-Once the key is in `~/services/paperclip/.env` (`docker compose up -d`), switch
-each to **OpenCode** (`opencode_local`, model `openrouter/<model>`) or a
-**Hermes** agent on OpenRouter: agent → **Harness / Runtime**, or `PATCH
-/api/agents/<id>` with the new `adapterType`/`adapterConfig`. That moves the
-cheap, high-volume research/scan work off the Claude plan.
 
 ### Export / import
 

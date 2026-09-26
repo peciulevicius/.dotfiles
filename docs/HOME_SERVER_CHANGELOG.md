@@ -8,6 +8,40 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-26 — Paperclip: connections, full org chart, GitHub for Homelab
+
+- **OpenRouter connection** (company-shared API key, installed company-wide)
+  in both companies, from `OPENROUTER_API_KEY`. Only `opencode_local` can use
+  it (model `openrouter/…`). Cheap defaults: `deepseek-v3.2`, `qwen3-coder`,
+  `kimi-k2.5` as step-up. Every OpenRouter agent has a **$3/month** hard-stop
+  budget.
+- **Gemini:** Paperclip has no Gemini connection type — `gemini_local` uses the
+  CLI's own login. That login had silently broken: Gemini CLI encrypts it with
+  a key derived from hostname + username, and the container's hostname (its
+  ID) changes on every recreate. Compose now pins **`hostname: paperclip`**;
+  the key must be entered once more (TODO).
+- **Hermes/Pi not usable:** neither CLI is in the image and the image's Python
+  has no pip/ensurepip, so Hermes can't be installed without hand-patching
+  `./data`. All Hermes roles run on OpenCode + OpenRouter instead.
+- **Researcher → Gemini** by hire-replacement (a Claude-bound agent can't be
+  PATCHed to a connection-less harness — the old binding is re-attached);
+  paused until the Gemini login works. **Storage & Backup Analyst → OpenCode**
+  on OpenRouter via PATCH.
+- **Full org**, every new agent **paused**, heartbeats off, no agent creation,
+  AGENTS.md board section ≤12 lines. Studio adds CTO, Engineering Manager,
+  Frontend/Backend/Mobile developers, UI/UX Designer, Security Engineer (PR
+  gate), QA (OpenRouter), DevOps, Technical Writer (OpenRouter), Growth &
+  Content (Gemini). Homelab adds Security Engineer (PR gate), DevOps/Homelab
+  Engineer (Codex) and Docs & TODO Keeper (OpenRouter). Claude models: Opus 5
+  for CEO/CTO/Lead, Sonnet 5 for the other Claude roles.
+- **GitHub for Homelab:** `GITHUB_TOKEN_HOMELAB` stored as a Paperclip secret
+  and bound as `GH_TOKEN` to the two PR-opening agents only; git authenticates
+  via `gh auth git-credential`, nothing written to disk. **Why not env
+  passthrough:** `env_file` would hand the token to every agent in both
+  companies.
+- Memory flat: host free 34% → 37%, swap 7.38 → 7.33GB of 8GB; container
+  1.08GiB of 2GiB.
+
 ## 2026-09-26 — Paperclip companies configured (Homelab + Studio)
 
 - **Homelab** company: mission set, board approval for hires on. Wizard CEO

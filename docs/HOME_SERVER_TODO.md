@@ -70,9 +70,18 @@ Section names in *italics* are headings below.
     agent runs/week when on) — toggle it on only while the pipeline is moving.
   - **Homelab:** optionally *Routines → Homelab weekly report → Run now* once
     to see a first report before Sunday 10:00.
-  - **OpenRouter key:** create one, add `OPENROUTER_API_KEY=` to
-    `~/services/paperclip/.env`, `docker compose up -d` — then 🤖 switches the
-    Researcher and Storage Analyst to OpenCode/Hermes on OpenRouter.
+  - **Gemini login** (Studio Researcher + Growth & Content wait on it): add
+    `GEMINI_API_KEY=` (restricted to the Gemini API) to
+    `~/services/paperclip/.env`, **or** `docker exec -it -u node paperclip
+    gemini` → *Use Gemini API key*. The old stored login is unreadable after
+    the hostname pin (README → *Codex / Gemini / OpenCode*). Then resume the
+    Researcher.
+  - **Move `GITHUB_TOKEN_HOMELAB` out of `.env`** into Vaultwarden *before
+    the next* `docker compose up -d` — Paperclip now holds it as a secret, and
+    `env_file` would otherwise expose it to every agent.
+  - **Enable agents per phase** (all new ones are paused): README → *Un-pausing
+    a department* — Studio planning → build (devs always with Security + QA)
+    → launch; Homelab PRs (DevOps/Homelab Engineer + Security Engineer).
   - (Only if the Codex login ever expires:
     `docker exec -it paperclip codex login --device-auth`.)
   Watch `sysctl vm.swapusage` during the first agent runs.
@@ -122,12 +131,6 @@ Section names in *italics* are headings below.
 - 👤 **~2026-10-03:** `rm ~/services/uptime-kuma/data/kuma.db.bak-2026-09-26-*` (and other pre-change backups) — the weekly audit now flags any `*.bak-*` / `*.pre-*` file under `~/services` older than 7 days, so this reminds itself via Discord
 
 ### 🤖 Claude can do next
-
-- **Paperclip → OpenRouter**, once 👤 adds `OPENROUTER_API_KEY`: switch the
-  Studio **Researcher** and Homelab **Storage & Backup Analyst** from Claude
-  Code to OpenCode (`opencode_local`, `openrouter/<model>`) or Hermes on
-  OpenRouter — `services/paperclip/README.md` → *Switching … to OpenRouter*.
-  No Gemini, no local Ollama models for agents (RAM).
 
 - Rotate the **Radarr + Sonarr API keys** (printed in a Claude session
   transcript 2026-09-26 while fixing Jellyseerr — Tailscale-only services, low
