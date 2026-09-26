@@ -49,10 +49,32 @@ Biggest single consumers (2026-09-19): `immich_server` (~839MB), `paperless`
 (~374MB), `stirling_pdf` (~360MB on 0.46; ~1.3GB right after start on 2.14 — JVM `MaxRAMPercentage=50`), `flaresolverr` (~302MB), `calibre` (~299MB).
 
 **Containers safe to stop while traveling:**
-`nextcloud`, `nextcloud_db`, `pihole`, `bazarr`, `sonarr`, `radarr`, `prowlarr`, `transmission`, `jellyseerr`, `immich_machine_learning`
+`nextcloud`, `nextcloud_db`, `pihole`, `bazarr`, `sonarr`, `radarr`, `prowlarr`, `transmission` + `transmission-ts`, `jellyseerr`, `immich_machine_learning`
 
 **This is the budget that rules out Octopus Deploy** — its SQL Server dependency
 alone wants 2GB. See [guides/OCTOPUS_DEPLOY.md](guides/OCTOPUS_DEPLOY.md).
+
+---
+
+## Transmission runs behind a Tailscale sidecar
+
+Since 2026-09-26 `transmission` uses `network_mode: service:transmission-ts`
+(image `tailscale/tailscale:v1.102.5`). Facts worth knowing without opening the
+`services/transmission/README.md`:
+
+- `transmission-ts` is its own tailnet node (hostname `transmission-ts`,
+  own `100.x` IP), kernel-mode tailscaled, `/dev/net/tun` + `NET_ADMIN` —
+  Docker Desktop's VM provides the tun device; `SYS_MODULE` isn't needed.
+- Login state: `~/services/transmission/data/tailscale/` (under the services
+  backup). The auth key was single-use; lose this dir → new key needed.
+- `transmission:9091` on `media` is a **network alias of the sidecar**.
+- **Sidecar restarted alone → Transmission orphaned** on a dead netns (only
+  `lo`). `docker compose up -d` doesn't repair it; `docker restart transmission`
+  does. Glance's Transmission monitor goes red when this happens.
+- Node key expires 2027-03-25 unless key expiry is disabled in the admin console.
+- No exit node yet (Mullvad add-on not bought), so egress is still the home IP.
+- Tailscale does **not** document fail-closed behaviour for an offline exit
+  node — don't rely on it as a kill switch until tested.
 
 ---
 

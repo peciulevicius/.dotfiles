@@ -8,6 +8,32 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-26 — Transmission behind a Tailscale sidecar (Mullvad-ready)
+
+- New `transmission-ts` container (`tailscale/tailscale:v1.102.5`, kernel mode,
+  own tailnet node). `transmission` now uses
+  `network_mode: service:transmission-ts`; the sidecar publishes 9091 and
+  51413/tcp+udp and carries the `transmission` alias on `media`, so
+  Sonarr/Radarr/LazyLibrarian needed no changes.
+- **Why:** route torrent traffic through a Mullvad exit node via the Tailscale
+  Mullvad add-on (one account for phone + container, no WireGuard keys in
+  `.env`) — replaces the Gluetun plan. Add-on not bought yet; exit-node line is
+  prepared but commented in the compose file.
+- Verified: node logs in and survives a recreate with the auth key blanked
+  (`TS_AUTH_ONCE`, state in `data/tailscale`); web UI 200 with login on
+  localhost, Mac mini Tailscale IP and the sidecar's own IP; Sonarr + Radarr
+  `downloadclient/testall` valid; Prowlarr healthy (no download clients of its
+  own); egress still the home IP as expected; 51413 still published; with the
+  sidecar stopped Transmission has no network at all (no fallback leak).
+- Glance: added a Transmission **monitor** (`http://transmission:9091/transmission/web/`,
+  401 = up) — it only had bookmarks before, so the alias is now watched.
+- Found: if the sidecar restarts alone, Transmission keeps a dead netns;
+  `docker restart transmission` fixes it (`compose up -d` doesn't). Documented.
+- Kill-switch claim checked against Tailscale docs: fail-close is only
+  documented for expired exit-node keys, not an offline exit node, and
+  tailscale/tailscale#19781 reports fallback — so it's a TODO test, not an
+  assumption. Backup of the old setup: `~/backups/transmission-2026-09-26/`.
+
 ## 2026-09-26 — First external-drive backups (T5 + T7)
 
 - `backup-external.sh` run to both drives: Immich originals + encoded video,

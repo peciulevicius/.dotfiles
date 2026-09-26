@@ -1,17 +1,70 @@
-# Transmission — BitTorrent client
+# Transmission — BitTorrent client, behind a Tailscale sidecar
 # Docs: https://github.com/linuxserver/docker-transmission
+#       https://tailscale.com/kb/1282/docker
+#
+# transmission-ts owns the network namespace: published ports, the `media`
+# network (with alias `transmission`, so Sonarr/Radarr/Prowlarr/Glance keep
+# using http://transmission:9091) and — once the Mullvad add-on is bought —
+# the exit-node route. Transmission itself has no network of its own.
+# See README.md → "Tailscale sidecar".
 
 name: transmission
 
 services:
-  transmission:
-    container_name: transmission
-    image: lscr.io/linuxserver/transmission:4.1.3
+  transmission-ts:
+    container_name: transmission-ts
+    image: tailscale/tailscale:v1.102.5
+    hostname: transmission-ts
     restart: unless-stopped
     ports:
       - "${TRANSMISSION_PORT:-9091}:9091"
       - "51413:51413"
       - "51413:51413/udp"
+    volumes:
+      - ./data/tailscale:/var/lib/tailscale
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    cap_add:
+      - NET_ADMIN
+    environment:
+      # Single-use key, only consumed on first login; the node identity then
+      # lives in ./data/tailscale. TS_AUTH_ONCE stops it re-running `up` with
+      # the (spent) key on every start.
+      TS_AUTHKEY: ${TS_AUTHKEY:-}
+      TS_AUTH_ONCE: "true"
+      TS_STATE_DIR: /var/lib/tailscale
+      TS_USERSPACE: "false"
+      # Keep Docker's embedded DNS so container names still resolve.
+      TS_ACCEPT_DNS: "false"
+      TS_ENABLE_HEALTH_CHECK: "true"
+      TS_LOCAL_ADDR_PORT: "127.0.0.1:9002"
+      # Exit node (Tailscale Mullvad add-on) — not active yet. To enable,
+      # uncomment, put the node from `docker exec transmission-ts tailscale
+      # exit-node list` in place of <mullvad-node>, then
+      # `docker compose up -d --force-recreate`. allow-lan-access keeps
+      # replies to the media network and to published ports off the tunnel;
+      # without it the web UI/RPC become unreachable. Full steps: README.md.
+      # TS_EXTRA_ARGS: --exit-node=<mullvad-node> --exit-node-allow-lan-access=true
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:9002/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    networks:
+      default:
+        aliases:
+          - transmission
+
+  transmission:
+    container_name: transmission
+    image: lscr.io/linuxserver/transmission:4.1.3
+    restart: unless-stopped
+    network_mode: service:transmission-ts
+    depends_on:
+      transmission-ts:
+        condition: service_healthy
+        restart: true
     volumes:
       - ./data/config:/config
       - ${MEDIA_DIR:-/Volumes/media}/downloads:/downloads

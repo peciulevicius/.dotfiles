@@ -62,7 +62,7 @@ Section names in *italics* are headings below.
 - Old photo archives into Immich (needs T7 + judgement) — *Import old photo archives into Immich*
 - Paperless tags/types — *Paperless-NGX — organise documents*
 - Brave Shields for Linkwarden — *Linkwarden*
-- VPN provider pick — *VPN for torrents*
+- Buy Tailscale Mullvad add-on, allow `transmission-ts` + phone; disable key expiry on `transmission-ts` — *VPN for torrents*
 - Capture Shortcut, Web Clipper, 30-day habit, Kindle/KOReader items — *Notes*
 - "Sign in with Google" audit, Gmail redirect decision, Takeout — *De-Google*
 - Calendar + Contacts to Nextcloud — *Calendar + Contacts*
@@ -114,7 +114,7 @@ Section names in *italics* are headings below.
 - `rm -rf ~/services/mealie ~/services/grafana` (say go) — *9. Maintenance backlog*
 - Pi-hole local DNS records, only after a Caddy decision — *Pi-hole — finish the deployment*
 - Optional `scp` push to the Scribe — *Notes*
-- Gluetun compose once a VPN provider is picked — *VPN for torrents*
+- Set Mullvad exit node on `transmission-ts` + leak test + kill-switch test — *VPN for torrents*
 - Major-version image upgrades, one per sitting — *21 pinned images*
 - Calibre follow-up: NAS copy removal
   (~2026-10-02) — *Move the Calibre library off SMB onto the SSD*
@@ -806,14 +806,28 @@ re-researched. Revisit only if it gets its own machine.
 
 ### VPN for torrents
 
-**Goal:** Route Transmission traffic through a VPN so ISP can't see torrent activity. Not urgent.
+**Goal:** Route Transmission traffic through Mullvad so the ISP can't see torrent
+activity and peers/trackers don't see the home IP. Not urgent.
 
-- [ ] 👤 Pick a provider: **Mullvad** (€5/mo, best privacy, no email needed,
-      cancel anytime) or **Proton VPN** (free tier works but slower, no port
-      forwarding)
-- [ ] Create `services/gluetun/docker-compose.yml` with VPN credentials
-- [ ] Update Transmission compose to use `network_mode: service:gluetun`
-- [ ] Test: `docker exec transmission curl ifconfig.me` should show VPN IP, not home IP
+Built 2026-09-26: Transmission now sits behind a Tailscale sidecar
+(`transmission-ts`), ready for a Mullvad exit node via the Tailscale add-on —
+replaces the old Gluetun plan. Details and the switch-on steps:
+`services/transmission/README.md` → *Tailscale sidecar*.
+
+- [ ] 👤 Buy the **Tailscale Mullvad add-on** (admin console → Settings →
+      Mullvad VPN) and allow `transmission-ts` + the phone.
+- [ ] 👤 Disable key expiry on `transmission-ts` (Machines → … → Disable key
+      expiry) — otherwise it drops off the tailnet on 2027-03-25.
+- [ ] Claude: set `TS_EXTRA_ARGS: --exit-node=<node> --exit-node-allow-lan-access=true`,
+      recreate, verify web UI + Sonarr/Radarr download-client tests still pass.
+- [ ] Claude: leak test — container egress IP ≠ host IP,
+      `am.i.mullvad.net/connected`, torrent-IP checker magnet, DNS path.
+- [ ] Claude: kill-switch test — make the exit node unreachable and confirm
+      Transmission gets *no* connectivity. Tailscale doesn't document this
+      (tailscale/tailscale#19781 reports fallback); if it leaks, add an iptables
+      egress rule in the sidecar (allow only `tailscale0` + local subnets).
+- Rollback, if ever needed: `~/backups/transmission-2026-09-26/` holds the
+  pre-sidecar compose + config + image digest (steps in the README).
 
 ### Notes — make capture frictionless before changing tools
 

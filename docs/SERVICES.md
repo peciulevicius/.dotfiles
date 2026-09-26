@@ -41,7 +41,7 @@ Run your own cloud on a Mac mini (or any Docker host). 26 services covering phot
 | [Radarr](#sonarr-radarr-prowlarr) | Tailscale only | 7878 | Movie management |
 | [Prowlarr](#sonarr-radarr-prowlarr) | Tailscale only | 9696 | Indexer manager |
 | [Bazarr](#bazarr) | Tailscale only | 6767 | Automated subtitle management |
-| [Transmission](#transmission) | Tailscale only | 9091 | BitTorrent client |
+| [Transmission](#transmission) | Tailscale only | 9091 | BitTorrent client (behind `transmission-ts` Tailscale sidecar) |
 | [LazyLibrarian](#lazylibrarian) | Tailscale only | 5299 | Ebook & audiobook automation |
 
 ### AI Coach (MCP servers)
@@ -570,10 +570,19 @@ docker compose up -d
 
 **What:** Lightweight BitTorrent client with web UI. Downloads to the shared media directory where Sonarr and Radarr pick up completed files.
 
+**Tailscale sidecar (2026-09-26):** Transmission has no network of its own — it
+runs inside `transmission-ts` (`tailscale/tailscale`), which publishes 9091 and
+51413 and carries the `transmission` alias on the `media` network, so
+Sonarr/Radarr/LazyLibrarian/Glance still use `http://transmission:9091`. It's
+there so torrent traffic can be sent through a **Mullvad exit node** (Tailscale
+Mullvad add-on — not bought yet). Why, how, the exit-node switch, the kill-switch
+caveat and the restart gotcha: `services/transmission/README.md` → *Tailscale sidecar*.
+
 ```bash
 cd ~/services/transmission
-docker compose up -d
+docker compose up -d          # starts transmission-ts first, then transmission
 # Open: http://localhost:9091
+# Sidecar restarted alone and Transmission unreachable? docker restart transmission
 ```
 
 ---

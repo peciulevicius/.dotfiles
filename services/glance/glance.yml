@@ -109,6 +109,14 @@ pages:
                 url: http://100.81.171.49:6767
                 check-url: http://bazarr:6767/
                 icon: di:bazarr
+              - title: Transmission
+                url: http://100.81.171.49:9091
+                # `transmission` is a network alias on the transmission-ts
+                # sidecar; the web UI always answers 401 without a login.
+                check-url: http://transmission:9091/transmission/web/
+                alt-status-codes:
+                  - 401
+                icon: si:transmission
           - type: bookmarks
             groups:
               - title: Main
