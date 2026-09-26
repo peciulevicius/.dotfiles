@@ -40,11 +40,9 @@ Run your own cloud on a Mac mini (or any Docker host). Self-hosted services cove
 | [Sonarr](#sonarr-radarr-prowlarr) | Tailscale only | 8989 | TV show management |
 | [Radarr](#sonarr-radarr-prowlarr) | Tailscale only | 7878 | Movie management |
 | [Prowlarr](#sonarr-radarr-prowlarr) | Tailscale only | 9696 | Indexer manager |
-| [Lidarr](#lidarr) | Tailscale only | 8686 | Music collection management |
 | [Bazarr](#bazarr) | Tailscale only | 6767 | Automated subtitle management |
 | [Transmission](#transmission) | Tailscale only | 9091 | BitTorrent client (behind `transmission-ts` Tailscale sidecar) |
 | [LazyLibrarian](#lazylibrarian) | Tailscale only | 5299 | Ebook & audiobook automation |
-| [beets](#beets) | Tailscale only | 8337 | Music library organiser — tags + files bought music dropped into `Incoming/` |
 
 ### AI agents
 
@@ -574,26 +572,6 @@ docker compose up -d
 
 ---
 
-### Lidarr
-
-**What:** Music collection manager. Lidarr monitors artists and albums, searches through Prowlarr, sends releases to Transmission, and organizes completed imports into the music library.
-
-**Setup:** Stage the service with `./services/setup-services.sh lidarr`, then create the music library directory and start it:
-
-```bash
-mkdir -p /Volumes/media/{music,downloads}
-cd ~/services/lidarr
-docker compose up -d
-```
-
-Open http://localhost:8686. In **Settings → General**, copy Lidarr's API key. In Prowlarr (http://localhost:9696), go to **Settings → Apps → Add → Lidarr**, use `http://lidarr:8686` as the URL, and paste that key. Add indexers in Prowlarr if none are configured. Lidarr should use `/media/music/Library` as its root folder; Jellyfin serves that folder, while Beets independently imports hand-added files from `/media/music/Incoming`.
-
-Add Transmission in **Settings → Download Clients**. Transmission reports paths under `/downloads`, while Lidarr sees the same NAS share under `/media`; if completed downloads do not import, add a Lidarr **Remote Path Mapping** with the same Host value as the Transmission client (currently `100.81.171.49`), Remote Path `/downloads`, and Local Path `/media/downloads`.
-
-To get music, add an artist but choose only the wanted album(s), then use the album's search action and grab a matching result. Lidarr manages releases (albums, EPs, and singles), not a list of isolated tracks. Don't set every album to monitored unless you want the additional releases too.
-
----
-
 ### Transmission
 
 **What:** Lightweight BitTorrent client with web UI. Downloads to the shared media directory where Sonarr and Radarr pick up completed files.
@@ -650,29 +628,6 @@ docker compose up -d
 cd ~/services/bazarr
 docker compose up -d
 # Open: http://localhost:6767
-```
-
----
-
-### beets
-
-**What:** Music library organiser. Files dropped into
-`/Volumes/media/music/Incoming/` are looked up on MusicBrainz, re-tagged, given
-cover art and a genre, and moved into `Library/Artist/Album/`, which Jellyfin
-serves as its **Music** library (Finamp on the phone).
-
-**Why:** adding music is "drop files in a folder". **No downloader** — music
-is bought DRM-free (Bandcamp, Qobuz, iTunes) and added by hand.
-
-**How:** cron runs `scripts/utils/beets-import.sh` every 10 min (inotify
-doesn't work on SMB); it imports once `Incoming/` has been quiet for 2 min.
-The web UI on 8337 is a read-only browser. Full details:
-`services/beets/README.md`.
-
-```bash
-cd ~/services/beets
-docker compose up -d
-docker exec beets beet ls | head      # what's in the library
 ```
 
 ---
@@ -816,7 +771,6 @@ Every service is accessible three ways: localhost (on the Mac mini), Tailscale (
 | Bazarr | 6767 | http://100.81.171.49:6767 |
 | Transmission | 9091 | http://100.81.171.49:9091 |
 | LazyLibrarian | 5299 | http://100.81.171.49:5299 |
-| beets (music) | 8337 | http://100.81.171.49:8337 |
 | Paperclip (agents) | 3100 | http://100.81.171.49:3100 |
 **Mobile apps (use Tailscale URLs to bypass Cloudflare Access gate):**
 
@@ -862,7 +816,7 @@ CardDAV instead of a dedicated app).
 
 | Service | App(s) | Platform | Notes |
 |---|---|---|---|
-| **Jellyfin (music)** | **Finamp** (free, Jellyfin-native) | iOS + Android | Streams + offline downloads. ⚠️ Amperfy speaks **Subsonic/Ampache**, not Jellyfin — only useful if Navidrome is ever added |
+| ~~Jellyfin (music)~~ | ~~Finamp~~ | — | **Not used** — self-hosted music removed 2026-09-26, Spotify kept (see `HOME_SERVER_CHANGELOG.md`). If it ever returns: Finamp is Jellyfin-native; Amperfy speaks Subsonic/Ampache (Navidrome), not Jellyfin |
 | **Paperless-ngx** | Swift Paperless, Paperless Mobile, PaperNext | iOS + Android | All third-party, all actively maintained. Swift Paperless is iOS-native |
 | **Linkwarden** | Official Linkwarden app | iOS 15.1+ / Android | Share-sheet save, offline caching |
 | **FreshRSS** | Reeder, NetNewsWire, ReadKit, Fluent Reader, Unread | mostly iOS | Enable **Google Reader API** access (not Fever — more limited) and set an API password in FreshRSS settings first |
@@ -883,7 +837,6 @@ that aren't on the tunnel.
 | **Swift Paperless** / Paperless Mobile | `https://papers.peciulevicius.com` | Paperless username + password | Share-sheet upload of scans/PDFs works once logged in |
 | **Linkwarden** (official app) | `https://links.peciulevicius.com` | Linkwarden email/username + password | Server v2.16 — app login supported. Enable the share extension in iOS to save links from Safari |
 | **Pi-hole Remote** | `https://pihole.peciulevicius.com` (port 443, HTTPS) | Pi-hole **app password** | App requires Pi-hole v6 ✓ (v6 since 2026-09-25). Create an app password: Pi-hole → Settings → Web interface / API → *Expert* → **Configure app password** → copy it (shown once) → save it in Vaultwarden too |
-| **Finamp** (Jellyfin music) | `https://watch.peciulevicius.com` | Jellyfin user | ⏸ Blocked until the **music library** exists in Jellyfin (TODO) |
 | **Nextcloud** | `https://cloud.peciulevicius.com` | Nextcloud user (app password recommended: Settings → Security → *Devices & sessions*) | ⏸ Wait for the keep-or-remove decision (TODO). If kept: Files app + iOS **CalDAV/CardDAV** accounts (`https://cloud.peciulevicius.com/remote.php/dav`) for calendar/contacts |
 
 **Also worth installing** (tracked in `HOME_SERVER_TODO.md`): **Bitwarden**

@@ -62,7 +62,7 @@ Each service = one folder in `~/services/<name>/` with `docker-compose.yml`
 
 | Service | .env variable | Points at |
 |---------|--------------|-----------|
-| jellyfin, sonarr-radarr, lidarr, transmission, bazarr | `MEDIA_DIR` | `/Volumes/media` |
+| jellyfin, sonarr-radarr, transmission, bazarr | `MEDIA_DIR` | `/Volumes/media` |
 | immich | `UPLOAD_LOCATION` | `/Volumes/immich/upload` |
 | immich | `DB_DATA_LOCATION` | `./data/postgres` (internal SSD!) |
 | audiobookshelf, lazylibrarian | `AUDIOBOOKS_DIR` | `/Volumes/audiobooks` |

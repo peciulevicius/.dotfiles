@@ -8,6 +8,48 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-26 — Music setup removed (keep Spotify)
+
+Decision: **keep Spotify, drop self-hosted music.** The beets + Jellyfin music
+library (deployed the same morning) and Lidarr were removed before any music
+was added.
+
+**Why:**
+- **There is no owned collection to serve.** Everything listened to is
+  streamed; building a library meant buying ~1,700 liked songs album by album
+  or downloading them, and neither was going to happen. An empty library plus
+  a cron job, a container and a Glance tile is pure upkeep.
+- **Spotify isn't Google**, so it doesn't block the de-Googling goal. The
+  Google piece is **YouTube Music / YouTube Premium** — that gets cancelled
+  instead (👤 TODO).
+- The liked-songs list (merged export) is kept **privately in the Obsidian
+  vault**, not in this public repo, in case a library is ever worth building.
+
+**Removed:**
+- **beets** — container + image, `services/beets/`, `scripts/utils/beets-import.sh`,
+  its `*/10` cron line (live crontab reinstalled from `scripts/cron/crontab`
+  and diffed), the `*.yaml` config-copy glob in `setup-services.sh` (beets'
+  `config.yaml` was its only user), Glance monitor + 2 bookmarks + the `beets`
+  network, and Uptime Kuma monitor #27 (monitor, notification link and 224
+  heartbeats deleted with Kuma stopped; db backed up first).
+- **Lidarr** — container + image, `services/lidarr/`, `setup-services.sh`
+  entries, Glance monitor + 3 bookmarks, docs rows, and the **Lidarr
+  application in Prowlarr** (Prowlarr now syncs to Sonarr and Radarr only).
+  It had 0 artists and an empty queue. It shared the `media` network, which
+  stays for the rest of the media stack. No tunnel hostname or Kuma monitor
+  existed for it.
+- **Jellyfin** — the read-only `music/Library` mount; recreated, healthy,
+  Movies (23) and TV (2 series / 40 episodes) intact. A Music library was
+  never created (the API key was never provided).
+- **Docs** — SERVICES.md (tables, sections, Tailscale list; Finamp marked *not
+  used*), HOME_SERVER_REFERENCE.md, services/README.md, NAS.md.
+
+**Left behind:** `/Volumes/media/music/` (116K of beets test leftovers —
+`rm -rf` was permission-blocked for Claude) and the staged
+`~/services/{beets,lidarr}` dirs. Both are 👤 TODO items.
+
+---
+
 ## 2026-09-26 — Paperclip (multi-agent orchestration), Tailscale only
 
 - **Deployed** `ghcr.io/paperclipai/paperclip:2026.916.1` (`services/paperclip/`),

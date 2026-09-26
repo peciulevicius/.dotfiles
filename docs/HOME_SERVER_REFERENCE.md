@@ -329,11 +329,6 @@ nudge either way.
   a targeted scan-one-folder endpoint before assuming the blunt restart is
   permanent for this one.
 
-**Music is imported by cron, not by a watcher** for the same reason:
-`scripts/utils/beets-import.sh` runs every 10 minutes and calls
-`beet import -q /music/Incoming` once `Incoming/` has been unchanged for 2
-minutes. See `services/beets/README.md`.
-
 See `HOME_SERVER_TODO.md`.
 
 ---
@@ -368,7 +363,6 @@ copy.
 | Immich database | Internal SSD | `~/services/immich/data/postgres` (never on SMB — DBs corrupt over network mounts) |
 | Immich thumbnails | Internal SSD | `~/services/immich/data/thumbs` (SSD for fast scrolling; regenerable) |
 | Media (movies, TV, downloads) | NAS | `/Volumes/media/` |
-| Music | NAS | `/Volumes/media/music/` — drop into `Incoming/`, beets files it into `Library/` (mounted read-only into Jellyfin at `/media/music`). beets' own DB is `~/services/beets/data/config/musiclibrary.blb` (SSD) |
 | Audiobooks | NAS | `/Volumes/audiobooks/` |
 | Calibre library (books + `metadata.db`) | Internal SSD | `~/services/calibre/library` — moved off SMB 2026-09-25 (SQLite must not live on SMB). Path is `BOOKS_DIR` in the calibre, calibre-web and lazylibrarian `.env`s. The old NAS copy `/Volumes/books` is a **frozen rollback** until ~2026-10-02, then deleted |
 | CouchDB (Obsidian LiveSync) | Internal SSD | `~/services/couchdb/data` (database — never on SMB) |

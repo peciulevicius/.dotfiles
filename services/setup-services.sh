@@ -35,7 +35,6 @@ SERVICES=(
   linkwarden
   jellyfin
   sonarr-radarr
-  lidarr
   lazylibrarian
   transmission
   jellyseerr
@@ -45,7 +44,6 @@ SERVICES=(
   odysseus
   trainingpeaks-mcp
   strava-mcp
-  beets
   paperclip
 )
 
@@ -70,7 +68,6 @@ SERVICE_PORTS=(
   "linkwarden:3005"
   "jellyfin:8096"
   "sonarr-radarr:8989,7878,9696"
-  "lidarr:8686"
   "lazylibrarian:5299"
   "transmission:9091"
   "jellyseerr:5055"
@@ -80,7 +77,6 @@ SERVICE_PORTS=(
   "odysseus:7001"
   "trainingpeaks-mcp:8092"
   "strava-mcp:8093"
-  "beets:8337"
   "paperclip:3100"
 )
 
@@ -144,9 +140,8 @@ stage_service() {
     log_ok "$svc: copied $(basename "$script")"
   done
 
-  # Copy any config files mounted into the container (e.g. couchdb/local.ini,
-  # beets/config.yaml)
-  for conf in "$svc_dir"/*.ini "$svc_dir"/*.conf "$svc_dir"/*.yaml; do
+  # Copy any config files mounted into the container (e.g. couchdb/local.ini)
+  for conf in "$svc_dir"/*.ini "$svc_dir"/*.conf; do
     [[ -f "$conf" ]] || continue
     cp "$conf" "$dest_dir/$(basename "$conf")"
     log_ok "$svc: copied $(basename "$conf")"

@@ -1,4 +1,4 @@
-# Jellyfin — media server (movies, TV shows, music)
+# Jellyfin — media server (movies, TV shows)
 # Docs: https://jellyfin.org/docs/
 
 name: jellyfin
@@ -15,8 +15,6 @@ services:
       - ./data/cache:/cache
       - ${MEDIA_DIR:-/Volumes/media}/movies:/media/movies
       - ${MEDIA_DIR:-/Volumes/media}/tv:/media/tv
-      # Read-only: beets owns Library/ (tags, art, folder layout) — see services/beets/
-      - ${MEDIA_DIR:-/Volumes/media}/music/Library:/media/music:ro
     environment:
       TZ: ${TZ:-Europe/Vilnius}
 

@@ -49,7 +49,7 @@ Section names in *italics* are headings below.
 - MacBook: gitleaks hook + `sync.sh`, re-auth Tailscale (key expired 2026-09-02) — *8a. Public-repo hygiene*
 - R2 token scope, Cloudflare account 2FA — *8b. Cloudflare/R2 security check*
 - `pmset autorestartatconnect`, UPS decision, NAS auto power-on — *8c. Power outage recovery*
-- notebook.koplugin, Supernote, Jellyfin music + API keys, Nextcloud/Paperless keep-or-remove — *9. Maintenance backlog*
+- notebook.koplugin, Supernote, cancel YouTube Music/Premium, music-folder cleanup, Jellyfin/ABS API keys, Nextcloud/Paperless keep-or-remove — *9. Maintenance backlog*
 - Kindle wallpapers, KOReader speed workaround, `.smbdelete` cleanup, `read-along` tag, OTA check, Searchable PDF test — *Quick wins left over from 2026-09-20*
 - LiveSync plugin on each device — *🔗 Obsidian LiveSync*
 - DB-dump retention — *💾 Disk*
@@ -94,9 +94,9 @@ Section names in *italics* are headings below.
 
 - 👤 **Phone apps** — connect Reeder (set FreshRSS API password first),
   Swift Paperless, Linkwarden, Pi-hole Remote (create an app password) —
-  step-by-step table in `SERVICES.md` → *Connecting each app*. Finamp waits for
-  the music library; Nextcloud app waits for the keep-or-remove decision;
-  Amperfy dropped (Subsonic-only). Also install: Bitwarden, Ente Auth,
+  step-by-step table in `SERVICES.md` → *Connecting each app*. Nextcloud app
+  waits for the keep-or-remove decision; Finamp/Amperfy not used (self-hosted
+  music dropped 2026-09-26, Spotify kept). Also install: Bitwarden, Ente Auth,
   Obsidian + LiveSync, ntfy, Swiftfin/Infuse, Odysseus home-screen web app.
 
 - 👤 Ad blocking: Brave iOS / AdGuard for YouTube (Tailscale → Pi-hole done 2026-09-26) — *Pi-hole → Ad blocking everywhere*
@@ -419,36 +419,18 @@ whole-house outage now alerts.
       Boox, reMarkable) give you everything at once — see the three-way
       trade-off table in `guides/BOOKS.md`. If bought, it can sync to the
       **already-running Nextcloud** via WebDAV, no new infrastructure needed.
-- [ ] **Music library in Jellyfin** (plan agreed 2026-09-26):
-      - [x] Claude: `/Volumes/media/music` (`Incoming/` + `Library/`) created;
-            `Library/` mounted read-only into Jellyfin at `/media/music`
-            (2026-09-26).
-      - [x] Claude: **beets** container + cron import every 10 min
-            (`scripts/utils/beets-import.sh`) — tags, cover art, renames into
-            `Library/Artist/Album/`. Adding music = drop files in `Incoming/`.
-            See `services/beets/README.md` (2026-09-26).
-      - [ ] 👤 **Save the Jellyfin API key** (dashboard → Admin → API Keys → +)
-            to `~/.config/homelab/jellyfin.env` as `JELLYFIN_API_KEY=…`
-            (chmod 600) → Claude adds the **Music** library on `/media/music`
-            via the API **and** wires Jellyfin into Sonarr/Radarr → Connect,
-            then drops Jellyfin from `smb-watcher-rescan.sh` (keeps ABS).
-      - [ ] Decide on a backup for `music/Library/` — it's on the NAS RAID
-            only (not R2, not `backup-external.sh`). Purchases can be
-            re-downloaded, so low urgency; add a `sync_dir` line to
-            `backup-external.sh` once the library is worth protecting.
-      - [ ] Two `.smbdelete*` ghosts from the beets test (`music/Incoming/`,
-            `music/Library/Zzbeetstest Artist/Zzsilent Album/`) — held open by
-            Docker Desktop's VM; delete them + the empty folder after the next
-            Docker Desktop restart.
-      - [ ] 👤 **Finamp** on the phone → `https://watch.peciulevicius.com`
-            (Amperfy dropped: Subsonic/Ampache only).
-      - [ ] 👤 Buy music as DRM-free files — Bandcamp (FLAC/MP3, app has a
-            download button), Qobuz (FLAC), iTunes (DRM-free AAC; export from
-            the Music app) — and drop the files into `Incoming/`. Start with the
-            27 "4+ liked tracks" albums in the vault note
-            `🙋 Personal/Music/Music Library.md` (full merged list of 1,673
-            liked songs: `library.csv` there).
-      Related stopgap (2026-09-22, still cron'd every 30 min):
+- [ ] 👤 **Cancel YouTube Music / YouTube Premium** (de-Google). Self-hosted
+      music was dropped 2026-09-26 — Spotify stays (see changelog *Music setup
+      removed*). The liked-songs list is kept privately in the Obsidian vault.
+- [ ] 👤 **Delete the leftover NAS folder `/Volumes/media/music/`** — only the
+      beets test leftovers remain (`Library/Zzbeetstest Artist/`, `.smbdelete*`
+      ghosts, 116K). Claude's `rm -rf` was blocked by permissions 2026-09-26.
+      The ghosts are held open by Docker Desktop's VM, so do it after the next
+      Docker Desktop restart: `rm -rf /Volumes/media/music`.
+- [ ] 👤 **Delete the old staged dirs** `rm -rf ~/services/beets ~/services/lidarr`
+      (containers and images already removed 2026-09-26), and after a week of
+      Uptime Kuma running fine, `rm ~/services/uptime-kuma/data/kuma.db.bak-2026-09-26-music`.
+- [ ] **SMB library-rescan stopgap** (2026-09-22, still cron'd every 30 min):
       `scripts/utils/smb-watcher-rescan.sh` restarts Jellyfin + Audiobookshelf
       because neither's file watcher reliably sees new files over SMB. Each
       real fix needs one 30-second thing only you can do:
