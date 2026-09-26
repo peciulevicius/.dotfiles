@@ -8,6 +8,15 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-26 — Subscriptions tracker + monthly money reminder
+
+- Private list of subscriptions and prepaid credits (Claude, OpenRouter,
+  Anthropic API, domains, Purelymail, R2, TrainingPeaks…) lives in the Obsidian
+  vault (`💰 Finance/Subscriptions & Credits.md`), not in this public repo.
+- Cron, 1st of each month 10:00 → Discord "💳 Monthly money check": check
+  prepaid balances and update that note. Test notification sent.
+- Claude Code default model → `opusplan` (Opus plans, Sonnet executes).
+
 ## 2026-09-26 — Disk: 18 → 23GiB free (92% → 89%)
 
 **Why:** the weekly audit flagged the internal SSD at 92%. The cleanup only
