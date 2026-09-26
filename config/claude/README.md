@@ -183,3 +183,12 @@ git commit -m "feat: add [thing]"
 - Full guide: `docs/CLAUDE_CODE_GUIDE.md`
 - Claude Code docs: https://code.claude.com/docs
 - Skills marketplace: https://skills.sh
+
+## Default model: `opusplan`
+
+`settings.json` sets `"model": "opusplan"` (2026-09-26): **Opus while planning**
+(plan mode — designing changes, judging risk), **Sonnet while executing**
+(commands, edits, docs). Most homelab sessions are execution, so this keeps
+the Pro plan's weekly limit for the moments where the stronger model matters.
+Switch any time with `/model`. Note `settings.json` is **copied** into
+`~/.claude` by `setup-claude.sh` (not symlinked) — re-run it, or edit both.
