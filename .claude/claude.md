@@ -17,9 +17,9 @@ Personal dotfiles + self-hosted services stack for macOS (primary), Arch Linux, 
 └── docs/                   # Documentation
 ```
 
-## Services (23 total)
+## Services
 
-Mac mini M4 runs 21 Docker services + rclone backup + cloudflared tunnel.
+Mac mini M4 runs ~44 containers (2026-09-26) + rclone backup + cloudflared tunnel — see `docs/SERVICES.md` for the current list.
 See `docs/SERVICES.md` for full list. Key services: Immich, Vaultwarden, Nextcloud, Jellyfin, Sonarr/Radarr, Transmission, Pi-hole.
 
 All services accessible via: localhost, Tailscale (`100.81.171.49`), and `*.peciulevicius.com` (Cloudflare Tunnel).
@@ -130,7 +130,7 @@ Goal: own the chat history, memories and RAG corpus; rent the inference.
 - **Models run natively via Homebrew, never in Docker.** Docker on macOS has no
   GPU passthrough, so containerised Ollama is CPU-only. This is the likely real
   cause of the earlier failed attempt recorded in the changelog.
-- Hardware ceiling is ~8B quantised. 16GB unified, shared with 38 containers.
+- Hardware ceiling is ~8B quantised. 16GB unified, shared with ~44 containers.
   Do not propose 30B+ models.
 
 ### Octopus Deploy — ruled out, `docs/guides/OCTOPUS_DEPLOY.md`
