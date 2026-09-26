@@ -19,9 +19,12 @@ Personal dotfiles + self-hosted services stack for macOS (primary), Arch Linux, 
 
 ## Services
 
-Mac mini M4 has ~43 containers (2026-09-27), ~31 running: six rarely used
-services (Paperless, Nextcloud, Stirling PDF, IT-Tools, Odysseus, FlareSolverr)
-are **on-demand**, stopped by default and started with `ondemand start <name>`
+Mac mini M4 has ~45 containers (2026-09-27), ~31 running: two (Stirling PDF,
+IT-Tools) scale to zero automatically via **Caddy + Sablier**
+(`services/caddy/` — starts on the first request, stops when idle; more
+services join in later phases, see `services/caddy/README.md` "Rollout").
+Paperless, Nextcloud, Odysseus and FlareSolverr are still **manually
+on-demand**, stopped by default and started with `ondemand start <name>`
 (`scripts/utils/ondemand.sh`). Plus rclone backup + cloudflared tunnel — see
 `docs/SERVICES.md` for the current list.
 See `docs/SERVICES.md` for full list. Key services: Immich, Vaultwarden, Nextcloud, Jellyfin, Sonarr/Radarr, Transmission, Pi-hole.

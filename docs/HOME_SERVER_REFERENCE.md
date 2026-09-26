@@ -88,10 +88,26 @@ instead of removed:
 |---|---|---|---|
 | `paperless-ngx` | paperless, paperless_db, paperless_broker | ~615MB | 14 documents, scanned in batches |
 | `nextcloud` | nextcloud, nextcloud_db | ~130MB | 83MB of files; keep-or-remove undecided |
-| `stirling-pdf` | stirling_pdf | ~850MB | JVM, used a few times a month |
-| `it-tools` | it_tools | ~10MB | occasional; grouped for consistency |
 | `odysseus` | odysseus-{odysseus,searxng,chromadb,ntfy}-1 | ~470MB | used occasionally; ⚠️ ntfy push to the phone is off while stopped |
 | `flaresolverr` | flaresolverr (in `sonarr-radarr`) | ~150MB | no Prowlarr indexer carries the `flaresolverr` tag |
+
+**2026-09-27: Stirling PDF and IT-Tools moved from this manual list to
+automatic scale-to-zero** (Caddy + Sablier, `services/caddy/`) — they're
+gone from `ondemand.sh ENTRIES` because nobody needs to run `ondemand start`
+for them any more; opening `pdf.`/`tools.peciulevicius.com` starts them.
+
+| Group (Sablier) | Containers | Running RAM | Idle RAM |
+|---|---|---|---|
+| `stirling-pdf` | stirling_pdf | ~977MB (JVM) | 0 |
+| `it-tools` | it_tools | ~8MB | 0 |
+| `caddy` + `sablier` (always on) | caddy, sablier | ~23MB + ~53MB | — (never sleeps) |
+
+Measured 2026-09-27: cold start (stopped → first byte of the real app) was
+under 10s for both; idle-stop confirmed with a 2-minute test session
+duration before setting the real 30-minute one. See
+`services/caddy/README.md` for how it works and the rollout status of the
+other services still to move (Paperless, Nextcloud, Odysseus, Linkwarden,
+Jellyseerr, Bazarr, Calibre-Web, Audiobookshelf, Jellyfin).
 
 How it works and what it touches:
 - `ondemand list | start <name> | stop <name> | stop-all` (zsh alias for

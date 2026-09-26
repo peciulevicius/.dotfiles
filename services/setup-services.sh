@@ -42,6 +42,7 @@ SERVICES=(
   couchdb
   storyteller
   odysseus
+  caddy
   trainingpeaks-mcp
   strava-mcp
   paperclip
@@ -76,6 +77,7 @@ SERVICE_PORTS=(
   "couchdb:5984"
   "storyteller:8087"
   "odysseus:7001"
+  "caddy:8880"
   "trainingpeaks-mcp:8092"
   "strava-mcp:8093"
   "paperclip:3100"
@@ -114,6 +116,8 @@ stage_service() {
   if [[ "$DRY_RUN" == "true" ]]; then
     log_info "[dry-run] Would create $dest_dir"
     [[ -f "$svc_dir/docker-compose.yml" ]] && log_info "[dry-run] Would copy docker-compose.yml"
+    [[ -f "$svc_dir/Dockerfile" ]] && log_info "[dry-run] Would copy Dockerfile"
+    [[ -f "$svc_dir/Caddyfile" ]] && log_info "[dry-run] Would copy Caddyfile"
     [[ -f "$svc_dir/.env.example" ]] && log_info "[dry-run] Would copy .env.example → .env (if not exists)"
     return
   fi
@@ -123,6 +127,13 @@ stage_service() {
   if [[ -f "$svc_dir/docker-compose.yml" ]]; then
     cp "$svc_dir/docker-compose.yml" "$dest_dir/docker-compose.yml"
   fi
+
+  # Dockerfile (custom-built images, e.g. caddy) and Caddyfile (caddy)
+  for extra in Dockerfile Caddyfile; do
+    [[ -f "$svc_dir/$extra" ]] || continue
+    cp "$svc_dir/$extra" "$dest_dir/$extra"
+    log_ok "$svc: copied $extra"
+  done
 
   if [[ -f "$svc_dir/.env.example" ]]; then
     if [[ ! -f "$dest_dir/.env" ]]; then

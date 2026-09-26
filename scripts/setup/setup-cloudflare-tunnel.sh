@@ -97,6 +97,15 @@ declare -A SERVICES=(
     ["tp-mcp"]=8092     # TrainingPeaks MCP for claude.ai — ⚠️ only behind the Cloudflare Access app "TrainingPeaks MCP" (Managed OAuth); never publish without it
 )
 
+# Scale-to-zero (Caddy + Sablier, services/caddy/) — these hostnames route to
+# Caddy on 8880 instead of straight to the app's own port above. The port in
+# SERVICES above still documents the app's real port (used elsewhere, e.g.
+# for the Tailscale-only summary), and Caddy's own Caddyfile is what actually
+# reverse-proxies to it. Keep this list in sync with
+# services/caddy/README.md's rollout table as phases land.
+CADDY_PORT=8880
+SABLIER_ROUTED=(pdf tools)
+
 # --- 6. Write config ---
 CONFIG_FILE="$HOME/.cloudflared/config.yml"
 print_info "Writing tunnel config to $CONFIG_FILE"
@@ -110,6 +119,12 @@ EOF
 
 for sub in home vault photos cloud papers rss status books pihole pdf tools links watch listen portainer couchdb; do
     port="${SERVICES[$sub]}"
+    routed=false
+    for r in "${SABLIER_ROUTED[@]}"; do [[ "$r" == "$sub" ]] && routed=true; done
+    if [[ "$routed" == "true" ]]; then
+        echo "  # Scale-to-zero via Caddy + Sablier — see services/caddy/README.md" >> "$CONFIG_FILE"
+        port="$CADDY_PORT"
+    fi
     echo "  - hostname: ${sub}.${DOMAIN}" >> "$CONFIG_FILE"
     echo "    service: http://localhost:${port}" >> "$CONFIG_FILE"
 done

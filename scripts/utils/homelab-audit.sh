@@ -46,26 +46,34 @@ while IFS= read -r f; do
     bad "$rel differs — re-copy it, then recreate the container"
     drift=1
   fi
-done < <(find "$DOTFILES/services" -mindepth 2 -maxdepth 2 \( -name '*.sh' -o -name 'docker-compose.yml' -o -name 'glance.yml' \))
+done < <(find "$DOTFILES/services" -mindepth 2 -maxdepth 2 \( -name '*.sh' -o -name 'docker-compose.yml' -o -name 'glance.yml' -o -name 'Caddyfile' -o -name 'Dockerfile' \))
 [[ $drift -eq 0 ]] && ok "no drift"
 
 # ── 2. Containers meant to be up that aren't ─────────────────────────────────
 head_ "Containers"
 if command -v docker >/dev/null 2>&1; then
   down=0
-  # On-demand services (ondemand.sh, 2026-09-26) are stopped by default to save
-  # RAM; restart=no also marks one (e.g. storyteller). Stopped is normal for both.
+  # Two sources of "expected stopped": ondemand.sh (manual override — the
+  # user starts/stops it by hand) and Sablier-managed containers (Caddy +
+  # Sablier, services/caddy, 2026-09-27 on) — anything labelled
+  # sablier.enable=true starts itself on the first request and stops itself
+  # when idle, so a stopped one is normal, not a miss. Deriving from the
+  # label instead of hardcoding names here means a new Sablier-managed
+  # service never needs this script touched.
   ondemand=" $("$DOTFILES/scripts/utils/ondemand.sh" containers 2>/dev/null | tr '\n' ' ') "
+  sablier_managed=" $(docker ps -aq --filter "label=sablier.enable=true" | xargs -r docker inspect --format '{{.Name}}' 2>/dev/null | sed 's#^/##' | tr '\n' ' ') "
   while IFS='|' read -r name status policy; do
     [[ "$policy" == "no" ]] && continue
     [[ "$ondemand" == *" $name "* ]] && continue
+    [[ "$sablier_managed" == *" $name "* ]] && continue
     if [[ "$status" != running ]]; then
       bad "$name is $status (restart policy: $policy)"; down=1
     fi
   done < <(docker ps -aq | xargs -r docker inspect --format '{{.Name}}|{{.State.Status}}|{{.HostConfig.RestartPolicy.Name}}' 2>/dev/null | sed 's#^/##')
   unhealthy=$(docker ps --filter health=unhealthy --format '{{.Names}}')
   [[ -n "$unhealthy" ]] && { bad "unhealthy: $unhealthy"; down=1; }
-  [[ $down -eq 0 ]] && ok "$(docker ps -q | wc -l | tr -d ' ') running, none down or unhealthy ($(wc -w <<<"$ondemand" | tr -d ' ') on-demand skipped)"
+  skipped=$(( $(wc -w <<<"$ondemand") + $(wc -w <<<"$sablier_managed") ))
+  [[ $down -eq 0 ]] && ok "$(docker ps -q | wc -l | tr -d ' ') running, none down or unhealthy ($skipped on-demand/scale-to-zero skipped)"
 else
   bad "docker not available"
 fi

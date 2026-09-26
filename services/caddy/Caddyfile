@@ -1,0 +1,52 @@
+# Scale-to-zero routing. Each site block below matches on the Host header
+# cloudflared forwards (cloudflared preserves the original hostname), so all
+# of them share the one 127.0.0.1:8880 listener declared in docker-compose.yml.
+#
+# `sablier` is not natively an ordered HTTP handler, so it must run inside a
+# `route` block (which executes its directives in the order written) ahead of
+# `reverse_proxy` — a bare `sablier` + `reverse_proxy` pair at the top level
+# fails to adapt ("not an ordered HTTP handler"). See the plugin's own
+# examples/docker/Caddyfile.
+#
+# `dynamic` = a "starting…" page for browser tools, then redirect.
+# `blocking` = hold the request until the app answers (native apps: TV,
+# phone, KOReader — anything that can't render a loading page).
+#
+# session_duration is how long the container stays up after the LAST
+# request. Rollout note: each phase is proven with a short duration (2m)
+# before being set to the real value — see README "Rollout".
+
+{
+	auto_https off
+	admin off
+}
+
+# ── Phase 1 (2026-09-27): Stirling-PDF, IT-Tools ───────────────────────────
+
+http://pdf.peciulevicius.com:8880 {
+	route /* {
+		sablier http://sablier:10000 {
+			group stirling-pdf
+			session_duration 30m
+			dynamic {
+				display_name "Stirling PDF"
+				theme "hacker-terminal"
+			}
+		}
+		reverse_proxy stirling_pdf:8080
+	}
+}
+
+http://tools.peciulevicius.com:8880 {
+	route /* {
+		sablier http://sablier:10000 {
+			group it-tools
+			session_duration 30m
+			dynamic {
+				display_name "IT-Tools"
+				theme "hacker-terminal"
+			}
+		}
+		reverse_proxy it_tools:80
+	}
+}

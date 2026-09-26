@@ -8,6 +8,59 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-27 — Scale-to-zero phase 1: Caddy + Sablier (Stirling PDF, IT-Tools)
+
+New `services/caddy/` — a custom Caddy build (xcaddy, `caddy:2.11.4-builder`,
+plugin note below) with `sablierapp/sablier:1.18.0`, fronting the services
+that should start on first request and stop when idle instead of running
+24/7 or needing manual `ondemand start`. Full architecture, groups, Tailscale
+port-ownership plan and rollback steps are in `services/caddy/README.md`.
+
+- **Plugin version mismatch caught during build**: the
+  `sablier-caddy-plugin` README's own Dockerfile example (`caddy:2.10.2`)
+  doesn't build — v1.0.2 of the plugin requires `caddy/v2 >= v2.11.2`. Used
+  `caddy:2.11.4-builder`/`caddy:2.11.4` instead.
+- **Caddyfile gotcha**: a bare `sablier { … }` + `reverse_proxy` at the top
+  level of a site block fails to adapt ("directive 'sablier' is not an
+  ordered HTTP handler"). Both directives need to be inside a `route { }`
+  block, per the plugin's own `examples/docker/Caddyfile` — not obvious from
+  the option reference alone.
+- **`auto_https off` does not make a domain-shaped site plaintext HTTP** —
+  Caddy still expected TLS and rejected the first real request ("Client sent
+  an HTTP request to an HTTPS server") until the site address got an explicit
+  `http://` scheme prefix.
+- **Sablier stops any `sablier.enable=true` container it didn't start,
+  once, on its own startup** (`--provider.auto-stop-on-startup` defaults to
+  `true` — confirmed via `sablier start --help`, not just the docs).
+  `--provider.auto-stop-externally-started` (continuous watching) defaults
+  to `false`, so a later `docker start` by `backup-databases.sh` is safe —
+  Sablier only reconciles once, at its own boot.
+- Phase 1 rollout, tested end-to-end through the real public hostnames
+  (`pdf.`/`tools.peciulevicius.com`, not just `localhost:8880`): stopped →
+  first request served Sablier's "starting…" page → container up in a few
+  seconds → next request served the real app. Idle-stop proven with a 2-minute
+  test `session_duration` (stopped again ~110s after the last request, in
+  line with the 5s expiration-check interval), then set to the real 30
+  minutes. `stirling_pdf` and `it_tools` got `sablier.enable=true` +
+  `sablier.group` labels; `~/.cloudflared/config.yml` now points
+  `pdf.`/`tools.peciulevicius.com` at Caddy (`localhost:8880`) instead of
+  their own ports — the old lines are commented in place for rollback.
+  Measured with `docker stats`: ~977MB (Stirling PDF, JVM) + ~8MB (IT-Tools)
+  reclaimed while idle, against ~76MB combined for Caddy + Sablier always on.
+- Moved `stirling-pdf` and `it-tools` out of `scripts/utils/ondemand.sh`
+  `ENTRIES` (they no longer need manual start/stop) and taught
+  `homelab-audit.sh`'s container check to also treat any container labelled
+  `sablier.enable=true` as expected-stopped, derived from the Docker label
+  rather than a hardcoded name list — a later phase or a new
+  Sablier-managed service needs no further edit there. `setup-services.sh`
+  now also stages `Dockerfile`/`Caddyfile` (it previously only copied
+  `docker-compose.yml`, `.env.example` and shell scripts), and the drift
+  check in `homelab-audit.sh` now watches both filenames too.
+- Not yet done: phases 2 (Paperless, Nextcloud, Odysseus, Linkwarden,
+  Jellyseerr, Bazarr) and 3 (Calibre-Web, Audiobookshelf, Jellyfin), the Kuma
+  monitor/pause step (no API — manual), and the physical device tests
+  (Jellyfin TV, Audiobookshelf phone app, KOReader OPDS) — tracked in the TODO.
+
 ## 2026-09-27 — Standalone ntfy + Paperclip Coach groundwork
 
 - New always-on `services/ntfy/` (port 8095, Tailscale + localhost only,

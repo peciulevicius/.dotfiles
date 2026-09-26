@@ -12,6 +12,11 @@ services:
       - "${TOOLS_PORT:-8085}:80"
     environment:
       TZ: ${TZ:-Europe/Vilnius}
+    # Scale-to-zero via Caddy + Sablier (services/caddy). Started/stopped by
+    # Sablier, never by ondemand.sh — see services/caddy/README.md.
+    labels:
+      - "sablier.enable=true"
+      - "sablier.group=it-tools"
 
 networks:
   default:

@@ -21,6 +21,11 @@ services:
       # tool is stateless and fronted by the tunnel. DOCKER_ENABLE_SECURITY
       # was the 0.x switch and no longer does anything.
       SECURITY_ENABLELOGIN: "false"
+    # Scale-to-zero via Caddy + Sablier (services/caddy). Started/stopped by
+    # Sablier, never by ondemand.sh — see services/caddy/README.md.
+    labels:
+      - "sablier.enable=true"
+      - "sablier.group=stirling-pdf"
 
 networks:
   default:

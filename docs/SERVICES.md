@@ -27,10 +27,11 @@ Run your own cloud on a Mac mini (or any Docker host). Self-hosted services cove
 | Service | URL | Port | Replaces |
 |---------|-----|------|----------|
 | [Pi-hole](#pi-hole) | pihole.peciulevicius.com/admin/ (the bare domain returns 403 since v6) | 8053, 53 | Router DNS + ad blocker |
-| [Stirling PDF](#stirling-pdf) ⏸ | pdf.peciulevicius.com | 8084 | Adobe Acrobat |
-| [IT-Tools](#it-tools) ⏸ | tools.peciulevicius.com | 8085 | Online dev tools |
+| [Stirling PDF](#stirling-pdf) ⚡ | pdf.peciulevicius.com | 8084 | Adobe Acrobat |
+| [IT-Tools](#it-tools) ⚡ | tools.peciulevicius.com | 8085 | Online dev tools |
 | [Audiobookshelf](#audiobookshelf) | listen.peciulevicius.com | 13378 | Audible |
 | [Linkwarden](#linkwarden) | links.peciulevicius.com | 3005 | Pocket / Raindrop |
+| [Caddy + Sablier](#caddy--sablier) | (internal — 127.0.0.1:8880 + Tailscale IP) | 8880 | Scale-to-zero reverse proxy |
 
 ### Media Stack
 
@@ -66,6 +67,14 @@ public).
 
 | Service | URL | Port | Purpose |
 |---------|-----|------|---------|
+
+### Scale-to-zero services (⚡)
+
+Since 2026-09-27, fronted by **Caddy + Sablier** (`services/caddy/`,
+`services/caddy/README.md`) instead of `ondemand.sh`: opening the URL starts
+the container(s) automatically, and they stop again after a period of no
+traffic — nothing to run by hand. Rolling out in phases; see the README for
+which services have moved so far and which are still `ondemand.sh`-managed.
 
 ### On-demand services (⏸)
 
@@ -491,8 +500,9 @@ docker compose up -d
 
 ### Stirling PDF
 
-> ⏸ **On-demand** — stopped by default. `ondemand start stirling-pdf` first,
-> `ondemand stop stirling-pdf` when done.
+> ⚡ **Scale-to-zero** (2026-09-27) — starts itself on the first request to
+> `pdf.peciulevicius.com` (fronted by `services/caddy`), stops itself after
+> 30 minutes idle. No manual start/stop.
 
 **What:** All-in-one PDF tool. Merge, split, compress, convert, rotate, add watermarks, OCR, and more — all locally processed.
 
@@ -515,8 +525,15 @@ Health: `curl localhost:8084/api/v1/info/status` → `{"version":…,"status":"U
 
 ### IT-Tools
 
-> ⏸ **On-demand** — stopped by default. `ondemand start it-tools` first,
-> `ondemand stop it-tools` when done.
+> ⚡ **Scale-to-zero** (2026-09-27) — starts itself on the first request to
+> `tools.peciulevicius.com` (fronted by `services/caddy`), stops itself after
+> 30 minutes idle. No manual start/stop.
+
+### Caddy + Sablier
+
+Scale-to-zero reverse proxy — see `services/caddy/README.md` for the full
+architecture, rollout phases, groups and rollback. Not itself
+`sablier.enable`-labelled; it's always on, like cloudflared.
 
 **What:** Collection of developer utilities — hash generators, UUID generators, base64 encoders, JWT decoders, cron expression builders, and 50+ more tools.
 
