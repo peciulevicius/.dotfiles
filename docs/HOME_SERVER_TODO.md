@@ -131,7 +131,7 @@ Section names in *italics* are headings below.
 - Optional `scp` push to the Scribe — *Notes*
 - Gluetun compose once a VPN provider is picked — *VPN for torrents*
 - Major-version image upgrades, one per sitting — *21 pinned images*
-- Calibre follow-ups: backup log check (2026-09-26), NAS copy removal
+- Calibre follow-up: NAS copy removal
   (~2026-10-02) — *Move the Calibre library off SMB onto the SSD*
 
 ---
@@ -689,8 +689,6 @@ at `~/services/calibre/library` (why and how: changelog). Follow-ups left:
       opens a shelf (the old `disk I/O error` path) — server side checked
       2026-09-25 (login 200, OPDS answers 401 Basic, no DB errors); the
       logged-in KOReader + shelf check needs you
-- [ ] Next morning (2026-09-26): `~/logs/rclone-backup.log` shows the Calibre
-      books backup reading from `~/services/calibre/library`
 - [ ] After a week (~2026-10-02): delete `/Volumes/books` from the NAS via
       UGOS, then update `NAS.md` (`HOME_SERVER_REFERENCE.md` rows already
       point at the SSD and call the NAS copy a frozen rollback)

@@ -8,6 +8,12 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-26 — Calibre backup confirmed from the SSD path
+
+- The 05:00 R2 backup read `~/services/calibre/library` (not the NAS) and
+  completed ("Calibre books backup complete"), as did Immich originals and
+  `~/.training`.
+
 ## 2026-09-26 — Jellyseerr: Radarr/Sonarr marked as default servers
 
 - Both were `isDefault: false`, so approved requests had no default target and
