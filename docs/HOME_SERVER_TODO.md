@@ -638,16 +638,28 @@ majors above remain.
 
 ### ⚠️ Move the Calibre library off SMB onto the SSD
 
-Done 2026-09-25 with `scripts/utils/migrate-calibre-to-ssd.sh` — library now
-at `~/services/calibre/library` (why and how: changelog). Follow-ups left:
+Done 2026-09-25 by a one-off script (removed 2026-09-26, see git history:
+`git log --all -- scripts/utils/migrate-calibre-to-ssd.sh`) — library now at
+`~/services/calibre/library` (why and how: changelog). Rollback until the NAS
+copy is deleted — each service kept its old `.env` as `.env.pre-ssd-migration`:
+
+```bash
+for s in calibre calibre-web lazylibrarian; do
+  mv ~/services/$s/.env.pre-ssd-migration ~/services/$s/.env
+  docker compose -f ~/services/$s/docker-compose.yml up -d
+done
+```
+
+Follow-ups left:
 
 - [ ] Verify OPDS still serves to KOReader afterwards, and that Calibre-Web
       opens a shelf (the old `disk I/O error` path) — server side checked
       2026-09-25 (login 200, OPDS answers 401 Basic, no DB errors); the
       logged-in KOReader + shelf check needs you
 - [ ] After a week (~2026-10-02): delete `/Volumes/books` from the NAS via
-      UGOS, then update `NAS.md` (`HOME_SERVER_REFERENCE.md` rows already
-      point at the SSD and call the NAS copy a frozen rollback)
+      UGOS, then drop the "frozen rollback copy" note from the `BOOKS_DIR`
+      row in `NAS.md` and `HOME_SERVER_REFERENCE.md`, and the `.env.pre-ssd-migration`
+      files in `~/services/{calibre,calibre-web,lazylibrarian}/`
 
 ### Regenerate missing Immich thumbnails
 

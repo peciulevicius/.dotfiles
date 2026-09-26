@@ -41,7 +41,6 @@ listed in [scripts/cron/README.md](https://github.com/peciulevicius/.dotfiles/bl
 | `scripts/utils/nas-watchdog.sh` | Remount shares and restart NAS-backed containers | Every 5 minutes (launchd) |
 | `scripts/utils/docker-watchdog.sh` | Restart Docker Desktop or its engine when down or hung | Every 5 minutes (launchd) |
 | `scripts/utils/smb-watcher-rescan.sh` | Restart Jellyfin and Audiobookshelf so new NAS files are indexed | Every 30 minutes (cron) |
-| `scripts/utils/migrate-calibre-to-ssd.sh` | Move the Calibre library from the NAS to the internal SSD | Once |
 
 ---
 
@@ -379,15 +378,6 @@ Restarts Jellyfin and Audiobookshelf every 30 minutes because their file
 watchers miss new files on SMB. This is a stopgap until import notifications
 are configured; see
 [HOME_SERVER_REFERENCE.md](HOME_SERVER_REFERENCE.md#file-watchers-miss-new-files-on-smb).
-
-### migrate-calibre-to-ssd.sh
-
-Moves the Calibre library from `/Volumes/books` to
-`~/services/calibre/library`. Dry run by default; `--apply` stops Calibre,
-Calibre-Web and LazyLibrarian, copies and verifies (checksums and
-`PRAGMA integrity_check`), updates `BOOKS_DIR` in each `.env` (keeping the old
-file as `.env.pre-ssd-migration`), recreates the containers and verifies their
-mounts. Rollback steps are in the script header.
 
 ---
 

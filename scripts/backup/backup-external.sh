@@ -17,8 +17,8 @@ TARGET="${1:-/Volumes/Backup}"
 
 NAS_IMMICH="/Volumes/immich"
 NAS_AUDIOBOOKS="/Volumes/audiobooks"
-# Calibre library: wherever calibre's .env says (NAS today, SSD after
-# scripts/utils/migrate-calibre-to-ssd.sh)
+# Calibre library: wherever calibre's .env says (internal SSD since
+# 2026-09-25; /Volumes/books before)
 BOOKS_DIR="$(sed -n 's/^BOOKS_DIR=//p' "$HOME/services/calibre/.env" 2>/dev/null)"
 BOOKS_DIR="${BOOKS_DIR:-/Volumes/books}"
 DB_DUMPS="$HOME/backups"          # weekly pg_dump output (internal SSD)

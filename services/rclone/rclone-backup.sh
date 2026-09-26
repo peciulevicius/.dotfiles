@@ -178,8 +178,8 @@ fi
 
 # Backup 4: Calibre books (small enough for cloud)
 # The library path comes from calibre's own .env (BOOKS_DIR), so moving the
-# library off the NAS (scripts/utils/migrate-calibre-to-ssd.sh) moves the
-# backup with it — one source of truth instead of a hardcoded /Volumes/books.
+# library off the NAS (done 2026-09-25) moved the backup with it — one source of truth instead of a
+# hardcoded /Volumes/books.
 CALIBRE_DIR="${CALIBRE_DIR:-$(sed -n 's/^BOOKS_DIR=//p' "$DOCKER_DIR/calibre/.env" 2>/dev/null)}"
 CALIBRE_DIR="${CALIBRE_DIR:-/Volumes/books}"
 CALIBRE_DEST="${RCLONE_REMOTE}:peciulevicius-backups/calibre-books"

@@ -71,16 +71,6 @@ the check is free. Cron'd on the 1st of each month — see
 Files modified in the last 24h are skipped as candidates — they may have
 changed since the 05:00 run, which would be a false alarm, not corruption.
 
-## Migrate from B2 to R2
-
-If switching from Backblaze B2, use the migration helper:
-
-```bash
-./migrate-b2-to-r2.sh
-```
-
-This syncs existing data from B2 to R2, updates your `.env`, and runs a dry-run to confirm everything works.
-
 ## Cost
 
 - **Cloudflare R2:** 10GB free, $0.015/GB/month after that, **no egress fees**

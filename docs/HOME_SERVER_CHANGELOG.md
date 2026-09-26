@@ -8,6 +8,23 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-26 — Removed one-time scripts
+
+Scripts whose job is finished for good, deleted so the repo only holds tools
+that still run. Recover any of them with `git log --all -- <path>` and
+`git show <commit>^:<path>`.
+
+- `scripts/utils/mail-switch-purelymail.sh` — moved kindle_sync IMAP and Uptime
+  Kuma SMTP from Gmail to Purelymail; done 2026-09-26, Gmail app password
+  since revoked.
+- `scripts/utils/migrate-calibre-to-ssd.sh` — moved the Calibre library from
+  `/Volumes/books` to `~/services/calibre/library`; done 2026-09-25. Its
+  rollback loop now lives in the Calibre item of `HOME_SERVER_TODO.md` until
+  the NAS copy is deleted (~2026-10-02); that deletion is manual (UGOS) and
+  never needed the script.
+- `services/rclone/migrate-b2-to-r2.sh` — Backblaze B2 → Cloudflare R2
+  backup migration; done 2026-04-22, `RCLONE_REMOTE=r2` since.
+
 ## 2026-09-26 — 2FA off Google Authenticator; Gmail app password revoked; Pi-hole via Tailscale
 
 - All TOTP codes moved to **Bitwarden Authenticator** (the top de-Google risk:
