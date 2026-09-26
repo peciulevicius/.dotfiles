@@ -8,6 +8,16 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-26 — Mail consumers off Gmail; Calibre-Web password rotated
+
+- `mail-switch-purelymail.sh`: kindle_sync IMAP and Kuma SMTP → Purelymail
+  (`dziugas@`), verified (kindle_sync dry-run connects to imap.purelymail.com).
+  Calibre-Web SMTP → Purelymail by hand (password encrypted in app.db).
+- Calibre-Web login password regenerated and stored in Vaultwarden (credential
+  migration: 5 of ~18 done).
+- Gotcha: Calibre-Web's test mail goes to the *profile* email, not the sender;
+  and Amazon must approve the new sender address for Send-to-Kindle.
+
 ## 2026-09-26 — peciulevicius.com on the Worker; Supabase migrations applied
 
 - Domain moved from Pages to the Worker (user). Supabase CLI linked from the

@@ -11,22 +11,15 @@ checked against the live system; done items moved to the changelog.
 
 ## 🔝 Next up (2026-09-25) — switch mail consumers off Gmail
 
-1. [ ] 👤 Save the `dziugas@` password (Terminal.app, not chat):
-   ```bash
-   mkdir -p ~/.config/homelab && read -rs "P?dziugas@ password: " && printf 'PM_USER=dziugas@peciulevicius.com\nPM_PASS=%s\n' "$P" > ~/.config/homelab/purelymail.env && chmod 600 ~/.config/homelab/purelymail.env && unset P && echo saved
-   ```
-   (Checked 2026-09-25: `~/.config/homelab/purelymail.env` does not exist yet.)
-2. [ ] Run `~/.dotfiles/scripts/utils/mail-switch-purelymail.sh` — tests IMAP
-   login, repoints `pkm/config.py` (kindle_sync) and Kuma's SMTP notification
-   (~10 s Kuma downtime), backs up both, never prints the password. Then Kuma →
-   "Uptime Kuma" notification → **Test**. (Claude, after step 1. Checked
-   2026-09-25: kindle_sync still logs `imap.gmail.com`; Kuma's "Uptime Kuma"
-   notification still points at Gmail.)
-3. [ ] 👤 Calibre-Web (password is encrypted in `app.db`, so UI only): Admin →
-   Edit E-mail Server Settings → `smtp.purelymail.com`, 465, SSL/TLS, login +
-   from `dziugas@peciulevicius.com` → Save → Test. (Still `smtp.gmail.com:587`
-   on 2026-09-25.)
-4. [ ] 👤 Revoke the Gmail app password (Google Account → Security → App
+✅ Steps 1–3 done 2026-09-26: password file saved, `mail-switch-purelymail.sh`
+ran (IMAP ok, kindle_sync → Purelymail, Kuma SMTP → Purelymail), Calibre-Web
+SMTP → Purelymail by hand. Remaining:
+- [ ] 👤 Kuma → "Uptime Kuma" notification → **Test**; Calibre-Web → Tasks →
+      test mail *Finished*; Calibre-Web profile email → `dziugas@`
+- [ ] 👤 Amazon → Manage Content & Devices → Preferences → Personal Document
+      Settings → **approve `dziugas@peciulevicius.com`** as a sender, or
+      Calibre-Web "Send to Kindle" silently stops working
+- [ ] 👤 Revoke the Gmail app password (Google Account → Security → App
    passwords). ⚠️ It was printed in a Claude session on 2026-09-25 (and to a
    terminal on 2026-09-21) — don't postpone this.
 5. [ ] 👤 Kindle exports keep going to **Gmail** (the Amazon account email) until

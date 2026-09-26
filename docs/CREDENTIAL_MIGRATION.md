@@ -7,7 +7,7 @@ Vaultwarden. Tick rows off as you go.
 transcribe live in `~/credentials-import.md` (chmod 600, outside the repo);
 delete that file once the vault holds everything.
 
-Status: **4 of ~18 services done.** Started 2026-09-19.
+Status: **5 of ~18 services done.** Started 2026-09-19.
 
 ---
 
@@ -55,6 +55,7 @@ than one at a time. Start with the ones whose mail feeds automation:
 | CouchDB | `https://couchdb.peciulevicius.com` | `<username>` | 32-char random, `.env`-backed |
 | Transmission | `http://100.81.171.49:9091` | `<username>` | 28-char random, `.env`-backed |
 | Pi-hole | `https://pihole.peciulevicius.com` | *(password only)* | 32-char random. Old one was **5 characters** on a public panel controlling DNS — assume exposed. **Glance keeps a copy** (`PIHOLE_PASSWORD`, DNS widget) since the v6 upgrade |
+| Calibre-Web | `https://books.peciulevicius.com` | `<username>` | Generated, in Vaultwarden (2026-09-26); SMTP moved to Purelymail the same day |
 
 ---
 
@@ -95,7 +96,6 @@ docker exec grafana grafana cli admin reset-admin-password 'NEW_PASSWORD'
 | Immich | `https://photos.peciulevicius.com` | email → switch to an alias |
 | Linkwarden | `https://links.peciulevicius.com` | email → switch to an alias |
 | Mealie | `https://recipes.peciulevicius.com` | email → switch to an alias |
-| Calibre-Web | `https://books.peciulevicius.com` | `<username>` |
 | Jellyfin | `https://watch.peciulevicius.com` | `<username>` |
 | Audiobookshelf | `https://listen.peciulevicius.com` | `<username>` |
 | Uptime Kuma | `https://status.peciulevicius.com` | `<username>` |
@@ -132,7 +132,8 @@ Glance (`home.`), Stirling PDF (`pdf.`), IT-Tools (`tools.`), Calibre desktop
 
 | Thing | Where it lives |
 |---|---|
-| Gmail app password | `pkm/config.py`, Uptime Kuma SMTP, Calibre-Web SMTP — **one password, three consumers** |
+| ~~Gmail app password~~ | No longer used (all three consumers moved to Purelymail 2026-09-26) — revoke it |
+| Purelymail `dziugas@` | `pkm/config.py`, Uptime Kuma SMTP, Calibre-Web SMTP, `~/.config/homelab/purelymail.env` — **one password, four copies**; rotate all together (`credential-rotation` skill) |
 | Discord webhook | `~/.config/homelab/notify.env` |
 | Cloudflare tunnel credentials | `~/.cloudflared/*.json` |
 | R2 / rclone | `~/.config/rclone/rclone.conf` |
