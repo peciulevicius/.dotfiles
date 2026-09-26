@@ -33,6 +33,7 @@ services:
       - trainingpeaks-mcp_default
       - strava-mcp_default
       - paperclip
+      - ntfy
 
 networks:
   default:
@@ -77,4 +78,6 @@ networks:
   strava-mcp_default:
     external: true
   paperclip:
+    external: true
+  ntfy:
     external: true

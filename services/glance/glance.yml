@@ -57,6 +57,10 @@ pages:
                 url: http://100.81.171.49:3100
                 check-url: http://paperclip:3100/api/health
                 icon: mdi:paperclip
+              - title: ntfy (push)
+                url: http://100.81.171.49:8095
+                check-url: http://ntfy:80/v1/health
+                icon: mdi:bell-ring
               - title: TrainingPeaks MCP
                 url: http://127.0.0.1:8092/status
                 check-url: http://trainingpeaks-mcp:8000/status
@@ -204,6 +208,9 @@ pages:
                   - title: Paperclip (agents)
                     url: http://100.81.171.49:3100
                     icon: mdi:paperclip
+                  - title: ntfy (push)
+                    url: http://100.81.171.49:8095
+                    icon: mdi:bell-ring
 
           - type: docker-containers
             # On-demand services (ondemand.sh) are stopped by default and would

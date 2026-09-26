@@ -82,6 +82,10 @@ SYNC_CMD+=(--exclude "immich/data/**")
 # up here, not its UI state.
 SYNC_CMD+=(--exclude "portainer/data/portainer.db")
 SYNC_CMD+=(--exclude "paperless-ngx/data/data/celerybeat-schedule.db")
+# ntfy: cache.db is rewritten on every publish (same BadDigest risk as the
+# lines above). auth.db (users/tokens/ACLs) is NOT excluded — it's the one
+# thing worth keeping if the container is ever rebuilt from scratch.
+SYNC_CMD+=(--exclude "ntfy/data/cache/**")
 # CouchDB is a sync transport, not a source of truth — the vault itself is,
 # and it is backed up separately below. Syncing live .couch files would upload
 # an inconsistent snapshot for data that can simply be re-seeded from the vault.

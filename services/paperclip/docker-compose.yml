@@ -69,6 +69,15 @@ services:
       # runs `chown -R /paperclip` as root on every start and exits non-zero on
       # a read-only mount there -> crash loop (hit 2026-09-26).
       - ./reports:/reports:ro
+      # Coach agent's persistent athlete memory (adaptive-endurance-coach
+      # skill format: athlete_profile.md, metrics/, plans/, coaching_notes.md,
+      # …). Same tree Claude Code and Odysseus already read/write on the host
+      # at ~/.training — nightly R2 backup already covers it, this just gives
+      # the in-container Coach agent the same path. Read-write, and NOT under
+      # /paperclip for the same reason as /reports above: the entrypoint's
+      # `chown -R /paperclip` at every start fails on a mount it doesn't own
+      # cleanly and crash-loops (hit 2026-09-26 with /reports).
+      - ${HOME}/.training:/training
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://127.0.0.1:3100/api/health"]
       interval: 60s
