@@ -8,6 +8,41 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-26 — Music library: beets + NAS folders (no downloader)
+
+- **Folders:** `/Volumes/media/music/Incoming/` and `Library/` on the NAS
+  media share. Containers see them as `777`, same as `movies/` and `tv/`.
+- **beets** (`lscr.io/linuxserver/beets:2.14.1-ls354`, `services/beets/`):
+  mounts `/Volumes/media/music` at `/music`; `import: move/write/quiet`,
+  `quiet_fallback: asis`; plugins musicbrainz, fetchart, embedart, lastgenre,
+  scrub, duplicates, web. Web UI on 8337, Tailscale only; Glance monitor +
+  bookmarks (Home → Tailscale Only, Media → Manage) and an Uptime Kuma
+  monitor (cloned from CouchDB's in `kuma.db`, same notifications; backup
+  `kuma.db.bak-20260926-beets`). ~50MB RAM.
+- **Import trigger:** `scripts/utils/beets-import.sh`, cron `*/10` through
+  `run-with-notify.sh`. **Why cron:** inotify never fires on SMB. It waits
+  for `Incoming/` to be quiet for 2 min (half-copied albums) and takes a
+  lock (long imports).
+- **Deliberately no downloader** — no Lidarr/slskd/indexers. Music is bought
+  DRM-free (Bandcamp, Qobuz, iTunes) and dropped in by hand.
+- **Config lives in the repo** as `services/beets/config.yaml`, bind-mounted
+  over `/config/config.yaml`, because `services/**/data/` is gitignored.
+  `setup-services.sh` now also copies `*.yaml`. Found: Docker Desktop fails
+  the first `up` of a file mount nested inside another bind mount
+  (`outside of rootfs`) until the mountpoint file exists — README says to
+  `touch` it.
+- **Jellyfin:** `music/Library` mounted read-only at `/media/music` (beets
+  owns tags and layout). The Music *library* itself is not created yet —
+  no Jellyfin API key saved; TODO.
+- **Tested:** a 2-second silent MP3 generated with ffmpeg in the beets
+  container (tagged artist/album) → `Incoming/` → script → imported as-is
+  into `Library/Zzbeetstest Artist/Zzsilent Album/01 Silence.mp3`, source
+  folder pruned. Also ran through `run-with-notify.sh` on an empty
+  `Incoming/` (clean exit 0). Test data removed from beets; the deleted file
+  lingers as an `.smbdelete*` ghost held by Docker Desktop's VM (TODO).
+- Backups: `~/services/beets/` is already in the nightly R2 sync — no
+  `rclone-backup.sh` change.
+
 ## 2026-09-26 — Liked-songs list merged (private, in the vault)
 
 - Spotify liked songs (Exportify CSV) + YouTube Music library (Takeout) +

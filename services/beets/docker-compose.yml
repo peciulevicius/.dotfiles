@@ -1,0 +1,33 @@
+# beets — music library organiser. Tags, fetches cover art and renames files
+# dropped into Incoming/ into Library/Artist/Album/, which Jellyfin serves.
+# No downloader of any kind: music is bought DRM-free and added by hand.
+# Docs: https://beets.readthedocs.io
+# Import runs from cron (scripts/utils/beets-import.sh, every 10 min) because
+# inotify never fires on the SMB-mounted NAS share.
+# UI (beets web, read-only browser): http://localhost:8337 — Tailscale only
+
+name: beets
+
+services:
+  beets:
+    container_name: beets
+    image: lscr.io/linuxserver/beets:2.14.1-ls354
+    restart: unless-stopped
+    ports:
+      - "${BEETS_PORT:-8337}:8337"
+    volumes:
+      - ./data/config:/config
+      # Repo-managed config, staged next to this file by setup-services.sh.
+      # data/ is gitignored, so the config lives outside it and is bind-mounted in.
+      - ./config.yaml:/config/config.yaml
+      # One mount for Incoming/ and Library/ so an import is a rename on the
+      # same filesystem, not a copy + delete across two mounts.
+      - ${MUSIC_DIR:-/Volumes/media/music}:/music
+    environment:
+      PUID: ${PUID:-1000}
+      PGID: ${PGID:-1000}
+      TZ: ${TZ:-Europe/Vilnius}
+
+networks:
+  default:
+    name: beets

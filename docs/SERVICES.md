@@ -43,6 +43,7 @@ Run your own cloud on a Mac mini (or any Docker host). 26 services covering phot
 | [Bazarr](#bazarr) | Tailscale only | 6767 | Automated subtitle management |
 | [Transmission](#transmission) | Tailscale only | 9091 | BitTorrent client (behind `transmission-ts` Tailscale sidecar) |
 | [LazyLibrarian](#lazylibrarian) | Tailscale only | 5299 | Ebook & audiobook automation |
+| [beets](#beets) | Tailscale only | 8337 | Music library organiser — tags + files bought music dropped into `Incoming/` |
 
 ### AI Coach (MCP servers)
 
@@ -626,6 +627,29 @@ docker compose up -d
 
 ---
 
+### beets
+
+**What:** Music library organiser. Files dropped into
+`/Volumes/media/music/Incoming/` are looked up on MusicBrainz, re-tagged, given
+cover art and a genre, and moved into `Library/Artist/Album/`, which Jellyfin
+serves as its **Music** library (Finamp on the phone).
+
+**Why:** adding music is "drop files in a folder". **No downloader** — music
+is bought DRM-free (Bandcamp, Qobuz, iTunes) and added by hand.
+
+**How:** cron runs `scripts/utils/beets-import.sh` every 10 min (inotify
+doesn't work on SMB); it imports once `Incoming/` has been quiet for 2 min.
+The web UI on 8337 is a read-only browser. Full details:
+`services/beets/README.md`.
+
+```bash
+cd ~/services/beets
+docker compose up -d
+docker exec beets beet ls | head      # what's in the library
+```
+
+---
+
 ### LazyLibrarian
 
 **What:** Automated ebook and audiobook acquisition. Search for an author or book, click "Wanted", and it searches Torznab indexers (via Prowlarr), downloads via Transmission, then PostProcessor moves EPUBs into Calibre and MP3s into Audiobookshelf.
@@ -739,6 +763,7 @@ Every service is accessible three ways: localhost (on the Mac mini), Tailscale (
 | Bazarr | 6767 | http://100.81.171.49:6767 |
 | Transmission | 9091 | http://100.81.171.49:9091 |
 | LazyLibrarian | 5299 | http://100.81.171.49:5299 |
+| beets (music) | 8337 | http://100.81.171.49:8337 |
 **Mobile apps (use Tailscale URLs to bypass Cloudflare Access gate):**
 
 | App | Server URL |

@@ -412,12 +412,26 @@ whole-house outage now alerts.
       trade-off table in `guides/BOOKS.md`. If bought, it can sync to the
       **already-running Nextcloud** via WebDAV, no new infrastructure needed.
 - [ ] **Music library in Jellyfin** (plan agreed 2026-09-26):
-      - [ ] Claude: create `/Volumes/media/music` (`Incoming/` + `Library/`),
-            add a Jellyfin **Music** library on `Library/` (needs the Jellyfin
-            API key below), realtime monitoring on.
-      - [ ] Claude: a small **beets** container watching `Incoming/` — tags,
-            fetches cover art, renames into `Library/Artist/Album/` — so adding
-            music is "drop files in Incoming".
+      - [x] Claude: `/Volumes/media/music` (`Incoming/` + `Library/`) created;
+            `Library/` mounted read-only into Jellyfin at `/media/music`
+            (2026-09-26).
+      - [x] Claude: **beets** container + cron import every 10 min
+            (`scripts/utils/beets-import.sh`) — tags, cover art, renames into
+            `Library/Artist/Album/`. Adding music = drop files in `Incoming/`.
+            See `services/beets/README.md` (2026-09-26).
+      - [ ] 👤 **Save the Jellyfin API key** (dashboard → Admin → API Keys → +)
+            to `~/.config/homelab/jellyfin.env` as `JELLYFIN_API_KEY=…`
+            (chmod 600) → Claude adds the **Music** library on `/media/music`
+            via the API **and** wires Jellyfin into Sonarr/Radarr → Connect,
+            then drops Jellyfin from `smb-watcher-rescan.sh` (keeps ABS).
+      - [ ] Decide on a backup for `music/Library/` — it's on the NAS RAID
+            only (not R2, not `backup-external.sh`). Purchases can be
+            re-downloaded, so low urgency; add a `sync_dir` line to
+            `backup-external.sh` once the library is worth protecting.
+      - [ ] Two `.smbdelete*` ghosts from the beets test (`music/Incoming/`,
+            `music/Library/Zzbeetstest Artist/Zzsilent Album/`) — held open by
+            Docker Desktop's VM; delete them + the empty folder after the next
+            Docker Desktop restart.
       - [ ] 👤 **Finamp** on the phone → `https://watch.peciulevicius.com`
             (Amperfy dropped: Subsonic/Ampache only).
       - [ ] 👤 Buy music as DRM-free files — Bandcamp (FLAC/MP3, app has a

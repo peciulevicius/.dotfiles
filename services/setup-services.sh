@@ -44,6 +44,7 @@ SERVICES=(
   odysseus
   trainingpeaks-mcp
   strava-mcp
+  beets
 )
 
 SERVICE_PORTS=(
@@ -76,6 +77,7 @@ SERVICE_PORTS=(
   "odysseus:7001"
   "trainingpeaks-mcp:8092"
   "strava-mcp:8093"
+  "beets:8337"
 )
 
 log_ok()   { echo -e "${GREEN}✓${NC} $1"; }
@@ -138,8 +140,9 @@ stage_service() {
     log_ok "$svc: copied $(basename "$script")"
   done
 
-  # Copy any config files mounted into the container (e.g. couchdb/local.ini)
-  for conf in "$svc_dir"/*.ini "$svc_dir"/*.conf; do
+  # Copy any config files mounted into the container (e.g. couchdb/local.ini,
+  # beets/config.yaml)
+  for conf in "$svc_dir"/*.ini "$svc_dir"/*.conf "$svc_dir"/*.yaml; do
     [[ -f "$conf" ]] || continue
     cp "$conf" "$dest_dir/$(basename "$conf")"
     log_ok "$svc: copied $(basename "$conf")"

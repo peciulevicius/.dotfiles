@@ -32,6 +32,7 @@ services:
       - odysseus_default
       - trainingpeaks-mcp_default
       - strava-mcp_default
+      - beets
 
 networks:
   default:
@@ -74,4 +75,6 @@ networks:
   trainingpeaks-mcp_default:
     external: true
   strava-mcp_default:
+    external: true
+  beets:
     external: true

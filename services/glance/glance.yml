@@ -55,6 +55,10 @@ pages:
                 url: http://100.81.171.49:5299
                 check-url: http://lazylibrarian:5299/
                 icon: si:bookstack
+              - title: beets (music)
+                url: http://100.81.171.49:8337
+                check-url: http://beets:8337/
+                icon: di:beets
               - title: Linkwarden
                 url: https://links.peciulevicius.com
                 check-url: http://linkwarden:3000/
@@ -211,6 +215,9 @@ pages:
                   - title: Bazarr
                     url: http://100.81.171.49:6767
                     icon: di:bazarr
+                  - title: beets (music)
+                    url: http://100.81.171.49:8337
+                    icon: di:beets
 
           - type: docker-containers
 
@@ -315,6 +322,9 @@ pages:
                   - title: LazyLibrarian
                     url: http://100.81.171.49:5299
                     icon: si:bookstack
+                  - title: beets (music)
+                    url: http://100.81.171.49:8337
+                    icon: di:beets
               - title: Books & Audio
                 links:
                   - title: Audiobookshelf
