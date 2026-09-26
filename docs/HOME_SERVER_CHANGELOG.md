@@ -8,6 +8,12 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-26 — Audit reminds about stale pre-change backups
+
+- `homelab-audit.sh` fails (→ weekly Discord) when a `*.bak-*` / `*.pre-*` file
+  under `~/services` is older than 7 days. Those copies (kuma.db, .env, compose)
+  are taken before risky edits and were never cleaned up; now they nag.
+
 ## 2026-09-26 — Music setup removed (keep Spotify)
 
 Decision: **keep Spotify, drop self-hosted music.** The beets + Jellyfin music

@@ -120,6 +120,17 @@ else
   done
 fi
 
+# Pre-change backups (kuma.db.bak-*, .env.bak-*, …) are taken before risky
+# edits and meant to be deleted after about a week once the change has proven
+# itself. Without a reminder they pile up forever — this is the reminder.
+STALE_BAK_DAYS=7
+stale_baks=$(find "$HOME/services" -maxdepth 4 \( -name "*.bak-*" -o -name "*.pre-*" \) -mtime +"$STALE_BAK_DAYS" 2>/dev/null | sed "s|^$HOME|~|")
+if [[ -n "$stale_baks" ]]; then
+  bad "$(printf '%s\n' "$stale_baks" | wc -l | tr -d ' ') pre-change backup file(s) older than $STALE_BAK_DAYS days — delete if the change is fine: $(printf '%s ' $stale_baks)"
+else
+  ok "no stale pre-change backup files (> $STALE_BAK_DAYS days)"
+fi
+
 # External dead-man's switch (heartbeat.sh → Healthchecks.io). It is the only
 # alert that survives the whole house losing power, so a missing config or a
 # heartbeat that stopped reaching the monitor is a problem in its own right.

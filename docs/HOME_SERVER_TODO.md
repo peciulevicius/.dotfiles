@@ -109,6 +109,8 @@ Section names in *italics* are headings below.
 
 
 
+- 👤 **~2026-10-03:** `rm ~/services/uptime-kuma/data/kuma.db.bak-2026-09-26-*` (and other pre-change backups) — the weekly audit now flags any `*.bak-*` / `*.pre-*` file under `~/services` older than 7 days, so this reminds itself via Discord
+
 ### 🤖 Claude can do next
 
 - Rotate the **Radarr + Sonarr API keys** (printed in a Claude session
