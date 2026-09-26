@@ -8,6 +8,39 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-26 — Disk: 18 → 23GiB free (92% → 89%)
+
+**Why:** the weekly audit flagged the internal SSD at 92%. The cleanup only
+touched things that regenerate. Anything personal or ambiguous went to the
+👤 list under *💾 Disk* in `HOME_SERVER_TODO.md`, with exact commands.
+
+- **Docker (~3.4GB in the VM):** removed 5 images that no container of any
+  state used. All belonged to removed services or superseded tags:
+  `vaultwarden/server:1.35.4`, `grafana/grafana:11.6.0`,
+  `prom/prometheus:v3.2.1`, `prom/node-exporter:v1.9.0` and
+  `mealie:v2.6.0`, 2.7GB together. `docker builder prune -af` freed another
+  675MB. Each image was checked against `docker ps -a` before removal. Kept on
+  purpose, although no container uses them: **Storyteller** (2.77GB,
+  on-demand, container removed), `python:3.12-slim` (base for the local MCP
+  builds) and `alpine`. `Docker.raw` shrank from 50GB to 47GB once Docker
+  Desktop TRIMmed, so no restart was needed.
+- **Homebrew** `brew cleanup -s`: 428MB. **npm cache** 2.4GB → 226MB. The pnpm
+  store and yarn cache were already empty. **pip cache**: 29MB.
+- **`~/logs`:** gzipped the 180 files older than 30 days. Nothing was deleted,
+  and the directory went from 47MB to 5.9MB.
+- **Left in place on purpose:** the Squirrel/ShipIt staging for Bitwarden,
+  Notion and VS Code (2.6GB). Their ShipIt daemons were live with updates
+  waiting to install, and deleting that staging mid-install risks a
+  half-updated Bitwarden. Quit and reopen those apps first, then delete it (on
+  the 👤 list).
+- **Measuring gotcha:** on macOS, `df -h /` reports the sealed *system*
+  volume (11GiB used, 40%). The number that matters is
+  `df -h /System/Volumes/Data`.
+- The biggest item not yet cleared is Claude desktop's `vm_bundles` (10GB),
+  then Chrome (~9.4GB). Both are the user's call.
+
+---
+
 ## 2026-09-26 — On-demand services to free RAM; Paperclip 2g → 3g
 
 **Why:** macOS swap was 7.7 of 8 GB with 34% free and the Docker VM at its

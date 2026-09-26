@@ -52,7 +52,7 @@ Section names in *italics* are headings below.
 - notebook.koplugin, Supernote, cancel YouTube Music/Premium, music-folder cleanup, Jellyfin/ABS API keys, Nextcloud/Paperless (on-demand; decide later) — *9. Maintenance backlog*
 - Kindle wallpapers, KOReader speed workaround, `.smbdelete` cleanup, `read-along` tag, OTA check, Searchable PDF test — *Quick wins left over from 2026-09-20*
 - LiveSync plugin on each device — *🔗 Obsidian LiveSync*
-- DB-dump retention — *💾 Disk*
+- Disk cleanup decisions (update staging, Claude VM bundle, Chrome, /tmp, old DB dumps) — *💾 Disk*
 - T5 offsite trip — *Get one copy of the photos out of the building*
 - Immich missing thumbnails job — *Regenerate missing Immich thumbnails*
 - KOReader OPDS + Calibre-Web shelf check — *Move the Calibre library off SMB onto the SSD*
@@ -541,28 +541,58 @@ whole-house outage now alerts.
 
 Background for the steps above, plus items outside the sequence.
 
-### 💾 Disk — 27GiB free of 228GB (87%) on 2026-09-26
+### 💾 Disk — 23GiB free of 228GB (89%) on 2026-09-26 (evening)
 
-⚠️ **Later the same day: 18GiB free (91%)** — the audit now flags it. The
-Paperclip image alone is 6.7GB (it bundles four agent CLIs). If space gets
-tight, `docker image prune` after upgrades (old Paperclip tags are big) and
-re-check the list below.
+Evening cleanup took it from **18GiB free (92%)** to **23GiB (89%)** — see the
+changelog. Measure with `df -h /System/Volumes/Data`: plain `df -h /` shows the
+sealed system volume (11GiB used) and hides the real usage. Earlier history:
+15GiB (92%) before the 2026-09-21 cleanup, 27GiB (87%) on the morning of
+2026-09-26. It fills fast — Paperclip alone is 6.7GB and app update staging
+recurs.
 
-Was **15 GiB free (92%)** before the 2026-09-21 cleanup (Docker build cache
-6.05GB, Homebrew 477MB, applied Squirrel/ShipIt update staging ~2.1GB); Trash
-(2.7GB) and `~/Downloads` (1.1GB) were emptied afterwards. It fills faster than
-expected — re-check with `du -sh ~/Library/Caches/* | sort -rh | head` when it
-gets tight (update staging recurs as apps update).
-
-| What | Size (2026-09-21) |
+| What | Size (2026-09-26 evening) |
 |---|---|
-| Docker (`Docker.raw`) | **48GB allocated** — TRIMs back after a prune; judge by `df -h /System/Volumes/Data`, not file size |
-| `~/services` (service data) | 6.9GB |
-| `~/.ollama/models` | 6.2GB |
-| `~/Library/Caches` | 4.4GB — mostly live browser cache, leave it |
-| `~/dev` | 4.9GB |
+| Docker (`Docker.raw`) | **47GB** allocated (50GB before prunes); ~46GB used inside the VM |
+| `~/Library/Application Support/Claude/vm_bundles` | 10GB — Claude desktop's VM image |
+| Google Chrome (profile 6.0GB, cache 1.2GB, updater 773MB, app 1.4GB) | ~9.4GB |
+| `~/services` (service data) | 13GB — live, leave it |
+| `~/dev` | 7.0GB (≈1.75GB of it `node_modules`) |
+| `~/.ollama/models` | 6.2GB — qwen2.5:7b + llama3.2:3b, in use |
+| Squirrel/ShipIt + updater staging | 2.6GB — updates waiting to install |
+| iMovie + GarageBand | 4.8GB |
 
-- [ ] 👤 Consider whether old DB dumps in `~/backups` need 30 days of retention
+👤 Your call. Each item frees the space shown and none of them is service data:
+
+- [ ] **App update staging (2.6GB).** Quit and reopen Bitwarden, Notion and VS
+      Code so the staged updates install, then:
+      `rm -rf ~/Library/Caches/{com.microsoft.VSCode.ShipIt,com.bitwarden.desktop.ShipIt,bitwarden-updater,notion.id.ShipIt,notion-updater}`
+- [ ] **Claude desktop VM bundle (10GB).** Quit Claude.app first; it
+      re-downloads the bundle the next time a VM feature is used:
+      `rm -rf ~/Library/Application\ Support/Claude/vm_bundles`
+- [ ] **Chrome (~9.4GB).** De-Googling, but the claude-in-chrome extension
+      runs in it, so only if you move that to another browser: drag Chrome to
+      the Trash, then `rm -rf ~/Library/Application\ Support/Google ~/Library/Caches/Google`
+- [ ] **iMovie + GarageBand (4.8GB)**, if unused:
+      `rm -rf /Applications/iMovie.app /Applications/GarageBand.app` (both can be reinstalled from the App Store)
+- [ ] **Temp dirs left by earlier agents (~840MB):**
+      `rm -rf /tmp/paperclip.VADn /tmp/truthpass /tmp/mkdocs-venv-music /tmp/mk /tmp/mkv /tmp/mk-site /tmp/mkd /tmp/mk.log /tmp/astro7-shots /tmp/pw /tmp/gdprtest`
+      (leave `/tmp/claude-501`: Claude Code is using it)
+- [ ] **DB dumps older than 7 days (352MB):** immich + paperless from 08-30,
+      09-06 and 09-13. This also settles 30-day retention:
+      `find ~/backups -maxdepth 1 -name '*.sql' -mtime +7 -delete`
+- [ ] **Small pre-change backups older than 7 days (4.7MB):**
+      `rm -rf ~/backups/{calibre-repair,vault-snapshots,vaultwarden-preupgrade}`
+- [ ] **`node_modules` in `~/dev` (1.75GB).** They come back with `pnpm install`:
+      `find ~/dev -maxdepth 2 -name node_modules -type d -prune -exec rm -rf {} +`
+- [ ] **Playwright browsers (557MB).** Reinstall with `pnpm exec playwright install chromium`:
+      `rm -rf ~/Library/Caches/ms-playwright`
+- [ ] **Homebrew download cache (230MB):** `rm -rf "$(brew --cache)"`
+- [ ] **Leftover `~/services/{mealie,grafana}`** (already listed in *9. Maintenance backlog*):
+      `rm -rf ~/services/mealie ~/services/grafana`
+
+Checked on 2026-09-26 and nothing to do: Trash 616KB, `~/Downloads` 1.4MB
+(Takeout is 236KB), `~/services/*/*.bak*` 24KB, no Time Machine local
+snapshots.
 - The `.smbdelete` duplicates: see *9. Maintenance backlog*.
 
 ⚠️ **Never `docker image prune -a` or `docker system prune -a`.** They delete
