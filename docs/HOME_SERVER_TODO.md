@@ -38,9 +38,9 @@ Section names in *italics* are headings below.
 
 ### 👤 Needs you (UI / device / credentials / decision)
 
-- Purelymail password file, Calibre-Web SMTP, revoke Gmail app password, Gmail→Kindle filter — *🔝 Next up* 1, 3, 4, 5
+- Mail wrap-up: Kuma + Calibre-Web test mails, approve `dziugas@` as an Amazon sender, revoke the Gmail app password, Gmail→Kindle filter — *🔝 Next up*
 - Coach: upload skill zip, add the `tp-mcp` custom connector in claude.ai, "Coach" Project — *🏃 Coach in the Claude app*
-- Website: `supabase login` + DB password, `checkOrigin` decision, Pages → Worker move; janioniu: commit your local TODO edits, confirm placeholder facts with Dad, Purelymail domain — *🌐 Other repo backlogs* and below
+- Website: `checkOrigin` decision (Worker move + migrations done 2026-09-26); janioniu: commit your local TODO edits, confirm placeholder facts with Dad, Purelymail domain — *🌐 Other repo backlogs* and below
 - Gravatar, branded signature, Google account photo — *✉️ Email identity*
 - T7 external backup run — *📋 Open user steps*
 - Email: catch-all, inbound test, iPhone Mail, deliverability / mail-tester — *📋 Open user steps*
@@ -105,7 +105,6 @@ Section names in *italics* are headings below.
   Resend/Loops keys work (secrets now sync on each GitHub Actions deploy).
 
 
-- 👤 Delete the old Cloudflare **Pages** project `peciulevicius-com` (site is on the Worker since 2026-09-26)
 
 ### 🤖 Claude can do next
 
