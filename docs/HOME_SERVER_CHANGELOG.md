@@ -8,6 +8,34 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-26 — Paperclip: Gemini CLI dropped, Marketing dept, departments
+
+- **Gemini CLI dropped.** Google ended personal sign-in for the CLI, Vertex
+  needs GCP billing, Paperclip has no Gemini connection type and the stored
+  API key kept corrupting (hostname-derived encryption). Studio **Researcher**
+  and **Growth & Content** moved `gemini_local` → `opencode_local` on
+  OpenRouter, model `openrouter/google/gemini-3.5-flash-lite` (newest Gemini
+  Flash under $0.50/M input; checked against `openrouter.ai/api/v1/models`
+  and `opencode models openrouter`), $3/month hard-stop each. One PATCH each —
+  agents with no binding have nothing for the API to restore. The CLI stays
+  in the image, unused.
+- **Studio Marketing department** (hired paused): Head of Marketing (CMO,
+  Claude Sonnet) → Copywriter (Sonnet), Social Media Manager, Community &
+  Launch, SEO Specialist (OpenCode `deepseek-v3.2`, $3/month each) + Growth &
+  Content moved under the CMO. Every marketing AGENTS.md carries the *draft
+  only / never post / no sockpuppets / faceless brand* rule — why: the studio
+  is anonymous and agents have no accounts; posting would leak identity or
+  break platform rules.
+- **Homelab departments:** new Network Engineer (Codex), SRE / Monitoring and
+  Privacy & De-Google Advisor (OpenCode, $3/month), Web Engineer for
+  peciulevicius.com (Claude Sonnet) — all paused. `reportsTo` regrouped via
+  PATCH: Security (Security Engineer → Security Analyst), Infrastructure
+  (DevOps/Homelab Engineer → Network, SRE, Storage & Backup), Knowledge and
+  Web under the Lead. The Web Engineer has no GitHub token for its repo yet
+  (TODO). Studio already had Product/Engineering/Research departments.
+- The board resumed the whole Studio roster in the UI the same afternoon;
+  heartbeats stay off, so idle agents cost nothing until assigned.
+
 ## 2026-09-26 — Paperclip: connections, full org chart, GitHub for Homelab
 
 - **OpenRouter connection** (company-shared API key, installed company-wide)

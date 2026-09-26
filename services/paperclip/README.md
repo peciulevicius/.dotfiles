@@ -116,18 +116,18 @@ Same pattern, each needs its own credential:
   `docker exec paperclip codex login status`. Paperclip symlinks that
   `auth.json` into each `codex_local` agent's own `CODEX_HOME`, so every Codex
   agent shares the one subscription login.
-- **Gemini:** there is **no Gemini connection type** in Paperclip (AI
-  connections exist only for Anthropic, OpenAI, OpenRouter and xAI), so
-  `gemini_local` agents always use the CLI's own login, like Codex. Either put
-  `GEMINI_API_KEY=` in `.env` (preferred — survives anything; the key must be
-  *restricted to the Gemini API* in Google Cloud) and `docker compose up -d`,
-  or `docker exec -it -u node paperclip gemini` → *Use Gemini API key* / OAuth.
-  ⚠️ The CLI encrypts that stored login with a key derived from **hostname +
-  username**. Docker's default hostname is the container ID, which changes on
-  every recreate, so the login silently became *"Corrupted credentials file"*
-  after the next `docker compose up -d` (found 2026-09-26). The compose file
-  now pins `hostname: paperclip`; the login made before that pin is
-  unreadable and has to be entered once more.
+- **Gemini CLI: in the image, deliberately unused (dropped 2026-09-26).** No
+  agent runs on `gemini_local`. Reasons: Google ended personal-account
+  sign-in for the CLI, the only other paths are an API key or Vertex AI
+  (Vertex needs a GCP project with billing), there is **no Gemini connection
+  type** in Paperclip (connections exist only for Anthropic, OpenAI,
+  OpenRouter and xAI), and the CLI's stored key kept corrupting: it encrypts
+  the login with a key derived from **hostname + username**, and the
+  container's default hostname (its ID) changes on every recreate →
+  *"Corrupted credentials file"*. The compose file still pins
+  `hostname: paperclip`, which fixes that last part if Gemini is ever wanted
+  again. Gemini *models* are still used — through OpenRouter (see *AI
+  connections*): the former Gemini agents run `openrouter/google/gemini-3.5-flash-lite`.
 - **Local model via Ollama (free, slow):** use the **OpenCode** runtime.
   Ollama runs natively on the host and the container reaches it at
   `http://host.docker.internal:11434` (verified reachable). Create
@@ -170,7 +170,7 @@ A *connection* is a Paperclip-managed credential an agent binds to
 | both | *My Claude subscription* | Anthropic, subscription (personal, default) | every `claude_local` agent |
 | both | **OpenRouter (shared)** | OpenRouter, API key, company-shared, installed company-wide | every `opencode_local` agent |
 | — | *(none)* Codex | CLI login (`codex login --device-auth`) | `codex_local` agents |
-| — | *(none)* Gemini | CLI login / `GEMINI_API_KEY` — no connection type exists | `gemini_local` agents |
+| — | *(none)* Gemini | no connection type exists | nobody — Gemini CLI is unused (see above) |
 
 - The OpenRouter connection was created from `OPENROUTER_API_KEY` in `.env`
   (`POST /api/companies/<id>/ai-connections`,
@@ -182,14 +182,18 @@ A *connection* is a Paperclip-managed credential an agent binds to
   written `openrouter/<vendor>/<model>`.
 - Cheap models in use (OpenRouter prices, $/M tokens in → out, checked
   2026-09-26): `openrouter/deepseek/deepseek-v3.2` 0.27 → 0.40 (default),
-  `openrouter/qwen/qwen3-coder` 0.30 → 1.00 (QA), and
+  `openrouter/qwen/qwen3-coder` 0.30 → 1.00 (QA),
+  `openrouter/google/gemini-3.5-flash-lite` 0.30 → 2.50 (Studio Researcher +
+  Growth & Content — the newest Gemini Flash under $0.50/M input; full
+  `gemini-3.8-flash` is 0.75 → 3.75), and
   `openrouter/moonshotai/kimi-k2.5` 0.45 → 2.25 as the step-up option.
   Re-check slugs with `curl -s https://openrouter.ai/api/v1/models | jq` —
   `opencode models openrouter` in the container must list the same slug.
 
 **Priority rule when picking a runtime:** *subscriptions first* (Claude,
-ChatGPT/Codex — already paid) → *free tiers* (Gemini) → *OpenRouter* (pay per
-token, $3/month cap per agent). Claude Opus only for planning/architecture
+ChatGPT/Codex — already paid) → *OpenRouter* (pay per token, $3/month cap per
+agent). There is no free tier left in use (Gemini CLI dropped).
+Claude Opus only for planning/architecture
 (Studio CEO + CTO, Homelab Lead); Sonnet (`claude-sonnet-5`) for the other
 Claude roles to save plan usage.
 
@@ -199,9 +203,14 @@ binding can't be moved to a harness with no connection (Gemini, Codex): `PATCH
 connection compatible with the new harness and model"*, and a truthy
 non-binding value breaks runs. Moving to OpenCode works in one PATCH (send
 `adapterType`, `adapterConfig.model: "openrouter/…"` and the OpenRouter
-binding together). For Gemini/Codex, hire a replacement with the same
+binding together). For Codex, hire a replacement with the same
 name/role/manager, copy its AGENTS.md section, then terminate the old agent —
-that is how the Studio Researcher moved to Gemini.
+that is how the Studio Researcher moved Claude → Gemini. The later move
+Gemini → OpenCode (Researcher, Growth & Content, 2026-09-26) was a plain PATCH:
+an agent with no binding has nothing for the API to restore.
+
+**Changing a manager** is a plain `PATCH /api/agents/<id>`
+`{"reportsTo":"<managerId>"}` — used for the department restructure.
 
 ### ⚠️ Memory while agents run
 
@@ -229,16 +238,57 @@ Mission: *Weekly health and security reporting for Džiugas's Mac mini homelab.
 Read reports, spot problems, recommend next actions as decisions. Never change
 servers — changes are done by Džiugas with Claude Code.*
 
-| Agent | Reports to | Runtime (model) | Budget cap | Status |
-|---|---|---|---|---|
-| Homelab Lead (CTO / Homelab Lead) | board | Claude Code (Opus 5) | plan limits | active (idle) |
-| Security Analyst — reads the weekly report | Lead | Codex | plan limits | **paused** |
-| Security Engineer — reviews every PR | Lead | Claude Code (Sonnet 5) | plan limits | **paused** |
-| DevOps/Homelab Engineer — opens dotfiles PRs | Lead | Codex + `GH_TOKEN` | plan limits | **paused** |
-| Docs & TODO Keeper | Lead | OpenCode → OpenRouter `deepseek-v3.2` + `GH_TOKEN` | $3/month | **paused** |
-| Storage & Backup Analyst | Lead | OpenCode → OpenRouter `deepseek-v3.2` | $3/month | **paused** |
+Org chart, grouped into departments with `reportsTo` (restructured
+2026-09-26). Budget: *plan* = subscription limits, *$3* = $3/month hard-stop
+OpenRouter budget. Status as of 2026-09-26.
 
-The two engineers work **only through PRs** on
+```
+Homelab Lead
+├── Security:        Security Engineer → Security Analyst
+├── Infrastructure:  DevOps/Homelab Engineer → Network Engineer, SRE / Monitoring, Storage & Backup Analyst
+├── Knowledge:       Docs & TODO Keeper, Privacy & De-Google Advisor
+└── Web:             Web Engineer (personal site)
+```
+
+| Department | Agent | Runtime / model | Reports to | Budget | Status |
+|---|---|---|---|---|---|
+| Leadership | Homelab Lead (CTO / Homelab Lead) | Claude Code, Opus 5 | board | plan | active (idle) |
+| Security | Security Engineer — reviews every PR | Claude Code, Sonnet 5 | Lead | plan | paused |
+| Security | Security Analyst — reads the weekly report | Codex | Security Engineer | plan | paused |
+| Infrastructure | DevOps/Homelab Engineer — opens dotfiles PRs | Codex + `GH_TOKEN` | Lead | plan | paused |
+| Infrastructure | Network Engineer — Tailscale, Pi-hole, Cloudflare tunnel/DNS | Codex | DevOps/Homelab Eng | plan | paused |
+| Infrastructure | SRE / Monitoring — Uptime Kuma, Glance, alert tuning | OpenCode, `deepseek-v3.2` | DevOps/Homelab Eng | $3 | paused |
+| Infrastructure | Storage & Backup Analyst | OpenCode, `deepseek-v3.2` | DevOps/Homelab Eng | $3 | paused |
+| Knowledge | Docs & TODO Keeper | OpenCode, `deepseek-v3.2` + `GH_TOKEN` | Lead | $3 | paused |
+| Knowledge | Privacy & De-Google Advisor — tracks `docs/guides/DEGOOGLE*.md` | OpenCode, `deepseek-v3.2` | Lead | $3 | paused |
+| Web | Web Engineer — peciulevicius.com (perf, content, a11y) | Claude Code, Sonnet 5 | Lead | plan | paused |
+
+Only **DevOps/Homelab Engineer** and **Docs & TODO Keeper** hold the
+dotfiles `GH_TOKEN`. Network Engineer and SRE hand PR-ready diffs to the
+DevOps/Homelab Engineer (their manager) rather than getting a copy of the
+token — fewer holders, same result. The Privacy Advisor is advice-only; its
+AGENTS.md repeats the standing De-Google decisions (Purelymail, no self-hosted
+mail, never delete the Google account, Authenticator first, no Pixel, no
+Proton/Tuta) so it doesn't relitigate them.
+
+#### GitHub token for the Web Engineer (not done — 👤)
+
+The Web Engineer targets `github.com/peciulevicius/peciulevicius.com`, but the
+existing token only covers the dotfiles repo, so it **cannot open PRs yet**;
+its AGENTS.md tells it to deliver changes as a patch in a task document until
+then. To enable PRs:
+
+1. GitHub → *Settings → Developer settings → Fine-grained tokens → Generate*:
+   repository access **only `peciulevicius/peciulevicius.com`**, permissions
+   *Contents* **read/write** + *Pull requests* **read/write**, an expiry.
+2. Paperclip, Homelab company → *Company settings → Secrets → New secret*
+   (e.g. *GitHub token (site PRs)*), paste the token. Keep a copy in
+   Vaultwarden, never in `.env` (`env_file` would expose it to every agent).
+3. Web Engineer → *Configuration → Environment* → `GH_TOKEN` = that secret
+   (`latest`), i.e. the same `secret_ref` binding the DevOps/Homelab Engineer
+   uses. Git auth then works exactly as in *GitHub access* below.
+
+The DevOps/Homelab and Docs engineers work **only through PRs** on
 `github.com/peciulevicius/.dotfiles`: they have no route to the host, so the
 board merges and Džiugas applies merged changes on the Mac mini with Claude
 Code. Their AGENTS.md says so, plus "the repo is PUBLIC, never commit a
@@ -312,22 +362,59 @@ Mission: *Faceless indie studio: find, validate, design, build and launch
 small useful apps and content under an anonymous brand. Nothing ships, gets
 published, or spends money without board approval.*
 
-| Agent | Reports to | Runtime (model) | Budget cap | Status |
-|---|---|---|---|---|
-| CEO | board | Claude Code (Opus 5) | plan limits | active (idle) |
-| Product Manager | CEO | Codex | plan limits | active (idle) |
-| Researcher | CEO | Gemini CLI (`auto`) | free tier | **paused** until the Gemini login is redone |
-| Growth & Content | CEO | Gemini CLI (`auto`) | free tier | **paused** |
-| CTO | CEO | Claude Code (Opus 5) | plan limits | **paused** |
-| Security Engineer — reviews every PR | CTO | Claude Code (Sonnet 5) | plan limits | **paused** |
-| DevOps Engineer | CTO | Codex | plan limits | **paused** |
-| Engineering Manager | CTO | Codex | plan limits | **paused** |
-| Frontend Developer | Eng Manager | Codex | plan limits | **paused** |
-| Backend Developer | Eng Manager | Claude Code (Sonnet 5) | plan limits | **paused** |
-| Mobile Developer (Expo/React Native) | Eng Manager | Codex | plan limits | **paused** |
-| QA Engineer | Eng Manager | OpenCode → OpenRouter `qwen3-coder` | $3/month | **paused** |
-| UI/UX Designer | PM | Claude Code (Sonnet 5) | plan limits | **paused** |
-| Technical Writer | PM | OpenCode → OpenRouter `deepseek-v3.2` | $3/month | **paused** |
+Org chart, grouped into departments with `reportsTo` (2026-09-26). Every
+agent was **created paused**; the board then resumed the whole Studio roster
+in the UI on 2026-09-26 (16:13). Resumed ≠ working: heartbeats are off, so an
+idle agent only wakes for an assigned task, an @mention or a routine.
+
+```
+CEO
+├── Product:      Product Manager → UI/UX Designer, Technical Writer
+├── Engineering:  CTO → Engineering Manager → Frontend, Backend, Mobile, QA
+│                 CTO → DevOps Engineer, Security Engineer
+├── Research:     Researcher
+└── Marketing:    Head of Marketing (CMO) → Copywriter, Social Media Manager,
+                  Community & Launch, SEO Specialist, Growth & Content
+```
+
+| Department | Agent | Runtime / model | Reports to | Budget | Status |
+|---|---|---|---|---|---|
+| Leadership | CEO | Claude Code, Opus 5 | board | plan | active |
+| Product | Product Manager | Codex | CEO | plan | active |
+| Product | UI/UX Designer | Claude Code, Sonnet 5 | PM | plan | resumed by board |
+| Product | Technical Writer | OpenCode, `deepseek-v3.2` | PM | $3 | resumed by board |
+| Engineering | CTO | Claude Code, Opus 5 | CEO | plan | resumed by board |
+| Engineering | Engineering Manager | Codex | CTO | plan | resumed by board |
+| Engineering | Frontend Developer | Codex | Eng Manager | plan | resumed by board |
+| Engineering | Backend Developer | Claude Code, Sonnet 5 | Eng Manager | plan | resumed by board |
+| Engineering | Mobile Developer (Expo/React Native) | Codex | Eng Manager | plan | resumed by board |
+| Engineering | QA Engineer | OpenCode, `qwen3-coder` | Eng Manager | $3 | resumed by board |
+| Engineering | DevOps Engineer | Codex | CTO | plan | resumed by board |
+| Engineering | Security Engineer — reviews every PR | Claude Code, Sonnet 5 | CTO | plan | resumed by board |
+| Research | Researcher | OpenCode, `gemini-3.5-flash-lite` | CEO | $3 | resumed by board |
+| Marketing | Head of Marketing (CMO) | Claude Code, Sonnet 5 | CEO | plan | resumed by board |
+| Marketing | Copywriter | Claude Code, Sonnet 5 | CMO | plan | resumed by board |
+| Marketing | Social Media Manager | OpenCode, `deepseek-v3.2` | CMO | $3 | resumed by board |
+| Marketing | Community & Launch — Reddit/HN/PH/Indie Hackers drafts | OpenCode, `deepseek-v3.2` | CMO | $3 | resumed by board |
+| Marketing | SEO Specialist | OpenCode, `deepseek-v3.2` | CMO | $3 | resumed by board |
+| Marketing | Growth & Content | OpenCode, `gemini-3.5-flash-lite` | CMO | $3 | resumed by board |
+
+#### Marketing rules (in every marketing agent's AGENTS.md)
+
+> Draft only. Never post, sign up, or contact anyone. The board posts from the
+> studio's own accounts. Follow each platform's self-promotion rules; no fake
+> reviews, no vote manipulation, no sockpuppets. Keep the brand faceless —
+> never mention the founder's real name or peciulevicius.com.
+
+**Why:** the studio is anonymous by design and has no accounts of its own for
+agents to use; an agent that posts or signs up would either leak the
+founder's identity or break a platform's terms (Reddit, HN and Product Hunt
+all ban vote rings and sockpuppets, and many subreddits ban self-promotion
+outright). So agents produce drafts as task documents and the board does the
+posting. **Community & Launch** must read and quote each community's current
+rules before drafting and say when a community forbids self-promotion.
+Growth & Content moved from CEO to CMO (and role `cmo` → `general`, so the
+CMO is the only `cmo`).
 
 - Every AGENTS.md ends with a board section (≤12 lines): role, may/may not,
   "work only via tasks; code only as PRs; never commit secrets; repos may be
@@ -336,9 +423,10 @@ published, or spends money without board approval.*
   The Security Engineer is the review gate for every PR.
 - The Researcher was moved Claude Code → Gemini on 2026-09-26 by **hiring a
   replacement and terminating the original** (see *Switching an agent's
-  harness*); its rubric section was copied over. The Gemini login in the
-  container is currently unreadable (hostname issue above), so it stays paused
-  until `GEMINI_API_KEY` is set or the login is redone.
+  harness*); its rubric section was copied over. Later the same day it and
+  Growth & Content moved **Gemini CLI → OpenCode on OpenRouter**
+  (`gemini-3.5-flash-lite`, $3/month each) when Gemini CLI was dropped — see
+  *Codex / Gemini / OpenCode*.
 
 - The wizard's CEO was reused. An earlier Product Manager (Claude Code) had
   been terminated in the UI; the new one was filed as a hire request and
@@ -397,14 +485,23 @@ until you start a phase. To start one, resume the agents for that phase only —
 UI: agent → **Resume**, or `POST /api/agents/<id>/resume` — then assign a task
 (backlog → Todo). Pause them again when the phase is done. Suggested phases:
 
-1. **Studio planning:** CEO + Product Manager (already active) + Researcher
-   (after the Gemini login) → STU-2.
+1. **Studio planning:** CEO + Product Manager + Researcher → STU-2.
 2. **Studio build:** CTO → Engineering Manager → Frontend/Backend/Mobile, with
    **Security Engineer and QA always resumed together with any developer**
    (they are the PR gate). DevOps Engineer only when CI/deploy work exists.
-3. **Studio launch:** UI/UX Designer, Technical Writer, Growth & Content.
+3. **Studio launch:** UI/UX Designer, Technical Writer, then the Marketing
+   department (Head of Marketing first; it delegates to Copywriter, Social,
+   Community & Launch, SEO, Growth & Content).
 4. **Homelab PRs:** DevOps/Homelab Engineer + Homelab Security Engineer (+
    Docs & TODO Keeper for doc sweeps).
+5. **Homelab departments as needed:** Infrastructure (Network Engineer, SRE /
+   Monitoring, Storage & Backup — under DevOps/Homelab Engineer), Knowledge
+   (Privacy & De-Google Advisor), Web (Web Engineer — after its GitHub token).
+
+Note: on 2026-09-26 the board resumed the whole Studio at once. That costs
+nothing while no tasks are assigned, but a CEO fan-out (e.g. the standup
+routine) can now wake several agents in parallel — see *Memory* before
+assigning broad work.
 
 Keep to one working agent at a time on this host (see *Memory*).
 
@@ -428,7 +525,7 @@ The approval wall is on in both companies, so a direct create returns
   pc() { curl -s -b /tmp/pc.cj -H 'Origin: http://127.0.0.1:3100' -H 'Content-Type: application/json' "$@"; }
   pc http://127.0.0.1:3100/api/companies | jq '.[]|{id,name}'
   # hire request (creates a pending agent + approval); adapterType can also be
-  # codex_local, gemini_local or opencode_local (opencode also needs the
+  # codex_local or opencode_local (opencode also needs the
   # OpenRouter binding in runtimeConfig.aiConnection, see AI connections):
   pc -X POST http://127.0.0.1:3100/api/companies/<companyId>/agent-hires -d '{
     "name":"…","role":"researcher","reportsTo":"<managerId>",
