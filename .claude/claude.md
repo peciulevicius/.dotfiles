@@ -19,7 +19,7 @@ Personal dotfiles + self-hosted services stack for macOS (primary), Arch Linux, 
 
 ## Services
 
-Mac mini M4 has ~42 containers (2026-09-26), ~30 running: six rarely used
+Mac mini M4 has ~43 containers (2026-09-27), ~31 running: six rarely used
 services (Paperless, Nextcloud, Stirling PDF, IT-Tools, Odysseus, FlareSolverr)
 are **on-demand**, stopped by default and started with `ondemand start <name>`
 (`scripts/utils/ondemand.sh`). Plus rclone backup + cloudflared tunnel — see
@@ -136,7 +136,7 @@ Goal: own the chat history, memories and RAG corpus; rent the inference.
 - **Models run natively via Homebrew, never in Docker.** Docker on macOS has no
   GPU passthrough, so containerised Ollama is CPU-only. This is the likely real
   cause of the earlier failed attempt recorded in the changelog.
-- Hardware ceiling is ~8B quantised. 16GB unified, shared with ~30 running containers.
+- Hardware ceiling is ~8B quantised. 16GB unified, shared with ~31 running containers.
   Do not propose 30B+ models.
 
 ### Octopus Deploy — ruled out, `docs/guides/OCTOPUS_DEPLOY.md`

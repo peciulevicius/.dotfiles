@@ -86,6 +86,23 @@ Section names in *italics* are headings below.
   - (Only if the Codex login ever expires:
     `docker exec -it paperclip codex login --device-auth`.)
   Watch `sysctl vm.swapusage` during the first agent runs.
+  - 👤 **Coach company (2026-09-27, drafted, not created)**: needs the admin
+    password from Vaultwarden to sign in — this batch had no session and
+    couldn't create it. Everything else is done (ntfy service, `/training`
+    mount, MCP servers confirmed reachable). Full step-by-step, ready to paste:
+    `services/paperclip/README.md` → *Coach — adaptive triathlon coaching*.
+  - 👤 **ntfy iOS app**: install, add server `http://100.81.171.49:8095`,
+    subscribe to the topic using the **read** token
+    (`grep NTFY_READ_TOKEN ~/services/ntfy/.env` — the topic name is
+    `NTFY_TOPIC` in the same file). Needed before the Coach's daily push is
+    useful.
+  - 👤 **Refresh the TrainingPeaks cookie when `tp_auth_status` fails** — it
+    expires every few weeks. Steps: `services/trainingpeaks-mcp/README.md`.
+  - 👤 **Uptime Kuma monitor for ntfy** — Kuma has no monitor-creation API
+    (only its dashboard), so this is a UI step: **+ Add New Monitor** → HTTP(s)
+    → *ntfy* → `http://host.docker.internal:8095/v1/health` (Kuma isn't joined
+    to the `ntfy` Docker network, unlike Glance — it reaches published ports
+    via the host instead) → expect 200.
 - Pi-hole: Caddy decision, router DNS — *Pi-hole — finish the deployment*
 - Old photo archives into Immich (needs T7 + judgement) — *Import old photo archives into Immich*
 - Paperless tags/types — *Paperless-NGX — organise documents*

@@ -160,7 +160,16 @@ alone wants 2GB. See [guides/OCTOPUS_DEPLOY.md](guides/OCTOPUS_DEPLOY.md).
   mount there. The reports feed is at `/reports:ro` for that reason.
 - Companies: **Homelab** (`8ee5781c-…`) and **Studio** (`2efa3f91-…`), both
   with board approval for hires. Direct `POST /agents` returns 409 while that
-  is on — use `agent-hires` + approve.
+  is on — use `agent-hires` + approve. **Coach** (2026-09-27): drafted in
+  `services/paperclip/README.md`, not yet created — needs the admin password
+  (Vaultwarden) for a board session, which this batch didn't have.
+- `${HOME}/.training:/training` (read-write) is mounted for the upcoming Coach
+  agent's persistent memory. Same rule as `/reports`: never move athlete
+  memory under `/paperclip` — the entrypoint's `chown -R /paperclip` as root
+  crash-loops on a mount it can't fully own.
+- The admin email/password are **no longer in `.env`** (moved to Vaultwarden
+  2026-09-26) — the sign-in recipe in the README now prompts for the password
+  interactively instead of reading it from a file.
 - A task assigned while in **backlog** never wakes the agent; moving it to
   Todo does. Heartbeats are off on every agent.
 - Codex agents share the container's ChatGPT login (`data/.codex/auth.json`,
@@ -168,6 +177,22 @@ alone wants 2GB. See [guides/OCTOPUS_DEPLOY.md](guides/OCTOPUS_DEPLOY.md).
   skip permission prompts — acceptable only because they're confined here.
 - Board API auth: `POST /api/auth/sign-in/email` with an `Origin:
   http://127.0.0.1:3100` header, reuse the cookie. Recipe in the README.
+
+---
+
+## ntfy — two instances, don't confuse them
+
+- `services/ntfy/` (2026-09-27): standalone, always-on, port 8095, persistent
+  `auth.db`, `auth-default-access: deny-all`. Built for the Paperclip Coach
+  agent's daily push.
+- `services/odysseus`'s bundled ntfy: port 8091, no auth, cache-only, stops
+  when Odysseus does (on-demand). Left alone on purpose — don't add auth to it
+  or point anything critical at it, it's scoped to casual Odysseus reminders.
+- Deny-all means every topic needs an explicit per-user grant
+  (`ntfy access <user> <topic> <read-write|read-only|write-only>`) — a new
+  user with no grant gets 403 on that topic even though the account exists.
+- `ntfy token add <user>` is the credential to hand out (phone app, curl
+  scripts) — never the account password.
 
 ---
 

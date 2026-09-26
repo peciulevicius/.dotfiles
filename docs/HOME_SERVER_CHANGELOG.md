@@ -8,6 +8,34 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-27 — Standalone ntfy + Paperclip Coach groundwork
+
+- New always-on `services/ntfy/` (port 8095, Tailscale + localhost only,
+  persistent auth, `auth-default-access: deny-all`), separate from the
+  on-demand ntfy bundled in Odysseus. A `publisher` user (write-only) and a
+  `phone` user (read-only) each got their own access token on a private,
+  randomly-suffixed topic — tested end-to-end (publish → poll returned the
+  message; anonymous publish/read both 403). Glance monitor + bookmark added,
+  its network wired into `services/glance/docker-compose.yml`, backup exclude
+  added for the live message cache in `rclone-backup.sh` (the auth db itself
+  is not excluded). Uptime Kuma monitor is a manual UI step — no
+  monitor-creation API exists — noted in the TODO.
+- `services/paperclip/docker-compose.yml` now mounts `${HOME}/.training` at
+  `/training` (read-write, confirmed writable) for the planned Coach agent's
+  persistent memory — same "never put it under `/paperclip`" rule as the
+  `/reports` mount, for the same chown-crash reason.
+- Verified both `trainingpeaks-mcp` (`:8092/mcp`) and `strava-mcp` (`:8093/mcp`)
+  respond to an MCP `initialize` call from *inside* the Paperclip container via
+  `host.docker.internal` — the Coach agent's MCP wiring will work once
+  connected.
+- **Coach company itself is not created** — the admin password moved to
+  Vaultwarden (see below) and this batch had no board session. Full recipe
+  (company, agent, AGENTS.md addendum, secrets, routine) written up in
+  `services/paperclip/README.md`, ready to run once signed in.
+- Fixed a stale recipe: the board sign-in snippet in the README still read
+  `PAPERCLIP_ADMIN_PASSWORD` from `.env` — that line was removed when the
+  password moved to Vaultwarden. It now prompts interactively instead.
+
 ## 2026-09-26 — Subscriptions tracker + monthly money reminder
 
 - Private list of subscriptions and prepaid credits (Claude, OpenRouter,
