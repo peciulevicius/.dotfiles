@@ -141,7 +141,7 @@ Glance (`home.`), Stirling PDF (`pdf.`), IT-Tools (`tools.`), Calibre desktop
 | Purelymail `dziugas@` password | Vaultwarden + `~/.config/homelab/purelymail.env` (mail-switch script) |
 | Healthchecks.io ping URL | `~/.config/homelab/heartbeat.env` |
 | TrainingPeaks cookie / Strava tokens | `~/services/trainingpeaks-mcp/.env`, `~/services/strava-mcp/data/.strava-mcp.env` |
-| Supabase DB password (peciulevicius.com) | Vaultwarden + `~/.config/homelab/supabase.env` |
+| Supabase CLI login (peciulevicius.com) | macOS keychain via `supabase login`; DB password not needed (CLI uses a temporary login role) — keep it in Vaultwarden only |
 
 ---
 

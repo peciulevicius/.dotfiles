@@ -8,6 +8,15 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-26 — peciulevicius.com on the Worker; Supabase migrations applied
+
+- Domain moved from Pages to the Worker (user). Supabase CLI linked from the
+  Mac mini via `supabase login` (browser) — `supabase link` uses a temporary
+  login role, so **no DB password is stored anywhere**. v1.5.0 (RLS lockdown,
+  server-only RPCs, `newsletter_sends`) + v1.6.0 (drop dead realtime/comment
+  tables) applied with `supabase db push`; verified live. Details in the
+  website repo's `docs/DONE.md` and `supabase/README.md`.
+
 ## 2026-09-26 — Calibre backup confirmed from the SSD path
 
 - The 05:00 R2 backup read `~/services/calibre/library` (not the NAS) and
