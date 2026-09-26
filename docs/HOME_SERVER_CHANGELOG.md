@@ -8,6 +8,16 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-26 — GDPR data-request tool
+
+- New `scripts/utils/gdpr-export.mjs`: dependency-free Node script that exports
+  (`export <email>`) or deletes (`delete <email>`, dry run unless `--yes`) one
+  person's data in a Supabase project, driven by a per-project
+  `gdpr.config.json`. Writes nothing / refuses when the address matches nothing.
+  Canonical copy here; vendored into `peciulevicius.com` as `npm run gdpr:*`.
+  Usage, config format and the GDPR obligations it supports:
+  [UTILITY_SCRIPTS.md](UTILITY_SCRIPTS.md#gdpr-exportmjs).
+
 ## 2026-09-26 — Removed one-time scripts
 
 Scripts whose job is finished for good, deleted so the repo only holds tools

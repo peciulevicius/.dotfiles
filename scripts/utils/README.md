@@ -64,3 +64,16 @@ print_success "Done"
 print_warning "Check this"
 print_error "Something failed"
 ```
+
+---
+
+## gdpr-export.mjs
+
+Export or delete one person's data in a Supabase project (GDPR access/erasure
+requests). Canonical copy; projects vendor it. Full docs:
+[docs/UTILITY_SCRIPTS.md](../../docs/UTILITY_SCRIPTS.md#gdpr-exportmjs).
+
+```bash
+node gdpr-export.mjs --config gdpr.config.json export someone@example.com
+node gdpr-export.mjs --config gdpr.config.json delete someone@example.com [--yes]
+```

@@ -22,6 +22,7 @@ listed in [scripts/cron/README.md](https://github.com/peciulevicius/.dotfiles/bl
 | `scripts/convert-audiobooks.sh` | Convert Audible AAX to M4B (chapters preserved) and copy to the Mac mini | As needed |
 | `scripts/utils/arw-to-jpeg.sh` | Convert Sony ARW RAW files to JPEG for Immich (uses `sips`) | As needed |
 | `scripts/kindle/sync.sh` | Serve wallpapers or files to a jailbroken Kindle over the LAN | As needed |
+| `scripts/utils/gdpr-export.mjs` | Answer GDPR access/erasure requests for a Supabase project (vendored into each project) | When someone emails a data request |
 
 ### Homelab (Mac mini)
 
@@ -229,6 +230,105 @@ warning.
 LAN HTTP is used because the Scribe uses MTP over USB (not mountable on macOS
 without extra software) and its busybox `wget` cannot complete TLS with
 GitHub's CDN. See [guides/KINDLE_SETUP.md](guides/KINDLE_SETUP.md).
+
+### gdpr-export.mjs
+
+Answers GDPR data-subject requests — "send me my data" (access, Art. 15) and
+"delete my data" (erasure, Art. 17) — for any Supabase project. Dependency-free
+Node ≥ 22, one file, driven by a per-project JSON config. This copy is
+canonical; projects vendor it (see below).
+
+**What GDPR actually asks of you**
+
+- **Verify identity first.** Only act on a request that arrives from the address
+  itself, or reply to that address and wait for the answer. Anyone can type
+  someone else's email into a contact form; sending them that person's data is
+  itself a breach.
+- **Answer within one month** of the request (extendable by two more months for
+  complex cases, but you must say so within the first month). Free of charge.
+- **Send only that person's data**, to that person. The export holds only rows
+  matched to their address or auth user id — don't forward it anywhere else,
+  and delete your local copy once sent.
+- **Erasure is not absolute**: data you must keep for a legal obligation (e.g.
+  invoices) stays. Say which and why in the reply. Newsletter unsubscribes are
+  often kept as a suppression record; tell the person and delete fully if asked.
+- **Explain what you can't link.** Data that can't be tied back to a person
+  (e.g. salted IP hashes) isn't theirs to request; the config's `notes` put that
+  explanation in the export itself.
+
+**Run it** (from the project root, so `.env.local`/`.env` are picked up):
+
+```bash
+node gdpr-export.mjs --config gdpr.config.json export someone@example.com [--out file.json]
+node gdpr-export.mjs --config gdpr.config.json delete someone@example.com          # dry run
+node gdpr-export.mjs --config gdpr.config.json delete someone@example.com --yes    # deletes
+```
+
+- Env: `SUPABASE_URL` (falls back to `PUBLIC_SUPABASE_URL` /
+  `NEXT_PUBLIC_SUPABASE_URL`) and `SUPABASE_SERVICE_KEY` (falls back to
+  `SUPABASE_SERVICE_ROLE_KEY`). Real env wins, then `.env.local`, then `.env`
+  (`process.loadEnvFile` never overwrites a set variable, so loading
+  `.env.local` first gives it priority). The service key bypasses RLS — this is
+  a local operator tool, never deploy it.
+- `export` writes `gdpr-export-<email>-<date>.json` (mode 0600, never overwrites
+  an existing file): `{ subject, generated_at, notes, data: { <table>: [rows] },
+  auth_user }`. Any key containing `password`, `token` or `secret` is stripped
+  from the auth user; per-table `omit` columns are withheld and listed in
+  `notes`. Gitignore `gdpr-export-*.json` in the project.
+- `delete` without `--yes` only prints per-table counts. With `--yes` it deletes
+  tables marked `"delete": true` in reverse config order (children before
+  parents), then the auth user if the config says so, and prints a summary.
+- Exit codes: `0` ok, `1` usage/config/API error, `2` no data found. With no
+  match, `export` writes nothing and `delete` refuses.
+
+**Config** (`gdpr.config.json`):
+
+```json
+{
+  "authUser": { "export": true, "delete": true },
+  "notes": ["Likes are stored as an irreversible IP hash and cannot be linked to a person."],
+  "tables": [
+    { "table": "newsletter_subscribers", "match": { "column": "email", "by": "email" },
+      "delete": true, "omit": ["unsubscribe_token"] },
+    { "table": "newsletter_sends",
+      "match": { "column": "subscriber_id", "by": "ref",
+                 "ref": { "table": "newsletter_subscribers", "column": "id" } } },
+    { "table": "guestbook_entries", "match": { "column": "user_id", "by": "auth_user_id" }, "delete": true }
+  ]
+}
+```
+
+| `match.by` | Matches rows where `column` equals… |
+|---|---|
+| `email` | the address, case-insensitively (`ilike` with `%`/`_` escaped, so exact) |
+| `auth_user_id` | the id of the auth user with that email |
+| `ref` | any value of `ref.column` in rows already found in the earlier `ref.table` |
+
+`authUser: true` is shorthand for export-only. `delete` defaults to `false`, so
+export-only or cascade-deleted tables (like `newsletter_sends` above, removed by
+its `ON DELETE CASCADE`) just leave it out.
+
+**How it works.** Plain `fetch` against PostgREST
+(`/rest/v1/<table>?<col>=eq.<value>`, paged 1000 rows at a time) and the GoTrue
+Admin API. The admin API has no reliable exact-email filter, so the auth user is
+found by paging `/auth/v1/admin/users` and matching the email — fine for small
+projects, slow for 100k+ users. Everything is collected first; deletes only run
+after the full plan has been read, so a failure mid-collection deletes nothing.
+
+**Vendoring into a project.** Copy it to `scripts/gdpr-export.mjs` with a first
+comment line pointing back here ("canonical copy lives in
+~/.dotfiles/scripts/utils/gdpr-export.mjs — update there first"), write a
+`scripts/gdpr.config.json` from the project's migrations (every table holding an
+email, an auth user id, or rows hanging off those), and add npm scripts:
+
+```json
+"gdpr:export": "node scripts/gdpr-export.mjs --config scripts/gdpr.config.json export",
+"gdpr:delete": "node scripts/gdpr-export.mjs --config scripts/gdpr.config.json delete"
+```
+
+Then `npm run gdpr:export -- someone@example.com`. Fix bugs here first and
+re-copy; the vendored copies should stay byte-identical below the header.
+First vendored into `peciulevicius.com` (2026-09-26).
 
 ---
 
