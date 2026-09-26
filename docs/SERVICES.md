@@ -586,7 +586,11 @@ cd ~/services/lidarr
 docker compose up -d
 ```
 
-Open http://localhost:8686. Add `/media/music` as the root folder, connect Prowlarr as the indexer manager, and add Transmission at `http://transmission:9091` as the download client. Lidarr shares the existing `media` Docker network and `/media` mount, so downloads and music stay visible at the same paths across the media stack.
+Open http://localhost:8686. In **Settings → General**, copy Lidarr's API key. In Prowlarr (http://localhost:9696), go to **Settings → Apps → Add → Lidarr**, use `http://lidarr:8686` as the URL, and paste that key. Add indexers in Prowlarr if none are configured. Lidarr should use `/media/music/Library` as its root folder; Jellyfin serves that folder, while Beets independently imports hand-added files from `/media/music/Incoming`.
+
+Add Transmission in **Settings → Download Clients**. Transmission reports paths under `/downloads`, while Lidarr sees the same NAS share under `/media`; if completed downloads do not import, add a Lidarr **Remote Path Mapping** with the same Host value as the Transmission client (currently `100.81.171.49`), Remote Path `/downloads`, and Local Path `/media/downloads`.
+
+To get music, add an artist but choose only the wanted album(s), then use the album's search action and grab a matching result. Lidarr manages releases (albums, EPs, and singles), not a list of isolated tracks. Don't set every album to monitored unless you want the additional releases too.
 
 ---
 

@@ -7,9 +7,10 @@ moves them into a clean `Library/Artist/Album/NN Title.ext` tree. Jellyfin
 serves `Library/`; Finamp on the phone plays it.
 
 **Why:** adding music should be "drop the files in a folder", with no manual
-tagging or folder naming. **There is deliberately no downloader** — no Lidarr,
-no slskd, no indexer or torrent integration. Music is bought DRM-free and
-added by hand.
+tagging or folder naming. Beets itself has no downloader: it handles music you
+buy DRM-free and add by hand. Lidarr separately manages automated album
+acquisition into `Library/`; Beets continues to process hand-added files from
+`Incoming/`.
 
 ## Adding music
 
