@@ -46,6 +46,12 @@ Run your own cloud on a Mac mini (or any Docker host). Self-hosted services cove
 | [LazyLibrarian](#lazylibrarian) | Tailscale only | 5299 | Ebook & audiobook automation |
 | [beets](#beets) | Tailscale only | 8337 | Music library organiser — tags + files bought music dropped into `Incoming/` |
 
+### AI agents
+
+| Service | URL | Port | Purpose |
+|---------|-----|------|---------|
+| [Paperclip](#paperclip) | Tailscale only | 3100 | Multi-agent orchestration — a "company" of Claude Code / Codex / local agents working tickets |
+
 ### AI Coach (MCP servers)
 
 No web UI — these are data connectors for the `adaptive-endurance-coach` skill
@@ -718,6 +724,32 @@ Odysseus (`query_activities`, `analyze_training`, `compare_activities`…).
 
 ---
 
+### Paperclip
+
+**What:** Multi-agent orchestration ([paperclipai/paperclip](https://github.com/paperclipai/paperclip)).
+You are the "board"; you hire a CEO agent, give it goals as tickets, and it
+delegates to other agents (Claude Code, Codex, Gemini, OpenCode→Ollama) with
+your approval.
+
+**Why:** a self-hosted, auditable place to run agent teams on real tasks —
+tickets, approvals, budgets and a paper trail instead of loose terminal
+sessions.
+
+**How:** one container, `ghcr.io/paperclipai/paperclip:2026.916.1`, embedded
+Postgres, `authenticated/private` mode with sign-ups closed. Agents run
+**inside** the container (the image bundles the CLIs) and each needs its own
+login — the host's Claude Code login lives in the Keychain and can't be
+shared. ~900MB idle, 1.5GB cap. Tailscale + localhost only. Adding agents and a
+first company: `services/paperclip/README.md`.
+
+```bash
+cd ~/services/paperclip
+docker compose up -d
+curl -s 127.0.0.1:3100/api/health | jq .status
+```
+
+---
+
 ## Remote Access (Cloudflare Tunnel)
 
 All services are accessible via HTTPS through a Cloudflare Tunnel. This provides real TLS certificates, no port forwarding, and works from anywhere.
@@ -781,6 +813,7 @@ Every service is accessible three ways: localhost (on the Mac mini), Tailscale (
 | Transmission | 9091 | http://100.81.171.49:9091 |
 | LazyLibrarian | 5299 | http://100.81.171.49:5299 |
 | beets (music) | 8337 | http://100.81.171.49:8337 |
+| Paperclip (agents) | 3100 | http://100.81.171.49:3100 |
 **Mobile apps (use Tailscale URLs to bypass Cloudflare Access gate):**
 
 | App | Server URL |

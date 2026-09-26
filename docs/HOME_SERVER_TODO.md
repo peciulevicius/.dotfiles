@@ -58,6 +58,14 @@ Section names in *italics* are headings below.
 - KOReader OPDS + Calibre-Web shelf check — *Move the Calibre library off SMB onto the SSD*
 - What T5 is for — *External backups are manual now*
 - Router DHCP reservation — *Router DHCP reservation for the NAS*
+- **Paperclip** (deployed 2026-09-26, `http://100.81.171.49:3100`): move the
+  admin email/password from `~/services/paperclip/.env` into Vaultwarden and
+  delete those two lines (no reset email exists — Vaultwarden is the only
+  recovery); run `claude setup-token` and add `CLAUDE_CODE_OAUTH_TOKEN` to
+  that `.env` (or `docker exec -it paperclip claude` → `/login`); then create
+  the first organization + CEO + task per `services/paperclip/README.md`.
+  Watch `sysctl vm.swapusage` during the first agent runs — swap headroom is
+  only ~1–1.6 GB.
 - Pi-hole: Caddy decision, router DNS — *Pi-hole — finish the deployment*
 - Old photo archives into Immich (needs T7 + judgement) — *Import old photo archives into Immich*
 - Paperless tags/types — *Paperless-NGX — organise documents*
@@ -531,6 +539,11 @@ whole-house outage now alerts.
 Background for the steps above, plus items outside the sequence.
 
 ### 💾 Disk — 27GiB free of 228GB (87%) on 2026-09-26
+
+⚠️ **Later the same day: 18GiB free (91%)** — the audit now flags it. The
+Paperclip image alone is 6.7GB (it bundles four agent CLIs). If space gets
+tight, `docker image prune` after upgrades (old Paperclip tags are big) and
+re-check the list below.
 
 Was **15 GiB free (92%)** before the 2026-09-21 cleanup (Docker build cache
 6.05GB, Homebrew 477MB, applied Squirrel/ShipIt update staging ~2.1GB); Trash

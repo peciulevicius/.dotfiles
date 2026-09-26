@@ -8,6 +8,33 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-26 — Paperclip (multi-agent orchestration), Tailscale only
+
+- **Deployed** `ghcr.io/paperclipai/paperclip:2026.916.1` (`services/paperclip/`),
+  single container with embedded Postgres, `authenticated/private` mode, port
+  3100 bound to `127.0.0.1` + `100.81.171.49` only. First admin created and
+  the instance claimed via the browser-claim API, then sign-ups closed
+  (`PAPERCLIP_AUTH_DISABLE_SIGN_UP=true`, verified: sign-up now 400, login
+  200). Admin credential in `~/services/paperclip/.env` pending Vaultwarden.
+- **Why Docker, not native launchd:** the image ships the `claude`, `codex`,
+  `gemini` and `opencode` CLIs and the `*_local` adapters run them in-container,
+  so reaching the host CLI was never needed. Native would hand agents running
+  with `dangerouslySkipPermissions` the whole home directory. Cost: the
+  container's Claude Code needs its own login (`claude setup-token` →
+  `CLAUDE_CODE_OAUTH_TOKEN`), since the host login is in the Keychain.
+- **Why embedded Postgres:** swap was at ~10.3 of 11 GB before deploying; a
+  second (Postgres) container was not affordable. 1.5GB `mem_limit`.
+- **Memory:** before 34–37% free / swap 10.2–10.3 GB; after 36–38% free / swap
+  9.7–10.0 GB, 6.07 GiB containers total. Idle ~800–900MB.
+- **Gotcha found:** Glance's first check got **403** — Paperclip rejects
+  hostnames not in `PAPERCLIP_ALLOWED_HOSTNAMES`; added `paperclip` and
+  `host.docker.internal`.
+- Glance monitor + Tailscale Only bookmark + `paperclip` network; Uptime Kuma
+  monitor #28 cloned from beets' row (backup `kuma.db.bak-20260926-paperclip`);
+  rclone excludes the live DB dir and agent CLI logins, keeps Paperclip's
+  daily dumps and `master.key`. Watchtower disabled (migrations on upgrade).
+- No agents or API keys configured — see `services/paperclip/README.md`.
+
 ## 2026-09-26 — Music library: beets + NAS folders (no downloader)
 
 - **Folders:** `/Volumes/media/music/Incoming/` and `Library/` on the NAS

@@ -1,0 +1,62 @@
+# Paperclip — open-source multi-agent orchestration ("a company of AI agents")
+# Upstream: https://github.com/paperclipai/paperclip  (MIT)
+# UI: http://100.81.171.49:3100 (Tailscale) or http://127.0.0.1:3100 — no tunnel.
+#
+# Single container, embedded PostgreSQL (the upstream quickstart shape). A
+# separate postgres:17 container was rejected: the host is swap-bound and one
+# fewer resident process is the point. Everything lives in ./data (mounted at
+# /paperclip, which is also $HOME inside the container):
+#   instances/default/db/        live embedded Postgres  -> NOT backed up raw
+#   instances/default/data/backups/  Paperclip's own pg dumps -> backed up
+#   .claude/ .codex/ .gemini/    agent CLI logins done via `docker exec`
+#
+# Agents run INSIDE this container: the image ships the claude, codex, gemini
+# and opencode CLIs, and the *_local adapters exec them here. See README.md.
+#
+# Pinned to a stable release tag. Watchtower is deliberately disabled: stable
+# releases carry DB migrations, so upgrade by bumping the tag on purpose.
+
+name: paperclip
+
+services:
+  paperclip:
+    container_name: paperclip
+    image: ghcr.io/paperclipai/paperclip:2026.916.1
+    restart: unless-stopped
+    # Upstream's backstop against leaked agent subprocesses (tini is PID 1).
+    pids_limit: 2048
+    mem_limit: 1536m
+    ports:
+      # Localhost + the Mac mini's Tailscale IP only — not LAN, not the tunnel.
+      - "127.0.0.1:${PAPERCLIP_PORT:-3100}:3100"
+      - "100.81.171.49:${PAPERCLIP_PORT:-3100}:3100"
+    # Secrets + optional agent credentials (CLAUDE_CODE_OAUTH_TOKEN, …).
+    env_file: .env
+    environment:
+      HOST: "0.0.0.0"
+      PORT: "3100"
+      PAPERCLIP_HOME: /paperclip
+      PAPERCLIP_DEPLOYMENT_MODE: authenticated
+      PAPERCLIP_DEPLOYMENT_EXPOSURE: private
+      PAPERCLIP_PUBLIC_URL: "${PAPERCLIP_PUBLIC_URL:-http://100.81.171.49:3100}"
+      # Close sign-ups once the first admin has claimed the instance (README).
+      PAPERCLIP_AUTH_DISABLE_SIGN_UP: "${PAPERCLIP_AUTH_DISABLE_SIGN_UP:-false}"
+      # Daily dump, 14 days — rclone ships these to R2 instead of the live db/.
+      PAPERCLIP_DB_BACKUP_ENABLED: "true"
+      PAPERCLIP_DB_BACKUP_INTERVAL_MINUTES: "1440"
+      PAPERCLIP_DB_BACKUP_RETENTION_DAYS: "14"
+      PAPERCLIP_TELEMETRY_DISABLED: "1"
+    volumes:
+      - ./data:/paperclip
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:3100/api/health"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 120s
+    labels:
+      - "com.centurylinklabs.watchtower.enable=false"
+
+networks:
+  default:
+    name: paperclip

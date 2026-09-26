@@ -33,6 +33,7 @@ services:
       - trainingpeaks-mcp_default
       - strava-mcp_default
       - beets
+      - paperclip
 
 networks:
   default:
@@ -77,4 +78,6 @@ networks:
   strava-mcp_default:
     external: true
   beets:
+    external: true
+  paperclip:
     external: true

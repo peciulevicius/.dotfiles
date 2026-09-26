@@ -46,6 +46,7 @@ SERVICES=(
   trainingpeaks-mcp
   strava-mcp
   beets
+  paperclip
 )
 
 SERVICE_PORTS=(
@@ -80,6 +81,7 @@ SERVICE_PORTS=(
   "trainingpeaks-mcp:8092"
   "strava-mcp:8093"
   "beets:8337"
+  "paperclip:3100"
 )
 
 log_ok()   { echo -e "${GREEN}✓${NC} $1"; }

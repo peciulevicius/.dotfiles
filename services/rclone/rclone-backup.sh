@@ -101,6 +101,19 @@ SYNC_CMD+=(--exclude "odysseus/data/huggingface/**")
 SYNC_CMD+=(--exclude "odysseus/data/local/**")
 SYNC_CMD+=(--exclude "odysseus/data/fastembed_cache/**")
 SYNC_CMD+=(--exclude "odysseus/logs/**")
+# Paperclip: its embedded Postgres is live (same MD5/consistency problem as the
+# other DB dirs), but Paperclip writes its own daily pg dump into
+# instances/default/data/backups/, which IS shipped. secrets/master.key is kept
+# on purpose — without it the encrypted agent secrets in those dumps are dead.
+# Agent CLI logins (claude/codex/gemini OAuth tokens) are excluded: re-login is
+# cheap and they should not sit in a bucket.
+SYNC_CMD+=(--exclude "paperclip/data/instances/default/db/**")
+SYNC_CMD+=(--exclude "paperclip/data/.claude/**")
+SYNC_CMD+=(--exclude "paperclip/data/.claude.json*")
+SYNC_CMD+=(--exclude "paperclip/data/.codex/**")
+SYNC_CMD+=(--exclude "paperclip/data/.gemini/**")
+SYNC_CMD+=(--exclude "paperclip/data/.cache/**")
+SYNC_CMD+=(--exclude "paperclip/data/.npm/**")
 # Upstream source tree — it is a git clone, re-creatable with setup.sh
 SYNC_CMD+=(--exclude "odysseus/.git/**")
 # Large app installs — reinstallable, not user data

@@ -71,6 +71,10 @@ pages:
                 url: http://100.81.171.49:7001
                 check-url: http://odysseus-odysseus-1:7000/api/health
                 icon: si:ollama
+              - title: Paperclip (agents)
+                url: http://100.81.171.49:3100
+                check-url: http://paperclip:3100/api/health
+                icon: mdi:paperclip
               - title: TrainingPeaks MCP
                 url: http://127.0.0.1:8092/status
                 check-url: http://trainingpeaks-mcp:8000/status
@@ -228,6 +232,9 @@ pages:
                   - title: beets (music)
                     url: http://100.81.171.49:8337
                     icon: di:beets
+                  - title: Paperclip (agents)
+                    url: http://100.81.171.49:3100
+                    icon: mdi:paperclip
 
           - type: docker-containers
 

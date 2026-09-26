@@ -106,6 +106,7 @@ docker exec grafana grafana cli admin reset-admin-password 'NEW_PASSWORD'
 | Jellyseerr | `http://100.81.171.49:5055` | via Jellyfin |
 | NAS (UGOS) | `https://nas.peciulevicius.com` | personal admin account (in Vaultwarden) |
 | NAS SMB service account | *(macOS Keychain)* | `macmini` |
+| Paperclip | `http://100.81.171.49:3100` | email → switch to an alias. Password already generated (28-char); only needs moving from `~/services/paperclip/.env` into Vaultwarden |
 
 ---
 

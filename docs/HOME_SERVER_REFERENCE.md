@@ -39,6 +39,13 @@ Previous baselines: 2026-09-19, 39 containers, 5.55 GiB used / ~4.1 GiB free.
 Previous baseline, 2026-09-08 with 42 containers: 5.2 GiB of containers, 43%
 free, ~2.5 GB swap.
 
+**2026-09-26, adding Paperclip (44 containers):** before — 34–37% free, swap
+10.2–10.3 GB of 11 GB used. After — **6.07 GiB** containers total, 36–38%
+free, swap 9.7–10.0 GB used (did not grow). Paperclip itself: ~790–890MB idle
+under a 1.5GB `mem_limit`; each Claude Code agent run adds ~300–500MB on top.
+Swap has only ~1–1.6 GB headroom — it is the constraint to watch, not
+container RAM.
+
 **How to read swap on macOS:** "Pages free" is always near zero by design — macOS
 uses spare RAM as cache, so a low free-page count is not a warning. Judge by
 *memory pressure percentage* and whether swap is **growing**. Stable or shrinking
@@ -53,6 +60,29 @@ Biggest single consumers (2026-09-19): `immich_server` (~839MB), `paperless`
 
 **This is the budget that rules out Octopus Deploy** — its SQL Server dependency
 alone wants 2GB. See [guides/OCTOPUS_DEPLOY.md](guides/OCTOPUS_DEPLOY.md).
+
+---
+
+## Paperclip — facts and gotchas
+
+- `http://100.81.171.49:3100` / `http://127.0.0.1:3100`. Ports bound to those
+  two addresses explicitly — the LAN IP refuses connections (verified).
+- **Every hostname used to reach it must be in `PAPERCLIP_ALLOWED_HOSTNAMES`**
+  (`~/services/paperclip/.env`), including `paperclip` for Glance and
+  `host.docker.internal` for Uptime Kuma. A missing one returns **403**, not
+  a connection error.
+- Agents run *inside* the container (the image bundles `claude`, `codex`,
+  `gemini`, `opencode`). Container `$HOME` is `/paperclip` = `./data`, so CLI
+  logins persist in `data/.claude/` etc. The host's Claude Code login can't be
+  reused — it lives in the macOS Keychain.
+- `paperclipai auth bootstrap-ceo` does **not** work in this container (no
+  `config.json`; the image configures from env). Losing the admin password
+  means Vaultwarden or nothing.
+- Embedded Postgres on port 54329 inside the container; live dir excluded from
+  R2, Paperclip's own daily dumps (`data/instances/default/data/backups/`,
+  14 days) plus `secrets/master.key` are backed up.
+- Health reports `databaseBackup: warning` until the first daily dump exists
+  (24h after first start) — expected, not a fault.
 
 ---
 
