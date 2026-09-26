@@ -19,9 +19,6 @@ kindle_sync, Kuma SMTP and Calibre-Web SMTP all run on Purelymail since
 - [ ] 👤 Amazon → Manage Content & Devices → Preferences → Personal Document
       Settings → **approve `dziugas@peciulevicius.com`** as a sender, or
       Calibre-Web "Send to Kindle" silently stops working
-- [ ] 👤 Revoke the Gmail app password (Google Account → Security → App
-   passwords). ⚠️ It was printed in a Claude session on 2026-09-25 (and to a
-   terminal on 2026-09-21) — don't postpone this.
 - [ ] 👤 Kindle exports keep going to **Gmail** (the Amazon account email) until
    the account-email pass below, but kindle_sync now reads Purelymail. So it
    still sees them, add a **Gmail filter**: `from:do-not-reply@amazon.com
@@ -39,14 +36,13 @@ Section names in *italics* are headings below.
 
 ### 👤 Needs you (UI / device / credentials / decision)
 
-- Mail wrap-up: Kuma + Calibre-Web test mails, approve `dziugas@` as an Amazon sender, revoke the Gmail app password, Gmail→Kindle filter — *🔝 Next up*
+- Mail wrap-up: Kuma + Calibre-Web test mails, approve `dziugas@` as an Amazon sender, Gmail→Kindle filter — *🔝 Next up*
 - Coach: upload skill zip, add the `tp-mcp` custom connector in claude.ai, "Coach" Project — *🏃 Coach in the Claude app*
 - Website: `checkOrigin` decision, `IP_HASH_SALT` secret, Resend domain check; janioniu: sort your local TODO edits, confirm placeholder facts with Dad, Purelymail domain, Workers Builds toggle — *🌐 Other repo backlogs* and below
 - Gravatar, branded signature, Google account photo — *✉️ Email identity*
 - T7 external backup run — *📋 Open user steps*
 - Email: catch-all, inbound test, iPhone Mail, deliverability / mail-tester — *📋 Open user steps*
 - Reset Odysseus 2FA; first coaching session in Odysseus — *⚡ Batch 2026-09-24*
-- Move TOTP off Google Authenticator — *2. Move TOTP off Google Authenticator*
 - Rotate the Vaultwarden admin token (Claude can do the hash + `.env`; you save it) — *3. Rotate the Vaultwarden admin token*
 - Credential + email pass per service, NAS account passwords, `~/credentials-import.md` — *6. One pass per service*
 - Vaultwarden Chrome extension on the work laptop — *7. Vaultwarden Chrome extension*
@@ -96,7 +92,7 @@ Section names in *italics* are headings below.
   Amperfy dropped (Subsonic-only). Also install: Bitwarden, Ente Auth,
   Obsidian + LiveSync, ntfy, Swiftfin/Infuse, Odysseus home-screen web app.
 
-- 👤 Ad blocking anywhere: confirm Tailscale DNS → Pi-hole (nameserver looks set, see the section), cellular test; Brave iOS/AdGuard for YouTube — *Pi-hole → Ad blocking everywhere*
+- 👤 Ad blocking: Brave iOS / AdGuard for YouTube (Tailscale → Pi-hole done 2026-09-26) — *Pi-hole → Ad blocking everywhere*
 
 - 👤 janioniu: Cloudflare → Workers & Pages → `janioniu-vynuogynas` → Settings →
   **Build** → turn off production deploys from Workers Builds (keep PR
@@ -171,9 +167,9 @@ is written out so it survives being read cold in a year.
 
 | # | Step | Why it is here and not later |
 |---|---|---|
-| **2** | 🔴 Move TOTP off Google Authenticator | Seeds sync to the account being left — lockout risk |
+| **2** | ✅ ~~Move TOTP off Google Authenticator~~ | Done 2026-09-26 — codes in Bitwarden Authenticator |
 | **3** | 🔴 Rotate the Vaultwarden admin token | Leaked into a container config on 2026-09-21 |
-| **5** | 🔁 Revoke the Gmail app password | Consumers repointed 2026-09-26; revoke tracked in 🔝 Next up |
+| **5** | ✅ ~~Revoke the Gmail app password~~ | Done 2026-09-26 |
 | **6** | 🔑 One pass: password + email per service | Same ~14 logins — separating them doubles the work |
 | **7** | 🧩 Vaultwarden Chrome extension | Blocked on the work laptop, not on us |
 | **8** | 🤖 Odysseus history import | Pure upside, nothing depends on it |
@@ -221,27 +217,6 @@ token, email DNS cutover, coach build) are in the changelog.
          mail-tester.com (aim ≥ 9/10).
       ⚠️ `peciulevicius@purelymail.com` (admin) and `dziugas@peciulevicius.com`
       are **separate mailboxes** — log clients in as `dziugas@`, not the admin.
-
-### 2. 🔴 Move TOTP off Google Authenticator — before any password change
-
-**The single highest-risk item in the whole de-Googling effort.** Google
-Authenticator syncs its TOTP seeds to the Google account being abandoned. Every
-service whose 2FA lives there is one account-loss away from being unreachable.
-It's phone work — no Mac mini needed.
-
-- [ ] 👤 Google Authenticator → ⋯ → Transfer accounts → **Export accounts**
-      (its built-in transfer QR)
-- [ ] 👤 Import into **Ente Auth** (open source, E2E, cross-platform) — or
-      **Vaultwarden**, which unlocks Bitwarden premium TOTP free when
-      self-hosted, at the cost of keeping both factors in one vault. See
-      [guides/DEGOOGLE.md](guides/DEGOOGLE.md)
-- [ ] 👤 Verify several logins end-to-end with the new app **before** deleting
-      anything
-- [ ] 👤 Keep Google Authenticator installed for a month, until every seed is
-      confirmed working
-
-> ⚠️ Do this **before** step 6. Changing passwords across 14 services while 2FA
-> still depends on Google means a single lockout takes all of them at once.
 
 ### 3. 🔴 Rotate the Vaultwarden admin token
 
@@ -718,15 +693,7 @@ served from the site's own domain (YouTube, Amazon sponsored listings,
 Instagram/Facebook, "AdChoices" served first-party). Those need an in-browser
 blocker. So: Pi-hole for the network + a content blocker in the browser.
 
-- [ ] 👤 **Pi-hole on every device, anywhere, via Tailscale:** admin console →
-      **DNS** → Nameservers → *Add nameserver* → Custom → `100.81.171.49`
-      (Pi-hole's **Tailscale** IP, not the LAN IP) → enable **Override local
-      DNS**. 2026-09-26: `tailscale dns status` on the Mac mini already lists
-      `100.81.171.49` as the tailnet resolver, so the nameserver looks added —
-      confirm **Override local DNS** is on in the console, then test on
-      cellular with Tailscale on and watch the Pi-hole query log for the phone.
-      ⚠️ If the Mac mini is off, Tailscale devices lose DNS entirely while
-      the override is on — toggle Tailscale off in that case, or accept it.
+- [x] Pi-hole on every device via Tailscale — nameserver `100.81.171.49` + Override local DNS set by the user 2026-09-26.
 - Curated blocklists (HaGeZi Multi Pro + TIF medium, 2026-09-25, changelog):
   if a site breaks, check the Pi-hole query log and allowlist the domain.
 - [ ] 👤 **Router DNS → Pi-hole** (existing item below) so non-Tailscale
@@ -916,7 +883,7 @@ with per-service subdomains — all done, and **email is now on Purelymail**
 gaps: **moving accounts over, phone, calendar/contacts, AI.** Don't restart
 from step one.
 
-Google Authenticator → see **2. Move TOTP off Google Authenticator** — do it
+Google Authenticator → ✅ moved to Bitwarden Authenticator 2026-09-26 — do it
 before anything else here.
 
 #### Accounts and "Sign in with Google"

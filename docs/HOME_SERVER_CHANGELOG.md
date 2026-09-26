@@ -8,6 +8,15 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-26 — 2FA off Google Authenticator; Gmail app password revoked; Pi-hole via Tailscale
+
+- All TOTP codes moved to **Bitwarden Authenticator** (the top de-Google risk:
+  seeds no longer sync to the Google account being left). Ente Auth kept as a
+  possible second copy later.
+- Gmail app password revoked — nothing uses it since the Purelymail switch.
+- Tailscale admin → DNS: nameserver `100.81.171.49` (Pi-hole) with **Override
+  local DNS** → Pi-hole ad blocking on every Tailscale device, any network.
+
 ## 2026-09-26 — TODO truth pass
 
 Every open item in `HOME_SERVER_TODO.md` re-checked against the live system.
