@@ -1,3 +1,13 @@
+# Static files (status.json from scripts/utils/homelab-status.sh) served at
+# /assets/ — mounted from ./assets in docker-compose.yml.
+server:
+  assets-path: /app/assets
+
+# lvl-ok / lvl-warn / lvl-bad colours for the Homelab health widget (the
+# stock palette has no amber). File lives next to status.json in ./assets.
+theme:
+  custom-css-file: /assets/health.css
+
 pages:
   - name: Home
     columns:
@@ -231,6 +241,41 @@ pages:
 
       - size: small
         widgets:
+          # ── Homelab health — host-side snapshot written every 5 min by
+          # scripts/utils/homelab-status.sh into ./assets/status.json (served
+          # by Glance itself at /assets/, see server.assets-path above). Glance
+          # can't see macOS swap, the APFS data volume, backup stamps or the
+          # Paperclip board from inside its container; the script can. Levels
+          # (ok/warn/bad) are computed by the script. Reads only the local
+          # file, so it never wakes a sleeping app.
+          - type: custom-api
+            title: Homelab health
+            cache: 1m
+            url: http://localhost:8080/assets/status.json
+            template: |
+              <ul class="list list-gap-10 collapsible-container" data-collapse-after="20">
+                <li class="flex justify-between"><span>Docker memory</span>
+                  <span class="lvl-{{ .JSON.String "memory.level" }}">{{ .JSON.Float "memory.used_gb" }} / {{ .JSON.Float "memory.total_gb" }} GB</span></li>
+                <li class="flex justify-between"><span>macOS swap</span>
+                  <span class="lvl-{{ .JSON.String "swap.level" }}">{{ .JSON.Int "swap.pct" }}%</span></li>
+                <li class="flex justify-between"><span>Disk (Mac / NAS)</span>
+                  <span><span class="lvl-{{ .JSON.String "disk.host_level" }}">{{ .JSON.Int "disk.host_pct" }}%</span> / <span class="lvl-{{ .JSON.String "disk.nas_level" }}">{{ .JSON.Int "disk.nas_pct" }}%</span></span></li>
+                <li class="flex justify-between"><span>R2 backup</span>
+                  <span class="lvl-{{ .JSON.String "backups.r2.level" }}">{{ .JSON.String "backups.r2.age" }}</span></li>
+                <li class="flex justify-between"><span>DB dumps</span>
+                  <span class="lvl-{{ .JSON.String "backups.db.level" }}">{{ .JSON.String "backups.db.age" }}</span></li>
+                <li class="flex justify-between"><span>T5 / T7 drives</span>
+                  <span><span class="lvl-{{ .JSON.String "backups.t5.level" }}">{{ .JSON.String "backups.t5.age" }}</span> / <span class="lvl-{{ .JSON.String "backups.t7.level" }}">{{ .JSON.String "backups.t7.age" }}</span></span></li>
+                <li class="flex justify-between"><span>💤 Apps awake</span>
+                  <span title="{{ .JSON.String "sleepers.names" }}">{{ .JSON.Int "sleepers.awake" }} / {{ .JSON.Int "sleepers.total" }}</span></li>
+                <li class="flex justify-between"><span>Paperclip waiting on you</span>
+                  <span class="lvl-{{ .JSON.String "paperclip.level" }}">{{ if .JSON.Bool "paperclip.reachable" }}{{ .JSON.Int "paperclip.approvals" }} approvals · {{ .JSON.Int "paperclip.waiting" }} in review{{ else }}unreachable{{ end }}</span></li>
+                <li class="flex justify-between"><span>Coach check-in</span>
+                  <span class="lvl-{{ .JSON.String "coach.checkin.level" }}">{{ .JSON.String "coach.checkin.age" }}</span></li>
+                <li><div class="size-h6 color-subdue">Dietitian today</div><div class="size-h5">{{ .JSON.String "coach.today" }}</div></li>
+              </ul>
+              <div class="size-h6 color-subdue" style="margin-top:8px">updated {{ .JSON.String "updated" }}</div>
+
           - type: server-stats
 
           - type: dns-stats

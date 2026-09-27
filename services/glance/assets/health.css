@@ -1,0 +1,4 @@
+/* Homelab health widget levels — see glance.yml and scripts/utils/homelab-status.sh */
+.lvl-ok   { color: var(--color-positive); }
+.lvl-warn { color: #e0a100; }
+.lvl-bad  { color: var(--color-negative); font-weight: 600; }

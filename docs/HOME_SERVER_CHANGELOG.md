@@ -8,6 +8,27 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-27 — Glance "Homelab health" widget
+
+- New **Homelab health** widget at the top of the homepage side column:
+  - Docker memory, macOS swap, and disk usage (Mac data volume and NAS)
+  - R2, DB-dump and T5/T7 backup ages
+  - 💤 apps awake
+  - pending Paperclip approvals and in-review issues
+  - the Coach check-in age and the Dietitian's line for today
+
+  Colours are green, amber or red.
+- Data comes from the new `scripts/utils/homelab-status.sh` (cron, every 5
+  min), which writes `~/services/glance/assets/status.json`. Glance serves it
+  at `/assets/` (`server.assets-path`) and the widget reads it from
+  `localhost`, so it never polls, or wakes, another service. Amber comes from
+  `assets/health.css` (`theme.custom-css-file`).
+- `setup-services.sh` now stages a service's `assets/` files one by one, so
+  the generated `status.json` survives re-staging.
+- First reading: swap at 81–90% and Mac disk at 91%, both flagged. `df /` on
+  macOS reports the sealed system volume (~38%); the script reads
+  `/System/Volumes/Data`.
+
 ## 2026-09-27 — FlareSolverr can no longer wake by accident
 
 - FlareSolverr (manual on-demand, ~230 MB) was found running: a plain

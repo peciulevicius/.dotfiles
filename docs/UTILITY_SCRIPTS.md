@@ -37,6 +37,7 @@ listed in [scripts/cron/README.md](https://github.com/peciulevicius/.dotfiles/bl
 | `scripts/backup/restore.sh` | Restore from R2 into `~/services-restore/`; load database dumps | When needed |
 | `scripts/backup/backup-external.sh` | rsync NAS data and dumps to an external drive | Manually, when a drive is connected |
 | `scripts/utils/homelab-audit.sh` | Audit drift, containers, backups, disk, recent commits and cron | Weekly (cron) |
+| `scripts/utils/homelab-status.sh` | Write the Glance *Homelab health* snapshot (`~/services/glance/assets/status.json`) | Every 5 minutes (cron) |
 | `scripts/utils/run-with-notify.sh` | Wrap a cron job and notify Discord on failure and recovery | Used by every cron job |
 | `scripts/utils/mount-nas.sh` | Mount the NAS SMB shares | At login (launchd) |
 | `scripts/utils/nas-watchdog.sh` | Remount shares and restart NAS-backed containers | Every 5 minutes (launchd) |
@@ -446,6 +447,21 @@ Weekly checks, each derived from a past failure:
 
 The `homelab-audit` project skill adds the judgement-based checks (pinned image
 versions, credential copies, documentation accuracy).
+
+### homelab-status.sh
+
+Host-side snapshot for the Glance homepage's **Homelab health** widget:
+Docker memory, macOS swap, disk usage (APFS data volume and NAS), backup
+ages, how many scale-to-zero apps are awake (read from `docker ps`, never by
+requesting the app), the Paperclip queue, and the Dietitian's line for today.
+Writes JSON atomically, and puts an `ok`/`warn`/`bad` level on every value.
+
+```bash
+~/.dotfiles/scripts/utils/homelab-status.sh --print   # output has no secrets
+```
+
+Details, thresholds and the Glance side: `services/glance/README.md` →
+*Homelab health widget*.
 
 ### run-with-notify.sh
 

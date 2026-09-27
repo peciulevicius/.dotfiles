@@ -157,6 +157,18 @@ stage_service() {
     log_ok "$svc: copied $base"
   done
 
+  # Static assets a container serves (glance: health.css). Files are copied
+  # individually so generated files living in the same dir (glance's
+  # status.json, written by homelab-status.sh) are left alone.
+  if [[ -d "$svc_dir/assets" ]]; then
+    mkdir -p "$dest_dir/assets"
+    for asset in "$svc_dir"/assets/*; do
+      [[ -f "$asset" ]] || continue
+      cp "$asset" "$dest_dir/assets/$(basename "$asset")"
+      log_ok "$svc: copied assets/$(basename "$asset")"
+    done
+  fi
+
   if [[ -f "$svc_dir/.env.example" ]]; then
     if [[ ! -f "$dest_dir/.env" ]]; then
       cp "$svc_dir/.env.example" "$dest_dir/.env"

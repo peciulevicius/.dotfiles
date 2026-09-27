@@ -22,9 +22,59 @@ for everything else:
    polling it directly — when someone opens a sleeper and Sablier starts it,
    its container appears here; once Sablier stops it again it drops back out.
 
-Side column: `server-stats`, `dns-stats` (Pi-hole), `repository` (this repo),
-`calendar`, `weather`, `clock` — moved here (2026-09-27) so the full-width
-column is 100% services.
+Side column: **Homelab health** (below), `server-stats`, `dns-stats`
+(Pi-hole), `repository` (this repo), `calendar`, `weather`, `clock` — moved
+here (2026-09-27) so the full-width column is 100% services.
+
+## Homelab health widget (added 2026-09-27)
+
+A `custom-api` widget at the top of the side column. It shows:
+- Docker VM memory, macOS swap, and disk usage (Mac data volume and NAS)
+- how long ago the R2 backup, the DB dumps and the T5/T7 drive backups ran
+- how many 💤 apps are awake (hover the number for their names)
+- what Paperclip is waiting on you for (pending approvals plus in-review
+  issues)
+- the Coach check-in age and the Dietitian's line for today
+
+Each value is coloured green, amber or red.
+
+**How it works.** Glance can't see any of that from inside its container:
+macOS swap, the APFS *data* volume (`df /` only shows the sealed system
+volume, ~38%, while the real disk is ~90%), backup stamps in `~/logs`, the
+Paperclip board and `~/.training`. So `scripts/utils/homelab-status.sh` runs on
+the host every 5 minutes (cron) and writes
+`~/services/glance/assets/status.json`.
+
+Glance serves that directory at `/assets/` (`server.assets-path: /app/assets`,
+mounted `./assets:/app/assets:ro`). The widget fetches
+`http://localhost:8080/assets/status.json`, which is Glance talking to itself,
+so it never touches another service and can't wake a sleeper.
+
+The script computes a level (`ok` / `warn` / `bad`) for every value.
+`assets/health.css` (loaded through `theme.custom-css-file`) colours the
+`lvl-*` classes, because the stock palette has no amber. `setup-services.sh`
+copies the files in `assets/` individually, so `status.json` is never
+overwritten by staging.
+
+Thresholds are in the script:
+
+| Value | Amber | Red |
+|---|---|---|
+| Docker memory | 80% | 92% |
+| macOS swap | 75% | 90% |
+| Mac disk | 85% | 93% |
+| NAS disk | 80% | 90% |
+| R2 backup | 26 h | 50 h, or the last run didn't finish |
+| DB dumps | 8 d | 15 d |
+| T5 / T7 | 35 d | 60 d |
+| Coach check-in | 26 h | 50 h |
+
+**If it looks stale:** the "updated HH:MM" line at the bottom is the
+script's last run. Run `~/.dotfiles/scripts/utils/homelab-status.sh --print`
+(the output contains no secrets) and check `~/logs/homelab-status.log`. The
+Paperclip board password is read from `~/.config/homelab/paperclip-admin.env`
+and only ever sent to the local API. "Paperclip unreachable" means the login
+failed or the container is down.
 
 **Feed / Media / Finance pages** are unchanged except the **Media** page's
 own `bookmarks` widget was removed — those tiles now live once, on Home, in

@@ -5,6 +5,8 @@ services:
     restart: unless-stopped
     volumes:
       - ./glance.yml:/app/config/glance.yml
+      # status.json written by scripts/utils/homelab-status.sh (cron, 5 min)
+      - ./assets:/app/assets:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
     ports:
       - ${GLANCE_PORT:-7575}:8080

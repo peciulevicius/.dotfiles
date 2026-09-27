@@ -10,6 +10,11 @@ PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin
 # External dead-man's switch: ping Healthchecks.io every 5 minutes. Not wrapped
 # in run-with-notify — the alert for this one comes from outside the network.
 */5 * * * * ~/.dotfiles/scripts/utils/heartbeat.sh >> ~/logs/heartbeat.log 2>&1
+# Glance "Homelab health" widget: host-side snapshot (memory, swap, disk,
+# backup ages, sleepers awake, Paperclip queue, Dietitian's line for today)
+# → ~/services/glance/assets/status.json. Not wrapped in run-with-notify —
+# a stale "updated" time on the homepage is the signal.
+*/5 * * * * ~/.dotfiles/scripts/utils/homelab-status.sh >> ~/logs/homelab-status.log 2>&1
 
 # Weekly database dumps (Sunday 4am)
 0 4 * * 0 ~/.dotfiles/scripts/utils/run-with-notify.sh "DB backup" ~/.dotfiles/scripts/backup/backup-databases.sh >> ~/logs/db-backup.log 2>&1
