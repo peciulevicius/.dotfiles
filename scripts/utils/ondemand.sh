@@ -17,8 +17,9 @@
 # containers and networks, and with `restart: unless-stopped` a container
 # stopped by hand stays stopped across Docker and Mac restarts. Watchtower runs
 # with WATCHTOWER_INCLUDE_STOPPED=false, so it won't wake them either.
-# ⚠️ A manual `docker compose up -d` in one of these dirs (e.g. the "update
-# all services" loop) starts them again — run `ondemand.sh stop-all` after.
+# flaresolverr also carries `profiles: ["ondemand"]` (2026-09-27), so a plain
+# `docker compose up -d` of sonarr-radarr no longer starts it; `start` here
+# names it explicitly, which activates the profile.
 #
 # The map below is the single source of truth: homelab-audit.sh treats these
 # containers as expected-stopped, and backup-databases.sh briefly starts the

@@ -36,7 +36,8 @@ Section names in *italics* are headings below.
 
 ### 👤 Needs you (UI / device / credentials / decision)
 
-- **Discord two-way chat with Coach + Dietitian:** create the bot (Message Content intent on), create `#ai-training-dietitian`, copy your user ID + both channel IDs, then run `~/.dotfiles/services/discord-bridge/configure.sh` — steps in `services/discord-bridge/README.md`
+- [x] ~~Discord two-way chat with Coach + Dietitian~~ — bridge live 2026-09-27
+- **Delete the Claude.ai export** once the Coach team and Studio brief look right: `~/Downloads/claude_export/`, `claude_export_full.json`, `export_from_claude.md` (they hold every chat, not just training)
 - **Coach team decisions waiting in Paperclip:** COA-6 (this week + military week training plan) and the Dietitian's COA-7 (weight plan + portions) once it posts
 - Mail wrap-up: Kuma + Calibre-Web test mails, approve `dziugas@` as an Amazon sender, Gmail→Kindle filter — *🔝 Next up*
 - Coach: upload skill zip, add the `tp-mcp` custom connector in claude.ai, "Coach" Project — *🏃 Coach in the Claude app*
@@ -92,12 +93,8 @@ Section names in *italics* are headings below.
     agent, MCP connections (TrainingPeaks + Strava), Discord push secret and
     the Daily check-in routine are all live. Detail:
     `services/paperclip/README.md` → *Coach — adaptive triathlon coaching*.
-  - 👤 **Approve Coach's two connection cards** — the one step that has to be
-    a human click: open Paperclip (`100.81.171.49:3100`) → Coach company → the
-    "Daily check-in" issue → approve "Connect TrainingPeaks" and "Connect
-    Strava". Paperclip requires a human for an agent's first real tool call on
-    a fresh connection by design; the API/board-session route was correctly
-    refused. Once approved, the routine completes on its own next firing.
+  - [x] ~~Approve Coach's connection cards~~ — TrainingPeaks reads work
+    (COA-6 pulled body composition 2026-09-27).
   - 👤 **ntfy iOS app**: install, add server `http://100.81.171.49:8095`,
     subscribe to the topic using the **read** token
     (`grep NTFY_READ_TOKEN ~/services/ntfy/.env` — the topic name is

@@ -52,6 +52,10 @@ services:
 
   flaresolverr:
     container_name: flaresolverr
+    # Manual on-demand (scripts/utils/ondemand.sh). The profile keeps a plain
+    # `docker compose up -d` of this stack from starting it — that's what woke
+    # it on 2026-09-27. Naming it explicitly (`up -d flaresolverr`) still works.
+    profiles: ["ondemand"]
     image: ghcr.io/flaresolverr/flaresolverr:latest
     restart: unless-stopped
     ports:

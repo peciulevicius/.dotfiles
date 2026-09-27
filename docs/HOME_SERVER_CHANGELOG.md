@@ -8,6 +8,18 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-27 — FlareSolverr can no longer wake by accident
+
+- FlareSolverr (manual on-demand, ~230 MB) was found running: a plain
+  `docker compose up -d` of `sonarr-radarr` at 06:24 started every service in
+  the file. It now has `profiles: ["ondemand"]`, so `up -d` skips it, while
+  `ondemand start flaresolverr` (which names it explicitly) still works —
+  tested start/stop and `up -d --dry-run`.
+- Decided again: Sonarr, Radarr, Prowlarr and Transmission stay always-on
+  (~650 MB together). They work in the background (RSS every ~15 min,
+  downloading/seeding) and Sablier only wakes on web requests, so sleeping
+  them would silently stop grabs.
+
 ## 2026-09-27 — Repo public again; docs site restored; Coach check-in rewritten
 
 - The dotfiles repo had been switched to **private** on 2026-09-26 (~15:00,
