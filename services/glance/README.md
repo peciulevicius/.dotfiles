@@ -73,23 +73,18 @@ shows `200 OK`. Added `timeout: 5s` (up from Glance's 3s default) as a
 cushion against the occasional slow resolve, since the NAS isn't on a DHCP
 reservation yet (see `HOME_SERVER_TODO.md`).
 
-## GitHub Repository widget — fixed 2026-09-27
+## GitHub Repository widget
 
-Was showing `ERROR — unexpected status code 404` for
-`peciulevicius/.dotfiles`. Root cause: **`peciulevicius/.dotfiles` is
-currently a *private* GitHub repo**, and `GITHUB_TOKEN` in
-`~/services/glance/.env` was empty — GitHub returns 404 (not 403) for a repo
-an unauthenticated/unauthorized caller can't see, to avoid confirming
-private repos exist. Fixed by populating `GITHUB_TOKEN` with a token that has
-access (`gh auth token`); `.env` is gitignored, nothing committed.
+Shows `peciulevicius/.dotfiles`. The repo is **public**, so the widget needs
+**no token** — leave `GITHUB_TOKEN` empty in `~/services/glance/.env`
+(unauthenticated API: 60 requests/hour, plenty for a homepage).
 
-⚠️ **This contradicts `.claude/CLAUDE.md`'s "this repo is public"
-assumption** (gitleaks CI, "sweep the staged diff, it's public" instructions
-throughout). Confirmed via `gh api repos/peciulevicius/.dotfiles --jq
-.private` → `true`. Flagged to the user; visibility was **not** changed as
-part of this task — that's a separate decision (a private→public flip needs
-its own secret-sweep first; a public→private-and-stayed-that-way needs
-someone to say when/why).
+History (2026-09-27): the widget showed `404` because the repo had briefly
+been made private. A `gh auth token` (the user's full-scope GitHub login
+token) was put into Glance's `.env` as a quick fix — **removed the same day**:
+a container env var is the wrong place for a token that can push to every
+repo. If a private repo ever needs showing, use a fine-grained token scoped
+to that one repo with read-only *Metadata* + *Contents*.
 
 ## Networks
 
