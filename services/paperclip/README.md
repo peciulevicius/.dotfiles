@@ -534,15 +534,26 @@ Fire it on demand with `POST /api/routines/<routineId>/run -d '{"source":
 "manual"}'` (the `.../triggers/<id>/fire` path some versions expose is not
 required — `run` alone is enough and is what this setup used).
 
-**Nutrition & body weight (added 2026-09-27).** Coach also owns food and
-weight: a *Nutrition & body composition* section in its AGENTS.md sets the
-current goal (fat loss / recomp), periodises weight against the race calendar
-(cut in base, maintenance in build/peak, no deficit around races), and ties
-daily fuelling to the day's session. It keeps `/training/nutrition.md` (what
-the athlete eats, from the imported Claude.ai meal-prep project) and
-`/training/plans/nutrition_periodisation.md` (dated phases, raised as a
-decision). The daily check-in has a nutrition step. Personal data lives only
-in `~/.training/`, never in this repo.
+**Dietitian (added 2026-09-27) — Coach is now a two-agent team.** A second
+`claude_local` Sonnet agent, **Dietitian** (reports to Coach, heartbeat off,
+same Discord webhook secret, posts as "Dietitian"), owns food, body weight and
+composition (Garmin Index S2 → TrainingPeaks), weight periodisation, training/
+race fuelling, meal prep and Barbora shopping lists; Coach owns training.
+Instructions: `dietitian-agents-addendum.md` (Coach's: `coach-agents-addendum.md`).
+Memory split inside the shared `/training` mount: shared files at the root
+(`athlete_profile.md`, `race_calendar.md`, `preferences.md`, `conversations/`,
+`imports/`); Coach writes `plans/`, `coaching_notes.md`, `progress_reviews/`;
+Dietitian writes `nutrition/` (incl. `today.md`, which the daily check-in
+quotes). They hand work to each other as Paperclip tasks. Fuelling numbers are
+*current practice*, not rules — both agents may propose changes.
+
+TrainingPeaks access for the Dietitian is a separate tool profile,
+**"TrainingPeaks (read-only)"** (`profileKey: tp-readonly`), created with
+`POST /api/companies/<id>/tools/profiles` (`profileKey` is required) and one
+`catalog_entry` include per `tp_get_*`/`tp_list_*`/`tp_search_*`/`tp_auth_*`/
+`tp_analy*` tool (39), then bound to the agent. A test write call as the
+Dietitian does not execute (it hits the signed-approval path, which is
+unconfigured on this instance).
 
 **Claude.ai memory import.** The athlete's triathlon and food Claude.ai
 projects (memory, docs, chats) were copied from the account export into

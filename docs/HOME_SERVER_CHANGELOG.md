@@ -33,6 +33,12 @@ Newest first-ish; dates are when the work was finished.
   with a nutrition step in the daily check-in. Triathlon + food Claude.ai
   memory imported into `~/.training/imports/` (private, not in the repo).
   Tasks COA-4 (merge export) and COA-5 (food profile + season weight plan).
+- Same day, reworked into a **team**: a **Dietitian** agent (Sonnet, reports
+  to Coach, read-only TrainingPeaks profile) now owns nutrition, body
+  composition, meal prep and Barbora lists; Coach owns training. Memory split
+  into shared files + `nutrition/` (Dietitian) inside `~/.training`. Fuelling
+  numbers reframed as current practice, not rules. Stale issues COA-1/2/4/5
+  cancelled.
 
 ## 2026-09-27 — Glance homepage redesigned, grouped by purpose
 
