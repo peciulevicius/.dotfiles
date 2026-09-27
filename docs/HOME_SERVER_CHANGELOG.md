@@ -39,6 +39,11 @@ Newest first-ish; dates are when the work was finished.
   into shared files + `nutrition/` (Dietitian) inside `~/.training`. Fuelling
   numbers reframed as current practice, not rules. Stale issues COA-1/2/4/5
   cancelled.
+- New service **`discord-bridge`** (code, staging entry, README, configure
+  script; not started yet — waits for the bot token): two-way Discord chat
+  with the Coach team, one channel per agent, threads per task, replies wake
+  the agent via `@mention`. `setup-services.sh` now also copies top-level
+  `*.py` files (needed for locally built images).
 
 ## 2026-09-27 — Glance homepage redesigned, grouped by purpose
 

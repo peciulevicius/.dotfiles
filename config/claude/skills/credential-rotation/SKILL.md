@@ -32,6 +32,7 @@ Also check copies that live in app **databases**, which grep can't see:
 | `kindle_sync.py` → IMAP | `pkm/config.py` (gitignored) | edit, run once by hand |
 | Jellyseerr → Radarr/Sonarr/Jellyfin | its settings | UI (API keys, rarely rotated) |
 | Bazarr / Prowlarr → *arr | API keys only | only if an *arr API key is rotated |
+| discord-bridge → Paperclip board login | `~/services/discord-bridge/.env` `PAPERCLIP_PASSWORD` (source: `~/.config/homelab/paperclip-admin.env`) | edit `.env`, `docker compose up -d`, check `docker logs discord-bridge` for `signed in` |
 
 ## 2. Change the source
 

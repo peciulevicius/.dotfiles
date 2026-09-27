@@ -1,0 +1,88 @@
+# discord-bridge
+
+Two-way chat between Discord and the Paperclip **Coach** team (Coach +
+Dietitian). Built 2026-09-27 because the webhook the agents post through is
+one-way, and opening Paperclip on the phone to file a task was too much
+friction for "tired today, push Thursday's run".
+
+## How it works
+
+```
+you: message in #ai-training-coach ──► bridge ──► Paperclip issue assigned to Coach
+                                          └──► Discord thread "COA-12 · tired today"
+Coach comments on the issue ──► bridge polls (30s) ──► posted in that thread
+you: reply in the thread ──► bridge ──► issue comment "@Coach …" (the @mention wakes it)
+```
+
+- One channel per agent, set by `CHANNEL_MAP`
+  (`channelId:agentId:AgentName,…`). Currently `#ai-training-coach` → Coach
+  and `#ai-nutrition` → Dietitian.
+- Only messages from `DISCORD_OWNER_ID` are relayed; everyone else, and all
+  bots (including the agents' own webhook posts), is ignored.
+- A reply in the thread becomes a comment with an `@AgentName` mention, because
+  Paperclip wakes an agent on a mention (`issue_comment_mentioned`). A plain
+  comment is not guaranteed to wake it.
+- Approvals and decisions are **not** relayed as buttons. When an agent raises
+  a decision, approve it in Paperclip (`http://100.81.171.49:3100`), or reply
+  in the thread ("approved") and the agent reads that as a comment.
+- The agents' scheduled posts (the daily check-in) still go out through the
+  `COACH_DISCORD_WEBHOOK` webhook, not the bridge. Both agents share that
+  webhook, so the Dietitian's scheduled posts land in `#ai-training-coach`.
+- State (thread → issue, relayed comment IDs) lives in `./data/state.json`.
+  Losing it only means old threads stop receiving replies.
+
+No ports are published: the bridge only makes outbound connections (the Discord
+gateway, and Paperclip at `http://paperclip:3100` over Paperclip's Docker
+network). It signs in to Paperclip with the board account, the same way the
+scripts in `services/paperclip/README.md` do.
+
+## Setup from scratch
+
+1. **Create the bot** at <https://discord.com/developers/applications> →
+   *New Application* → name it (e.g. "Coach Team").
+   - *Bot* → **Reset Token** → copy it (shown once).
+   - *Bot* → enable **Message Content Intent** (privileged; without it the
+     bot sees empty messages).
+   - *OAuth2 → URL Generator* → scopes `bot`; permissions *View Channels*,
+     *Send Messages*, *Create Public Threads*, *Send Messages in Threads*,
+     *Read Message History*, *Add Reactions*. Open the generated URL and add
+     the bot to your server.
+2. **Create `#ai-nutrition`** next to `#ai-training-coach`.
+3. **Get the IDs.** Discord → *Settings → Advanced → Developer Mode* on. Then
+   right-click your name → *Copy User ID*, and right-click each channel →
+   *Copy Channel ID*.
+4. **Stage and configure:**
+   ```bash
+   ~/.dotfiles/services/setup-services.sh discord-bridge
+   ~/.dotfiles/services/discord-bridge/configure.sh
+   ```
+   `configure.sh` asks for the token (hidden) and the three IDs, writes them to
+   `~/services/discord-bridge/.env` (chmod 600), builds and starts the
+   container, and prints the log. The Paperclip login is already filled in from
+   `~/.config/homelab/paperclip-admin.env`.
+5. **Test:** post "test — reply with one line" in `#ai-training-coach`. A
+   thread opens with `📋 COA-n created`, and the Coach's reply appears there
+   within about a minute of its run finishing.
+
+## Operating
+
+```bash
+docker logs -f discord-bridge            # relay activity, errors
+cd ~/services/discord-bridge && docker compose up -d --build   # after editing bridge.py
+```
+
+- **Add an agent or channel:** append `channelId:agentId:Name` to
+  `CHANNEL_MAP` in `.env`, then `docker compose up -d`.
+- **Rotate the bot token:** Developer Portal → *Reset Token*, then re-run
+  `configure.sh`.
+- **Paperclip password changed:** update `PAPERCLIP_PASSWORD` in `.env` too
+  (the `credential-rotation` skill lists this copy).
+
+## Failure modes
+
+- **Bot online but ignores messages:** Message Content Intent is off, or the
+  message wasn't sent by `DISCORD_OWNER_ID`.
+- **`401` loops in the log:** the Paperclip password in `.env` is stale.
+- **Thread gets no reply:** the agent is paused, or its run failed. Check the
+  issue in Paperclip. The bridge only relays comments; it never retries
+  runs.

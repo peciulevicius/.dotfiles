@@ -1,0 +1,29 @@
+# discord-bridge — two-way chat between Discord and the Paperclip Coach team.
+# A message in a mapped channel becomes a Paperclip issue for that channel's
+# agent (Coach, Dietitian) plus a Discord thread; agent replies are relayed
+# into the thread, and replies in the thread wake the agent. See README.
+#
+# No ports: it only makes outbound connections (Discord gateway, Paperclip).
+
+name: discord-bridge
+
+services:
+  discord-bridge:
+    container_name: discord-bridge
+    build: .
+    image: discord-bridge:local
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      STATE_FILE: /data/state.json
+    volumes:
+      - ./data:/data
+    networks:
+      - paperclip
+    mem_limit: 128m
+
+# Paperclip's own network (services/paperclip), so the bridge reaches it as
+# http://paperclip:3100 without going through host port bindings.
+networks:
+  paperclip:
+    external: true

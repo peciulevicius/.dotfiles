@@ -21,6 +21,7 @@ Run your own cloud on a Mac mini (or any Docker host). Self-hosted services cove
 | [Calibre-Web](#calibre-web) ⚡ | books.peciulevicius.com | 8083 | Kindle Cloud |
 | [Rclone](#rclone) | — | — | Cloud backup |
 | [ntfy](#ntfy) | Tailscale only | 8095 | Pushover / ntfy.sh |
+| [discord-bridge](#discord-bridge) | outbound only | — | — |
 
 ### Utility Services
 
@@ -858,10 +859,11 @@ routine reads a read-only reports feed (`~/services/paperclip/reports` →
 `/reports:ro`, written by `scripts/utils/paperclip-reports.sh` at 09:30) and
 raises decisions — it never changes servers. *Studio* — CEO (Claude Code),
 Product Manager (Codex), Researcher (Claude Code), project *Idea Pipeline*, a
-paused weekday standup. All heartbeats off. *Coach* (2026-09-27, **drafted, not
-yet created** — needs an interactive board login this batch didn't have): one
-Claude Code Sonnet agent, TrainingPeaks + Strava MCP, a 06:30 daily check-in
-routine, pushes to the standalone `ntfy` service. `/training` (`~/.training`)
+paused weekday standup. All heartbeats off. *Coach* (live 2026-09-27): a two-agent
+athlete team — **Coach** (training; TrainingPeaks + Strava MCP, 06:30 daily
+check-in) and **Dietitian** (nutrition, body composition, meal prep, Barbora
+lists; read-only TrainingPeaks). Both post to Discord `#ai-training-coach`;
+two-way chat goes through `discord-bridge` below. `/training` (`~/.training`)
 is already mounted read-write into the container. Details, API recipes and
 usage rules: `services/paperclip/README.md`.
 
@@ -889,6 +891,25 @@ private, randomly-suffixed topic) and a `phone` user (read-only), each with
 their own access token — never the account password. Tailscale + localhost
 only, no tunnel hostname (the ntfy app supports a self-hosted server address
 directly). Setup, tokens, and the phone app steps: `services/ntfy/README.md`.
+
+---
+
+### discord-bridge
+
+**What:** a small Python bot (`services/discord-bridge/`, local image) that
+turns a message in `#ai-training-coach` / `#ai-nutrition` into a Paperclip
+issue for Coach / Dietitian, opens a Discord thread for it, relays the agent's
+replies into the thread, and passes your thread replies back as `@Agent`
+comments (which wake the agent).
+
+**Why:** the agents' Discord webhook is one-way, and filing tasks in the
+Paperclip UI from the phone was too much friction for quick check-ins.
+
+**How:** no ports; outbound only (Discord gateway, `http://paperclip:3100` on
+Paperclip's Docker network). It relays only the owner's messages, and keeps
+state in `./data/state.json`. It signs in with the Paperclip board login in
+its `.env`. Setup: `services/discord-bridge/README.md` (create the bot, then
+`configure.sh`).
 
 ---
 

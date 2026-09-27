@@ -47,6 +47,7 @@ SERVICES=(
   strava-mcp
   paperclip
   ntfy
+  discord-bridge
 )
 
 SERVICE_PORTS=(
@@ -82,6 +83,7 @@ SERVICE_PORTS=(
   "strava-mcp:8093"
   "paperclip:3100"
   "ntfy:8095"
+  "discord-bridge:—"
 )
 
 log_ok()   { echo -e "${GREEN}✓${NC} $1"; }
@@ -118,6 +120,9 @@ stage_service() {
     [[ -f "$svc_dir/docker-compose.yml" ]] && log_info "[dry-run] Would copy docker-compose.yml"
     [[ -f "$svc_dir/Dockerfile" ]] && log_info "[dry-run] Would copy Dockerfile"
     [[ -f "$svc_dir/Caddyfile" ]] && log_info "[dry-run] Would copy Caddyfile"
+    for py in "$svc_dir"/*.py; do
+      [[ -f "$py" ]] && log_info "[dry-run] Would copy $(basename "$py")"
+    done
     for yml in "$svc_dir"/*.yml; do
       [[ -f "$yml" && "$(basename "$yml")" != "docker-compose.yml" ]] && log_info "[dry-run] Would copy $(basename "$yml")"
     done
@@ -131,8 +136,10 @@ stage_service() {
     cp "$svc_dir/docker-compose.yml" "$dest_dir/docker-compose.yml"
   fi
 
-  # Dockerfile (custom-built images, e.g. caddy) and Caddyfile (caddy)
-  for extra in Dockerfile Caddyfile; do
+  # Dockerfile (custom-built images, e.g. caddy), Caddyfile (caddy) and
+  # top-level *.py sources a local Dockerfile COPYs in (discord-bridge).
+  for extra in Dockerfile Caddyfile "$svc_dir"/*.py; do
+    extra="$(basename "$extra")"
     [[ -f "$svc_dir/$extra" ]] || continue
     cp "$svc_dir/$extra" "$dest_dir/$extra"
     log_ok "$svc: copied $extra"
