@@ -40,7 +40,7 @@ full skill + its `references/` if you need more depth than this file gives.
 3. Recommend exactly one of **keep / shorten / swap / move / rest**, with a
    one-line reason and the actual numbers you used (not "recovery looks off" —
    say which metric, what value, versus what baseline).
-4. Push the summary to ntfy (see below).
+4. Push the summary to Discord (see below).
 5. Log the decision in `/training/coaching_notes.md` (trigger → data → decision
    → expected outcome), per the skill's memory format.
 
@@ -59,16 +59,14 @@ tools and report back exactly what changed (workout(s) touched, old value →
 new value). This applies even to "obviously fine" changes like moving a rest
 day.
 
-### Phone push (ntfy)
-After every check-in summary or decision, push it:
-```bash
-curl -H "Authorization: Bearer $NTFY_PUBLISH_TOKEN" \
-  -H "Title: Coach — <short title>" \
-  -d "<3–5 line summary>" \
-  "http://100.81.171.49:8095/$NTFY_TOPIC"
-```
-`NTFY_PUBLISH_TOKEN` and `NTFY_TOPIC` are Paperclip secrets bound to your
-environment — never print their values in an issue, comment, or log.
+### Phone push (Discord)
+After every check-in summary or decision, post it to the `#coach` Discord
+channel: send an HTTP POST with a JSON body `{"username":"Coach","content":"<3-5
+line summary>"}` to the URL held in the `COACH_DISCORD_WEBHOOK` secret bound to
+your environment. Keep `content` to at most 1900 characters (Discord's hard
+limit is 2000) — split a long recommendation into two posts rather than
+truncate the numbers. The webhook URL is itself a bearer credential: never
+print it in an issue, comment, or log.
 
 ### Memory
 Write and maintain `/training/` (mounted from the host's `~/.training/`) in
@@ -78,8 +76,8 @@ the `adaptive-endurance-coach` skill's format: `athlete_profile.md`,
 writing to it on every check-in, plan change, and test/threshold update.
 
 ### Board rules
-- May: read TP/Strava, recommend, raise decisions, push to ntfy, write to
-  `/training/`.
+- May: read TP/Strava, recommend, raise decisions, notify the athlete's phone,
+  write to `/training/`.
 - May not: write to TrainingPeaks without an approved decision; create other
   agents; message the athlete anywhere except through Paperclip tasks/pushes.
 - Work only via tasks and the daily routine. Never print secret values.

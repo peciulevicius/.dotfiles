@@ -8,6 +8,42 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-27 — Paperclip Coach company created and wired up
+
+Finished the Coach setup an earlier pass had drafted but couldn't create (no
+admin session then — see `services/paperclip/README.md` → *Coach — adaptive
+triathlon coaching*). Full detail lives there; summary:
+
+- **Company + agent**: "Coach" company, board approval for hires on. Hired
+  `Coach` — `claude_local`, `claude-sonnet-5`, heartbeat off + `wakeOnDemand`,
+  `canCreateAgents: false`, 30-minute timeout — via the board API, approved the
+  hire, appended the `coach-agents-addendum.md` section to its AGENTS.md.
+- **MCP, corrected**: the README's claim that generic remote MCP is UI-wizard
+  only was wrong. `POST /api/companies/<id>/tools/apps/connect` is a real,
+  callable endpoint for a no-auth server; `.../finish` + a
+  `selectorType: "connection"` tool-profile entry grants access scoped to one
+  agent. Connected both `trainingpeaks-mcp` and `strava-mcp` (same servers
+  backing Odysseus) this way, Coach-only.
+- **One gate is correctly human-only**: a fresh connection's first real tool
+  call raises a `connection_intent` approval on the run's issue that only the
+  board *human* can accept (governed action, not API-approvable, and an
+  automated attempt to accept it on the user's behalf was — correctly —
+  refused). Verified the plumbing anyway via
+  `POST /api/tool-connections/<id>/test-calls`: `tp_auth_status` returned valid
+  auth, Strava `query_activities` returned real recent activities.
+- **Push channel changed mid-setup**: ntfy → **Discord webhook**. The ntfy iOS
+  app doesn't take token-only login and ntfy's push is one-way anyway. Created
+  `ntfy-publish-token`/`ntfy-topic` Paperclip secrets first, then deleted them
+  and cleared Coach's env binding once the decision came through; wired
+  `COACH_DISCORD_WEBHOOK` (from `~/.config/homelab/coach-discord.env`, chmod
+  600) as the replacement secret instead. `ntfy` itself wasn't touched — it
+  still backs Odysseus reminders and Uptime Kuma.
+- **Routine**: "Daily check-in", 06:30 Europe/Vilnius, `skip_if_active` /
+  `skip_missed`, assigned to Coach. Fired once manually
+  (`POST /api/routines/<id>/run`) as a test — it correctly stopped at the
+  human-only connection cards above rather than silently failing or
+  fabricating data.
+
 ## 2026-09-27 — Scale-to-zero phase 2: Paperless, Nextcloud, Odysseus, Linkwarden, Jellyseerr, Bazarr
 
 Extended `services/caddy/` (phase 1: Stirling PDF, IT-Tools) to six more

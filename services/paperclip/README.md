@@ -463,118 +463,83 @@ CMO is the only `cmo`).
   when nobody worked, but it still wakes the CEO. Turn it on only while
   the Idea Pipeline is actually moving.
 
-### Coach — adaptive triathlon coaching (blocked — 👤 needs the admin login)
+### Coach — adaptive triathlon coaching (live, 2026-09-27)
 
 Mission: *Adaptive triathlon coaching for IRONMAN 70.3 Luxembourg (11 Jul
 2027). Protect consistency and health; adjust, never pile on.*
 
-**Status 2026-09-27: everything that doesn't need a Paperclip board session is
-done. The company/agent/routine/secrets themselves are not created yet** — the
-admin password moved to Vaultwarden (see *Adding or changing agents* above)
-and no browser session or password was available to this run. Everything below
-is ready to run verbatim once you (or an agent with the password) sign in.
+**Company, agent, MCP connections, secret and routine are all created.** Board
+approval for new hires is on. Coach: `claude_local`, `claude-sonnet-5`,
+heartbeat off + `wakeOnDemand`, `canCreateAgents: false`, 30-minute timeout.
+AGENTS.md addendum applied (content also kept at
+`services/paperclip/coach-agents-addendum.md` in this repo — edit there and
+re-push, don't hand-edit the copy inside Paperclip).
 
-**Already done, no login needed:**
-- `services/paperclip/docker-compose.yml` mounts `${HOME}/.training:/training`
-  (read-write) — confirmed on the running container: the tree is there and
-  writable (`docker exec paperclip ls /training`).
-- Both MCP servers confirmed reachable **from inside the container**:
-  ```bash
-  docker exec paperclip curl -s -X POST http://host.docker.internal:8092/mcp \
-    -H 'Content-Type: application/json' -H 'Accept: application/json, text/event-stream' \
-    -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"probe","version":"1"}}}'
-  # → {"result":{...,"serverInfo":{"name":"trainingpeaks-mcp",...}}}
-  # same against :8093/mcp → serverInfo.name "Strava"
-  ```
-- `services/ntfy/` — standalone always-on push service, tested end-to-end
-  (publish → poll). See `services/ntfy/README.md`. The Coach's publish token
-  and topic live in `~/services/ntfy/.env`, not yet copied into a Paperclip
-  secret (needs the board session — step 5 below).
+**MCP connections — the "UI wizard only" claim below was wrong.** The guided
+URL flow's own backend is a real, callable REST endpoint:
+`POST /api/companies/<id>/tools/apps/connect` with `{"link":"<mcp url>",
+"name":"…","authMode":"none"}` — no browser needed for a no-auth server. It
+returns a `draft` connection plus the discovered tool catalog. Finish it with
+`POST /api/companies/<id>/tools/apps/<connectionId>/finish` — pass
+`enabledCatalogEntryIds`/`reviewedCatalogEntryIds` covering only whatever the
+connection *currently* reports as quarantined (empty arrays if nothing is,
+which was the case for both TP and Strava — sending the full catalog when
+nothing is quarantined fails with *"Action review decisions must cover every
+currently quarantined action exactly once"*) and
+`"access":{"agentIds":["<coachAgentId>"]}` to scope it to Coach only. Finishing
+creates a tool-access profile with `defaultAction: "deny"` and **no entries** —
+you still have to grant tools explicitly:
+`POST /api/tool-profiles/<profileId>/entries` with
+`{"selectorType":"connection","effect":"include","connectionId":"<id>"}` opens
+the whole connection in one call. Did this for both
+`http://host.docker.internal:8092/mcp` (TrainingPeaks) and
+`http://host.docker.internal:8093/mcp` (Strava).
 
-**To finish, once signed in** (sign-in recipe: *Adding or changing agents*
-above):
+**One step is genuinely UI/human-only, by design.** The first time an agent's
+run actually calls a tool on a fresh connection, Paperclip raises a
+`connection_intent` interaction on that run's issue with
+`resolverPolicy: "human_only"` and `addresseeUserId` set to your account — a
+"Connect TrainingPeaks" / "Connect Strava" consent card. This is a governed
+action (`effectiveResolverPolicySource: "governed_action"`) and correctly
+cannot be approved by the board API session or by an agent on your behalf —
+only you, in the UI (**Paperclip → Coach → the issue → the connection card →
+Approve**), or `POST /api/issues/<issueId>/interactions/<id>/accept` run
+*by you*. Read-only functional testing doesn't hit this gate:
+`POST /api/tool-connections/<connectionId>/test-calls` with
+`{"agentId":"<coachAgentId>","toolName":"tp_auth_status","parameters":{}}`
+(and `query_activities` for Strava) both returned real data — TP auth valid,
+Strava activities listed — confirming the plumbing end to end. The Daily
+check-in's first real run stopped at exactly this gate; once you approve the
+two cards it will complete on its own next firing (or **Run now**).
 
-1. **Create the company:**
-   ```bash
-   pc -X POST http://127.0.0.1:3100/api/companies -d '{
-     "name":"Coach",
-     "description":"Adaptive triathlon coaching for IRONMAN 70.3 Luxembourg (11 Jul 2027). Protect consistency and health; adjust, never pile on."
-   }' | jq '.id'
-   pc -X PATCH http://127.0.0.1:3100/api/companies/<companyId> -d '{
-     "requireBoardApprovalForNewAgents": true
-   }'
-   ```
-2. **Hire Coach** (Claude Code, Sonnet, heartbeat off, `wakeOnDemand`, no
-   sub-hires, 30-minute timeout):
-   ```bash
-   pc -X POST http://127.0.0.1:3100/api/companies/<companyId>/agent-hires -d '{
-     "name":"Coach","role":"coach","reportsTo":null,
-     "adapterType":"claude_local",
-     "adapterConfig":{"model":"claude-sonnet-5","timeoutSec":1800},
-     "runtimeConfig":{"heartbeat":{"enabled":false,"wakeOnDemand":true}},
-     "permissions":{"canCreateAgents":false}}'
-   pc -X POST http://127.0.0.1:3100/api/approvals/<approvalId>/approve -d '{}'
-   ```
-3. **Upload its AGENTS.md addendum** — Paperclip's generated text stays on
-   top; append this section (content below, also saved at
-   `services/paperclip/coach-agents-addendum.md` in this repo so it doesn't
-   have to be retyped):
-   ```bash
-   CURRENT=$(pc http://127.0.0.1:3100/api/agents/<coachAgentId>/instructions-bundle/file?path=AGENTS.md | jq -r .content)
-   NEW=$(printf '%s\n\n%s' "$CURRENT" "$(cat services/paperclip/coach-agents-addendum.md)")
-   jq -n --arg p AGENTS.md --arg c "$NEW" '{path:$p, content:$c}' |
-     pc -X PUT http://127.0.0.1:3100/api/agents/<coachAgentId>/instructions-bundle/file -d @-
-   ```
-4. **MCP connections** — no plain REST create-endpoint for generic remote MCP
-   (`/app/doc/connections/GENERIC-REMOTE-MCP.md` — it's a UI wizard by design,
-   for auth discovery). In the UI, for the Coach company:
-   *Apps → Connect an app → Connect your own MCP server* → paste
-   `http://host.docker.internal:8092/mcp` → **Check link** (no auth needed, it
-   goes straight to review) → install for **Coach** only. Repeat for
-   `http://host.docker.internal:8093/mcp` (Strava). Both were confirmed
-   reachable from the container above, so the probe should succeed immediately.
-5. **Secrets** — copy the two ntfy values out of `~/services/ntfy/.env`
-   (`grep -E '^NTFY_(TOPIC|PUBLISH_TOKEN)=' ~/services/ntfy/.env`, don't paste
-   them into chat) into two Paperclip secrets, bound to **Coach only**:
-   ```bash
-   pc -X POST http://127.0.0.1:3100/api/companies/<companyId>/secrets -d '{"name":"ntfy-publish-token","value":"<paste NTFY_PUBLISH_TOKEN>"}'
-   pc -X POST http://127.0.0.1:3100/api/companies/<companyId>/secrets -d '{"name":"ntfy-topic","value":"<paste NTFY_TOPIC>"}'
-   # then bind both as adapterConfig.env.NTFY_PUBLISH_TOKEN / NTFY_TOPIC on
-   # the Coach agent (PATCH /api/agents/<coachAgentId>, secret_ref, version "latest")
-   ```
-6. **Routine "Daily check-in"**, 06:30 Europe/Vilnius, assigned to Coach:
-   ```bash
-   pc -X POST http://127.0.0.1:3100/api/companies/<companyId>/projects -d '{"name":"Coaching"}' | jq '.id'
-   pc -X POST http://127.0.0.1:3100/api/companies/<companyId>/routines -d '{
-     "title":"Daily check-in",
-     "description":"Read yesterday'"'"'s workouts, today+3 days planned, HRV/RHR/sleep/CTL-ATL-TSB. Recommend keep/shorten/swap/move/rest with numbers. Push to ntfy. Log to /training/coaching_notes.md.",
-     "assigneeAgentId":"<coachAgentId>","projectId":"<projectId>",
-     "concurrencyPolicy":"skip_if_active","catchUpPolicy":"skip_missed"}' | jq '.id'
-   pc -X POST http://127.0.0.1:3100/api/routines/<routineId>/triggers -d '{
-     "kind":"schedule","cronExpression":"30 6 * * *","timezone":"Europe/Vilnius"}'
-   ```
-7. **Test run** — Routines → Daily check-in → **Run now** (or
-   `POST /api/routines/<routineId>/triggers/<triggerId>/fire` if exposed in
-   your version), then check:
-   - the run's summary cites real TP numbers (CTL/ATL/TSB, HRV/RHR, not
-     placeholders)
-   - `docker exec ntfy ntfy access` still shows only `publisher`/`phone` with
-     access to the topic (nothing broadened by mistake)
-   - poll the topic with the **read** token to confirm the push landed:
-     ```bash
-     TOPIC=$(grep '^NTFY_TOPIC=' ~/services/ntfy/.env | cut -d= -f2-)
-     READ_TOKEN=$(grep '^NTFY_READ_TOKEN=' ~/services/ntfy/.env | cut -d= -f2-)
-     curl -s -H "Authorization: Bearer $READ_TOKEN" "http://127.0.0.1:8095/$TOPIC/json?poll=1&since=all" | tail -1
-     ```
-   - a test decision ("move Thursday's run") only reaches TrainingPeaks after
-     you approve it — check `tp_get_workouts` before and after approval, not
-     just Coach's claim that it applied.
+**Secrets.** `COACH_DISCORD_WEBHOOK` (see *Phone push* below), bound to Coach
+only via `adapterConfig.env.COACH_DISCORD_WEBHOOK` as a `secret_ref`
+(`version: "latest"`). ⚠️ An earlier pass created `ntfy-publish-token` /
+`ntfy-topic` Paperclip secrets before the board decided ntfy's iOS app
+wouldn't take token-only login and pushing is one-way anyway — those were
+deleted and Coach's env binding cleared before Discord was wired in. `ntfy`
+itself is untouched; it still serves other things (Odysseus reminders, Uptime
+Kuma).
+
+**Phone push (Discord, not ntfy).** Coach posts to a `#coach` Discord channel
+via webhook — see *Phone push (Discord)* in
+`coach-agents-addendum.md`/the live AGENTS.md for the exact call. The webhook
+URL lives in `~/.config/homelab/coach-discord.env`
+(`COACH_DISCORD_WEBHOOK`, chmod 600) and as the `COACH_DISCORD_WEBHOOK`
+Paperclip secret above — never print either copy.
+
+**Routine "Daily check-in"**, 06:30 Europe/Vilnius, assigned to Coach, project
+"Coaching", `concurrencyPolicy: skip_if_active`, `catchUpPolicy: skip_missed`.
+Fire it on demand with `POST /api/routines/<routineId>/run -d '{"source":
+"manual"}'` (the `.../triggers/<id>/fire` path some versions expose is not
+required — `run` alone is enough and is what this setup used).
 
 **Talking to Coach from the phone:** open Paperclip (Tailscale,
 `100.81.171.49:3100`), Coach company → create a task ("tired today", "push
 Thursday's run to Friday", "away 2–5 Oct") — task assignment wakes it even
 though its heartbeat is off. Approve or reject the decision it raises under
-**Approvals**; it only touches TrainingPeaks after that.
+**Approvals**/the issue's connection cards; it only touches TrainingPeaks
+after that.
 
 ## Keeping usage down (the rules this setup follows)
 
@@ -636,16 +601,23 @@ The approval wall is on in both companies, so a direct create returns
 - **API, as the board.** Sign in once to get a session cookie (keep the
   password out of shell history and output):
 
-  ⚠️ The admin password is **no longer in `.env`** (moved to Vaultwarden
-  2026-09-26) — read it from there, don't ask an agent to fetch or print it:
+  ⚠️ The admin password is **no longer in `.env`** (moved out 2026-09-26) —
+  read it from `~/.config/homelab/paperclip-admin.env`
+  (`PAPERCLIP_ADMIN_PASSWORD`, chmod 600, kept permanently outside the repo)
+  into a shell variable, never print it. Vaultwarden holds a backup copy under
+  the same name. Cookie jar goes in a scratch dir you control (e.g.
+  `$CLAUDE_JOB_DIR/tmp` for an agent run, `/tmp` for a human), and delete it
+  when done:
 
   ```bash
-  read -rs -p "Paperclip admin password (from Vaultwarden): " PW; echo
+  PW=$(grep '^PAPERCLIP_ADMIN_PASSWORD=' ~/.config/homelab/paperclip-admin.env | cut -d= -f2-)
+  CJ=/tmp/pc.cj   # or $CLAUDE_JOB_DIR/tmp/pc.cj for an agent run
   jq -n --arg e dziugas@peciulevicius.com --arg p "$PW" '{email:$e,password:$p}' |
-    curl -s -c /tmp/pc.cj -H 'Content-Type: application/json' \
+    curl -s -c "$CJ" -H 'Content-Type: application/json' \
       -H 'Origin: http://127.0.0.1:3100' --data @- \
       http://127.0.0.1:3100/api/auth/sign-in/email -o /dev/null -w '%{http_code}\n'
-  pc() { curl -s -b /tmp/pc.cj -H 'Origin: http://127.0.0.1:3100' -H 'Content-Type: application/json' "$@"; }
+  unset PW
+  pc() { curl -s -b "$CJ" -H 'Origin: http://127.0.0.1:3100' -H 'Content-Type: application/json' "$@"; }
   pc http://127.0.0.1:3100/api/companies | jq '.[]|{id,name}'
   # hire request (creates a pending agent + approval); adapterType can also be
   # codex_local or opencode_local (opencode also needs the
@@ -658,7 +630,9 @@ The approval wall is on in both companies, so a direct create returns
   pc -X POST http://127.0.0.1:3100/api/approvals/<approvalId>/approve -d '{}'
   pc -X POST http://127.0.0.1:3100/api/agents/<agentId>/pause
   # append to AGENTS.md: GET then PUT /api/agents/<id>/instructions-bundle/file {path,content}
-  rm /tmp/pc.cj
+  # sign out, then drop the cookie jar:
+  pc -X POST http://127.0.0.1:3100/api/auth/sign-out -d '{}' >/dev/null
+  rm "$CJ"
   ```
 
   Other endpoints used for this setup: `PATCH /api/companies/<id>`

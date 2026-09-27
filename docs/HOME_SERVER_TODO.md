@@ -86,16 +86,22 @@ Section names in *italics* are headings below.
   - (Only if the Codex login ever expires:
     `docker exec -it paperclip codex login --device-auth`.)
   Watch `sysctl vm.swapusage` during the first agent runs.
-  - 👤 **Coach company (2026-09-27, drafted, not created)**: needs the admin
-    password from Vaultwarden to sign in — this batch had no session and
-    couldn't create it. Everything else is done (ntfy service, `/training`
-    mount, MCP servers confirmed reachable). Full step-by-step, ready to paste:
+  - [x] ~~Coach company (drafted, not created)~~ — **done 2026-09-27**: company,
+    agent, MCP connections (TrainingPeaks + Strava), Discord push secret and
+    the Daily check-in routine are all live. Detail:
     `services/paperclip/README.md` → *Coach — adaptive triathlon coaching*.
+  - 👤 **Approve Coach's two connection cards** — the one step that has to be
+    a human click: open Paperclip (`100.81.171.49:3100`) → Coach company → the
+    "Daily check-in" issue → approve "Connect TrainingPeaks" and "Connect
+    Strava". Paperclip requires a human for an agent's first real tool call on
+    a fresh connection by design; the API/board-session route was correctly
+    refused. Once approved, the routine completes on its own next firing.
   - 👤 **ntfy iOS app**: install, add server `http://100.81.171.49:8095`,
     subscribe to the topic using the **read** token
     (`grep NTFY_READ_TOKEN ~/services/ntfy/.env` — the topic name is
-    `NTFY_TOPIC` in the same file). Needed before the Coach's daily push is
-    useful.
+    `NTFY_TOPIC` in the same file). No longer needed for Coach (it pushes to
+    Discord instead — ntfy's iOS app doesn't take token-only login and push is
+    one-way anyway); still useful for Odysseus reminders and Uptime Kuma.
   - 👤 **Refresh the TrainingPeaks cookie when `tp_auth_status` fails** — it
     expires every few weeks. Steps: `services/trainingpeaks-mcp/README.md`.
   - 👤 **Uptime Kuma monitor for ntfy** — Kuma has no monitor-creation API
