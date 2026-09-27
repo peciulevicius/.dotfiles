@@ -8,6 +8,22 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-27 — Repo public again; docs site restored; Coach check-in rewritten
+
+- The dotfiles repo had been switched to **private** on 2026-09-26 (~15:00,
+  reason unknown), which broke GitHub Pages on the free plan: every
+  `docs-pages` run since failed with *"Creating Pages deployment failed (404)"*
+  and docs.peciulevicius.com went down. Full-history gitleaks scan clean →
+  made **public** again, re-enabled Pages (build type: workflow) with the
+  `docs.peciulevicius.com` custom domain, reran the deploy.
+  ⚠️ Pages settings (custom domain) are lost when Pages is disabled — if the
+  repo ever goes private again, the docs site needs Cloudflare hosting instead.
+- Coach "Daily check-in" routine prompt rewritten: 7-day look-back (planned vs
+  completed, load trend), recovery/health data vs baseline, next 7 days, propose
+  adjustments as decisions, post to Discord, write to /training only for
+  long-term facts. ntfy no longer referenced.
+- Strava MCP profile re-bound from the whole Coach company to the Coach agent only.
+
 ## 2026-09-27 — Glance homepage redesigned, grouped by purpose
 
 Home page rebuilt so every service on the homelab appears exactly once as a
