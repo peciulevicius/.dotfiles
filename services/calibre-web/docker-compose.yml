@@ -8,8 +8,23 @@ services:
     container_name: calibre_web
     image: lscr.io/linuxserver/calibre-web:0.6.27
     restart: unless-stopped
+    # Scale-to-zero via Caddy + Sablier (services/caddy), phase 3. Caddy now
+    # also owns the Tailscale-facing port (100.81.171.49:8083) so KOReader's
+    # OPDS feed and any LAN client wake it too — this bind is loopback-only
+    # debug access. No image-provided healthcheck (checked via
+    # `docker inspect`), so one is added below — see the Caddy README
+    # "Gotchas" for why that matters.
+    labels:
+      - "sablier.enable=true"
+      - "sablier.group=calibre-web"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "-o", "/dev/null", "http://localhost:8083/"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+      start_period: 20s
     ports:
-      - "${CW_PORT:-8083}:8083"
+      - "127.0.0.1:${CW_PORT:-8083}:8083"
     volumes:
       - ./data/config:/config
       - ${BOOKS_DIR:-./data/books}:/books

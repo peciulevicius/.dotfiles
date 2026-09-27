@@ -135,3 +135,91 @@ http://100.81.171.49:7001 {
 		reverse_proxy odysseus-odysseus-1:7000
 	}
 }
+
+# ── Phase 3 (2026-09-27): Calibre-Web, Audiobookshelf, Jellyfin ────────────
+# All `blocking` — native apps (KOReader over OPDS, the phone app, the TV
+# app) can't render a "starting…" page. Each is reachable BOTH through the
+# tunnel hostname (127.0.0.1:8880, cloudflared) and directly on the
+# Tailscale IP (LAN/TV clients) — both routes share the same Sablier group,
+# so either one starts and keeps the same idle timer.
+
+http://books.peciulevicius.com:8880 {
+	route /* {
+		sablier http://sablier:10000 {
+			group calibre-web
+			session_duration 30m
+			blocking {
+				timeout 60s
+			}
+		}
+		reverse_proxy calibre_web:8083
+	}
+}
+
+http://listen.peciulevicius.com:8880 {
+	route /* {
+		sablier http://sablier:10000 {
+			group audiobookshelf
+			session_duration 2h
+			blocking {
+				timeout 60s
+			}
+		}
+		reverse_proxy audiobookshelf:80
+	}
+}
+
+http://watch.peciulevicius.com:8880 {
+	route /* {
+		sablier http://sablier:10000 {
+			group jellyfin
+			session_duration 2h
+			blocking {
+				timeout 60s
+			}
+		}
+		reverse_proxy jellyfin:8096
+	}
+}
+
+# Same three apps, direct on the Tailscale IP — LAN speed, TV apps, KOReader
+# configured with the IP instead of the hostname.
+
+http://100.81.171.49:8083 {
+	route /* {
+		sablier http://sablier:10000 {
+			group calibre-web
+			session_duration 30m
+			blocking {
+				timeout 60s
+			}
+		}
+		reverse_proxy calibre_web:8083
+	}
+}
+
+http://100.81.171.49:13378 {
+	route /* {
+		sablier http://sablier:10000 {
+			group audiobookshelf
+			session_duration 2h
+			blocking {
+				timeout 60s
+			}
+		}
+		reverse_proxy audiobookshelf:80
+	}
+}
+
+http://100.81.171.49:8096 {
+	route /* {
+		sablier http://sablier:10000 {
+			group jellyfin
+			session_duration 2h
+			blocking {
+				timeout 60s
+			}
+		}
+		reverse_proxy jellyfin:8096
+	}
+}

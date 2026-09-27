@@ -107,7 +107,10 @@ no hostname a browser opens, so there's nothing for Sablier to gate.
 | `jellyseerr` | jellyseerr | ~195MB | 0 |
 | `bazarr` | bazarr | ~188MB | 0 |
 | `odysseus` | odysseus-{odysseus,searxng,chromadb}-1 | ~470MB (from the old on-demand measurement) | 0 |
-| `caddy` + `sablier` (always on) | caddy, sablier | ~18–23MB each | — (never sleeps) |
+| `calibre-web` | calibre_web | ~176MB | 0 |
+| `audiobookshelf` | audiobookshelf | ~37MB | 0 |
+| `jellyfin` | jellyfin | ~138MB | 0 |
+| `caddy` + `sablier` (always on) | caddy, sablier | ~19–46MB each | — (never sleeps) |
 
 `odysseus-ntfy-1` is deliberately **not** in the `odysseus` Sablier group —
 it stays always-on (push must keep working while the rest of the stack
@@ -117,24 +120,43 @@ Measured 2026-09-27: cold start (stopped → first byte of the real app)
 ranged ~5–45s depending on the app (Paperless's 3-container group is the
 slowest; single containers like Jellyseerr/Bazarr/IT-Tools are under 15s).
 Idle-stop confirmed for every group with a 2-minute test session duration
-before setting the real 30-minute one (all 12 phase-1+2 containers were
-stopped again within ~2 minutes of their last request, staggered by when
-each was last hit).
+before setting the real value (30m for everything except Audiobookshelf and
+Jellyfin, which got the real **2h** — long enough not to cut off playback).
+All 15 phase-1+2+3 containers stopped again within ~2 minutes of their last
+request during testing, staggered by when each was last hit.
 
-**Gotcha found during phase 2**: Bazarr, Jellyseerr and Nextcloud shipped
-**no Docker healthcheck** in their images. Without one, Sablier reports a
-container "ready" as soon as it's merely `running`, not once its HTTP server
-has actually bound — Caddy's very first reverse-proxied request to Bazarr
-got a `502 connection refused` because of this exact race. Fixed by adding
-an explicit `healthcheck:` to each of those three compose files (`curl`/
-`wget` against a local endpoint); Sablier then waits for `healthy`, not just
-`running`. Paperless, Nextcloud's DB, Stirling PDF and Linkwarden already
-shipped a healthcheck in their images — check with
+**Gotcha found during phase 2, recurred as a design point in phase 3**:
+Bazarr, Jellyseerr and Nextcloud shipped **no Docker healthcheck** in their
+images. Without one, Sablier reports a container "ready" as soon as it's
+merely `running`, not once its HTTP server has actually bound — Caddy's very
+first reverse-proxied request to Bazarr got a `502 connection refused`
+because of this exact race. Fixed by adding an explicit `healthcheck:` to
+each of those three compose files (`curl`/`wget` against a local endpoint).
+Phase 3: Calibre-Web and Audiobookshelf also shipped none (added the same
+fix, `curl` for one, `wget` for the other — checked which binary each image
+actually has first); Jellyfin already ships one and needed no change.
+Paperless, Nextcloud's DB, Stirling PDF and Linkwarden already shipped one
+too — check with
 `docker inspect <container> --format '{{.Config.Healthcheck}}'` before
-assuming a new phase-3 service is safe without one.
+assuming any future Sablier-managed service is safe without one.
 
-See `services/caddy/README.md` for how it works and the rollout status of
-the remaining phase (3: Calibre-Web, Audiobookshelf, Jellyfin).
+**Phase 3 also closed a bypass**: Calibre-Web, Audiobookshelf and Jellyfin
+were reachable directly on `100.81.171.49:<port>` (their own port publish),
+which — like Jellyseerr/Bazarr/Odysseus in phase 2 — bypassed Caddy and
+couldn't wake a sleeping container. Same fix: their own bind narrowed to
+`127.0.0.1`, Caddy's compose publishes the same port on the Tailscale IP.
+Unlike the phase 2 three, these keep their public tunnel hostname too, so
+each now has *two* Caddyfile site blocks (tunnel + Tailscale IP) sharing one
+`sablier.group` and idle timer. One gap remains and is **not** fixed:
+Jellyseerr calls Jellyfin directly over the Docker network
+(`http://jellyfin:8096`) for its background library sync, which never
+touches Caddy and so can't wake a sleeping Jellyfin — see
+`services/caddy/README.md` "Gotchas".
+
+All three phases of the scale-to-zero rollout are now live — see
+`services/caddy/README.md` for the architecture, and the TODO for what's
+still manual (Kuma monitor pausing, physical device tests on the TV/phone/
+KOReader).
 
 How it works and what it touches:
 - `ondemand list | start <name> | stop <name> | stop-all` (zsh alias for

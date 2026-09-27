@@ -506,27 +506,36 @@ whole-house outage now alerts.
       `rm -rf ~/services/mealie ~/services/grafana` (both confirmed
       empty/unused before removal; both still present 2026-09-25).
       `rclone-backup.sh` already excludes both.
-- [ ] **Scale-to-zero rollout (Caddy + Sablier, `services/caddy/README.md`)
-      — phases 1 + 2 done 2026-09-27.** Phase 1: Stirling PDF, IT-Tools.
-      Phase 2: Paperless, Nextcloud, Odysseus, Linkwarden, Jellyseerr, Bazarr
-      — all tested cold-start through the real public hostname / Tailscale
-      port and idle-stop with a 2m test duration before setting the real 30m;
-      Bazarr's missing Docker healthcheck caused a 502 race, fixed there plus
-      pre-emptively on Jellyseerr and Nextcloud (see the README "Gotchas").
-      Remaining: phase 3 — Calibre-Web, Audiobookshelf, Jellyfin (2h idle for
-      the media two). See the README's rollout table for current status.
+- [x] **Scale-to-zero rollout (Caddy + Sablier, `services/caddy/README.md`)
+      — all 3 phases done 2026-09-27.** Phase 1: Stirling PDF, IT-Tools.
+      Phase 2: Paperless, Nextcloud, Odysseus, Linkwarden, Jellyseerr, Bazarr.
+      Phase 3: Calibre-Web, Audiobookshelf, Jellyfin (2h idle instead of 30m
+      for the media two; each also reachable directly on the Tailscale IP
+      now, same as the phase 2 three, since LAN/TV clients were bypassing
+      Caddy). All 11 services tested cold-start through the real public
+      hostname and/or Tailscale port and idle-stop with a 2m test duration
+      before setting the real one. Bazarr's, Jellyseerr's, Nextcloud's,
+      Calibre-Web's and Audiobookshelf's missing Docker healthchecks each
+      caused (or would have caused) a 502 race — fixed on all five (see the
+      README "Gotchas"). Known accepted gap: Jellyseerr calls Jellyfin
+      directly over the Docker network for its background sync, which can't
+      wake a sleeping Jellyfin — not fixed, documented.
       - [ ] 👤 Uptime Kuma has no config-file/API for creating or pausing
-        monitors — pause the monitors for every phase 1/2 service that has
-        one (Stirling PDF, IT-Tools, Paperless-ngx, Nextcloud, Linkwarden,
-        Jellyseerr, Bazarr — Odysseus wasn't monitored) and add one active
-        monitor each for Caddy (`127.0.0.1:8880`, e.g. via the tunnel) and
-        Sablier, so the proxy itself being down is still caught even though
-        the apps behind it are expected to look stopped.
+        monitors — pause the monitors for every Sablier-managed service that
+        has one (Stirling PDF, IT-Tools, Paperless-ngx, Nextcloud,
+        Linkwarden, Jellyseerr, Bazarr, Calibre-Web, Audiobookshelf, Jellyfin
+        — Odysseus wasn't monitored) and add one active monitor each for
+        Caddy (`127.0.0.1:8880`, e.g. via the tunnel) and Sablier, so the
+        proxy itself being down is still caught even though the apps behind
+        it are expected to look stopped.
       - [ ] 👤 Test Jellyfin on the TV app, Audiobookshelf on the phone app,
         and KOReader's OPDS feed (Calibre-Web) each after they've gone to
         sleep — confirm all three reconnect within the timeout instead of
         just showing an error, and that Audiobookshelf progress sync survives
-        a stop/start cycle.
+        a stop/start cycle. (Automated `curl` testing already confirmed the
+        OPDS cold-start returns `401` within timeout and that the tunnel
+        hostnames work — this item is specifically about the real apps on
+        real devices, which a terminal can't stand in for.)
 - [ ] 👤 **Nextcloud + Paperless-ngx keep-or-remove — decide later, no rush.**
       Both scale to zero automatically now (2026-09-27, see above) instead of
       needing a manual `ondemand start`, but the keep-or-remove question

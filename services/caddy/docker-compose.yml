@@ -46,6 +46,11 @@ services:
       - "${TAILSCALE_IP:-100.81.171.49}:5055:5055"   # Jellyseerr
       - "${TAILSCALE_IP:-100.81.171.49}:6767:6767"   # Bazarr
       - "${TAILSCALE_IP:-100.81.171.49}:7001:7001"   # Odysseus
+      # Phase 3 (2026-09-27): media apps also reachable directly on the
+      # Tailscale IP (LAN clients, TV apps) — same port-ownership pattern.
+      - "${TAILSCALE_IP:-100.81.171.49}:8083:8083"   # Calibre-Web
+      - "${TAILSCALE_IP:-100.81.171.49}:13378:13378" # Audiobookshelf
+      - "${TAILSCALE_IP:-100.81.171.49}:8096:8096"   # Jellyfin
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy-data:/data
@@ -61,6 +66,10 @@ services:
       - odysseus_default
       - linkwarden
       - media
+      # Phase 3 (2026-09-27): Calibre-Web, Audiobookshelf, Jellyfin
+      - calibre-web
+      - audiobookshelf
+      - jellyfin
 
 volumes:
   caddy-data:
@@ -80,4 +89,10 @@ networks:
   linkwarden:
     external: true
   media:
+    external: true
+  calibre-web:
+    external: true
+  audiobookshelf:
+    external: true
+  jellyfin:
     external: true

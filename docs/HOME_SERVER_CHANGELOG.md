@@ -44,6 +44,57 @@ triathlon coaching*). Full detail lives there; summary:
   human-only connection cards above rather than silently failing or
   fabricating data.
 
+## 2026-09-27 — Scale-to-zero phase 3 (final): Calibre-Web, Audiobookshelf, Jellyfin
+
+Completes the `services/caddy/` rollout (phase 1: Stirling PDF, IT-Tools;
+phase 2: Paperless, Nextcloud, Odysseus, Linkwarden, Jellyseerr, Bazarr) with
+the three media apps. Full detail in `services/caddy/README.md`.
+
+- **2-hour idle timeout** for Audiobookshelf and Jellyfin (everything else is
+  30 minutes) — long enough that a stop/start cycle doesn't happen mid-book
+  or mid-movie.
+- **Closed the LAN/Tailscale bypass**: like Jellyseerr/Bazarr/Odysseus in
+  phase 2, these three were reachable directly on `100.81.171.49:<port>`
+  (their own port publish) — a TV app, phone app or KOReader configured with
+  the Tailscale IP instead of the hostname would hit a sleeping container
+  directly and get nothing, unable to wake it. Fixed with the same pattern:
+  each app's own bind narrowed to `127.0.0.1:<port>`, Caddy's compose
+  publishes the same port on the Tailscale IP. Unlike the phase 2 three,
+  these keep their public tunnel hostname too, so each now has **two**
+  Caddyfile site blocks (`:8880` for the tunnel, the Tailscale IP for
+  direct/LAN) pointing at the same `sablier.group` — either route starts it,
+  both share one idle timer.
+- **OPDS tested exactly as the plan asked**: with Calibre-Web asleep,
+  `curl` of `/opds` through both the tunnel Host header and the Tailscale IP
+  cold-started the container and returned `401 Unauthorized` (correct
+  without credentials — a real KOReader request with Basic Auth would get
+  `200`) well inside the 60s blocking timeout.
+- **Two more missing healthchecks found and fixed**: neither Calibre-Web nor
+  Audiobookshelf ships one. Calibre-Web has `curl` (no `wget`); Audiobookshelf
+  has `wget` (no `curl`) — checked each image before picking the test.
+  Jellyfin already ships a healthcheck (`${HEALTHCHECK_URL}`,
+  `http://localhost:8096/health`) and needed nothing.
+- **Known, accepted gap — not fixed, only documented**: Jellyseerr talks to
+  Jellyfin directly over the Docker network (`http://jellyfin:8096`) for its
+  background library-sync job, never through Caddy. That call can't wake a
+  sleeping Jellyfin and will just fail until something else (a person opening
+  Jellyfin) wakes it. Reconfiguring Jellyseerr to route through Caddy would
+  need it to send a specific `Host` header its settings UI doesn't expose, so
+  this is left as-is — see `services/caddy/README.md` "Gotchas".
+- Tested end-to-end through the real public hostnames
+  (`books.`/`listen.`/`watch.peciulevicius.com`) and the real Tailscale IP
+  (`100.81.171.49:8083`/`:13378`/`:8096`), with a 2-minute test
+  `session_duration` first (confirmed cold-start success — ~10–15s — and
+  idle-stop for all three, including a mid-session real-world gap where
+  Jellyfin and Audiobookshelf were found already running from outside this
+  testing, re-verified cleanly afterward), then set to the real 30m/2h/2h.
+- Removed the Glance `check-url` for Jellyfin, Audiobookshelf and Calibre-Web
+  (kept as plain bookmarks), same reasoning as phase 2.
+- **All three phases of the scale-to-zero plan are now live.** Remaining
+  work is entirely manual: pausing the now-redundant Uptime Kuma monitors
+  (no API for it) and the physical device tests (TV app, phone app,
+  KOReader) — both tracked in the TODO.
+
 ## 2026-09-27 — Scale-to-zero phase 2: Paperless, Nextcloud, Odysseus, Linkwarden, Jellyseerr, Bazarr
 
 Extended `services/caddy/` (phase 1: Stirling PDF, IT-Tools) to six more

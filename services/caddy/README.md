@@ -46,7 +46,7 @@ work, then set the real duration and reload cloudflared.
 |---|---|---|---|---|
 | 1 | Stirling-PDF, IT-Tools | dynamic | 30m | done 2026-09-27 |
 | 2 | Paperless, Nextcloud, Odysseus, Linkwarden, Jellyseerr, Bazarr | blocking (dynamic for Odysseus) | 30m | done 2026-09-27 |
-| 3 | Calibre-Web, Audiobookshelf, Jellyfin | blocking | 30m / 2h / 2h | planned, not yet live |
+| 3 | Calibre-Web, Audiobookshelf, Jellyfin | blocking | 30m / 2h / 2h | done 2026-09-27 |
 
 ## Groups
 
@@ -82,6 +82,19 @@ so scale-to-zero needs Caddy to *own* that Tailscale-facing port instead:
    app side is irrelevant to that path.
 3. `100.81.171.49:5055` (Jellyseerr), `:6767` (Bazarr) and `:7001` (Odysseus)
    now go through Sablier the same as the tunnel-facing hostnames.
+
+**Calibre-Web, Audiobookshelf and Jellyfin get the same treatment, in
+addition to their public tunnel hostname** (they're not Tailscale-only —
+these three also have `books.`/`listen.`/`watch.peciulevicius.com`). LAN
+clients, a TV app, or KOReader configured with the Tailscale IP instead of
+the hostname were hitting `100.81.171.49:8083`/`:13378`/`:8096` directly,
+bypassing Caddy — a sleeping container there just refused the connection
+instead of waking. Same fix: their own port publish narrowed to
+`127.0.0.1:<port>:<port>`, Caddy's compose publishes the same port number on
+the Tailscale IP, and the Caddyfile has **two** site blocks per app — one on
+`:8880` for the tunnel, one on the Tailscale IP for direct/LAN access — both
+pointing at the same `sablier.group`, so either route starts it and both
+share the same idle timer.
 
 **Odysseus is special**: its `docker-compose.yml` lives in the Odysseus repo
 clone (`~/services/odysseus/`, cloned by `services/odysseus/setup.sh` from
@@ -175,3 +188,23 @@ Per phase, per hostname:
   `~/services/caddy/` and `docker compose up -d --build caddy` (rebuild is
   needed for `Dockerfile` changes; a Caddyfile-only change just needs
   `docker compose restart caddy` after the re-copy, since it's bind-mounted).
+- `setup-services.sh` only copied `docker-compose.yml`, `.env.example` and
+  `*.sh` before phase 1 — it now also copies `Dockerfile`/`Caddyfile` (added
+  for this service) and any other top-level `*.yml` a service ships (added
+  during phase 2, after `glance.yml` turned out to have never been staged by
+  it at all). If a future service adds yet another config file type, extend
+  `stage_service()` again rather than relying on a manual `cp`.
+- **A client that talks to a Sablier-managed app over the Docker network
+  directly (not through Caddy) won't wake it and won't notice it's asleep
+  until the call fails.** Jellyseerr talks to Jellyfin this way
+  (`http://jellyfin:8096` from inside the `media`/`jellyfin` networks, for
+  its periodic library-sync job and for browsing) — that traffic never
+  passes through Caddy, so it can't trigger Sablier and will just error out
+  while Jellyfin is asleep. This is a known, accepted gap: reconfiguring
+  Jellyseerr to reach Jellyfin through Caddy would need Jellyseerr to send a
+  specific `Host` header Caddy could match on, which its settings UI doesn't
+  expose. In practice this means Jellyseerr's background sync silently no-ops
+  while Jellyfin naps, and picks back up once something else (a person
+  opening Jellyfin) wakes it — not ideal, but not a correctness problem
+  either. If Jellyseerr's sync logs start showing repeated connection errors
+  to Jellyfin, that's why.

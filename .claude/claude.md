@@ -19,15 +19,15 @@ Personal dotfiles + self-hosted services stack for macOS (primary), Arch Linux, 
 
 ## Services
 
-Mac mini M4 has ~45 containers (2026-09-27), ~31 running: eight
+Mac mini M4 has ~45 containers (2026-09-27), ~31 running: eleven
 (Stirling PDF, IT-Tools, Paperless-ngx, Nextcloud, Odysseus, Linkwarden,
-Jellyseerr, Bazarr) scale to zero automatically via **Caddy + Sablier**
-(`services/caddy/` — starts on the first request, stops when idle; Calibre-Web,
-Audiobookshelf and Jellyfin join in phase 3, see `services/caddy/README.md`
-"Rollout"). FlareSolverr is the only thing left **manually on-demand**,
-stopped by default and started with `ondemand start <name>`
-(`scripts/utils/ondemand.sh`). Plus rclone backup + cloudflared tunnel — see
-`docs/SERVICES.md` for the current list.
+Jellyseerr, Bazarr, Calibre-Web, Audiobookshelf, Jellyfin) scale to zero
+automatically via **Caddy + Sablier** (`services/caddy/` — starts on the
+first request, stops when idle; all 3 rollout phases done, see
+`services/caddy/README.md` "Rollout"). FlareSolverr is the only thing left
+**manually on-demand**, stopped by default and started with
+`ondemand start <name>` (`scripts/utils/ondemand.sh`). Plus rclone backup +
+cloudflared tunnel — see `docs/SERVICES.md` for the current list.
 See `docs/SERVICES.md` for full list. Key services: Immich, Vaultwarden, Nextcloud, Jellyfin, Sonarr/Radarr, Transmission, Pi-hole.
 
 All services accessible via: localhost, Tailscale (`100.81.171.49`), and `*.peciulevicius.com` (Cloudflare Tunnel).

@@ -18,7 +18,7 @@ Run your own cloud on a Mac mini (or any Docker host). Self-hosted services cove
 | [Watchtower](#watchtower) | — | — | Manual updates |
 | [Glance](#glance) | home.peciulevicius.com | 7575 | Start page |
 | [Paperless-ngx](#paperless-ngx) ⚡ | papers.peciulevicius.com | 8000 | Paper filing |
-| [Calibre-Web](#calibre-web) | books.peciulevicius.com | 8083 | Kindle Cloud |
+| [Calibre-Web](#calibre-web) ⚡ | books.peciulevicius.com | 8083 | Kindle Cloud |
 | [Rclone](#rclone) | — | — | Cloud backup |
 | [ntfy](#ntfy) | Tailscale only | 8095 | Pushover / ntfy.sh |
 
@@ -29,7 +29,7 @@ Run your own cloud on a Mac mini (or any Docker host). Self-hosted services cove
 | [Pi-hole](#pi-hole) | pihole.peciulevicius.com/admin/ (the bare domain returns 403 since v6) | 8053, 53 | Router DNS + ad blocker |
 | [Stirling PDF](#stirling-pdf) ⚡ | pdf.peciulevicius.com | 8084 | Adobe Acrobat |
 | [IT-Tools](#it-tools) ⚡ | tools.peciulevicius.com | 8085 | Online dev tools |
-| [Audiobookshelf](#audiobookshelf) | listen.peciulevicius.com | 13378 | Audible |
+| [Audiobookshelf](#audiobookshelf) ⚡ | listen.peciulevicius.com | 13378 | Audible |
 | [Linkwarden](#linkwarden) ⚡ | links.peciulevicius.com | 3005 | Pocket / Raindrop |
 | [Caddy + Sablier](#caddy--sablier) | (internal — 127.0.0.1:8880 + Tailscale IP) | 8880 | Scale-to-zero reverse proxy |
 
@@ -37,7 +37,7 @@ Run your own cloud on a Mac mini (or any Docker host). Self-hosted services cove
 
 | Service | URL | Port | Purpose |
 |---------|-----|------|---------|
-| [Jellyfin](#jellyfin) | watch.peciulevicius.com | 8096 | Media server (Plex alternative) |
+| [Jellyfin](#jellyfin) ⚡ | watch.peciulevicius.com | 8096 | Media server (Plex alternative) |
 | [Jellyseerr](#jellyseerr) ⚡ | Tailscale only | 5055 | Media request & discovery UI |
 | [Sonarr](#sonarr-radarr-prowlarr) | Tailscale only | 8989 | TV show management |
 | [Radarr](#sonarr-radarr-prowlarr) | Tailscale only | 7878 | Movie management |
@@ -399,6 +399,15 @@ docker compose up -d
 
 ### Calibre-Web
 
+> ⚡ **Scale-to-zero** (2026-09-27) — starts itself on the first request to
+> `books.peciulevicius.com` **or** `100.81.171.49:8083` (fronted by
+> `services/caddy`, both routes share the same idle timer), stops itself
+> after 30 minutes idle. Tested with KOReader's actual access pattern: a
+> cold `curl` of the OPDS feed starts the container and gets `401
+> Unauthorized` (expected without credentials) within the 60s blocking
+> timeout. A healthcheck was added (`curl -fsS http://localhost:8083/`) —
+> the image ships none.
+
 **What:** Ebook library server. Upload EPUBs/PDFs, read in browser, or download to Kindle/e-reader via OPDS.
 
 **Why:** Manage your ebook collection. Send books to Kindle, read in browser, organize by author/tag.
@@ -555,6 +564,15 @@ docker compose up -d
 
 ### Audiobookshelf
 
+> ⚡ **Scale-to-zero** (2026-09-27) — starts itself on the first request to
+> `listen.peciulevicius.com` **or** `100.81.171.49:13378` (fronted by
+> `services/caddy`, both routes share the same idle timer), stops itself
+> after **2 hours** idle (not 30 minutes — long enough not to cut off
+> playback mid-book). A healthcheck was added
+> (`wget --spider http://localhost:80/`) — the image ships none, and has no
+> `curl`. 👤 Still to verify: that the phone app's progress sync survives a
+> stop/start cycle (tracked in the TODO).
+
 **What:** Audiobook and podcast server. Upload audiobooks, stream from any device, track listening progress across devices.
 
 **Why:** Own your audiobook library. Import from Audible or add your own files. Mobile app for offline listening.
@@ -598,6 +616,18 @@ docker compose up -d
 ---
 
 ### Jellyfin
+
+> ⚡ **Scale-to-zero** (2026-09-27) — starts itself on the first request to
+> `watch.peciulevicius.com` **or** `100.81.171.49:8096` (fronted by
+> `services/caddy`, both routes share the same idle timer), stops itself
+> after **2 hours** idle (not 30 minutes — long enough not to cut off
+> playback mid-movie). The image already ships a healthcheck, so this one
+> needed no extra work. ⚠️ **Jellyseerr talks to Jellyfin directly over the
+> Docker network** (`http://jellyfin:8096`), not through Caddy — its
+> background library-sync job can't wake a sleeping Jellyfin and will just
+> error out until something else wakes it. See `services/caddy/README.md`
+> "Gotchas". 👤 Still to verify: the TV app and a direct browser play after
+> Jellyfin has gone to sleep (tracked in the TODO).
 
 **What:** Self-hosted media server. Stream your movie and TV collection from any device — web, mobile, smart TV, Roku, Fire TV.
 

@@ -104,7 +104,7 @@ declare -A SERVICES=(
 # reverse-proxies to it. Keep this list in sync with
 # services/caddy/README.md's rollout table as phases land.
 CADDY_PORT=8880
-SABLIER_ROUTED=(pdf tools papers cloud links)
+SABLIER_ROUTED=(pdf tools papers cloud links books watch listen)
 
 # --- 6. Write config ---
 CONFIG_FILE="$HOME/.cloudflared/config.yml"

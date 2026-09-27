@@ -29,17 +29,19 @@ pages:
                 url: https://photos.peciulevicius.com
                 check-url: http://immich_server:2283/api/server/ping
                 icon: si:immich
+              # Scale-to-zero (Caddy + Sablier, services/caddy) since
+              # 2026-09-27 — no check-url: hitting the container directly
+              # would either show a false "down" while it's asleep, or (if
+              # pointed at the public hostname instead) silently wake it on
+              # every poll. Bookmarks only.
               - title: Jellyfin
                 url: https://watch.peciulevicius.com
-                check-url: http://jellyfin:8096/health
                 icon: si:jellyfin
               - title: Audiobookshelf
                 url: https://listen.peciulevicius.com
-                check-url: http://audiobookshelf:80/
                 icon: si:audiobookshelf
               - title: Calibre-Web
                 url: https://books.peciulevicius.com
-                check-url: http://calibre_web:8083/
                 icon: si:calibreweb
               - title: LazyLibrarian
                 url: http://100.81.171.49:5299

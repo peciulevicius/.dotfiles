@@ -8,8 +8,17 @@ services:
     container_name: jellyfin
     image: jellyfin/jellyfin:10.10.7
     restart: unless-stopped
+    # Scale-to-zero via Caddy + Sablier (services/caddy), phase 3, 2h idle
+    # (long enough not to cut off playback). Caddy now also owns the
+    # Tailscale-facing port (100.81.171.49:8096) so the TV app/LAN clients
+    # wake it too — this bind is loopback-only debug access. The image
+    # already ships a healthcheck (confirmed via `docker inspect`), so
+    # Sablier correctly waits for `healthy`, not just `running`.
+    labels:
+      - "sablier.enable=true"
+      - "sablier.group=jellyfin"
     ports:
-      - "${JELLYFIN_PORT:-8096}:8096"
+      - "127.0.0.1:${JELLYFIN_PORT:-8096}:8096"
     volumes:
       - ./data/config:/config
       - ./data/cache:/cache

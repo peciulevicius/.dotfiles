@@ -8,8 +8,23 @@ services:
     container_name: audiobookshelf
     image: ghcr.io/advplyr/audiobookshelf:2.36.1
     restart: unless-stopped
+    # Scale-to-zero via Caddy + Sablier (services/caddy), phase 3, 2h idle
+    # (long enough not to cut off playback). Caddy now also owns the
+    # Tailscale-facing port (100.81.171.49:13378) so the phone app wakes it
+    # too on LAN — this bind is loopback-only debug access. No
+    # image-provided healthcheck, no curl in this image (only wget) — see
+    # the Caddy README "Gotchas".
+    labels:
+      - "sablier.enable=true"
+      - "sablier.group=audiobookshelf"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:80/"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+      start_period: 20s
     ports:
-      - "${ABS_PORT:-13378}:80"
+      - "127.0.0.1:${ABS_PORT:-13378}:80"
     volumes:
       - ${AUDIOBOOKS_DIR:-./data/audiobooks}:/audiobooks
       - ${PODCASTS_DIR:-./data/podcasts}:/podcasts
