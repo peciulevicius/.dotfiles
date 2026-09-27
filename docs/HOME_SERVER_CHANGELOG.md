@@ -8,6 +8,22 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-27 — Radarr + Sonarr API keys rotated
+
+- Both keys had been printed in a Claude session transcript on 2026-09-26.
+  Regenerated with each app's `ResetApiKey` command (`POST /api/v3/command`).
+- Consumers found by grepping `~/services` for the old values: **Prowlarr**
+  (Applications table — updated via `PUT /api/v1/applications/{id}`, app test
+  200), **Jellyseerr** (`settings.json` + its `settings.old.json`, edited
+  while stopped; `/api/v1/settings/{radarr,sonarr}/test` 200), **Bazarr**
+  (`config.yaml`, stop → edit → start; SignalR feeds to both reconnected, no
+  401s). Glance, the audit and `~/.config/homelab` held no copy.
+- Re-grep afterwards: no live copy left. The old Sonarr key still appears as
+  bytes in Prowlarr's SQLite file, in free pages only (the Applications rows hold
+  the new keys); it disappears when SQLite reuses/vacuums them.
+- Note for the next rotation: Jellyseerr's test endpoint rejects a body with
+  `baseUrl: null` (400) — send it omitted.
+
 ## 2026-09-27 — Glance "Homelab health" widget
 
 - New **Homelab health** widget at the top of the homepage side column:

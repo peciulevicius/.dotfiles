@@ -155,10 +155,8 @@ Section names in *italics* are headings below.
 
 ### 🤖 Claude can do next
 
-- Rotate the **Radarr + Sonarr API keys** (printed in a Claude session
-  transcript 2026-09-26 while fixing Jellyseerr — Tailscale-only services, low
-  risk) using the `credential-rotation` skill: regenerate in each app, then
-  update every consumer (Prowlarr apps, Jellyseerr, Bazarr, Glance if used).
+- [x] ~~Rotate the **Radarr + Sonarr API keys**~~ — **done 2026-09-27**
+  (Prowlarr, Jellyseerr, Bazarr updated + tested; see changelog).
 
 - Optional: OpenCode + `qwen2.5-coder:7b` for offline snippets — *⚡ Batch 2026-09-24*
 - Odysseus: chat-export import, CalDAV after Nextcloud, RAG over Paperless + Linkwarden — *8. Odysseus*
