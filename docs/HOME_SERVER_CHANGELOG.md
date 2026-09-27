@@ -18,6 +18,11 @@ Newest first-ish; dates are when the work was finished.
   `docs.peciulevicius.com` custom domain, reran the deploy.
   ⚠️ Pages settings (custom domain) are lost when Pages is disabled — if the
   repo ever goes private again, the docs site needs Cloudflare hosting instead.
+- The site still returned 404 at the root after the successful deploy: MkDocs
+  only writes `index.html` for a page named `index.md`/`README.md`, and the
+  homepage is `START_HERE.md`, so `/` never existed (every other page was up,
+  e.g. `/START_HERE/`). Added `docs/index.md`, a meta-refresh redirect to
+  `START_HERE/`. Keep it when reorganising docs.
 - Coach "Daily check-in" routine prompt rewritten: 7-day look-back (planned vs
   completed, load trend), recovery/health data vs baseline, next 7 days, propose
   adjustments as decisions, post to Discord, write to /training only for
