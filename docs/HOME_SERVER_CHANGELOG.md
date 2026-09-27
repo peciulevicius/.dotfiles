@@ -56,6 +56,7 @@ Newest first-ish; dates are when the work was finished.
   with the Coach team, one channel per agent, threads per task, replies wake
   the agent via `@mention`. `setup-services.sh` now also copies top-level
   `*.py` files (needed for locally built images).
+- Studio: founder-context brief from the Claude.ai export filed as backlog issue STU-14 (unassigned, no agent woken; content stays in Paperclip, not the repo).
 
 ## 2026-09-27 — Glance homepage redesigned, grouped by purpose
 
