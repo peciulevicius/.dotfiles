@@ -8,6 +8,17 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-27 — Kuma aligned with scale-to-zero
+
+- Paused Uptime Kuma monitors for services Sablier now puts to sleep
+  (Calibre-Web, Audiobookshelf, Linkwarden, Jellyfin; Nextcloud, Paperless,
+  Stirling, IT-Tools, Odysseus were already paused) — a check would either
+  false-alarm or wake them. Added **Caddy (scale-to-zero)** monitor
+  (`host.docker.internal:8880`) with the same notifications; first check up.
+  kuma.db backed up first (`kuma.db.bak-*-sablier`).
+- Re-staged `services/rclone/rclone-backup.sh` (repo ↔ live drift from the
+  ntfy change) while no backup was running.
+
 ## 2026-09-27 — Paperclip Coach company created and wired up
 
 Finished the Coach setup an earlier pass had drafted but couldn't create (no
