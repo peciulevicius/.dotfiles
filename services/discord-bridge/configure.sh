@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Fill in the Discord side of ~/services/discord-bridge/.env and start the
-# bridge. Prompts for the bot token (hidden) and the IDs; never echoes secrets.
+# bridge. Prompts only for the bot token (hidden); channel IDs are read from
+# the agents' webhooks and the owner is the bot application's owner.
 set -euo pipefail
 
 ENV_FILE="$HOME/services/discord-bridge/.env"
@@ -9,10 +10,14 @@ DIETITIAN_ID="895d2ed3-141a-4400-8b3b-0d42aea56b77"
 
 [[ -f "$ENV_FILE" ]] || { echo "Run services/setup-services.sh discord-bridge first."; exit 1; }
 
-read -rsp "Discord bot token (hidden): " token; echo
-read -rp  "Your Discord user ID: " owner
-read -rp  "#ai-training-coach channel ID: " coach_ch
-read -rp  "#ai-training-dietitian channel ID: " diet_ch
+read -rsp "Discord bot token (hidden, paste + Enter): " token; echo
+
+# Channel IDs come from the agents' webhooks (a GET on a webhook URL returns
+# its channel_id), so nobody has to hunt for them in Discord's UI.
+channel_of() { curl -fsS "$(cut -d= -f2- "$HOME/.config/homelab/$1")" | python3 -c 'import json,sys;print(json.load(sys.stdin)["channel_id"])'; }
+coach_ch=$(channel_of coach-discord.env)
+diet_ch=$(channel_of dietitian-discord.env)
+echo "Channels: coach=$coach_ch dietitian=$diet_ch (owner = bot application owner)"
 
 set_var() {  # set_var KEY VALUE — replace the KEY= line in place
   python3 - "$ENV_FILE" "$1" "$2" <<'PY'
@@ -25,7 +30,6 @@ PY
 }
 
 set_var DISCORD_BOT_TOKEN "$token"
-set_var DISCORD_OWNER_ID "$owner"
 set_var CHANNEL_MAP "${coach_ch}:${COACH_ID}:Coach,${diet_ch}:${DIETITIAN_ID}:Dietitian"
 unset token
 chmod 600 "$ENV_FILE"

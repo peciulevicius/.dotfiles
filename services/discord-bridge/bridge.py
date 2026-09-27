@@ -20,7 +20,8 @@ log = logging.getLogger("bridge")
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 
 TOKEN = os.environ["DISCORD_BOT_TOKEN"]
-OWNER_ID = int(os.environ["DISCORD_OWNER_ID"])
+# Optional: defaults to the owner of the bot application (resolved on login).
+OWNER_ID = int(os.environ.get("DISCORD_OWNER_ID") or 0)
 PC_URL = os.environ.get("PAPERCLIP_URL", "http://paperclip:3100").rstrip("/")
 PC_EMAIL = os.environ["PAPERCLIP_EMAIL"]
 PC_PASSWORD = os.environ["PAPERCLIP_PASSWORD"]
@@ -102,8 +103,11 @@ state = load_state()
 
 @client.event
 async def on_ready() -> None:
+    global OWNER_ID
+    if not OWNER_ID:
+        OWNER_ID = (await client.application_info()).owner.id
     await pc.login()
-    log.info("logged in to Discord as %s; channels %s", client.user, list(CHANNELS))
+    log.info("logged in to Discord as %s; owner %s; channels %s", client.user, OWNER_ID, list(CHANNELS))
     client.loop.create_task(poll_loop())
 
 

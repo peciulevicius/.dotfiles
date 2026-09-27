@@ -51,15 +51,15 @@ scripts in `services/paperclip/README.md` do.
 2. **Create `#ai-training-dietitian`** next to `#ai-training-coach` (plus a
    webhook in it for the Dietitian's scheduled posts — Channel settings →
    Integrations → Webhooks).
-3. **Get the IDs.** Discord → *Settings → Advanced → Developer Mode* on. Then
-   right-click your name → *Copy User ID*, and right-click each channel →
-   *Copy Channel ID*.
+3. **No IDs to copy.** `configure.sh` reads each channel's ID from its webhook
+   (a GET on a webhook URL returns `channel_id`), and the bridge treats the
+   bot application's owner as the only allowed user.
 4. **Stage and configure:**
    ```bash
    ~/.dotfiles/services/setup-services.sh discord-bridge
    ~/.dotfiles/services/discord-bridge/configure.sh
    ```
-   `configure.sh` asks for the token (hidden) and the three IDs, writes them to
+   `configure.sh` asks only for the token (hidden), writes it and the channel map to
    `~/services/discord-bridge/.env` (chmod 600), builds and starts the
    container, and prints the log. The Paperclip login is already filled in from
    `~/.config/homelab/paperclip-admin.env`.
@@ -84,7 +84,7 @@ cd ~/services/discord-bridge && docker compose up -d --build   # after editing b
 ## Failure modes
 
 - **Bot online but ignores messages:** Message Content Intent is off, or the
-  message wasn't sent by `DISCORD_OWNER_ID`.
+  message wasn't sent by the owner (`DISCORD_OWNER_ID`, or the bot app's owner).
 - **`401` loops in the log:** the Paperclip password in `.env` is stale.
 - **Thread gets no reply:** the agent is paused, or its run failed. Check the
   issue in Paperclip. The bridge only relays comments; it never retries
