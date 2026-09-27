@@ -8,6 +8,57 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-27 — Glance homepage redesigned, grouped by purpose
+
+Home page rebuilt so every service on the homelab appears exactly once as a
+clickable tile, grouped by purpose, while staying tidy:
+
+- **New layout**: `monitor` widget ("Always-On Services", 19 sites, no
+  Sablier-managed services) → `bookmarks` grouped into **Media / Files &
+  Docs / Security & Network / AI & Agents / Ops** (💤 prefix = Sablier
+  scale-to-zero, `services/caddy/`) → `docker-containers` "Live Status"
+  (`running-only: true`) as the awake/asleep indicator for 💤 services,
+  without Glance ever polling them directly. Utility widgets (server-stats,
+  dns-stats, repository, calendar, weather, clock) moved to one side column.
+  Removed the duplicate bookmarks widget from the Media page (same tiles now
+  live once, on Home). Full reasoning: `services/glance/README.md`.
+- **Evaluated and rejected** using Sablier's own API for live sleeper status
+  (no read-only status endpoint exists — checked the docs and source; the
+  only routes are the ones that start a session) and per-container
+  `glance.category` Docker labels across all 11 Sablier-managed services'
+  compose files (too much blast radius for a homepage change).
+- **Added missing services**: FreshRSS, Syncthing, Sonarr, Radarr, Prowlarr
+  were already running and documented but had never been added to Glance.
+  Also discovered and documented an **undocumented service**: `calibre`
+  (`linuxserver/calibre`, KasmVNC GUI on `:8888`) — running since the
+  library-to-SSD migration but never in `docs/SERVICES.md` or Glance. Added
+  to both, plus a `syncthing` and `calibre` Docker network join on Glance's
+  `docker-compose.yml` so their `check-url`s can resolve by container name.
+- **Fixed UGREEN NAS monitor cushion**: added `timeout: 5s` (the NAS isn't on
+  a DHCP reservation yet). Verified the `.local` mDNS check-url itself
+  already resolves fine from inside the Glance container (Docker Desktop
+  relays mDNS to the host resolver) — kept it, per `docs/NAS.md`'s "never an
+  IP" rule; did not switch to a raw IP.
+- **Fixed the broken GitHub Repository widget** (`ERROR 404` on
+  `peciulevicius/.dotfiles`). Root cause: `GITHUB_TOKEN` in
+  `~/services/glance/.env` was empty, and — unexpectedly —
+  **`peciulevicius/.dotfiles` is currently a private repo**, which is why an
+  unauthenticated call 404s instead of 200. Populated `GITHUB_TOKEN` (via
+  `gh auth token`, gitignored `.env`, nothing committed). ⚠️ **This
+  contradicts the "this repo is public" assumption throughout
+  `.claude/CLAUDE.md`** (gitleaks-as-backstop, "sweep the diff, it's
+  public"). Confirmed with `gh api repos/peciulevicius/.dotfiles --jq
+  .private` → `true`. Visibility was **not** changed — flagged for the user
+  to decide, since a public↔private flip needs its own review (a
+  private→public flip needs a secret-sweep first).
+- **Verified**: `docker ps` sleeper snapshot unchanged before/after loading
+  the homepage (asleep containers stayed `exited`); all 19 always-on
+  monitors returned `200`/`401`(expected) with zero widget errors on the
+  rendered page; every service name confirmed present in the rendered
+  `/api/pages/home/content` output.
+- Amended the `homelab-service` skill's "Homepage (Glance)" step: a
+  Sablier-managed service gets a 💤 bookmark, not a `monitor`/`check-url`.
+
 ## 2026-09-27 — Kuma aligned with scale-to-zero
 
 - Paused Uptime Kuma monitors for services Sablier now puts to sleep

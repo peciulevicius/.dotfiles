@@ -34,6 +34,8 @@ services:
       - strava-mcp_default
       - paperclip
       - ntfy
+      - calibre
+      - syncthing
 
 networks:
   default:
@@ -80,4 +82,8 @@ networks:
   paperclip:
     external: true
   ntfy:
+    external: true
+  calibre:
+    external: true
+  syncthing:
     external: true

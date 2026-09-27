@@ -32,6 +32,7 @@ Run your own cloud on a Mac mini (or any Docker host). Self-hosted services cove
 | [Audiobookshelf](#audiobookshelf) ⚡ | listen.peciulevicius.com | 13378 | Audible |
 | [Linkwarden](#linkwarden) ⚡ | links.peciulevicius.com | 3005 | Pocket / Raindrop |
 | [Caddy + Sablier](#caddy--sablier) | (internal — 127.0.0.1:8880 + Tailscale IP) | 8880 | Scale-to-zero reverse proxy |
+| [Calibre (library manager)](#calibre-library-manager) | Tailscale only | 8888 | Ebook library management (desktop GUI) |
 
 ### Media Stack
 
@@ -379,13 +380,22 @@ docker compose up -d
 
 ### Glance
 
-**What:** Dashboard/start page with YAML config. Two pages: Home (service monitors, bookmarks, server stats) and Feed (Hacker News, Reddit, markets).
+**What:** Dashboard/start page with YAML config. Home page (redesigned
+2026-09-27): a compact always-on status grid, every service on the homelab
+as exactly one bookmark grouped by purpose (Media / Files & Docs / Security
+& Network / AI & Agents / Ops), and a live running-containers view — plus
+Feed (Hacker News, Reddit, markets), Media (release feeds), Finance pages.
 
-**Why:** Responsive by default, no layout drift across screen sizes. Config is version-controlled in dotfiles.
+**Why:** Responsive by default, no layout drift across screen sizes. Config
+is version-controlled in dotfiles.
+
+**Sablier scale-to-zero services (💤) are bookmark-only, deliberately** — no
+`check-url`, since hitting them directly either times out (asleep) or wakes
+them. Full reasoning and layout: `services/glance/README.md`.
 
 **How to use:**
 1. Open http://localhost:7575 — protected by Cloudflare Access (GitHub SSO)
-2. Home page: service status, bookmarks, server stats, weather
+2. Home page: service status, bookmarks by category, live container status, server stats
 3. Feed page: Hacker News, Reddit (tech, business, ideas), stock/crypto markets
 4. Edit config: `~/.dotfiles/services/glance/glance.yml`
 
@@ -423,6 +433,28 @@ docker compose up -d
 cd ~/services/calibre-web
 docker compose up -d
 # Open: http://localhost:8083
+```
+
+---
+
+### Calibre (library manager)
+
+**What:** The full Calibre desktop app (`linuxserver/calibre`), exposed as a
+browser GUI via KasmVNC, plus a lightweight Content Server used only for
+LazyLibrarian's acquisition integration. Separate container from Calibre-Web
+above — Calibre-Web is the *reading*/OPDS server; this one is for
+library-management tasks Calibre-Web can't do (editing metadata in bulk,
+format conversion, etc). Always-on (not Sablier-managed) — light idle
+footprint (~300MB).
+
+**How to use:**
+1. Open http://100.81.171.49:8888 (KasmVNC — the full desktop Calibre app)
+2. Content Server (internal only, for LazyLibrarian): `http://calibre:8081`
+
+```bash
+cd ~/services/calibre
+docker compose up -d
+# Open: http://100.81.171.49:8888
 ```
 
 ---
@@ -924,6 +956,7 @@ Every service is accessible three ways: localhost (on the Mac mini), Tailscale (
 | LazyLibrarian | 5299 | http://100.81.171.49:5299 |
 | Paperclip (agents) | 3100 | http://100.81.171.49:3100 |
 | ntfy (push) | 8095 | http://100.81.171.49:8095 |
+| Calibre (library manager) | 8888 | http://100.81.171.49:8888 |
 
 **Mobile apps (use Tailscale URLs to bypass Cloudflare Access gate):**
 

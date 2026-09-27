@@ -688,6 +688,21 @@ The R2 cloud copy (Plan B) is done and verified; see the changelog and
       to the parents' house as the offsite family copy (last verified 1:1
       against the NAS on 2026-09-05 — re-run `backup-external.sh` to it first).
 
+### ⚠️ `peciulevicius/.dotfiles` is currently a *private* GitHub repo
+
+Found 2026-09-27 while fixing Glance's Repository widget
+(`gh api repos/peciulevicius/.dotfiles --jq .private` → `true`). This
+contradicts `.claude/CLAUDE.md`'s standing "this repo is public" framing
+(gitleaks as a CI backstop *for a public repo*, "sweep the diff, it's
+public" instructions repeated throughout). Not changed as part of that task
+— 👤 decide and act:
+- [ ] If it's *meant* to be public: flip visibility, but sweep the full
+      history first, not just the current tree — gitleaks/CI has only ever
+      run assuming it was already public.
+- [ ] If it's *meant* to stay private: update `.claude/CLAUDE.md` (and any
+      skill referencing "repo is public") so future instructions don't
+      contradict reality.
+
 ---
 
 ## Worth doing soon

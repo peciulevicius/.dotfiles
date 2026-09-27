@@ -36,12 +36,26 @@ crashes. Check `pgrep -fl <script>` first.
 4. **Secrets** — generate the password in Vaultwarden (username
    the standard username, entry has the URL for autofill). Add a row to
    `docs/CREDENTIAL_MIGRATION.md` — **no values**, repo is public.
-5. **Homepage (Glance)** — in `services/glance/glance.yml` add a monitor with
-   `check-url` **and** a bookmark; add the service's Docker network to
-   `services/glance/docker-compose.yml` (both the service's `networks:` list
-   and the top-level `external: true` block). Then re-stage both files and
-   `docker compose up -d` Glance — an unrestaged glance.yml keeps showing the
-   old state.
+5. **Homepage (Glance)** — in `services/glance/glance.yml`, add the service to
+   the purpose group (Media / Files & Docs / Security & Network / AI & Agents
+   / Ops) it fits in the `bookmarks` widget. Then:
+   - **Normal (always-on) service**: also add it to the `monitor` widget with
+     a `check-url`, and add the service's Docker network to
+     `services/glance/docker-compose.yml` (both the service's `networks:`
+     list and the top-level `external: true` block) so the `check-url`
+     resolves by container name.
+   - **Sablier-managed (scale-to-zero) service** (`services/caddy/`): **do
+     not** add a `monitor`/`check-url` entry — hitting the container directly
+     either false-reports "down" while it's asleep, or wakes it on every
+     poll. Prefix the bookmark title with 💤 instead; the existing
+     `docker-containers` widget (`running-only: true`) already shows it the
+     moment Sablier starts it, with zero extra config. Full reasoning:
+     `services/glance/README.md` → "Why no check-url for Sablier-managed
+     services" (checked Sablier's API for a passive status endpoint — there
+     isn't one, only routes that start the group).
+   Then re-stage both `glance.yml` and `docker-compose.yml` and
+   `docker compose up -d` Glance (network changes need a recreate, not just
+   `restart`) — an unrestaged glance.yml keeps showing the old state.
 6. **Public access (only if it should be public)** — add a hostname to
    `~/.cloudflared/config.yml` and a DNS route, then reload the **real**
    tunnel agent:
