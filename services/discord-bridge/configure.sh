@@ -12,7 +12,7 @@ DIETITIAN_ID="895d2ed3-141a-4400-8b3b-0d42aea56b77"
 read -rsp "Discord bot token (hidden): " token; echo
 read -rp  "Your Discord user ID: " owner
 read -rp  "#ai-training-coach channel ID: " coach_ch
-read -rp  "#ai-nutrition channel ID: " diet_ch
+read -rp  "#ai-training-dietitian channel ID: " diet_ch
 
 set_var() {  # set_var KEY VALUE — replace the KEY= line in place
   python3 - "$ENV_FILE" "$1" "$2" <<'PY'

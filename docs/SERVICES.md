@@ -897,7 +897,7 @@ directly). Setup, tokens, and the phone app steps: `services/ntfy/README.md`.
 ### discord-bridge
 
 **What:** a small Python bot (`services/discord-bridge/`, local image) that
-turns a message in `#ai-training-coach` / `#ai-nutrition` into a Paperclip
+turns a message in `#ai-training-coach` / `#ai-training-dietitian` into a Paperclip
 issue for Coach / Dietitian, opens a Discord thread for it, relays the agent's
 replies into the thread, and passes your thread replies back as `@Agent`
 comments (which wake the agent).

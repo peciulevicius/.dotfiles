@@ -536,7 +536,7 @@ required — `run` alone is enough and is what this setup used).
 
 **Dietitian (added 2026-09-27) — Coach is now a two-agent team.** A second
 `claude_local` Sonnet agent, **Dietitian** (reports to Coach, heartbeat off,
-same Discord webhook secret, posts as "Dietitian"), owns food, body weight and
+own Discord webhook secret `DIETITIAN_DISCORD_WEBHOOK` → `#ai-training-dietitian`, copy in `~/.config/homelab/dietitian-discord.env`), owns food, body weight and
 composition (Garmin Index S2 → TrainingPeaks), weight periodisation, training/
 race fuelling, meal prep and Barbora shopping lists; Coach owns training.
 Instructions: `dietitian-agents-addendum.md` (Coach's: `coach-agents-addendum.md`).

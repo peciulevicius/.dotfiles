@@ -16,7 +16,7 @@ you: reply in the thread ──► bridge ──► issue comment "@Coach …" (
 
 - One channel per agent, set by `CHANNEL_MAP`
   (`channelId:agentId:AgentName,…`). Currently `#ai-training-coach` → Coach
-  and `#ai-nutrition` → Dietitian.
+  and `#ai-training-dietitian` → Dietitian.
 - Only messages from `DISCORD_OWNER_ID` are relayed; everyone else, and all
   bots (including the agents' own webhook posts), is ignored.
 - A reply in the thread becomes a comment with an `@AgentName` mention, because
@@ -25,9 +25,10 @@ you: reply in the thread ──► bridge ──► issue comment "@Coach …" (
 - Approvals and decisions are **not** relayed as buttons. When an agent raises
   a decision, approve it in Paperclip (`http://100.81.171.49:3100`), or reply
   in the thread ("approved") and the agent reads that as a comment.
-- The agents' scheduled posts (the daily check-in) still go out through the
-  `COACH_DISCORD_WEBHOOK` webhook, not the bridge. Both agents share that
-  webhook, so the Dietitian's scheduled posts land in `#ai-training-coach`.
+- The agents' scheduled posts (daily check-in, plans) go out through their own
+  webhooks, not the bridge: Coach → `#ai-training-coach`
+  (`COACH_DISCORD_WEBHOOK`), Dietitian → `#ai-training-dietitian`
+  (`DIETITIAN_DISCORD_WEBHOOK`).
 - State (thread → issue, relayed comment IDs) lives in `./data/state.json`.
   Losing it only means old threads stop receiving replies.
 
@@ -47,7 +48,9 @@ scripts in `services/paperclip/README.md` do.
      *Send Messages*, *Create Public Threads*, *Send Messages in Threads*,
      *Read Message History*, *Add Reactions*. Open the generated URL and add
      the bot to your server.
-2. **Create `#ai-nutrition`** next to `#ai-training-coach`.
+2. **Create `#ai-training-dietitian`** next to `#ai-training-coach` (plus a
+   webhook in it for the Dietitian's scheduled posts — Channel settings →
+   Integrations → Webhooks).
 3. **Get the IDs.** Discord → *Settings → Advanced → Developer Mode* on. Then
    right-click your name → *Copy User ID*, and right-click each channel →
    *Copy Channel ID*.

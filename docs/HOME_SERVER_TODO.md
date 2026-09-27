@@ -36,7 +36,7 @@ Section names in *italics* are headings below.
 
 ### 👤 Needs you (UI / device / credentials / decision)
 
-- **Discord two-way chat with Coach + Dietitian:** create the bot (Message Content intent on), create `#ai-nutrition`, copy your user ID + both channel IDs, then run `~/.dotfiles/services/discord-bridge/configure.sh` — steps in `services/discord-bridge/README.md`
+- **Discord two-way chat with Coach + Dietitian:** create the bot (Message Content intent on), create `#ai-training-dietitian`, copy your user ID + both channel IDs, then run `~/.dotfiles/services/discord-bridge/configure.sh` — steps in `services/discord-bridge/README.md`
 - **Coach team decisions waiting in Paperclip:** COA-6 (this week + military week training plan) and the Dietitian's COA-7 (weight plan + portions) once it posts
 - Mail wrap-up: Kuma + Calibre-Web test mails, approve `dziugas@` as an Amazon sender, Gmail→Kindle filter — *🔝 Next up*
 - Coach: upload skill zip, add the `tp-mcp` custom connector in claude.ai, "Coach" Project — *🏃 Coach in the Claude app*
