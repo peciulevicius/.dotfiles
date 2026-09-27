@@ -521,7 +521,7 @@ deleted and Coach's env binding cleared before Discord was wired in. `ntfy`
 itself is untouched; it still serves other things (Odysseus reminders, Uptime
 Kuma).
 
-**Phone push (Discord, not ntfy).** Coach posts to a `#coach` Discord channel
+**Phone push (Discord, not ntfy).** Coach posts to the `#ai-training-coach` Discord channel
 via webhook — see *Phone push (Discord)* in
 `coach-agents-addendum.md`/the live AGENTS.md for the exact call. The webhook
 URL lives in `~/.config/homelab/coach-discord.env`
@@ -533,6 +533,22 @@ Paperclip secret above — never print either copy.
 Fire it on demand with `POST /api/routines/<routineId>/run -d '{"source":
 "manual"}'` (the `.../triggers/<id>/fire` path some versions expose is not
 required — `run` alone is enough and is what this setup used).
+
+**Nutrition & body weight (added 2026-09-27).** Coach also owns food and
+weight: a *Nutrition & body composition* section in its AGENTS.md sets the
+current goal (fat loss / recomp), periodises weight against the race calendar
+(cut in base, maintenance in build/peak, no deficit around races), and ties
+daily fuelling to the day's session. It keeps `/training/nutrition.md` (what
+the athlete eats, from the imported Claude.ai meal-prep project) and
+`/training/plans/nutrition_periodisation.md` (dated phases, raised as a
+decision). The daily check-in has a nutrition step. Personal data lives only
+in `~/.training/`, never in this repo.
+
+**Claude.ai memory import.** The athlete's triathlon and food Claude.ai
+projects (memory, docs, chats) were copied from the account export into
+`~/.training/imports/claude-ai-2026-09-27/`; nothing unrelated to training or
+food. TrainingPeaks stays the source of truth for FTP, thresholds, zones and
+weight; old chat numbers are history only.
 
 **Talking to Coach from the phone:** open Paperclip (Tailscale,
 `100.81.171.49:3100`), Coach company → create a task ("tired today", "push

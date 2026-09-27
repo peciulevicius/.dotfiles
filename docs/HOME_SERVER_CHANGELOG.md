@@ -28,6 +28,11 @@ Newest first-ish; dates are when the work was finished.
   adjustments as decisions, post to Discord, write to /training only for
   long-term facts. ntfy no longer referenced.
 - Strava MCP profile re-bound from the whole Coach company to the Coach agent only.
+- Coach now also coaches **nutrition and body weight** (fat-loss goal,
+  weight periodised to the race calendar, daily fuelling tied to training),
+  with a nutrition step in the daily check-in. Triathlon + food Claude.ai
+  memory imported into `~/.training/imports/` (private, not in the repo).
+  Tasks COA-4 (merge export) and COA-5 (food profile + season weight plan).
 
 ## 2026-09-27 — Glance homepage redesigned, grouped by purpose
 
