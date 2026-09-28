@@ -37,10 +37,12 @@ Section names in *italics* are headings below.
 ### 👤 Needs you (UI / device / credentials / decision)
 
 - **🛡️ Tailscale / VPN (2026-09-28):**
-  - [ ] 👤 Approve the Mac mini as an exit node: admin → Machines → `macmini` → ⋯ → *Edit route settings* → **Use as exit node** (already advertised; this is the "Lithuanian IP" option)
-  - [ ] 👤 Disable key expiry on `transmission-ts` (Machines → ⋯ → *Disable key expiry*) — still 2027-03-25
-  - [ ] 👤 iPhone + MacBook: Exit Node → Mullvad → pick a country (Poland/Warsaw nearest); iPhone *Settings → VPN → Tailscale ⓘ → Connect On Demand* to keep it on
-  - [ ] 👤 **Passkey admin user** (stop using the Google login now): admin → Users → *Invite users* → open link → sign up with a passkey → make it Admin → log in with it on each device
+  - [x] ~~Approve the Mac mini as an exit node~~ — approved 2026-09-28, visible on the iPhone
+  - [x] ~~Disable key expiry on `transmission-ts`~~ — 2026-09-28
+  - [x] ~~iPhone: Mullvad exit node + Connect On Demand~~ — 2026-09-28
+  - [ ] 👤 MacBook: menu bar Tailscale → Exit Node → Mullvad → same country
+  - [x] ~~Passkey admin user~~ — created 2026-09-28; log in with it on each device
+  - [ ] 📅 **2026-10-26 (calendar event set): cancel the Tailscale Mullvad add-on before it renews (~28 Oct)** — first decide the route: (a) fresh Tailscale tailnet on our domain → re-buy the add-on there, or (b) fully self-hosted **Headscale** → the add-on doesn't exist there, so buy Mullvad directly (account number, no email; ~€5/mo) and rewire `transmission-ts` + its kill switch to plain WireGuard.
   - [ ] 📅 **2026-10-28 (calendar event set): fresh tailnet on `peciulevicius.com`** (custom OIDC + WebFinger) — re-add all devices, move the Mullvad add-on, re-apply DNS/exit nodes/key-expiry policy, update 100.x IPs everywhere. Can't switch the current tailnet: it's a gmail.com tailnet, and GitHub/Apple can't be switch targets.
 
 - [x] ~~Discord two-way chat with Coach + Dietitian~~ — bridge live 2026-09-27
