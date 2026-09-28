@@ -104,7 +104,7 @@ Section names in *italics* are headings below.
 - Old photo archives into Immich (needs T7 + judgement) — *Import old photo archives into Immich*
 - Paperless tags/types — *Paperless-NGX — organise documents*
 - Brave Shields for Linkwarden — *Linkwarden*
-- Buy Tailscale Mullvad add-on, allow `transmission-ts` + phone; disable key expiry on `transmission-ts` — *VPN for torrents*
+- ⏸️ **Transmission is STOPPED (2026-09-28) until the Mullvad exit node passes the leak + kill-switch tests** — do not restart before. Buy Tailscale Mullvad add-on, allow `transmission-ts` + phone; disable key expiry on `transmission-ts` — *VPN for torrents*
 - Capture Shortcut, Web Clipper, 30-day habit, Kindle/KOReader items — *Notes*
 - "Sign in with Google" audit, Gmail redirect decision, Takeout — *De-Google*
 - Calendar + Contacts to Nextcloud — *Calendar + Contacts*
