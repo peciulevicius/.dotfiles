@@ -4,9 +4,12 @@ PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin
 # starts failing and again when it recovers. Configure the webhook in
 # ~/.config/homelab/notify.env — without it the wrapper is a silent no-op.
 
-# Quarterly pinned-image review (1 Jan/Apr/Jul/Oct, 10am) — exits non-zero,
-# and so posts the list to Discord, when any pinned image has a newer release
-0 10 1 1,4,7,10 * ~/.dotfiles/scripts/utils/run-with-notify.sh "Pinned image review" ~/.dotfiles/scripts/utils/check-image-updates.py --quiet >> ~/logs/image-updates.log 2>&1
+# Image updates (services/wud; replaced the quarterly check-image-updates.py
+# review 2026-09-28). Daily after WUD's 06:00 registry check: refresh the
+# Glance "Updates" widget. Mondays 09:00: weekly summary to Discord.
+# Upgrading is manual and one command: scripts/utils/upgrade-service.sh.
+30 6 * * * ~/.dotfiles/scripts/utils/update-report.sh >> ~/logs/update-report.log 2>&1
+0 9 * * 1 ~/.dotfiles/scripts/utils/update-report.sh --discord >> ~/logs/update-report.log 2>&1
 # External dead-man's switch: ping Healthchecks.io every 5 minutes. Not wrapped
 # in run-with-notify — the alert for this one comes from outside the network.
 */5 * * * * ~/.dotfiles/scripts/utils/heartbeat.sh >> ~/logs/heartbeat.log 2>&1

@@ -17,6 +17,9 @@ services:
     labels:
       - "sablier.enable=true"
       - "sablier.group=jellyfin"
+      # WUD (services/wud): only plain X.Y.Z tags count as updates (skips
+      # dated nightlies / -lsNNN rebuilds). Applies on the next recreate.
+      - "wud.tag.include=^\\d+\\.\\d+\\.\\d+$$"
     ports:
       - "127.0.0.1:${JELLYFIN_PORT:-8096}:8096"
     volumes:

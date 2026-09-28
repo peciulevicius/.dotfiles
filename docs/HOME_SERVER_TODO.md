@@ -36,6 +36,7 @@ Section names in *italics* are headings below.
 
 ### 👤 Needs you (UI / device / credentials / decision)
 
+- 👤 Save the **WUD** login to Vaultwarden (entry *WUD*, URL `http://100.81.171.49:3070`) — values in `~/services/wud/.env`
 - **🛡️ Tailscale / VPN (2026-09-28):**
   - [x] ~~Approve the Mac mini as an exit node~~ — approved 2026-09-28, visible on the iPhone
   - [x] ~~Disable key expiry on `transmission-ts`~~ — 2026-09-28
@@ -174,7 +175,7 @@ Section names in *italics* are headings below.
 - `rm -rf ~/services/mealie ~/services/grafana` (say go) — *9. Maintenance backlog*
 - Pi-hole local DNS records, only after a Caddy decision — *Pi-hole — finish the deployment*
 - Optional `scp` push to the Scribe — *Notes*
-- Major-version image upgrades, one per sitting — *21 pinned images*
+- Major-version image upgrades, one per sitting, with `upgrade-service.sh` — *Pinned images*
 - Calibre follow-up: NAS copy removal
   (~2026-10-02) — *Move the Calibre library off SMB onto the SSD*
 
@@ -707,16 +708,50 @@ The R2 cloud copy (Plan B) is done and verified; see the changelog and
 
 ## Worth doing soon
 
-### ⚠️ 21 pinned images that Watchtower can never update
+### ⚠️ Pinned images — what WUD says is available
 
-Watchtower is enabled, which creates a false sense of currency: **a pinned tag
-never moves**, so Watchtower silently does nothing for most of the stack. This
-cost four hours on 2026-09-21 — the Bitwarden iOS app was broken by a bug fixed
-three Vaultwarden releases earlier, and the pin hid it.
+Watchtower only refreshes a container's *current* tag, so pinned images never
+move on their own. Since 2026-09-28 **WUD** (`services/wud`) checks every
+container daily; the Glance **Updates** widget and a Monday Discord summary
+show what's available, and **`scripts/utils/upgrade-service.sh <service>
+[tag]`** applies one upgrade with backup, health check and automatic rollback
+(details: `services/wud/README.md`). This replaced the quarterly
+`check-image-updates.py` cron (the script still works by hand).
 
-Every request logged **200 OK** while the app failed, because the fault was a
-malformed response body, not an error status. **When a client misbehaves against
-a healthy-looking server, compare versions first.**
+Why pins stay: this cost four hours on 2026-09-21 — the Bitwarden iOS app was
+broken by a bug fixed three Vaultwarden releases earlier, and the pin hid it.
+Every request logged **200 OK** while the app failed. **When a client
+misbehaves against a healthy-looking server, compare versions first.**
+
+**Available on 2026-09-28** (`update-report.sh --markdown`; Bazarr
+1.6.1 → 1.6.2 was applied the same day as the first real `upgrade-service.sh`
+run):
+
+| Container | Service | Current | Available | Kind | Note |
+|---|---|---|---|---|---|
+| odysseus-searxng-1 | odysseus | `2026.5.31-7159b8aed` | `2026.9.25-d8ae3abd5` | minor | upgrade-service.sh |
+| jellyfin | jellyfin | `10.10.7` | `12.1.20260915-010956` | major | read release notes |
+| nextcloud | nextcloud | `30-apache` | `35-apache` | major | read release notes |
+| paperless | paperless-ngx | `2.20.15` | `3.2.1` | major | read release notes |
+| stirling_pdf | stirling-pdf | `2.14.3` | `3.0.0` | major | read release notes |
+| syncthing | syncthing | `1.30.0` | `2.1.5` | major | read release notes |
+| uptime_kuma | uptime-kuma | `1.23.17` | `2.5.5` | major | read release notes |
+| calibre_web | calibre-web | `0.6.27` | `5.33.2` | major | False positive (linuxserver -lsNNN tags) until the wud.tag.include label applies on next recreate |
+| immich_postgres | immich | `14-vectorchord0.3.0-pgvectors0.2.0` | `18-vectorchord1.1.1-pgvector0.8.5` | major | Immich pins its own Postgres image; upgrade only with an Immich release that asks for it |
+| immich_redis | immich | `7.4-alpine` | `8.10-alpine3.23` | major | Immich pins Redis; follow Immich's compose |
+| linkwarden_db | linkwarden | `16-alpine` | `18-alpine3.24` | major | Postgres major = dump/restore migration, not a tag bump |
+| nextcloud_db | nextcloud | `11.4` | `13.0` | major | MariaDB major = migration; follow Nextcloud's supported versions |
+| paperless_broker | paperless-ngx | `7.4-alpine` | `8.10-alpine3.23` | major | Redis major; no need unless Paperless requires it |
+| paperless_db | paperless-ngx | `16-alpine` | `18-alpine3.24` | major | Postgres major = dump/restore migration, not a tag bump |
+
+Notes on the list:
+- **Safe:** `odysseus-searxng-1` (minor) — `upgrade-service.sh odysseus
+  --image searxng` whenever convenient.
+- **Jellyfin:** WUD proposed a dated build (`12.1.2026…`); the
+  `wud.tag.include` label (plain `X.Y.Z` only) applies on the next recreate and
+  will show the real stable target — 10.11.x and 12.x both exist, both are
+  one-way DB migrations (notes below).
+- **Held** rows are in `services/wud/holds.tsv` and are never offered.
 
 Oldest and most exposed first:
 
@@ -740,9 +775,9 @@ Oldest and most exposed first:
     `pg_dump` + `document_exporter` to `data/export` first; rollback = restore
     the dump into the 2.20.15 tag. Only if Paperless survives the
     keep/remove decision.
-  - **Stirling PDF 2.14 → 3.x**: 2.14.3 taken 2026-09-26 (changelog). 3.0.0
-    was two days old then — wait for a 3.0.x point release, re-read its
-    notes, check `SECURITY_ENABLELOGIN=false` still applies.
+  - **Stirling PDF 2.14 → 3.x**: 2.14.3 taken 2026-09-26 (changelog). WUD
+    still reports 3.0.0 as newest (2026-09-28) — wait for a 3.0.x point
+    release, re-read its notes, check `SECURITY_ENABLELOGIN=false` still applies.
   - **Nextcloud 30 → 31 → 32 …**: 30 is end-of-life. Must step one major at
     a time (`occ upgrade` each), maintenance mode, MariaDB dump first
     (`backup-databases.sh`), check apps compatibility per step. Biggest job
@@ -761,10 +796,10 @@ release notes and backing up data first — that is why they are pinned, and
 pinning is still the right call. But schedule it; quarterly is enough.
 `docker compose pull` will not help while the tag is fixed.
 
-**Scheduled since 2026-09-24:** `scripts/utils/check-image-updates.py` runs
-quarterly from cron and posts outdated pins to Discord (`--outdated` to run
-it by hand). All same-major bumps were taken 2026-09-25 (changelog); only the
-majors above remain.
+**Tracking:** WUD + `update-report.sh` (daily Glance widget, weekly Discord)
+since 2026-09-28 — see the top of this section. Do majors with
+`upgrade-service.sh`, one per sitting, after the backup each note above asks
+for (the script's own compose backup and DB dump don't cover app data dirs).
 
 ### ⚠️ Move the Calibre library off SMB onto the SSD
 

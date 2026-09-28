@@ -21,6 +21,7 @@ Run your own cloud on a Mac mini (or any Docker host). Self-hosted services cove
 | [Calibre-Web](#calibre-web) ⚡ | books.peciulevicius.com | 8083 | Kindle Cloud |
 | [Rclone](#rclone) | — | — | Cloud backup |
 | [discord-bridge](#discord-bridge) | outbound only | — | — |
+| [WUD](#wud) | Tailscale only | 3070 | — |
 
 ### Utility Services
 
@@ -895,6 +896,23 @@ Paperclip's Docker network). It relays only the owner's messages, and keeps
 state in `./data/state.json`. It signs in with the Paperclip board login in
 its `.env`. Setup: `services/discord-bridge/README.md` (create the bot, then
 `configure.sh`).
+
+---
+
+### WUD
+
+**What:** What's Up Docker (`getwud/wud:9.2.0`) + a read-only Docker socket
+proxy. Lists containers whose image has a newer tag; UI at
+`http://100.81.171.49:3070`.
+
+**Why:** most images are pinned, so Watchtower never bumps them; WUD makes
+that visible daily (Glance *Updates* widget, weekly Discord summary) instead
+of a quarterly script.
+
+**How:** report-only — no update triggers, GET-only socket proxy. Upgrades
+go through `scripts/utils/upgrade-service.sh <service> [tag]` (backup,
+health check, automatic rollback). Setup and details:
+`services/wud/README.md`.
 
 ---
 

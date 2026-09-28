@@ -35,6 +35,7 @@ services:
       - trainingpeaks-mcp_default
       - strava-mcp_default
       - paperclip
+      - wud
       - calibre
       - syncthing
 
@@ -81,6 +82,8 @@ networks:
   strava-mcp_default:
     external: true
   paperclip:
+    external: true
+  wud:
     external: true
   calibre:
     external: true

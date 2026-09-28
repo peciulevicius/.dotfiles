@@ -277,6 +277,23 @@ cache) → **DNS-over-TLS :853** → Quad9 / Cloudflare. Nothing leaves the hous
 as plain DNS. If `unbound` is stopped, Pi-hole resolves nothing. Rollback
 line and wiring: `services/pihole/README.md` → *Encrypted upstream*.
 
+## Image updates — WUD + upgrade-service.sh (2026-09-28)
+
+- **WUD** (`services/wud`, `getwud/wud:9.2.0`, port 3070, Tailscale/localhost)
+  reports available image updates; it never changes anything. Docker access
+  via `tecnativa/docker-socket-proxy:v0.5.0` with `POST=0`.
+- **WUD 9 refuses to start without an admin user** ("Authentication is
+  mandatory") — `WUD_AUTH_ADMIN_USER/PASSWORD` in `~/services/wud/.env`; the
+  scripts use a copy in `~/.config/homelab/wud.env`. Its API accepts HTTP
+  basic auth with that login (`/api/containers`).
+- `update-report.sh` → `~/services/glance/assets/updates.json` → Glance
+  *Updates* widget; Discord summary Mondays 09:00.
+- `upgrade-service.sh` is the only way pinned tags change. Rollback is
+  automatic on failure; backups in `~/backups/upgrades/<svc>-<time>/`.
+- macOS `/bin/bash` is **3.2** (cron uses it): no `mapfile`, no associative
+  arrays in scripts meant for cron.
+- Compose labels with a regex ending in `$` need `$$` (compose interpolation).
+
 ## Tailscale — what it's used for, and key expiry
 
 **Used for (2026-09-28):**

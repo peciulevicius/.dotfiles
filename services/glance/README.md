@@ -13,8 +13,9 @@ the homelab, a `full`-width middle column for services, and a `small`
 **right** column for the athlete team.
 
 Left, top to bottom: `clock` (24h), **Server** (the former Homelab health
-widget plus CPU, containers and uptime), **Sleeping apps**, `dns-stats`
-(Pi-hole). Right: **Training**, **Coach team**, `repository` (this repo),
+widget plus CPU, containers and uptime), **Sleeping apps**, **Updates**
+(image updates from WUD via `scripts/utils/update-report.sh` →
+`assets/updates.json`, see `services/wud/README.md`), `dns-stats` (Pi-hole). Right: **Training**, **Coach team**, `repository` (this repo),
 `calendar`. `weather` was removed and Glance's built-in `server-stats` was
 dropped 2026-09-28: inside Docker Desktop it reports the Linux VM, not the Mac,
 so its numbers disagreed with the Server widget. The **Media** page was

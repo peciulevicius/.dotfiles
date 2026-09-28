@@ -28,7 +28,8 @@ stdin (`crontab < file` or `cat file | crontab -`) and always verify with
 | Every 5 min | Heartbeat to Healthchecks.io (`heartbeat.sh`) — alerts from outside when pings stop, or when Docker is unresponsive | `~/logs/heartbeat.log` |
 | Sunday 09:00 | Homelab audit — drift, containers, backups, disk, secrets (`homelab-audit.sh`) | `~/logs/homelab-audit.log` |
 | Sunday 09:30 | Paperclip reports feed — read-only snapshot for the Homelab agents (`paperclip-reports.sh`) | `~/logs/paperclip-reports.log` |
-| Quarterly, 1st 10:00 | Pinned images with a newer upstream release (`check-image-updates.py`) — a reminder, not an auto-update | `~/logs/image-updates.log` |
+| Daily 06:30 | Image updates → Glance "Updates" widget (`update-report.sh`, reads WUD) | `~/logs/update-report.log` |
+| Monday 09:00 | Weekly image-update summary to Discord (`update-report.sh --discord`) — a report, not an auto-update; upgrade with `upgrade-service.sh` | `~/logs/update-report.log` |
 
 ⚠️ **Check before reinstalling.** Until 2026-09-24 this file had fallen
 behind the live schedule — it still pointed the backup at the repo copy and was

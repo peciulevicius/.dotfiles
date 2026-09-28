@@ -6,7 +6,7 @@ name: bazarr
 services:
   bazarr:
     container_name: bazarr
-    image: lscr.io/linuxserver/bazarr:1.6.1
+    image: lscr.io/linuxserver/bazarr:1.6.2
     restart: unless-stopped
     # Scale-to-zero via Caddy + Sablier (services/caddy). Caddy now owns the
     # Tailscale-facing port (100.81.171.49:6767) so it can wake this

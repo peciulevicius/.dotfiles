@@ -1,0 +1,72 @@
+# WUD (What's Up Docker) — reports which containers have a newer image tag.
+# Upstream: https://github.com/getwud/wud (MIT)
+#
+# Why: Watchtower (services/watchtower) refreshes each container's *current*
+# tag nightly, but ~30 images are pinned to version tags (sonarr:4.0.20,
+# jellyfin:10.10.7, …), so version bumps never happen on their own. WUD reads
+# the registries and lists "current → available" per container, in a small
+# web UI and a JSON API that Glance and scripts/utils/update-report.sh read.
+#
+# WUD only *reports*. Upgrades go through scripts/utils/upgrade-service.sh,
+# which backs up, bumps the tag in the repo, recreates, health-checks and
+# rolls back on failure. WUD's own update triggers are deliberately not used.
+#
+# Docker access goes through a read-only socket proxy: WUD only needs to list
+# and inspect containers/images, so the proxy allows exactly that (no POST).
+#
+# Exposure: localhost + Tailscale only. No tunnel hostname.
+
+name: wud
+
+services:
+  wud-socket-proxy:
+    container_name: wud-socket-proxy
+    image: tecnativa/docker-socket-proxy:v0.5.0
+    restart: unless-stopped
+    environment:
+      CONTAINERS: 1
+      IMAGES: 1
+      INFO: 1
+      POST: 0
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    mem_limit: 32m
+
+  wud:
+    container_name: wud
+    image: getwud/wud:9.2.0
+    restart: unless-stopped
+    depends_on:
+      - wud-socket-proxy
+    ports:
+      - "127.0.0.1:${WUD_PORT:-3070}:3000"
+      - "100.81.171.49:${WUD_PORT:-3070}:3000"
+    environment:
+      TZ: ${TZ:-Europe/Vilnius}
+      # Watch every container through the proxy, including stopped ones
+      # (Sablier sleepers are stopped most of the time).
+      WUD_WATCHER_LOCAL_HOST: wud-socket-proxy
+      WUD_WATCHER_LOCAL_PORT: "2375"
+      WUD_WATCHER_LOCAL_WATCHALL: "true"
+      # Daily at 06:00 — registries are asked once a day, not on every
+      # page load. The weekly Discord summary is update-report.sh (cron).
+      WUD_WATCHER_LOCAL_CRON: "0 6 * * *"
+      WUD_WATCHER_LOCAL_WATCHBYDEFAULT: "true"
+      # WUD 9 refuses to start without an admin. Credentials live in .env
+      # (gitignored) and, for the scripts, ~/.config/homelab/wud.env.
+      WUD_AUTH_ADMIN_USER: ${WUD_AUTH_ADMIN_USER:?set in .env}
+      WUD_AUTH_ADMIN_PASSWORD: ${WUD_AUTH_ADMIN_PASSWORD:?set in .env}
+      WUD_LOG_LEVEL: info
+    volumes:
+      - ./data:/store
+    mem_limit: 192m
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:3000/health"]
+      interval: 60s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+networks:
+  default:
+    name: wud

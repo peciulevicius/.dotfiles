@@ -39,6 +39,8 @@ listed in [scripts/cron/README.md](https://github.com/peciulevicius/.dotfiles/bl
 | `scripts/utils/homelab-audit.sh` | Audit drift, containers, backups, disk, recent commits and cron | Weekly (cron) |
 | `scripts/utils/homelab-status.sh` | Write the Glance status snapshot for *Training*, *Coach team*, *Homelab health* and *Sleeping apps* (`~/services/glance/assets/status.json`) | Every 5 minutes (cron) |
 | `scripts/utils/finance-status.sh` | Write the Glance *Portfolio* snapshot (IBKR holdings via Flex Web Service) to `~/services/glance/assets/finance.json` | Daily 07:00 (cron) |
+| `scripts/utils/update-report.sh` | Read WUD's "update available" list, bucket it (safe / major / held), write `~/services/glance/assets/updates.json`; `--discord` weekly summary, `--markdown` table | Daily 06:30, Mon 09:00 (cron) |
+| `scripts/utils/upgrade-service.sh` | Upgrade one pinned image: pull, back up, bump tag in repo, stage, recreate, health-check, **auto-rollback** | By hand, one service at a time |
 | `scripts/utils/run-with-notify.sh` | Wrap a cron job and notify Discord on failure and recovery | Used by every cron job |
 | `scripts/utils/mount-nas.sh` | Mount the NAS SMB shares | At login (launchd) |
 | `scripts/utils/nas-watchdog.sh` | Remount shares and restart NAS-backed containers | Every 5 minutes (launchd) |
@@ -448,6 +450,33 @@ Weekly checks, each derived from a past failure:
 
 The `homelab-audit` project skill adds the judgement-based checks (pinned image
 versions, credential copies, documentation accuracy).
+
+### update-report.sh
+
+Reads the WUD API (`services/wud`, login from `~/.config/homelab/wud.env`)
+and sorts every "update available" into **safe** (patch/minor), **major** or
+**held** (`services/wud/holds.tsv` — DB majors, false positives). Writes
+`~/services/glance/assets/updates.json` for the Glance *Updates* widget, so
+Glance never needs the WUD login. Floating-tag digest refreshes are skipped
+(Watchtower's job).
+
+```bash
+~/.dotfiles/scripts/utils/update-report.sh             # table + JSON
+~/.dotfiles/scripts/utils/update-report.sh --markdown  # table for the TODO list
+~/.dotfiles/scripts/utils/update-report.sh --discord   # + weekly Discord post
+```
+
+### upgrade-service.sh
+
+The one supported way to change a pinned tag. Details, safety steps and test
+results: `services/wud/README.md` → *Upgrading a service*.
+
+```bash
+~/.dotfiles/scripts/utils/upgrade-service.sh <service> [tag] [--image <substring>] [--commit]
+```
+
+Written for macOS `/bin/bash` 3.2 (no `mapfile`). Leaves the repo change for
+you to commit unless `--commit` is passed.
 
 ### homelab-status.sh
 

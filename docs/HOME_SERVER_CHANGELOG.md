@@ -8,6 +8,28 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-28 — Image updates: WUD checker + one-command safe upgrades
+
+- New service **WUD** (`services/wud`, What's Up Docker 9.2.0 + a GET-only
+  socket proxy, port 3070, Tailscale-only): checks every container's image
+  daily and reports newer tags. Report-only by design.
+- `scripts/utils/update-report.sh` buckets WUD's list into safe / major /
+  held (`services/wud/holds.tsv` — DB majors, false positives) and feeds a new
+  Glance **Updates** widget (left column) plus a Monday 09:00 Discord summary.
+  Replaces the quarterly `check-image-updates.py` cron.
+- `scripts/utils/upgrade-service.sh <service> [tag]`: pull first, back up
+  both compose files (and DB dumps for stacks with a database), bump the tag
+  in the repo, stage, recreate, wait for health, and **roll back
+  automatically** if unhealthy; puts Sablier sleepers back to sleep.
+  Tested: real Bazarr 1.6.1 → 1.6.2, a bad tag (stopped at pull), a forced
+  failure (`TIMEOUT=0`, rolled back cleanly).
+- Jellyfin and Calibre-Web got a `wud.tag.include` label (plain `X.Y.Z`) to
+  stop dated nightlies / `-lsNNN` rebuilds reading as majors; applies on their
+  next recreate (not forced now — both were in use).
+- Why: most images are pinned, so Watchtower never bumps them; a stale
+  Vaultwarden pin broke the iOS app on 2026-09-21. The gap is now visible
+  daily and closing it is one safe command.
+
 ## 2026-09-28 — Disk cleanup (92% → 89%, ~83% after emptying Trash)
 
 - `docker image prune -a` (935MB) and `docker builder prune -a` (2.9GB) — unused

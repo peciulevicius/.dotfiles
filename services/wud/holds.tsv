@@ -1,0 +1,11 @@
+# Containers whose WUD "update available" should NOT be offered as an upgrade.
+# Read by scripts/utils/update-report.sh (Glance widget, weekly Discord).
+# Held items still show up, collapsed, under "held" — never silently dropped.
+# Format: <container name><TAB><reason>
+immich_postgres	Immich pins its own Postgres image; upgrade only with an Immich release that asks for it
+immich_redis	Immich pins Redis; follow Immich's compose
+linkwarden_db	Postgres major = dump/restore migration, not a tag bump
+paperless_db	Postgres major = dump/restore migration, not a tag bump
+paperless_broker	Redis major; no need unless Paperless requires it
+nextcloud_db	MariaDB major = migration; follow Nextcloud's supported versions
+calibre_web	False positive (linuxserver -lsNNN tags) until the wud.tag.include label applies on next recreate

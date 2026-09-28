@@ -47,6 +47,7 @@ SERVICES=(
   strava-mcp
   paperclip
   discord-bridge
+  wud
 )
 
 SERVICE_PORTS=(
@@ -82,6 +83,7 @@ SERVICE_PORTS=(
   "strava-mcp:8093"
   "paperclip:3100"
   "discord-bridge:—"
+  "wud:3070"
 )
 
 log_ok()   { echo -e "${GREEN}✓${NC} $1"; }

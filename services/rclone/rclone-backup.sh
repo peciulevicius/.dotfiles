@@ -82,6 +82,9 @@ SYNC_CMD+=(--exclude "immich/data/**")
 # up here, not its UI state.
 SYNC_CMD+=(--exclude "portainer/data/portainer.db")
 SYNC_CMD+=(--exclude "paperless-ngx/data/data/celerybeat-schedule.db")
+# WUD keeps a live SQLite cache of registry results — regenerated on its next
+# daily check, and a mid-write copy would fail R2's MD5 check anyway.
+SYNC_CMD+=(--exclude "wud/data/**")
 # CouchDB is a sync transport, not a source of truth — the vault itself is,
 # and it is backed up separately below. Syncing live .couch files would upload
 # an inconsistent snapshot for data that can simply be re-seeded from the vault.

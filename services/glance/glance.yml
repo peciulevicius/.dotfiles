@@ -61,6 +61,30 @@ pages:
                 {{ range .JSON.Array "sleepers.list" }}<li class="flex justify-between"><a class="color-highlight" href="{{ .String "url" }}" target="_blank">{{ .String "name" }}</a><span class="{{ if .Bool "awake" }}lvl-ok{{ else }}color-subdue{{ end }}">{{ if .Bool "awake" }}🟢 awake{{ else }}💤 asleep{{ end }}</span></li>{{ end }}
               </ul>
 
+          # ── Image updates — from scripts/utils/update-report.sh (daily
+          # 06:30, after WUD's registry check), which reads WUD's API with its
+          # login and writes ./assets/updates.json. Glance never needs the
+          # WUD login and never touches a container.
+          - type: custom-api
+            title: Updates
+            cache: 5m
+            url: http://localhost:8080/assets/updates.json
+            template: |
+              {{ if .JSON.Bool "ok" }}
+              <div class="flex justify-between"><span>Safe to apply</span><span class="{{ if gt (.JSON.Int "counts.safe") 0 }}lvl-warn{{ else }}lvl-ok{{ end }}">{{ .JSON.Int "counts.safe" }}</span></div>
+              <ul class="list list-gap-2 size-h6" style="margin:4px 0 8px">
+                {{ range .JSON.Array "safe" }}<li class="flex justify-between"><span>{{ .String "name" }}</span><span class="color-subdue nowrap">{{ .String "current" }} → {{ .String "available" }}</span></li>{{ end }}
+              </ul>
+              <div class="flex justify-between"><span>Major (read notes)</span><span>{{ .JSON.Int "counts.major" }}</span></div>
+              <ul class="list list-gap-2 size-h6" style="margin:4px 0 8px">
+                {{ range .JSON.Array "major" }}<li class="flex justify-between"><span>{{ .String "name" }}</span><span class="color-subdue nowrap">{{ .String "current" }} → {{ .String "available" }}</span></li>{{ end }}
+              </ul>
+              <div class="flex justify-between color-subdue"><span>Held (DBs, false positives)</span><span>{{ .JSON.Int "counts.held" }}</span></div>
+              <div class="size-h6 color-subdue" style="margin-top:8px">upgrade-service.sh &lt;service&gt; · checked {{ .JSON.String "updated" }} · <a class="color-highlight" href="http://100.81.171.49:3070" target="_blank">WUD</a></div>
+              {{ else }}
+              <p class="lvl-warn">{{ .JSON.String "error" }}</p>
+              {{ end }}
+
           - type: dns-stats
             service: pihole-v6
             url: http://host.docker.internal:8053
@@ -143,6 +167,10 @@ pages:
                 url: https://portainer.peciulevicius.com
                 check-url: http://portainer:9000/
                 icon: si:portainer
+              - title: WUD (image updates)
+                url: http://100.81.171.49:3070
+                check-url: http://wud:3000/health
+                icon: mdi:update
               - title: CouchDB (Obsidian sync)
                 url: https://couchdb.peciulevicius.com
                 check-url: http://couchdb:5984/_up
@@ -257,6 +285,9 @@ pages:
                   - title: Portainer
                     url: https://portainer.peciulevicius.com
                     icon: si:portainer
+                  - title: WUD (image updates)
+                    url: http://100.81.171.49:3070
+                    icon: mdi:update
                   - title: Glance
                     url: https://home.peciulevicius.com
                     icon: mdi:view-dashboard

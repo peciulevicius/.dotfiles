@@ -54,6 +54,7 @@ than one at a time. Start with the ones whose mail feeds automation:
 | Vaultwarden | `https://vault.peciulevicius.com` | email | Master password changed 2026-09-19 |
 | CouchDB | `https://couchdb.peciulevicius.com` | `<username>` | 32-char random, `.env`-backed |
 | Transmission | `http://100.81.171.49:9091` | `<username>` | 28-char random, `.env`-backed |
+| WUD | `http://100.81.171.49:3070` | `<username>` | Generated 2026-09-28, `.env`-backed; copy in `~/.config/homelab/wud.env` for `update-report.sh`. 👤 save to Vaultwarden |
 | Pi-hole | `https://pihole.peciulevicius.com` | *(password only)* | 32-char random. Old one was **5 characters** on a public panel controlling DNS — assume exposed. **Glance keeps a copy** (`PIHOLE_PASSWORD`, DNS widget) since the v6 upgrade |
 | Calibre-Web | `https://books.peciulevicius.com` | `<username>` | Generated, in Vaultwarden (2026-09-26); SMTP moved to Purelymail the same day |
 
