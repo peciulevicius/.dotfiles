@@ -410,8 +410,38 @@ pages:
     columns:
       - size: small
         widgets:
-          - type: markets
+          # ── Portfolio — real holdings from scripts/utils/finance-status.sh
+          # (IBKR Flex Web Service, daily 07:00) → ./assets/finance.json. All
+          # numbers are preformatted by the script; holdings never touch the
+          # repo. Setup: README → Finance.
+          - type: custom-api
             title: Portfolio
+            cache: 5m
+            url: http://localhost:8080/assets/finance.json
+            template: |
+              {{ if .JSON.Bool "ok" }}
+              <div class="flex justify-between items-center">
+                <span class="size-h6 color-subdue">Net worth (IBKR)</span>
+                <span class="size-h3 color-highlight">{{ .JSON.String "total.value" }}</span>
+              </div>
+              <ul class="list list-gap-10" style="margin-top:10px">
+                <li class="flex justify-between"><span>Last day</span><span class="lvl-{{ .JSON.String "total.day_level" }}">{{ .JSON.String "total.day_pnl" }}</span></li>
+                <li class="flex justify-between"><span>Unrealised</span><span class="lvl-{{ .JSON.String "total.unrealized_level" }}">{{ .JSON.String "total.unrealized_pnl" }} <span class="color-subdue">{{ .JSON.String "total.unrealized_pct" }}</span></span></li>
+                <li class="flex justify-between"><span>Cash</span><span>{{ .JSON.String "total.cash" }}</span></li>
+              </ul>
+              <div class="size-h6 color-subdue" style="margin-top:12px">Top positions</div>
+              <ul class="list list-gap-4" style="margin-top:4px">
+                {{ range .JSON.Array "positions" }}<li class="flex justify-between size-h6"><span>{{ .String "symbol" }} <span class="color-subdue">{{ .String "pct" }}</span></span><span class="nowrap">{{ .String "value" }} <span class="lvl-{{ .String "pnl_level" }}">{{ .String "pnl" }}</span></span></li>{{ end }}
+              </ul>
+              <div class="size-h6 color-subdue" style="margin-top:8px">as of {{ .JSON.String "total.as_of" }}{{ if .JSON.Bool "total.stale" }} · <span class="lvl-warn">stale — last fetch failed</span>{{ end }} · updated {{ .JSON.String "updated" }}</div>
+              {{ else if .JSON.Bool "configured" }}
+              <p class="lvl-warn">IBKR fetch failed: {{ range .JSON.Array "errors" }}{{ .String "" }} {{ end }}</p>
+              {{ else }}
+              <p class="color-subdue">Not configured yet — see <b>services/glance/README.md → Finance</b> (IBKR Flex token, ~10 min).</p>
+              {{ end }}
+
+          - type: markets
+            title: Watchlist
             markets:
               - symbol: BTC-EUR
                 name: Bitcoin
@@ -441,3 +471,16 @@ pages:
             subreddit: eupersonalfinance+financialindependence+Fire+investing
             limit: 15
             collapse-after: 5
+
+      - size: small
+        widgets:
+          - type: rss
+            title: Learn & markets
+            style: vertical-list
+            limit: 8
+            collapse-after: 4
+            feeds:
+              - url: https://www.babypips.com/feed.rss
+                title: Babypips (learning)
+              - url: https://feeds.a.dj.com/rss/RSSMarketsMain.xml
+                title: WSJ Markets

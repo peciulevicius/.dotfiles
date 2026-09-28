@@ -38,6 +38,7 @@ listed in [scripts/cron/README.md](https://github.com/peciulevicius/.dotfiles/bl
 | `scripts/backup/backup-external.sh` | rsync NAS data and dumps to an external drive | Manually, when a drive is connected |
 | `scripts/utils/homelab-audit.sh` | Audit drift, containers, backups, disk, recent commits and cron | Weekly (cron) |
 | `scripts/utils/homelab-status.sh` | Write the Glance status snapshot for *Training*, *Coach team*, *Homelab health* and *Sleeping apps* (`~/services/glance/assets/status.json`) | Every 5 minutes (cron) |
+| `scripts/utils/finance-status.sh` | Write the Glance *Portfolio* snapshot (IBKR holdings via Flex Web Service) to `~/services/glance/assets/finance.json` | Daily 07:00 (cron) |
 | `scripts/utils/run-with-notify.sh` | Wrap a cron job and notify Discord on failure and recovery | Used by every cron job |
 | `scripts/utils/mount-nas.sh` | Mount the NAS SMB shares | At login (launchd) |
 | `scripts/utils/nas-watchdog.sh` | Remount shares and restart NAS-backed containers | Every 5 minutes (launchd) |
@@ -466,6 +467,25 @@ an `ok`/`warn`/`bad` level on every value.
 
 Details, thresholds and the Glance side: `services/glance/README.md` →
 *Homelab health widget*.
+
+### finance-status.sh
+
+Holdings snapshot for the Glance **Finance** page's *Portfolio* widget. It
+fetches your IBKR positions, cash and NAV through the Flex Web Service
+(read-only token in `~/.config/homelab/ibkr-flex.env`) and writes
+preformatted totals, last-day and unrealised P&L, and the top 8 positions
+with allocation % to `~/services/glance/assets/finance.json`, outside the
+repo. A failed fetch keeps the last good data and marks it stale. Built for
+more providers later (Trading 212, Kraken, Capital.com, Ledger addresses, a
+manual CSV for Swedbank/Revolut): each one is a `fetch_<name>()` returning
+the same dict, and totals are summed across providers.
+
+```bash
+~/.dotfiles/scripts/utils/finance-status.sh --print          # fetch + show
+~/.dotfiles/scripts/utils/finance-status.sh --from-file x.xml  # parse a saved statement
+```
+
+Setup: `services/glance/README.md` → *Finance*.
 
 ### run-with-notify.sh
 

@@ -8,6 +8,20 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-28 — Finance page: real holdings pipeline
+
+- New `scripts/utils/finance-status.sh` (cron daily 07:00) pulls IBKR
+  positions, cash and NAV via the Flex Web Service (read-only token in
+  `~/.config/homelab/ibkr-flex.env`, not created yet) into
+  `~/services/glance/assets/finance.json`. The new **Portfolio** widget shows
+  totals, last-day / unrealised P&L and top positions; until the token
+  exists it shows a setup hint. Provider-agnostic JSON, so Trading 212,
+  Kraken, Capital.com, Ledger or a bank CSV can be added later.
+- Finance page rebuilt with native widgets only: Portfolio + Watchlist (left),
+  Personal Finance reddit (middle), Learn & markets RSS (Babypips + WSJ,
+  right). TradingView embeds were tried and removed: they work, but render
+  light and clash with the dark theme.
+
 ## 2026-09-28 — Standalone ntfy removed
 
 - `services/ntfy` (port 8095, deny-all auth) was built 2026-09-27 for the

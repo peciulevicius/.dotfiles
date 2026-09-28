@@ -116,6 +116,58 @@ failed or the container is down.
 own `bookmarks` widget was removed — those tiles now live once, on Home, in
 the Media group. Feed/Media/Finance keep their reddit/release/market feeds.
 
+## Finance page (rebuilt 2026-09-28)
+
+Three columns, native widgets only:
+- **Left:** **Portfolio** (`custom-api`, reads `/assets/finance.json`) and
+  **Watchlist** (`markets`, Yahoo symbols).
+- **Middle:** **Personal Finance** (reddit).
+- **Right:** **Learn & markets** RSS (Babypips + WSJ Markets, 8 items, 4
+  shown).
+
+TradingView embeds (chart, ticker tape, technical gauge, news, economic
+calendar) were tried the same day and removed. They frame fine (no
+`X-Frame-Options`/`frame-ancestors`), but they render as light boxes that
+clash with the dark theme.
+
+### Portfolio: real holdings from IBKR
+
+`scripts/utils/finance-status.sh` (cron, daily 07:00) pulls positions, cash
+and NAV through IBKR's **Flex Web Service**. That is a read-only token, with
+no daily login or 2FA and no trading permission. The script writes
+preformatted numbers to `~/services/glance/assets/finance.json`, so holdings
+never enter the repo. Until the token exists, the widget shows *Not configured
+yet*.
+
+**One-time setup (you, ~10 min):**
+1. IBKR **Client Portal** → *Performance & Reports* → **Flex Queries** →
+   *Activity Flex Query* → **+** (create):
+   - Name: `glance`
+   - Sections: **Open Positions** (options: Summary), **Cash Report**,
+     **Net Asset Value (NAV) in Base** / *Change in NAV*
+   - Format **XML**, Period **Last Business Day**, Date format `yyyyMMdd`
+   - Save, and note the **Query ID** shown in the list.
+2. Client Portal → *Settings* → **Flex Web Service** (under Reporting) →
+   enable, then **Generate token** (pick the longest validity; it expires,
+   and the widget will show the error when it does).
+3. On the Mac mini, in Terminal (nothing is echoed):
+   ```bash
+   read -rsp "Flex token: " T; echo; read -rp "Query ID: " Q
+   umask 077; printf 'IBKR_FLEX_TOKEN=%s\nIBKR_FLEX_QUERY_ID=%s\n' "$T" "$Q" > ~/.config/homelab/ibkr-flex.env; unset T
+   ~/.dotfiles/scripts/utils/finance-status.sh && echo ok
+   ```
+4. Refresh the Finance page.
+
+**Adding another account later.** Each provider is a `fetch_<name>()` in the
+script, returning the same dict (`nav`, `cash`, `day_pnl`, `unrealized_pnl`,
+`positions` in the base currency), and the totals sum across providers.
+Realistic sources:
+- **Trading 212**: API key
+- **Kraken**: read-only API key
+- **Capital.com**: API key
+- **Ledger**: public addresses plus a price lookup (no device access)
+- **Swedbank / Revolut**: no personal API, so a monthly CSV export
+
 ## Why no `check-url` for Sablier-managed (💤) services
 
 `services/caddy/` fronts ~11 services with scale-to-zero. Hitting one of
