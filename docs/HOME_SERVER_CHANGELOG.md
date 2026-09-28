@@ -8,6 +8,18 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-28 — Glance layout: status column moved left
+
+- Home page: the small column now sits on the **left** with the clock on top;
+  weather removed; Glance's `server-stats` dropped (it shows the Docker VM, not
+  the Mac). The health widget is now **Server** and adds CPU load, containers
+  running/total and uptime from `homelab-status.sh`.
+- Bookmarks lost their 💤 prefixes and the legend line: "Sleeping apps" in the
+  left column is the one place that shows scale-to-zero state (the 💤 icons
+  were read as "offline").
+- Training rows fit on one line: Form (TSB) with fitness/fatigue beside it,
+  shorter Night and Week rows.
+
 ## 2026-09-28 — Glance: Training, Coach team and Sleeping apps widgets
 
 - "💤 Apps awake 5 / 11" next to eleven 💤 bookmarks read as a mismatch. 💤

@@ -49,6 +49,15 @@ docker_total=$(docker info --format '{{.MemTotal}}' 2>/dev/null || echo 0)
 docker stats --no-stream --format '{{.MemUsage}}' 2>/dev/null | awk '{print $1}' > "$tmpdir/mem" || true
 swap_line=$(sysctl -n vm.swapusage 2>/dev/null || echo "")
 
+# ── Host: CPU load, cores, uptime, container counts (Glance's own
+# server-stats widget only sees the Docker VM, not the Mac)
+export HS_LOAD HS_CORES HS_BOOT HS_RUNNING HS_TOTAL
+HS_LOAD=$(sysctl -n vm.loadavg 2>/dev/null | awk '{print $2}')
+HS_CORES=$(sysctl -n hw.ncpu 2>/dev/null)
+HS_BOOT=$(sysctl -n kern.boottime 2>/dev/null | sed -E 's/^[{] sec = ([0-9]+),.*/\1/')
+HS_RUNNING=$(docker ps -q 2>/dev/null | wc -l | tr -d ' ')
+HS_TOTAL=$(docker ps -aq 2>/dev/null | wc -l | tr -d ' ')
+
 # ── Disk: APFS data volume (the real one, not the sealed system volume) + NAS
 disk_host=$(df -k /System/Volumes/Data 2>/dev/null | awk 'NR==2 {print $5}' | tr -d '%')
 disk_nas=$(df -k /Volumes/media 2>/dev/null | awk 'NR==2 {print $5}' | tr -d '%')
@@ -301,7 +310,7 @@ if tp.get("ok"):
     hrv, rhr, sleep = last("HRV"), last("Pulse"), last("Sleep Hours")
     training["recovery"] = (f"HRV {hrv:.0f}" if hrv else "HRV –") + " · " + \
         (f"RHR {rhr:.0f}" if rhr else "RHR –") + " · " + \
-        (f"sleep {int(sleep)}h{round((sleep % 1) * 60):02d}" if sleep else "sleep –")
+        (f"{int(sleep)}h{round((sleep % 1) * 60):02d} sleep" if sleep else "sleep –")
     wk = tp.get("week", {})
     ws = wk.get("workouts", [])
     real = [w for w in ws if w.get("sport") not in ("DayOff", None)]
@@ -317,7 +326,20 @@ today = re.sub(r"[*_`]", "", today_line).strip()
 if len(today) > 160:
     today = today[:157].rstrip() + "…"
 
+def host_stats():
+    env = os.environ
+    load = float(env.get("HS_LOAD") or 0)
+    cores = int(env.get("HS_CORES") or 1)
+    boot = int(env.get("HS_BOOT") or 0)
+    up_h = (now - boot) / 3600 if boot else 0
+    up = f"{up_h / 24:.0f}d" if up_h >= 48 else f"{up_h:.0f}h"
+    cpu_pct = round(100 * load / cores)
+    return {"load": round(load, 2), "cores": cores, "cpu_pct": cpu_pct,
+            "cpu_level": level(cpu_pct, 70, 100), "uptime": up,
+            "running": int(env.get("HS_RUNNING") or 0), "containers": int(env.get("HS_TOTAL") or 0)}
+
 status = {
+    "host": host_stats(),
     "updated": datetime.now().strftime("%H:%M"),
     "refresh_min": int(refresh_min),
     "memory": {"used_gb": round(used / 1024, 1), "total_gb": round(total / 1024, 1),

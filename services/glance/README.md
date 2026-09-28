@@ -8,33 +8,31 @@ copy → diff → recreate workflow.
 
 ## Layout (redesigned 2026-09-27)
 
-**Home page**, one `full`-width column for services + one `small` side column
-for everything else:
+**Home page**: a `small` column on the **left** (the status panels — where
+the eye lands first) and one `full`-width column for services:
 
+Left column, top to bottom: `clock` (24h), **Training**, **Coach team**,
+**Server** (the former Homelab health widget plus CPU, containers and uptime),
+**Sleeping apps**, `dns-stats` (Pi-hole), `repository` (this repo),
+`calendar`. `weather` was removed and Glance's built-in `server-stats` was
+dropped 2026-09-28: inside Docker Desktop it reports the Linux VM, not the Mac,
+so its numbers disagreed with the Server widget.
+
+Main column:
 1. **`monitor` — "Always-On Services"**: a compact status grid, `check-url`
    against every service that is *not* Sablier-managed. 19 sites.
 2. **`bookmarks`**: every service on the homelab, exactly once, grouped by
    purpose — **Media**, **Files & Docs**, **Security & Network**, **AI &
-   Agents**, **Ops**. A 💤 prefix on the title marks a Sablier scale-to-zero
-   service (`services/caddy/`) — asleep by default, opens on click.
-3. **`docker-containers` — "Live Status"**: `running-only: true`. This is how
-   a 💤 service's *current* awake/asleep state shows up without Glance ever
-   polling it directly — when someone opens a sleeper and Sablier starts it,
-   its container appears here; once Sablier stops it again it drops back out.
+   Agents**, **Ops**. Scale-to-zero apps carry no marker any more (the 💤
+   prefix and its legend were removed 2026-09-28); their live state is the
+   **Sleeping apps** widget.
+3. **`docker-containers` — "Live Status"**: `running-only: true`, which
+   containers are up right now.
 
-A one-line `html` legend sits under the bookmarks: 💤 means *sleeps when
-idle, wakes when opened*, not *asleep right now* (the live state is the
-**Sleeping apps** widget). Added 2026-09-28 after "5 / 11 awake" next to
-eleven 💤 tiles read as a mismatch.
+## Server widget (added 2026-09-27 as "Homelab health")
 
-Side column: **Training**, **Coach team**, **Homelab health**, **Sleeping
-apps** (all below), `server-stats`, `dns-stats`
-(Pi-hole), `repository` (this repo), `calendar`, `weather`, `clock` — moved
-here (2026-09-27) so the full-width column is 100% services.
-
-## Homelab health widget (added 2026-09-27)
-
-A `custom-api` widget at the top of the side column. It shows:
+A `custom-api` widget in the left column. It shows:
+- CPU (1-min load average ÷ cores), containers running / total, Mac uptime
 - Docker VM memory, macOS swap, and disk usage (Mac data volume and NAS)
 - how long ago the R2 backup, the DB dumps and the T5/T7 drive backups ran
 (the 💤 count, Paperclip queue, check-in age and Dietitian line moved to
