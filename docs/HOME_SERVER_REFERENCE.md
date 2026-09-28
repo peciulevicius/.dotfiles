@@ -289,6 +289,17 @@ line and wiring: `services/pihole/README.md` → *Encrypted upstream*.
 - **Mullvad VPN** — the add-on's exit nodes; `transmission-ts` exits via
   Stockholm (see *Transmission runs behind a Tailscale sidecar*).
 
+**Which devices use Pi-hole (+ the encrypted unbound upstream):** only
+Tailscale devices with Tailscale on (tailnet DNS → Pi-hole, *Override local
+DNS*). The router still hands out `192.168.1.1`, so the house LAN does **not**
+depend on Pi-hole. The **Mac mini** itself runs `tailscale set
+--accept-dns=false` (2026-09-28) and uses its Ethernet DNS `127.0.0.1` (Pi-hole)
+with `192.168.1.1` as fallback, so the server keeps resolving (tunnel,
+backups) even if Pi-hole/unbound is down. It also advertises itself as an
+exit node (`--advertise-exit-node`, approved in the admin console) — the
+"Lithuanian IP" option for the phone and laptop. Re-logging in the Tailscale
+app can reset both flags; check with `tailscale debug prefs | grep -E 'CorpDNS|AdvertiseRoutes' -A2`.
+
 **Key expiry — policy.** Every device has a node key that expires (default
 180 days); an expired device silently drops off the tailnet until it logs in
 again. It is **not** an `.env` value — it lives in each device's Tailscale
