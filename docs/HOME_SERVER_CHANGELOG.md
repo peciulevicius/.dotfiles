@@ -8,6 +8,14 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-28 — Obsidian vault cleanup applied
+
+- Approved proposals applied (vault is private, not in this repo): 7 templates
+  in `🧩 Templates/` with the core Templates plugin, 16 unfilled skeleton pages
+  archived, Kindle Scribe imports merged into their project notes (originals
+  archived), HOME.md rewritten (no git step — R2 + Syncthing), `.stignore`
+  ignores `.DS_Store`. Snapshot: `~/backups/obsidian-vault-pre-cleanup-2026-09-28.tgz`.
+
 ## 2026-09-28 — WUD login fixed
 
 - WUD rejected the login after the credentials were changed in `.env`: WUD 9
