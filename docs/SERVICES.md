@@ -26,7 +26,7 @@ Run your own cloud on a Mac mini (or any Docker host). Self-hosted services cove
 
 | Service | URL | Port | Replaces |
 |---------|-----|------|----------|
-| [Pi-hole](#pi-hole) | pihole.peciulevicius.com/admin/ (the bare domain returns 403 since v6) | 8053, 53 | Router DNS + ad blocker |
+| [Pi-hole](#pi-hole) | pihole.peciulevicius.com/admin/ (the bare domain returns 403 since v6) | 8053, 53 | Router DNS + ad blocker; upstream = `unbound` (DNS-over-TLS, no ports) |
 | [Stirling PDF](#stirling-pdf) ⚡ | pdf.peciulevicius.com | 8084 | Adobe Acrobat |
 | [IT-Tools](#it-tools) ⚡ | tools.peciulevicius.com | 8085 | Online dev tools |
 | [Audiobookshelf](#audiobookshelf) ⚡ | listen.peciulevicius.com | 13378 | Audible |
@@ -508,9 +508,14 @@ a different mobile client, or paying for the ad-free tier. Anyone claiming
 "self-host Pi-hole/AdGuard to kill YouTube ads" is mistaken — no DNS blocker can,
 by design.
 
+**Encrypted upstream (2026-09-28):** Pi-hole forwards to an `unbound`
+container that sends everything over DNS-over-TLS to Quad9 + Cloudflare, so the
+ISP no longer sees queried domains (details: `services/pihole/README.md` →
+*Encrypted upstream*).
+
 **Pi-hole vs AdGuard Home:** roughly equivalent for blocking. AdGuard Home has
-built-in DNS-over-HTTPS/TLS and per-client rules without add-ons; Pi-hole has a
-larger ecosystem. Neither blocks YouTube. Not worth switching for ad coverage.
+built-in DNS-over-HTTPS/TLS and per-client rules without add-ons (Pi-hole gets
+the same via the unbound container); Pi-hole has a larger ecosystem. Neither blocks YouTube. Not worth switching for ad coverage.
 
 **Current effectiveness here:** ~3.6% of queries blocked (12,812 queries / 459
 blocked on 2026-09-08), against ~80,000 blocklist domains. That is low mainly

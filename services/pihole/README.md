@@ -36,6 +36,57 @@ After starting, go to Pi-hole admin → Settings → Local DNS → DNS Records.
 Add entries for all `*.peciulevicius.com` subdomains pointing to the Mac mini's local IP.
 See `.env.example` for the full list.
 
+## Encrypted upstream — unbound (2026-09-28)
+
+**Why.** Pi-hole used to ask `1.1.1.1` in plain DNS, so the home ISP (Telia)
+could read every domain any device looked up — including phones on a Mullvad
+exit node, because Tailscale sends their DNS to this Pi-hole, which then
+queried the internet in the clear from the home connection.
+
+**What.** The `unbound` service in this same compose stack
+(`klutchell/unbound:v1.26.1`, distroless, 64 MB limit, no published ports) is
+Pi-hole's only upstream. It caches, validates DNSSEC, logs no queries, and
+forwards everything over **DNS-over-TLS (port 853)** to Quad9
+(`9.9.9.9`, `149.112.112.112`, `dns.quad9.net`) and Cloudflare (`1.1.1.1`,
+`1.0.0.1`, `cloudflare-dns.com`). The ISP now sees only encrypted TLS to those
+four IPs. Quad9/Cloudflare still see the queries (that's inherent to any
+upstream resolver) but not who you are beyond the home IP.
+
+**How it's wired.**
+- Config is inline in `docker-compose.yml` (`configs: unbound-forward-tls`),
+  mounted into the image's `custom.conf.d/` — no extra file to stage.
+- Pi-hole v6 needs an **IP** upstream, so unbound has a fixed address,
+  `10.99.17.53`, which required declaring the `pihole` network's subnet
+  (`10.99.17.0/24`, the one Docker had auto-assigned) in the compose — Docker
+  only allows `ipv4_address` on user-configured subnets. `UPSTREAM_DNS` in
+  `.env` = `10.99.17.53#53`.
+- Changing the network block needs the network recreated: Glance is attached
+  to `pihole`, so `docker network disconnect pihole glance`, then
+  `docker compose down && docker compose up -d`, then
+  `docker network connect pihole glance`. Pi-hole is down ~5 s.
+
+**Verified 2026-09-28:** unbound resolves; `sigfail.ippacket.stream` and
+`dnssec-failed.org` → SERVFAIL, `sigok…` → NOERROR, `ad` flag set; unbound's
+only outbound connections are TCP `:853` (no plain `:53`); Pi-hole's log shows
+`forwarded … to 10.99.17.53`; queries via `127.0.0.1` and `100.81.171.49`
+resolve and `doubleclick.net` still returns `0.0.0.0`.
+
+**Check any time:**
+```bash
+docker exec pihole pihole-FTL --config dns.upstreams      # [ 10.99.17.53#53 ]
+dig @100.81.171.49 dnssec-failed.org | grep status         # SERVFAIL = DNSSEC on
+docker run --rm --network container:unbound busybox netstat -tn   # only :853
+```
+
+**Rollback (plain DNS, instant):**
+```bash
+docker exec pihole pihole-FTL --config dns.upstreams '["1.1.1.1","1.0.0.1"]'
+```
+That lasts until the next Pi-hole recreate (compose sets it from `.env`); to
+make it permanent set `UPSTREAM_DNS=1.1.1.1;1.0.0.1` in `~/services/pihole/.env`
+and `docker compose up -d`. If unbound is down, Pi-hole can't resolve anything
+— that's the failure mode to recognise (check `docker ps | grep unbound`).
+
 ## Ports
 
 | Port | Protocol | Purpose |

@@ -3,6 +3,12 @@
 # v6 (2025+): lighttpd/PHP replaced by FTL's embedded webserver, config lives in
 # /etc/pihole/pihole.toml, env vars are FTLCONF_<section>_<key>.
 # v5 -> v6 upgrade notes: https://docs.pi-hole.net/docker/upgrading/v5-v6/
+#
+# Upstream (2026-09-28): Pi-hole forwards to the `unbound` service below,
+# which re-sends every query over DNS-over-TLS (port 853) to Quad9 and
+# Cloudflare. Before this, Pi-hole asked 1.1.1.1 in plain text, so the home
+# ISP could read every domain looked up — even for phones using a Mullvad
+# exit node, because their DNS still goes to this Pi-hole. See README.
 
 name: pihole
 
@@ -23,13 +29,66 @@ services:
     environment:
       TZ: ${TZ:-Europe/Vilnius}
       FTLCONF_webserver_api_password: ${PIHOLE_PASSWORD:?set PIHOLE_PASSWORD in .env}
-      FTLCONF_dns_upstreams: ${UPSTREAM_DNS:-1.1.1.1;1.0.0.1}
+      # unbound's fixed address on the pihole network (see below). Pi-hole v6
+      # needs an IP here, not a container name.
+      FTLCONF_dns_upstreams: ${UPSTREAM_DNS:-10.99.17.53#53}
       # Docker bridge: queries arrive from the bridge gateway, not the LAN, so
       # the default "LOCAL" mode would refuse them.
       FTLCONF_dns_listeningMode: ALL
     cap_add:
       - NET_ADMIN
+    depends_on:
+      - unbound
+
+  # Encrypted upstream for Pi-hole: a caching forwarder that speaks only
+  # DNS-over-TLS to Quad9 + Cloudflare, validates DNSSEC and logs no queries.
+  # No published ports — only Pi-hole talks to it. Distroless image (no
+  # shell), so there's no in-container healthcheck; a dead unbound shows up
+  # as Pi-hole failing to resolve (homelab-audit checks both are running).
+  unbound:
+    container_name: unbound
+    image: klutchell/unbound:v1.26.1
+    restart: unless-stopped
+    mem_limit: 64m
+    configs:
+      - source: unbound-forward-tls
+        target: /etc/unbound/custom.conf.d/forward-tls.conf
+    networks:
+      default:
+        ipv4_address: ${UNBOUND_IP:-10.99.17.53}
+
+configs:
+  unbound-forward-tls:
+    content: |
+      # Included after the image's default unbound.conf; later values win.
+      server:
+        interface: 0.0.0.0
+        port: 53
+        do-ip6: no
+        # Small caches: this sits behind Pi-hole's own cache.
+        msg-cache-size: 8m
+        rrset-cache-size: 16m
+        # No query or reply logging.
+        verbosity: 0
+        log-queries: no
+        log-replies: no
+        qname-minimisation: yes
+        hide-identity: yes
+        hide-version: yes
+      forward-zone:
+        name: "."
+        forward-tls-upstream: yes
+        forward-addr: 9.9.9.9@853#dns.quad9.net
+        forward-addr: 149.112.112.112@853#dns.quad9.net
+        forward-addr: 1.1.1.1@853#cloudflare-dns.com
+        forward-addr: 1.0.0.1@853#cloudflare-dns.com
 
 networks:
   default:
     name: pihole
+    # Explicit subnet (same one Docker had auto-assigned) so unbound can have
+    # a fixed IP — Docker only allows ipv4_address on user-configured subnets.
+    ipam:
+      config:
+        - subnet: 10.99.17.0/24
+          gateway: 10.99.17.1

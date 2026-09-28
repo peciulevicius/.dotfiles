@@ -8,6 +8,19 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-28 — Pi-hole upstream encrypted (unbound, DNS-over-TLS)
+
+- New `unbound` container in the Pi-hole stack (`klutchell/unbound:v1.26.1`,
+  64 MB, no ports) as Pi-hole's only upstream: DNSSEC, cache, no query logs,
+  forwards over DNS-over-TLS to Quad9 + Cloudflare. **Why:** Pi-hole asked
+  1.1.1.1 in plain text, so the ISP could read every looked-up domain —
+  even for phones on a Mullvad exit node, whose DNS still lands on Pi-hole.
+- The `pihole` network now declares its subnet (`10.99.17.0/24`, unchanged)
+  so unbound can hold a fixed IP (`10.99.17.53`), which Pi-hole v6 requires.
+  Network recreated with Glance detached/reattached; ~5 s DNS downtime.
+- Verified: DNSSEC fail → SERVFAIL, only `:853` egress, Pi-hole forwards to
+  unbound, blocking intact. Glance: bookmark only (DNS has no HTTP check).
+
 ## 2026-09-28 — Transmission through Mullvad, with a real kill switch
 
 - Tailscale Mullvad add-on bought. `transmission-ts` exits via

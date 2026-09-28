@@ -161,6 +161,8 @@ Section names in *italics* are headings below.
   - [ ] Swedbank / Revolut — no personal API: decide between open-banking aggregator (90-day re-consent) or monthly CSV import.
   - [ ] Decide: grow this into **Monifo as a personal self-hosted app** (P&L calendar, trade journal, dividends — the screenshots) instead of more Glance widgets. Glance keeps a one-card summary + link.
 
+- 👤 Optional: Uptime Kuma **DNS** monitor for the resolver chain (Kuma has no monitor API — UI step): + Add New Monitor → DNS → hostname `example.com`, resolver `host.docker.internal` port 53 → alerts if Pi-hole *or* unbound stops answering.
+
 ### 🤖 Claude can do next
 
 - [x] ~~Rotate the **Radarr + Sonarr API keys**~~ — **done 2026-09-27**

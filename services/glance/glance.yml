@@ -263,6 +263,11 @@ pages:
                   - title: Caddy + Sablier (no web UI — README)
                     url: https://github.com/peciulevicius/.dotfiles/blob/main/services/caddy/README.md
                     icon: si:caddy
+                  # unbound: DNS-only (no HTTP), so no monitor/check-url —
+                  # Pi-hole's dns-stats widget failing is the visible signal.
+                  - title: Unbound (encrypted DNS — README)
+                    url: https://github.com/peciulevicius/.dotfiles/blob/main/services/pihole/README.md
+                    icon: mdi:lock-outline
                   - title: UGREEN NAS
                     url: https://nas.peciulevicius.com
                     icon: di:ugreen

@@ -269,6 +269,14 @@ alone wants 2GB. See [guides/OCTOPUS_DEPLOY.md](guides/OCTOPUS_DEPLOY.md).
 
 ---
 
+## DNS path (2026-09-28)
+
+Device → (Tailscale DNS or LAN) → **Pi-hole** `100.81.171.49:53` (blocklists,
+cache) → **unbound** `10.99.17.53` on the `pihole` Docker network (DNSSEC,
+cache) → **DNS-over-TLS :853** → Quad9 / Cloudflare. Nothing leaves the house
+as plain DNS. If `unbound` is stopped, Pi-hole resolves nothing. Rollback
+line and wiring: `services/pihole/README.md` → *Encrypted upstream*.
+
 ## Tailscale — what it's used for, and key expiry
 
 **Used for (2026-09-28):**
