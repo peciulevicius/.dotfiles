@@ -269,6 +269,42 @@ alone wants 2GB. See [guides/OCTOPUS_DEPLOY.md](guides/OCTOPUS_DEPLOY.md).
 
 ---
 
+## Tailscale — what it's used for, and key expiry
+
+**Used for (2026-09-28):**
+- **Remote access** — every service on `100.81.171.49:<port>` (Paperclip,
+  Jellyseerr, Odysseus, Transmission UI, …) from the phone/laptop anywhere,
+  without opening router ports. Public-facing services use the Cloudflare
+  Tunnel instead; Tailscale is the private door.
+- **DNS** — tailnet DNS points at Pi-hole (`100.81.171.49`, *Override local
+  DNS*), so ad blocking follows the phone everywhere.
+- **Mullvad VPN** — the add-on's exit nodes; `transmission-ts` exits via
+  Stockholm (see *Transmission runs behind a Tailscale sidecar*).
+
+**Key expiry — policy.** Every device has a node key that expires (default
+180 days); an expired device silently drops off the tailnet until it logs in
+again. It is **not** an `.env` value — it lives in each device's Tailscale
+state.
+- **Always-on machines you own → expiry disabled:** Mac mini, NAS,
+  `transmission-ts`. (Admin console → Machines → device → ⋯ → *Disable key
+  expiry*.) A dropped server is the expensive failure.
+- **Portable devices → expiry kept on:** iPhone, MacBook. If one is lost, its
+  access dies on its own. Renewing is just a login, so the dates don't need to
+  match — each login restarts that device's 180 days.
+
+**Renewing an expired/expiring key:**
+- **iPhone / Mac app:** open Tailscale → it shows *Log in* / *Reauthenticate*
+  → sign in. Done; same IP, same name.
+- **`transmission-ts` (container)**, if expiry was ever re-enabled and ran
+  out: admin console → Settings → Keys → *Generate auth key* (one-off), then
+  `docker exec transmission-ts tailscale up --auth-key=<key> --exit-node=se-sto-wg-201.mullvad.ts.net --exit-node-allow-lan-access=true --accept-dns=false`.
+  The `TS_AUTHKEY` in `~/services/transmission/.env` is only used on the very
+  first login (`TS_AUTH_ONCE`), so editing it does nothing afterwards.
+  While expired, the kill switch keeps Transmission offline — no leak.
+- **Mac mini / NAS:** expiry is off; if a re-login is ever needed,
+  `tailscale up` on the machine (NAS: in its container) and approve in the
+  browser.
+
 ## Transmission runs behind a Tailscale sidecar
 
 Since 2026-09-26 `transmission` uses `network_mode: service:transmission-ts`
