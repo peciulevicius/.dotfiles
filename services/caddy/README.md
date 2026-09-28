@@ -64,8 +64,8 @@ work, then set the real duration and reload cloudflared.
 | `audiobookshelf` | audiobookshelf |
 | `jellyfin` | jellyfin |
 
-ntfy stays **out** of the `odysseus` group on purpose — it's the always-on
-push service (see the Coach/ntfy work), not something that should sleep.
+Odysseus's bundled ntfy stays **out** of the `odysseus` group on purpose, so
+reminders still arrive while the app sleeps.
 
 ## Tailscale-only apps
 

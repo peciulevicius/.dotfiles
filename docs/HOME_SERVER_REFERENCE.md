@@ -257,19 +257,15 @@ alone wants 2GB. See [guides/OCTOPUS_DEPLOY.md](guides/OCTOPUS_DEPLOY.md).
 
 ---
 
-## ntfy — two instances, don't confuse them
+## ntfy — only the Odysseus one is left
 
-- `services/ntfy/` (2026-09-27): standalone, always-on, port 8095, persistent
-  `auth.db`, `auth-default-access: deny-all`. Built for the Paperclip Coach
-  agent's daily push.
-- `services/odysseus`'s bundled ntfy: port 8091, no auth, cache-only, stops
-  when Odysseus does (on-demand). Left alone on purpose — don't add auth to it
-  or point anything critical at it, it's scoped to casual Odysseus reminders.
-- Deny-all means every topic needs an explicit per-user grant
-  (`ntfy access <user> <topic> <read-write|read-only|write-only>`) — a new
-  user with no grant gets 403 on that topic even though the account exists.
-- `ntfy token add <user>` is the credential to hand out (phone app, curl
-  scripts) — never the account password.
+- `services/odysseus`'s bundled ntfy: port 8091, no auth, cache-only. Scoped
+  to casual Odysseus reminders — don't point anything critical at it.
+- A standalone, authenticated ntfy (`services/ntfy/`, port 8095) existed
+  2026-09-27 → 2026-09-28 for the Paperclip Coach's push. Removed once the
+  Coach team moved to Discord (ntfy's iOS app won't log in with a token and an
+  empty username). Backup of its data/auth.db:
+  `~/backups/ntfy-removed-2026-09-28.tgz`.
 
 ---
 

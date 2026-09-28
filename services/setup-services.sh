@@ -46,7 +46,6 @@ SERVICES=(
   trainingpeaks-mcp
   strava-mcp
   paperclip
-  ntfy
   discord-bridge
 )
 
@@ -82,7 +81,6 @@ SERVICE_PORTS=(
   "trainingpeaks-mcp:8092"
   "strava-mcp:8093"
   "paperclip:3100"
-  "ntfy:8095"
   "discord-bridge:—"
 )
 

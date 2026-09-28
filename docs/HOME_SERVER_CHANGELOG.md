@@ -8,6 +8,18 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-28 — Standalone ntfy removed
+
+- `services/ntfy` (port 8095, deny-all auth) was built 2026-09-27 for the
+  Paperclip Coach's phone push, then superseded the same day by Discord
+  webhooks + the two-way `discord-bridge`: ntfy's iOS app refuses the empty
+  username that token-only login needs, and push was one-way anyway. Nothing
+  else used it (no Kuma monitor, no Paperclip secrets left, off Glance).
+- Removed: container + `ntfy` network, `setup-services.sh` entries, the
+  rclone cache exclude, docs (SERVICES, REFERENCE, TODO). Data backup:
+  `~/backups/ntfy-removed-2026-09-28.tgz`. Odysseus's own bundled ntfy
+  (port 8091) is unaffected.
+
 ## 2026-09-28 — Glance layout: status column moved left
 
 - Later the same morning: Home split into **three columns** (homelab left,

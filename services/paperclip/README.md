@@ -517,9 +517,8 @@ only via `adapterConfig.env.COACH_DISCORD_WEBHOOK` as a `secret_ref`
 (`version: "latest"`). ⚠️ An earlier pass created `ntfy-publish-token` /
 `ntfy-topic` Paperclip secrets before the board decided ntfy's iOS app
 wouldn't take token-only login and pushing is one-way anyway — those were
-deleted and Coach's env binding cleared before Discord was wired in. `ntfy`
-itself is untouched; it still serves other things (Odysseus reminders, Uptime
-Kuma).
+deleted and Coach's env binding cleared before Discord was wired in. The
+standalone `ntfy` service itself was removed 2026-09-28 (unused).
 
 **Phone push (Discord, not ntfy).** Coach posts to the `#ai-training-coach` Discord channel
 via webhook — see *Phone push (Discord)* in

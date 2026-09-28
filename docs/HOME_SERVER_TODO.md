@@ -95,19 +95,11 @@ Section names in *italics* are headings below.
     `services/paperclip/README.md` → *Coach — adaptive triathlon coaching*.
   - [x] ~~Approve Coach's connection cards~~ — TrainingPeaks reads work
     (COA-6 pulled body composition 2026-09-27).
-  - 👤 **ntfy iOS app**: install, add server `http://100.81.171.49:8095`,
-    subscribe to the topic using the **read** token
-    (`grep NTFY_READ_TOKEN ~/services/ntfy/.env` — the topic name is
-    `NTFY_TOPIC` in the same file). No longer needed for Coach (it pushes to
-    Discord instead — ntfy's iOS app doesn't take token-only login and push is
-    one-way anyway); still useful for Odysseus reminders and Uptime Kuma.
+  - [x] ~~ntfy iOS app / Kuma monitor for ntfy~~ — standalone ntfy removed
+    2026-09-28 (unused; Coach team uses Discord). Delete the ntfy app from the
+    phone if it was installed.
   - 👤 **Refresh the TrainingPeaks cookie when `tp_auth_status` fails** — it
     expires every few weeks. Steps: `services/trainingpeaks-mcp/README.md`.
-  - 👤 **Uptime Kuma monitor for ntfy** — Kuma has no monitor-creation API
-    (only its dashboard), so this is a UI step: **+ Add New Monitor** → HTTP(s)
-    → *ntfy* → `http://host.docker.internal:8095/v1/health` (Kuma isn't joined
-    to the `ntfy` Docker network, unlike Glance — it reaches published ports
-    via the host instead) → expect 200.
 - Pi-hole: Caddy decision, router DNS — *Pi-hole — finish the deployment*
 - Old photo archives into Immich (needs T7 + judgement) — *Import old photo archives into Immich*
 - Paperless tags/types — *Paperless-NGX — organise documents*

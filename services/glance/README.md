@@ -18,10 +18,8 @@ widget plus CPU, containers and uptime), **Sleeping apps**, `dns-stats`
 `calendar`. `weather` was removed and Glance's built-in `server-stats` was
 dropped 2026-09-28: inside Docker Desktop it reports the Linux VM, not the Mac,
 so its numbers disagreed with the Server widget. The **Media** page was
-removed the same day (two subreddits and app release notes — not used). ntfy
-is off the page too: nothing uses the standalone instance any more (the Coach
-team posts to Discord; Odysseus has its own bundled ntfy); the service itself
-still runs.
+removed the same day (two subreddits and app release notes — not used). The standalone ntfy was removed entirely (2026-09-28); the Coach team posts
+to Discord.
 
 Main column:
 1. **`monitor` — "Always-On Services"**: a compact status grid, `check-url`
