@@ -3,7 +3,7 @@
 server:
   assets-path: /app/assets
 
-# lvl-ok / lvl-warn / lvl-bad colours for the Homelab health widget (the
+# lvl-ok / lvl-warn / lvl-bad colours for the status widgets (the
 # stock palette has no amber). File lives next to status.json in ./assets.
 theme:
   custom-css-file: /assets/health.css
@@ -228,6 +228,11 @@ pages:
                     url: https://rss.peciulevicius.com
                     icon: mdi:rss
 
+          # ── Legend for the 💤 marks above (users read 💤 as "asleep now").
+          - type: html
+            source: |
+              <p class="size-h6 color-subdue">💤 = sleeps when idle — opening it wakes it (a few seconds, "starting…" page for browser tools). Stops after 30 min unused (Jellyfin + Audiobookshelf: 2 h). Live state: <b>Sleeping apps</b> in the side column.</p>
+
           # ── Live status — which containers Glance can actually see running
           # right now, on any joined network. This is how a Sablier sleeper's
           # current "awake" state shows up WITHOUT Glance ever polling it
@@ -241,19 +246,72 @@ pages:
 
       - size: small
         widgets:
+          # ── Training + Coach team — from the same status.json (see Homelab
+          # health below): TrainingPeaks numbers cached 30 min by the script,
+          # the latest Coach check-in comment and the Dietitian's today line.
+          - type: custom-api
+            title: Training
+            cache: 1m
+            url: http://localhost:8080/assets/status.json
+            template: |
+              <div class="flex justify-between items-center">
+                <span class="size-h6 color-subdue">IRONMAN 70.3 Luxembourg</span>
+                <span class="size-h4 color-highlight">{{ .JSON.Int "training.race_days" }} days</span>
+              </div>
+              {{ if .JSON.Bool "training.ok" }}
+              <ul class="list list-gap-10" style="margin-top:10px">
+                <li class="flex justify-between"><span>Fitness · fatigue · form</span>
+                  <span class="lvl-{{ .JSON.String "training.fitness.level" }}" title="{{ .JSON.String "training.fitness.status" }}">{{ .JSON.Int "training.fitness.ctl" }} · {{ .JSON.Int "training.fitness.atl" }} · {{ .JSON.Int "training.fitness.tsb" }}</span></li>
+                <li class="flex justify-between"><span>Weight (vs 7 d)</span>
+                  <span>{{ .JSON.String "training.weight.now" }} kg <span class="color-subdue">{{ .JSON.String "training.weight.delta" }}</span></span></li>
+                <li class="flex justify-between"><span>Body fat (vs 7 d)</span>
+                  <span>{{ .JSON.String "training.fat.now" }}% <span class="color-subdue">{{ .JSON.String "training.fat.delta" }}</span></span></li>
+                <li class="flex justify-between"><span>Last night</span>
+                  <span>{{ .JSON.String "training.recovery" }}</span></li>
+                <li class="flex justify-between"><span>This week</span>
+                  <span>{{ .JSON.Int "training.week.done" }}/{{ .JSON.Int "training.week.planned" }} done · {{ .JSON.Int "training.week.tss" }} TSS · {{ .JSON.Float "training.week.hours" }} h</span></li>
+                <li><div class="size-h6 color-subdue">Today</div><div class="size-h5">{{ .JSON.String "training.today" }}</div></li>
+              </ul>
+              {{ else }}
+              <p class="lvl-warn" style="margin-top:10px">{{ .JSON.String "training.error" }} — refresh the cookie (services/trainingpeaks-mcp/README.md)</p>
+              {{ end }}
+
+          - type: custom-api
+            title: Coach team
+            cache: 1m
+            url: http://localhost:8080/assets/status.json
+            template: |
+              <div class="flex justify-between"><span class="size-h6 color-subdue">Latest check-in</span>
+                <span class="size-h6 lvl-{{ .JSON.String "coach.checkin.level" }}">{{ .JSON.String "coach.checkin.age" }}</span></div>
+              <ul class="list list-gap-4" style="margin-top:6px">
+                {{ range .JSON.Array "coach.summary" }}<li class="size-h6">{{ .String "" }}</li>{{ end }}
+              </ul>
+              <div class="size-h6 color-subdue" style="margin-top:10px">Dietitian today</div>
+              <div class="size-h5">{{ .JSON.String "coach.today" }}</div>
+              <div class="flex justify-between" style="margin-top:10px">
+                <span>Waiting on you</span>
+                <span class="lvl-{{ .JSON.String "paperclip.level" }}">{{ if .JSON.Bool "paperclip.reachable" }}{{ .JSON.Int "paperclip.approvals" }} approvals · {{ .JSON.Int "paperclip.waiting" }} in review{{ else }}Paperclip unreachable{{ end }}</span>
+              </div>
+              <div class="flex gap-10 size-h6" style="margin-top:10px; flex-wrap:wrap">
+                <a class="color-highlight" href="https://discord.com/channels/1484527236798484602/1553523070348820661" target="_blank">💬 Coach</a>
+                <a class="color-highlight" href="https://discord.com/channels/1484527236798484602/1553768855975763998" target="_blank">💬 Dietitian</a>
+                <a class="color-highlight" href="http://100.81.171.49:3100" target="_blank">📎 Paperclip</a>
+              </div>
+
           # ── Homelab health — host-side snapshot written every 5 min by
           # scripts/utils/homelab-status.sh into ./assets/status.json (served
           # by Glance itself at /assets/, see server.assets-path above). Glance
           # can't see macOS swap, the APFS data volume, backup stamps or the
           # Paperclip board from inside its container; the script can. Levels
-          # (ok/warn/bad) are computed by the script. Reads only the local
-          # file, so it never wakes a sleeping app.
+          # (ok/warn/bad) are computed by the script. The Training, Coach team
+          # and Sleeping apps widgets read the same file. Reads only the local
+          # file, so nothing here ever wakes a sleeping app.
           - type: custom-api
             title: Homelab health
             cache: 1m
             url: http://localhost:8080/assets/status.json
             template: |
-              <ul class="list list-gap-10 collapsible-container" data-collapse-after="20">
+              <ul class="list list-gap-10">
                 <li class="flex justify-between"><span>Docker memory</span>
                   <span class="lvl-{{ .JSON.String "memory.level" }}">{{ .JSON.Float "memory.used_gb" }} / {{ .JSON.Float "memory.total_gb" }} GB</span></li>
                 <li class="flex justify-between"><span>macOS swap</span>
@@ -266,15 +324,18 @@ pages:
                   <span class="lvl-{{ .JSON.String "backups.db.level" }}">{{ .JSON.String "backups.db.age" }}</span></li>
                 <li class="flex justify-between"><span>T5 / T7 drives</span>
                   <span><span class="lvl-{{ .JSON.String "backups.t5.level" }}">{{ .JSON.String "backups.t5.age" }}</span> / <span class="lvl-{{ .JSON.String "backups.t7.level" }}">{{ .JSON.String "backups.t7.age" }}</span></span></li>
-                <li class="flex justify-between"><span>💤 Apps awake</span>
-                  <span title="{{ .JSON.String "sleepers.names" }}">{{ .JSON.Int "sleepers.awake" }} / {{ .JSON.Int "sleepers.total" }}</span></li>
-                <li class="flex justify-between"><span>Paperclip waiting on you</span>
-                  <span class="lvl-{{ .JSON.String "paperclip.level" }}">{{ if .JSON.Bool "paperclip.reachable" }}{{ .JSON.Int "paperclip.approvals" }} approvals · {{ .JSON.Int "paperclip.waiting" }} in review{{ else }}unreachable{{ end }}</span></li>
-                <li class="flex justify-between"><span>Coach check-in</span>
-                  <span class="lvl-{{ .JSON.String "coach.checkin.level" }}">{{ .JSON.String "coach.checkin.age" }}</span></li>
-                <li><div class="size-h6 color-subdue">Dietitian today</div><div class="size-h5">{{ .JSON.String "coach.today" }}</div></li>
               </ul>
-              <div class="size-h6 color-subdue" style="margin-top:8px">updated {{ .JSON.String "updated" }}</div>
+              <div class="size-h6 color-subdue" style="margin-top:8px">updated {{ .JSON.String "updated" }} · refreshes every {{ .JSON.Int "refresh_min" }} min</div>
+
+          - type: custom-api
+            title: Sleeping apps
+            cache: 1m
+            url: http://localhost:8080/assets/status.json
+            template: |
+              <div class="size-h6 color-subdue">{{ .JSON.Int "sleepers.awake" }} of {{ .JSON.Int "sleepers.total" }} awake right now — click to open (wakes it)</div>
+              <ul class="list list-gap-4" style="margin-top:6px">
+                {{ range .JSON.Array "sleepers.list" }}<li class="flex justify-between"><a class="color-highlight" href="{{ .String "url" }}" target="_blank">{{ .String "name" }}</a><span class="{{ if .Bool "awake" }}lvl-ok{{ else }}color-subdue{{ end }}">{{ if .Bool "awake" }}🟢 awake{{ else }}💤 asleep{{ end }}</span></li>{{ end }}
+              </ul>
 
           - type: server-stats
 

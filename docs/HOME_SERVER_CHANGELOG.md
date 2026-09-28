@@ -8,6 +8,22 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-28 — Glance: Training, Coach team and Sleeping apps widgets
+
+- "💤 Apps awake 5 / 11" next to eleven 💤 bookmarks read as a mismatch. 💤
+  means *sleeps when idle*, not *asleep now*. So there's now a one-line legend
+  under the bookmarks, and a **Sleeping apps** widget listing all 11 apps
+  with live 🟢/💤 state and links.
+- **Training** widget: days to Luxembourg, CTL/ATL/TSB, weight and body fat
+  against 7 days earlier, last night's HRV/RHR/sleep, this week done/planned,
+  and today's session. From the TrainingPeaks MCP (read-only tools), cached
+  30 min by `homelab-status.sh`.
+- **Coach team** widget: the latest check-in's first lines, the Dietitian's
+  today line, the Paperclip queue, and Discord/Paperclip links.
+- All three read the same `status.json` (still every 5 min). Personal numbers
+  stay in the generated files outside the repo. No container woke
+  (`docker ps` identical before and after).
+
 ## 2026-09-27 — Radarr + Sonarr API keys rotated
 
 - Both keys had been printed in a Claude session transcript on 2026-09-26.

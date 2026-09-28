@@ -22,7 +22,13 @@ for everything else:
    polling it directly — when someone opens a sleeper and Sablier starts it,
    its container appears here; once Sablier stops it again it drops back out.
 
-Side column: **Homelab health** (below), `server-stats`, `dns-stats`
+A one-line `html` legend sits under the bookmarks: 💤 means *sleeps when
+idle, wakes when opened*, not *asleep right now* (the live state is the
+**Sleeping apps** widget). Added 2026-09-28 after "5 / 11 awake" next to
+eleven 💤 tiles read as a mismatch.
+
+Side column: **Training**, **Coach team**, **Homelab health**, **Sleeping
+apps** (all below), `server-stats`, `dns-stats`
 (Pi-hole), `repository` (this repo), `calendar`, `weather`, `clock` — moved
 here (2026-09-27) so the full-width column is 100% services.
 
@@ -31,10 +37,8 @@ here (2026-09-27) so the full-width column is 100% services.
 A `custom-api` widget at the top of the side column. It shows:
 - Docker VM memory, macOS swap, and disk usage (Mac data volume and NAS)
 - how long ago the R2 backup, the DB dumps and the T5/T7 drive backups ran
-- how many 💤 apps are awake (hover the number for their names)
-- what Paperclip is waiting on you for (pending approvals plus in-review
-  issues)
-- the Coach check-in age and the Dietitian's line for today
+(the 💤 count, Paperclip queue, check-in age and Dietitian line moved to
+their own widgets on 2026-09-28, see below)
 
 Each value is coloured green, amber or red.
 
@@ -68,6 +72,37 @@ Thresholds are in the script:
 | DB dumps | 8 d | 15 d |
 | T5 / T7 | 35 d | 60 d |
 | Coach check-in | 26 h | 50 h |
+
+## Training, Coach team and Sleeping apps widgets (added 2026-09-28)
+
+Three more `custom-api` widgets read the **same** `status.json`:
+
+- **Training:** days to IRONMAN 70.3 Luxembourg (11 Jul 2027), with
+  fitness · fatigue · form (CTL · ATL · TSB). Also weight and body fat now, each
+  with its change against 7 days earlier, and last night's HRV, resting HR and
+  sleep. Then this week's done/planned sessions, TSS and hours, and today's
+  planned session. Source: the TrainingPeaks MCP (`127.0.0.1:8092`), read-only
+  tools only (`tp_auth_status`, `tp_get_fitness`, `tp_get_weekly_summary`,
+  `tp_get_metrics`). The script caches the result for **30 min** in
+  `~/.cache/homelab-status/tp.json`, so TrainingPeaks sees at most ~48 calls
+  a day. If the TP cookie has expired, the widget says "TP login expired" and
+  links nothing else (refresh steps: `services/trainingpeaks-mcp/README.md`).
+  Form turns amber below −10 and red below −25.
+- **Coach team:** the first 4 lines of the Coach's latest *Daily check-in*
+  comment (markdown headers dropped), the Dietitian's `today.md` line, what
+  Paperclip is waiting on you for, and links to the two Discord channels and
+  Paperclip.
+- **Sleeping apps:** all 11 Sablier groups with 🟢 awake / 💤 asleep and a
+  link to each (clicking wakes it). Awake apps sort first. State comes from
+  `docker ps`, never from requesting the app.
+
+Personal numbers (weight, HRV, check-in text) exist only in the generated
+files under `~/services/glance/assets/` and `~/.cache/`, which are outside
+the repo. Nothing personal is committed.
+
+**Refresh:** the script runs every 5 min (cron). The widgets re-read the file
+every minute, and each footer shows "updated HH:MM · refreshes every 5 min".
+TrainingPeaks data can be up to 30 min old on top of that.
 
 **If it looks stale:** the "updated HH:MM" line at the bottom is the
 script's last run. Run `~/.dotfiles/scripts/utils/homelab-status.sh --print`

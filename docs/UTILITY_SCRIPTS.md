@@ -37,7 +37,7 @@ listed in [scripts/cron/README.md](https://github.com/peciulevicius/.dotfiles/bl
 | `scripts/backup/restore.sh` | Restore from R2 into `~/services-restore/`; load database dumps | When needed |
 | `scripts/backup/backup-external.sh` | rsync NAS data and dumps to an external drive | Manually, when a drive is connected |
 | `scripts/utils/homelab-audit.sh` | Audit drift, containers, backups, disk, recent commits and cron | Weekly (cron) |
-| `scripts/utils/homelab-status.sh` | Write the Glance *Homelab health* snapshot (`~/services/glance/assets/status.json`) | Every 5 minutes (cron) |
+| `scripts/utils/homelab-status.sh` | Write the Glance status snapshot for *Training*, *Coach team*, *Homelab health* and *Sleeping apps* (`~/services/glance/assets/status.json`) | Every 5 minutes (cron) |
 | `scripts/utils/run-with-notify.sh` | Wrap a cron job and notify Discord on failure and recovery | Used by every cron job |
 | `scripts/utils/mount-nas.sh` | Mount the NAS SMB shares | At login (launchd) |
 | `scripts/utils/nas-watchdog.sh` | Remount shares and restart NAS-backed containers | Every 5 minutes (launchd) |
@@ -452,9 +452,13 @@ versions, credential copies, documentation accuracy).
 
 Host-side snapshot for the Glance homepage's **Homelab health** widget:
 Docker memory, macOS swap, disk usage (APFS data volume and NAS), backup
-ages, how many scale-to-zero apps are awake (read from `docker ps`, never by
-requesting the app), the Paperclip queue, and the Dietitian's line for today.
-Writes JSON atomically, and puts an `ok`/`warn`/`bad` level on every value.
+ages, and each scale-to-zero app's awake/asleep state with its link (read
+from `docker ps`, never by requesting the app). Also the Paperclip queue, the
+Coach's latest check-in summary, the Dietitian's line for today, and
+TrainingPeaks fitness, body and weekly numbers. TP data comes from the local
+MCP through read-only tools and is cached for 30 min in
+`~/.cache/homelab-status/tp.json`. The script writes JSON atomically and puts
+an `ok`/`warn`/`bad` level on every value.
 
 ```bash
 ~/.dotfiles/scripts/utils/homelab-status.sh --print   # output has no secrets
