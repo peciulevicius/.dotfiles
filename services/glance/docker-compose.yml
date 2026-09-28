@@ -38,6 +38,7 @@ services:
       - wud
       - calibre
       - syncthing
+      - radicale
 
 networks:
   default:
@@ -88,4 +89,6 @@ networks:
   calibre:
     external: true
   syncthing:
+    external: true
+  radicale:
     external: true

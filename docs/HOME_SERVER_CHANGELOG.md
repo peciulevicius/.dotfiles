@@ -8,6 +8,23 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-28 — Radicale: calendars, contacts and to-dos (Nextcloud plan dropped)
+
+- New always-on service `services/radicale/` (`tomsquest/docker-radicale:3.8.1.1`,
+  64 MB, `http://100.81.171.49:5232/`, Tailscale + localhost only). bcrypt
+  htpasswd login; collections Personal (events), Reminders (VTODO), Contacts.
+  Replaces the "Calendar + Contacts to Nextcloud" plan — the user doesn't
+  want Nextcloud, and the phone's own apps are a better UI than any web one.
+- Glance: **Today** widget at the top of the Home right column (today +
+  tomorrow + open tasks) fed by `scripts/utils/calendar-status.sh` (cron
+  every 5 min, CalDAV REPORT with server-side recurrence expansion); monitor +
+  bookmark added, Glance joined the `radicale` network.
+- Verified: PROPFIND 207 (localhost and Tailscale IP), wrong password 401;
+  test events (Vilnius-timezone, all-day, daily recurring) and a task showed
+  correctly in the widget, then were deleted. No sleeping app woke.
+- Next (user): export the iPhone's contacts + calendar (they exist only on the
+  phone), import into Radicale, set it as default. Steps in the README.
+
 ## 2026-09-28 — Obsidian vault cleanup applied
 
 - Approved proposals applied (vault is private, not in this repo): 7 templates

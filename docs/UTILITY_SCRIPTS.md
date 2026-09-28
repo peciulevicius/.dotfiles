@@ -497,6 +497,20 @@ an `ok`/`warn`/`bad` level on every value.
 Details, thresholds and the Glance side: `services/glance/README.md` →
 *Homelab health widget*.
 
+### calendar-status.sh
+
+Feeds the Glance **Today** widget: reads Radicale over CalDAV (REPORT
+calendar-query — today..tomorrow events with server-side recurrence
+expansion, plus open VTODOs overdue, due within 7 days, or undated) and writes
+`~/services/glance/assets/calendar.json`. Times are shown in Europe/Vilnius;
+all-day events sort first. Login from `~/.config/homelab/radicale.env`, never
+printed. Cron: every 5 min. On failure the widget says "Calendar unavailable"
+with the error instead of showing stale data.
+
+```bash
+~/.dotfiles/scripts/utils/calendar-status.sh --print
+```
+
 ### finance-status.sh
 
 Holdings snapshot for the Glance **Finance** page's *Portfolio* widget. It

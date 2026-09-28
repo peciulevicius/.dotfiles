@@ -294,6 +294,18 @@ line and wiring: `services/pihole/README.md` → *Encrypted upstream*.
   arrays in scripts meant for cron.
 - Compose labels with a regex ending in `$` need `$$` (compose interpolation).
 
+## Radicale (calendar / contacts / tasks)
+
+- `http://100.81.171.49:5232/`, Tailscale + localhost only, user `dziugas`
+  (password: `~/.config/homelab/radicale.env`). Collections: `personal`
+  (events), `reminders` (VTODO), `contacts` (vCard).
+- Inline `configs:` in the compose file can't be combined with
+  `read_only: true` — Compose refuses ("`file` is the sole supported option").
+- The "mtime resolution … RISKY" startup warning is the macOS bind mount;
+  harmless while only Radicale writes the files.
+- One UID per `.ics` resource: a hand-made file with two VEVENTs of different
+  UIDs gets HTTP 400.
+
 ## Tailscale — what it's used for, and key expiry
 
 **Used for (2026-09-28):**

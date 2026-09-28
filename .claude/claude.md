@@ -19,7 +19,7 @@ Personal dotfiles + self-hosted services stack for macOS (primary), Arch Linux, 
 
 ## Services
 
-Mac mini M4 has ~47 containers (2026-09-28), ~33 running: eleven
+Mac mini M4 has ~48 containers (2026-09-28), ~34 running: eleven
 (Stirling PDF, IT-Tools, Paperless-ngx, Nextcloud, Odysseus, Linkwarden,
 Jellyseerr, Bazarr, Calibre-Web, Audiobookshelf, Jellyfin) scale to zero
 automatically via **Caddy + Sablier** (`services/caddy/` — starts on the

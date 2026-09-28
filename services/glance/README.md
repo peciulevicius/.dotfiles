@@ -15,8 +15,8 @@ the homelab, a `full`-width middle column for services, and a `small`
 Left, top to bottom: `clock` (24h), **Server** (the former Homelab health
 widget plus CPU, containers and uptime), **Sleeping apps**, **Updates**
 (image updates from WUD via `scripts/utils/update-report.sh` →
-`assets/updates.json`, see `services/wud/README.md`), `dns-stats` (Pi-hole). Right: **Training**, **Coach team**, `repository` (this repo),
-`calendar`. `weather` was removed and Glance's built-in `server-stats` was
+`assets/updates.json`, see `services/wud/README.md`), `dns-stats` (Pi-hole). Right: **Today** (Radicale events + tasks, added 2026-09-28), **Training**,
+**Coach team**, `repository` (this repo), `calendar`. `weather` was removed and Glance's built-in `server-stats` was
 dropped 2026-09-28: inside Docker Desktop it reports the Linux VM, not the Mac,
 so its numbers disagreed with the Server widget. The **Media** page was
 removed the same day (two subreddits and app release notes — not used). The standalone ntfy was removed entirely (2026-09-28); the Coach team posts
@@ -32,6 +32,14 @@ Main column:
    **Sleeping apps** widget.
 3. **`docker-containers` — "Live Status"**: `running-only: true`, which
    containers are up right now.
+
+## Today widget (added 2026-09-28)
+
+Top of the right column. Today's and tomorrow's events and up to 8 open tasks
+(overdue in red) from Radicale, read from `./assets/calendar.json`, which
+`scripts/utils/calendar-status.sh` writes every 5 min over CalDAV. Glance
+never talks to Radicale for this widget; the separate monitor entry checks
+`http://radicale:5232/.web/` on the `radicale` network.
 
 ## Server widget (added 2026-09-27 as "Homelab health")
 

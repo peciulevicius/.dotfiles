@@ -1,0 +1,79 @@
+# Radicale — self-hosted calendars (CalDAV), contacts (CardDAV) and to-do
+# lists (VTODO, which Apple Reminders syncs). Upstream:
+# https://github.com/Kozea/Radicale (GPL-3.0); image:
+# https://github.com/tomsquest/docker-radicale
+#
+# Why: calendar + contacts are the last Google pieces with daily use, and the
+# user doesn't like Nextcloud. Radicale is tiny (~20 MB RAM), has no UI of its
+# own worth using — the iPhone/Mac built-in Calendar, Contacts and Reminders
+# apps are the UI — and works with DAVx⁵ on a future GrapheneOS phone.
+#
+# Exposure: localhost + Tailscale only (the iPhone keeps Tailscale on with
+# Connect On Demand). No tunnel hostname — this is private data.
+# Auth: htpasswd (bcrypt) in ./users — never committed (gitignored).
+# The server config is inline below, so staging only copies this file.
+
+name: radicale
+
+services:
+  radicale:
+    container_name: radicale
+    image: tomsquest/docker-radicale:3.8.1.1
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${RADICALE_PORT:-5232}:5232"
+      - "100.81.171.49:${RADICALE_PORT:-5232}:5232"
+    volumes:
+      - ./data:/data
+      - ./users:/config/users:ro
+    configs:
+      - source: radicale_config
+        target: /config/config
+    init: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - SETUID
+      - SETGID
+      - CHOWN
+      - KILL
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fs -o /dev/null http://127.0.0.1:5232/.web/ || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    mem_limit: 64m
+
+# Named network so Glance can join it for its check-url.
+networks:
+  default:
+    name: radicale
+
+configs:
+  radicale_config:
+    content: |
+      [server]
+      hosts = 0.0.0.0:5232
+
+      [auth]
+      type = htpasswd
+      htpasswd_filename = /config/users
+      htpasswd_encryption = bcrypt
+      # slow down password guessing
+      delay = 1
+
+      [storage]
+      filesystem_folder = /data/collections
+
+      [rights]
+      # each user sees only their own collections
+      type = owner_only
+
+      [logging]
+      level = warning
+      mask_passwords = True
+
+      [web]
+      type = internal

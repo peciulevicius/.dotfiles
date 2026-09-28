@@ -22,6 +22,7 @@ Run your own cloud on a Mac mini (or any Docker host). Self-hosted services cove
 | [Rclone](#rclone) | — | — | Cloud backup |
 | [discord-bridge](#discord-bridge) | outbound only | — | — |
 | [WUD](#wud) | Tailscale only | 3070 | — |
+| [Radicale](#radicale) | Tailscale only | 5232 | Google Calendar + Contacts |
 
 ### Utility Services
 
@@ -916,6 +917,25 @@ health check, automatic rollback). Setup and details:
 
 ---
 
+### Radicale
+
+**What:** CalDAV/CardDAV server (`tomsquest/docker-radicale:3.8.1.1`) for
+calendars, contacts and to-do lists — `http://100.81.171.49:5232/`, Tailscale
+only.
+
+**Why:** calendar and contacts were the last daily-use Google-era gap (and
+live only on the iPhone), and Nextcloud was the tool the user didn't want.
+Radicale is ~20 MB, has no UI to maintain — the phone/Mac's own Calendar,
+Contacts and Reminders apps are the UI — and works with DAVx⁵ on GrapheneOS.
+
+**How:** htpasswd (bcrypt) login, inline config in the compose file, data as
+plain files in `~/services/radicale/data` (backed up to R2). Glance's
+**Today** widget shows today/tomorrow + open tasks via
+`scripts/utils/calendar-status.sh`. iPhone/Mac setup and import steps:
+`services/radicale/README.md`.
+
+---
+
 ## Remote Access (Cloudflare Tunnel)
 
 All services are accessible via HTTPS through a Cloudflare Tunnel. This provides real TLS certificates, no port forwarding, and works from anywhere.
@@ -980,6 +1000,7 @@ Every service is accessible three ways: localhost (on the Mac mini), Tailscale (
 | LazyLibrarian | 5299 | http://100.81.171.49:5299 |
 | Paperclip (agents) | 3100 | http://100.81.171.49:3100 |
 | Calibre (library manager) | 8888 | http://100.81.171.49:8888 |
+| Radicale (calendar/contacts) | 5232 | http://100.81.171.49:5232 |
 
 **Mobile apps (use Tailscale URLs to bypass Cloudflare Access gate):**
 
@@ -1020,8 +1041,9 @@ the Tailscale URL for anything not publicly exposed) instead of a browser.
 **Well-known, skip the research:** Immich (official app, auto photo backup),
 Vaultwarden (official Bitwarden app, set the self-hosted server URL at
 login), Jellyfin (official app), Audiobookshelf (official app), Nextcloud
-(official app — Files; Calendar/Contacts sync via the phone's own CalDAV/
-CardDAV instead of a dedicated app).
+(official app — Files). **Radicale** needs no app: the iPhone's own
+Calendar/Contacts/Reminders via a CalDAV + CardDAV account (DAVx⁵ on
+Android) — steps in `services/radicale/README.md`.
 
 | Service | App(s) | Platform | Notes |
 |---|---|---|---|

@@ -18,6 +18,7 @@ PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin
 # → ~/services/glance/assets/status.json. Not wrapped in run-with-notify —
 # a stale "updated" time on the homepage is the signal.
 */5 * * * * ~/.dotfiles/scripts/utils/homelab-status.sh >> ~/logs/homelab-status.log 2>&1
+*/5 * * * * ~/.dotfiles/scripts/utils/calendar-status.sh >> ~/logs/calendar-status.log 2>&1
 # Glance Finance "Portfolio" widget: IBKR holdings via the Flex Web Service
 # (read-only token) → ~/services/glance/assets/finance.json. Flex data is end
 # of day, so once a day is enough. Writes a "not configured" state until

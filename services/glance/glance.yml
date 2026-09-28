@@ -175,6 +175,10 @@ pages:
                 url: https://couchdb.peciulevicius.com
                 check-url: http://couchdb:5984/_up
                 icon: si:apachecouchdb
+              - title: Radicale (calendar/contacts)
+                url: http://100.81.171.49:5232/.web/
+                check-url: http://radicale:5232/.web/
+                icon: mdi:calendar-sync
               - title: FreshRSS
                 url: https://rss.peciulevicius.com
                 check-url: http://freshrss:80/
@@ -243,6 +247,9 @@ pages:
                   - title: Syncthing
                     url: http://100.81.171.49:8384
                     icon: si:syncthing
+                  - title: Radicale (calendar/contacts)
+                    url: http://100.81.171.49:5232/.web/
+                    icon: mdi:calendar-sync
                   - title: Stirling PDF
                     url: https://pdf.peciulevicius.com
                     icon: si:files
@@ -325,6 +332,33 @@ pages:
 
       - size: small
         widgets:
+          # ── Today — Radicale calendars + open tasks, from
+          # ./assets/calendar.json written every 5 min by
+          # scripts/utils/calendar-status.sh (reads CalDAV on the host; Glance
+          # only reads the local file).
+          - type: custom-api
+            title: Today
+            cache: 1m
+            url: http://localhost:8080/assets/calendar.json
+            template: |
+              {{ if .JSON.Bool "ok" }}
+              <ul class="list list-gap-4">
+                {{ range .JSON.Array "today" }}<li class="flex justify-between"><span>{{ .String "title" }}</span><span class="color-subdue nowrap">{{ .String "time" }}</span></li>{{ else }}<li class="color-subdue size-h6">Nothing today</li>{{ end }}
+              </ul>
+              <div class="size-h6 color-subdue" style="margin-top:10px">Tomorrow</div>
+              <ul class="list list-gap-4" style="margin-top:4px">
+                {{ range .JSON.Array "tomorrow" }}<li class="flex justify-between size-h6"><span>{{ .String "title" }}</span><span class="color-subdue nowrap">{{ .String "time" }}</span></li>{{ else }}<li class="color-subdue size-h6">Nothing planned</li>{{ end }}
+              </ul>
+              {{ if .JSON.Array "tasks" }}
+              <div class="size-h6 color-subdue" style="margin-top:10px">Tasks</div>
+              <ul class="list list-gap-4" style="margin-top:4px">
+                {{ range .JSON.Array "tasks" }}<li class="flex justify-between size-h6"><span>☐ {{ .String "title" }}</span><span class="nowrap {{ if .Bool "overdue" }}lvl-bad{{ else }}color-subdue{{ end }}">{{ .String "due" }}</span></li>{{ end }}
+              </ul>
+              {{ end }}
+              {{ else }}
+              <p class="lvl-warn size-h6">Calendar unavailable — {{ .JSON.String "error" }}</p>
+              {{ end }}
+
           # ── Training + Coach team (right column) — from the same status.json
           # as the Server widget in the left column: TrainingPeaks numbers cached 30 min by the script,
           # the latest Coach check-in comment and the Dietitian's today line.

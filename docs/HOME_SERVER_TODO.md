@@ -115,7 +115,7 @@ Section names in *italics* are headings below.
 - Brave Shields for Linkwarden — *Linkwarden*
 - Capture Shortcut, Web Clipper, 30-day habit, Kindle/KOReader items — *Notes*
 - "Sign in with Google" audit, Gmail redirect decision, Takeout — *De-Google*
-- Calendar + Contacts to Nextcloud — *Calendar + Contacts*
+- Calendar + Contacts → **Radicale** is up; export from the iPhone + import + phone setup — *Calendar + Contacts*
 - Phone: battery, ADP, search/browser, Pixel checks — *Phone* and *Quick wins* (De-Google)
 - NAS UI settings, stale NAS folders, drive sleep — *NAS — remaining follow-ups*
 
@@ -1100,29 +1100,18 @@ Revoke + Kindle filter → *🔝 Next up*; catch-all/tests/deliverability → *�
 - [ ] 👤 Remove Google as a Cloudflare Access identity provider — **after** the
       logins have moved.
 
-#### Calendar + Contacts — unblocked, ~1 hour, more urgent than it looked
+#### Calendar + Contacts — Radicale is up (2026-09-28), your import is next
 
-Nextcloud is installed (on-demand since 2026-09-26 — `ondemand start
-nextcloud`). ⚠️ CalDAV/CardDAV sync needs it **always on**: doing this means
-removing `nextcloud` from `ENTRIES` in `scripts/utils/ondemand.sh`,
-un-pausing its Kuma monitor and putting its Glance monitor back.
+**Superseded the Nextcloud plan:** calendar, contacts and to-dos now go to
+**Radicale** (`services/radicale/`, `http://100.81.171.49:5232/`, Tailscale
+only). Nextcloud's keep-or-remove decision is separate. Still urgent: the
+iPhone holds the **only copy** of contacts and calendar (checked 2026-09-22).
+Steps: `services/radicale/README.md`.
 
-⚠️ **Corrected 2026-09-22 — this isn't a de-Google migration, it's fixing an
-actual single point of failure.** Contacts and calendar live **only on the
-iPhone itself** — not backed up to Google, and (until this is done) not
-backed up anywhere. A lost, stolen, or bricked phone loses both completely.
-There's no Google `.ics`/`.vcf` export to pull from; the import source is the
-phone's own local data.
-
-- [ ] 👤 Enable Nextcloud Calendar + Contacts apps
-- [ ] 👤 On iPhone: Settings → Contacts / Calendar → **export first** (Contacts
-      app → select all → Share → vCard; or use the Nextcloud/CardDAV import
-      flow directly) before touching sync settings — don't let a sync error
-      be the first time a two-way merge runs against your only copy
-- [ ] 👤 Add CalDAV + CardDAV accounts on the iPhone, verify two-way sync
-- [ ] 👤 Confirm a re-fetch on a second device (or after a fresh CalDAV
-      re-add) actually shows everything — this is the real backup test, not
-      just "the accounts screen shows green"
+- [ ] 👤 Save the Radicale password to Vaultwarden (`~/.config/homelab/radicale.env`)
+- [ ] 👤 **Export first:** contacts → vCard, calendar → via Finder sync + Mac Calendar export
+- [ ] 👤 Add the CalDAV + CardDAV accounts on the Mac and iPhone; import the vCard + `.ics` into Radicale; set Radicale as default calendar / contacts / Reminders list
+- [ ] 👤 Backup test: re-add the account on one device and confirm everything re-downloads
 
 #### Phone — decision: don't buy a Pixel right now
 

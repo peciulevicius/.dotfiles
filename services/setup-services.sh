@@ -48,6 +48,7 @@ SERVICES=(
   paperclip
   discord-bridge
   wud
+  radicale
 )
 
 SERVICE_PORTS=(
@@ -84,6 +85,7 @@ SERVICE_PORTS=(
   "paperclip:3100"
   "discord-bridge:—"
   "wud:3070"
+  "radicale:5232"
 )
 
 log_ok()   { echo -e "${GREEN}✓${NC} $1"; }
