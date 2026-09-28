@@ -8,6 +8,18 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-28 — Disk cleanup (92% → 89%, ~83% after emptying Trash)
+
+- `docker image prune -a` (935MB) and `docker builder prune -a` (2.9GB) — unused
+  images/build cache only, no volumes touched; `brew cleanup -s`,
+  `brew autoremove`, npm/pnpm/pip caches.
+- Moved to `~/.Trash/cleanup-2026-09-28` (15GB, recoverable): Claude desktop
+  `vm_bundles` (10GB; the running VM was confirmed to be Docker's, not
+  Claude's), Brave caches, `~/Library/Caches/Google`, Bitwarden ShipIt/updater
+  staging. `rm -rf` is blocked by the user's permission settings, so the Trash
+  is emptied by hand.
+- Free space 17GiB → 23GiB now, ~38GiB after the Trash is emptied.
+
 ## 2026-09-28 — Obsidian vault audit
 
 - Vault snapshot to `~/backups/obsidian-vault-pre-cleanup-2026-09-28.tgz`, then an

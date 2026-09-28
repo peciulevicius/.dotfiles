@@ -63,7 +63,7 @@ Section names in *italics* are headings below.
 - notebook.koplugin, Supernote, cancel YouTube Music/Premium, music-folder cleanup, Jellyfin/ABS API keys, Nextcloud/Paperless (on-demand; decide later) — *9. Maintenance backlog*
 - Kindle wallpapers, KOReader speed workaround, `.smbdelete` cleanup, `read-along` tag, OTA check, Searchable PDF test — *Quick wins left over from 2026-09-20*
 - LiveSync plugin on each device — *🔗 Obsidian LiveSync*
-- Disk cleanup decisions (update staging, Claude VM bundle, Chrome, /tmp, old DB dumps) — *💾 Disk*
+- 👤 **Empty the Trash** (15GB of caches moved there 2026-09-28 — Finder → Empty Trash) — *💾 Disk*
 - T5 offsite trip — *Get one copy of the photos out of the building*
 - Immich missing thumbnails job — *Regenerate missing Immich thumbnails*
 - KOReader OPDS + Calibre-Web shelf check — *Move the Calibre library off SMB onto the SSD*
@@ -599,7 +599,18 @@ whole-house outage now alerts.
 
 Background for the steps above, plus items outside the sequence.
 
-### 💾 Disk — 23GiB free of 228GB (89%) on 2026-09-26 (evening)
+### 💾 Disk — 23GiB free of 228GB (89%) on 2026-09-28, ~38GiB once the Trash is emptied
+
+**2026-09-28 cleanup** (from 17GiB / 92%): Docker unused images + build cache
+pruned (~3.8GB), brew/npm/pnpm/pip caches cleaned; moved to
+`~/.Trash/cleanup-2026-09-28` (15GB, recoverable until the Trash is emptied):
+Claude desktop `vm_bundles` (10GB), Brave caches, the Google cache folder,
+Bitwarden update staging. Chrome's *profile* and app were left alone
+(claude-in-chrome runs there). DB dumps in `~/backups` (2.2GB) are pruned by
+`backup-databases.sh` after 30 days — left as is.
+
+- [ ] 👤 Empty the Trash — that's what actually frees the 15GB.
+
 
 Evening cleanup took it from **18GiB free (92%)** to **23GiB (89%)** — see the
 changelog. Measure with `df -h /System/Volumes/Data`: plain `df -h /` shows the
@@ -624,9 +635,7 @@ recurs.
 - [ ] **App update staging (2.6GB).** Quit and reopen Bitwarden, Notion and VS
       Code so the staged updates install, then:
       `rm -rf ~/Library/Caches/{com.microsoft.VSCode.ShipIt,com.bitwarden.desktop.ShipIt,bitwarden-updater,notion.id.ShipIt,notion-updater}`
-- [ ] **Claude desktop VM bundle (10GB).** Quit Claude.app first; it
-      re-downloads the bundle the next time a VM feature is used:
-      `rm -rf ~/Library/Application\ Support/Claude/vm_bundles`
+- [x] ~~**Claude desktop VM bundle (10GB)**~~ — moved to Trash 2026-09-28
 - [ ] **Chrome (~9.4GB).** De-Googling, but the claude-in-chrome extension
       runs in it, so only if you move that to another browser: drag Chrome to
       the Trash, then `rm -rf ~/Library/Application\ Support/Google ~/Library/Caches/Google`
