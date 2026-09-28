@@ -16,58 +16,6 @@ pages:
           - type: clock
             hour-format: 24h
 
-          # ── Training + Coach team — from the same status.json (see Homelab
-          # health below): TrainingPeaks numbers cached 30 min by the script,
-          # the latest Coach check-in comment and the Dietitian's today line.
-          - type: custom-api
-            title: Training
-            cache: 1m
-            url: http://localhost:8080/assets/status.json
-            template: |
-              <div class="flex justify-between items-center">
-                <span class="size-h6 color-subdue">IRONMAN 70.3 Luxembourg</span>
-                <span class="size-h4 color-highlight">{{ .JSON.Int "training.race_days" }} days</span>
-              </div>
-              {{ if .JSON.Bool "training.ok" }}
-              <ul class="list list-gap-10" style="margin-top:10px">
-                <li class="flex justify-between" title="Form = TSB (fitness CTL − fatigue ATL). {{ .JSON.String "training.fitness.status" }}"><span>Form</span>
-                  <span class="nowrap"><span class="lvl-{{ .JSON.String "training.fitness.level" }}">{{ .JSON.Int "training.fitness.tsb" }}</span> <span class="color-subdue">fit {{ .JSON.Int "training.fitness.ctl" }} · fatigue {{ .JSON.Int "training.fitness.atl" }}</span></span></li>
-                <li class="flex justify-between" title="change vs 7 days ago"><span>Weight</span>
-                  <span>{{ .JSON.String "training.weight.now" }} kg <span class="color-subdue">{{ .JSON.String "training.weight.delta" }}</span></span></li>
-                <li class="flex justify-between" title="change vs 7 days ago"><span>Body fat</span>
-                  <span>{{ .JSON.String "training.fat.now" }}% <span class="color-subdue">{{ .JSON.String "training.fat.delta" }}</span></span></li>
-                <li class="flex justify-between"><span>Night</span>
-                  <span class="nowrap">{{ .JSON.String "training.recovery" }}</span></li>
-                <li class="flex justify-between" title="sessions completed / planned this week"><span>Week</span>
-                  <span class="nowrap">{{ .JSON.Int "training.week.done" }}/{{ .JSON.Int "training.week.planned" }} · {{ .JSON.Int "training.week.tss" }} TSS · {{ .JSON.Float "training.week.hours" }} h</span></li>
-                <li><div class="size-h6 color-subdue">Today</div><div class="size-h5">{{ .JSON.String "training.today" }}</div></li>
-              </ul>
-              {{ else }}
-              <p class="lvl-warn" style="margin-top:10px">{{ .JSON.String "training.error" }} — refresh the cookie (services/trainingpeaks-mcp/README.md)</p>
-              {{ end }}
-
-          - type: custom-api
-            title: Coach team
-            cache: 1m
-            url: http://localhost:8080/assets/status.json
-            template: |
-              <div class="flex justify-between"><span class="size-h6 color-subdue">Latest check-in</span>
-                <span class="size-h6 lvl-{{ .JSON.String "coach.checkin.level" }}">{{ .JSON.String "coach.checkin.age" }}</span></div>
-              <ul class="list list-gap-4" style="margin-top:6px">
-                {{ range .JSON.Array "coach.summary" }}<li class="size-h6">{{ .String "" }}</li>{{ end }}
-              </ul>
-              <div class="size-h6 color-subdue" style="margin-top:10px">Dietitian today</div>
-              <div class="size-h5">{{ .JSON.String "coach.today" }}</div>
-              <div class="flex justify-between" style="margin-top:10px">
-                <span>Waiting on you</span>
-                <span class="lvl-{{ .JSON.String "paperclip.level" }}">{{ if .JSON.Bool "paperclip.reachable" }}{{ .JSON.Int "paperclip.approvals" }} approvals · {{ .JSON.Int "paperclip.waiting" }} in review{{ else }}Paperclip unreachable{{ end }}</span>
-              </div>
-              <div class="flex gap-10 size-h6" style="margin-top:10px; flex-wrap:wrap">
-                <a class="color-highlight" href="https://discord.com/channels/1484527236798484602/1553523070348820661" target="_blank">💬 Coach</a>
-                <a class="color-highlight" href="https://discord.com/channels/1484527236798484602/1553768855975763998" target="_blank">💬 Dietitian</a>
-                <a class="color-highlight" href="http://100.81.171.49:3100" target="_blank">📎 Paperclip</a>
-              </div>
-
           # ── Homelab health — host-side snapshot written every 5 min by
           # scripts/utils/homelab-status.sh into ./assets/status.json (served
           # by Glance itself at /assets/, see server.assets-path above). Glance
@@ -113,17 +61,10 @@ pages:
                 {{ range .JSON.Array "sleepers.list" }}<li class="flex justify-between"><a class="color-highlight" href="{{ .String "url" }}" target="_blank">{{ .String "name" }}</a><span class="{{ if .Bool "awake" }}lvl-ok{{ else }}color-subdue{{ end }}">{{ if .Bool "awake" }}🟢 awake{{ else }}💤 asleep{{ end }}</span></li>{{ end }}
               </ul>
 
-
           - type: dns-stats
             service: pihole-v6
             url: http://host.docker.internal:8053
             password: ${PIHOLE_PASSWORD}
-
-          - type: repository
-            repository: peciulevicius/.dotfiles
-            token: ${GITHUB_TOKEN}
-
-          - type: calendar
 
       - size: full
         widgets:
@@ -202,10 +143,6 @@ pages:
                 url: https://portainer.peciulevicius.com
                 check-url: http://portainer:9000/
                 icon: si:portainer
-              - title: ntfy (push)
-                url: http://100.81.171.49:8095
-                check-url: http://ntfy:80/v1/health
-                icon: mdi:bell-ring
               - title: CouchDB (Obsidian sync)
                 url: https://couchdb.peciulevicius.com
                 check-url: http://couchdb:5984/_up
@@ -326,9 +263,6 @@ pages:
                   - title: Caddy + Sablier (no web UI — README)
                     url: https://github.com/peciulevicius/.dotfiles/blob/main/services/caddy/README.md
                     icon: si:caddy
-                  - title: ntfy (push)
-                    url: http://100.81.171.49:8095
-                    icon: mdi:bell-ring
                   - title: UGREEN NAS
                     url: https://nas.peciulevicius.com
                     icon: di:ugreen
@@ -352,6 +286,66 @@ pages:
           - type: docker-containers
             title: Live Status (running containers)
             running-only: true
+
+      - size: small
+        widgets:
+          # ── Training + Coach team (right column) — from the same status.json
+          # as the Server widget in the left column: TrainingPeaks numbers cached 30 min by the script,
+          # the latest Coach check-in comment and the Dietitian's today line.
+          - type: custom-api
+            title: Training
+            cache: 1m
+            url: http://localhost:8080/assets/status.json
+            template: |
+              <div class="flex justify-between items-center">
+                <span class="size-h6 color-subdue">IRONMAN 70.3 Luxembourg</span>
+                <span class="size-h4 color-highlight">{{ .JSON.Int "training.race_days" }} days</span>
+              </div>
+              {{ if .JSON.Bool "training.ok" }}
+              <ul class="list list-gap-10" style="margin-top:10px">
+                <li class="flex justify-between" title="Form = TSB (fitness CTL − fatigue ATL). {{ .JSON.String "training.fitness.status" }}"><span>Form</span>
+                  <span class="nowrap"><span class="lvl-{{ .JSON.String "training.fitness.level" }}">{{ .JSON.Int "training.fitness.tsb" }}</span> <span class="color-subdue">fit {{ .JSON.Int "training.fitness.ctl" }} · fatigue {{ .JSON.Int "training.fitness.atl" }}</span></span></li>
+                <li class="flex justify-between" title="change vs 7 days ago"><span>Weight</span>
+                  <span>{{ .JSON.String "training.weight.now" }} kg <span class="color-subdue">{{ .JSON.String "training.weight.delta" }}</span></span></li>
+                <li class="flex justify-between" title="change vs 7 days ago"><span>Body fat</span>
+                  <span>{{ .JSON.String "training.fat.now" }}% <span class="color-subdue">{{ .JSON.String "training.fat.delta" }}</span></span></li>
+                <li class="flex justify-between"><span>Night</span>
+                  <span class="nowrap">{{ .JSON.String "training.recovery" }}</span></li>
+                <li class="flex justify-between" title="sessions completed / planned this week"><span>Week</span>
+                  <span class="nowrap">{{ .JSON.Int "training.week.done" }}/{{ .JSON.Int "training.week.planned" }} · {{ .JSON.Int "training.week.tss" }} TSS · {{ .JSON.Float "training.week.hours" }} h</span></li>
+                <li><div class="size-h6 color-subdue">Today</div><div class="size-h5">{{ .JSON.String "training.today" }}</div></li>
+              </ul>
+              {{ else }}
+              <p class="lvl-warn" style="margin-top:10px">{{ .JSON.String "training.error" }} — refresh the cookie (services/trainingpeaks-mcp/README.md)</p>
+              {{ end }}
+
+          - type: custom-api
+            title: Coach team
+            cache: 1m
+            url: http://localhost:8080/assets/status.json
+            template: |
+              <div class="flex justify-between"><span class="size-h6 color-subdue">Latest check-in</span>
+                <span class="size-h6 lvl-{{ .JSON.String "coach.checkin.level" }}">{{ .JSON.String "coach.checkin.age" }}</span></div>
+              <ul class="list list-gap-4" style="margin-top:6px">
+                {{ range .JSON.Array "coach.summary" }}<li class="size-h6">{{ .String "" }}</li>{{ end }}
+              </ul>
+              <div class="size-h6 color-subdue" style="margin-top:10px">Dietitian today</div>
+              <div class="size-h5">{{ .JSON.String "coach.today" }}</div>
+              <div class="flex justify-between" style="margin-top:10px">
+                <span>Waiting on you</span>
+                <span class="lvl-{{ .JSON.String "paperclip.level" }}">{{ if .JSON.Bool "paperclip.reachable" }}{{ .JSON.Int "paperclip.approvals" }} approvals · {{ .JSON.Int "paperclip.waiting" }} in review{{ else }}Paperclip unreachable{{ end }}</span>
+              </div>
+              <div class="flex gap-10 size-h6" style="margin-top:10px; flex-wrap:wrap">
+                <a class="color-highlight" href="https://discord.com/channels/1484527236798484602/1553523070348820661" target="_blank">💬 Coach</a>
+                <a class="color-highlight" href="https://discord.com/channels/1484527236798484602/1553768855975763998" target="_blank">💬 Dietitian</a>
+                <a class="color-highlight" href="http://100.81.171.49:3100" target="_blank">📎 Paperclip</a>
+              </div>
+
+          - type: repository
+            repository: peciulevicius/.dotfiles
+            token: ${GITHUB_TOKEN}
+
+          - type: calendar
 
   - name: Feed
     columns:
@@ -411,34 +405,6 @@ pages:
                 title: Seth Godin
               - url: https://world.hey.com/dhh/feed.atom
                 title: DHH
-
-  - name: Media
-    columns:
-      - size: small
-        widgets:
-          - type: releases
-            title: Media App Updates
-            repositories:
-              - jellyfin/jellyfin
-              - Sonarr/Sonarr
-              - Radarr/Radarr
-              - morpheus65535/bazarr
-              - fallenbagel/jellyseerr
-            token: ${GITHUB_TOKEN}
-
-      - size: full
-        widgets:
-          - type: reddit
-            title: What to Watch
-            subreddit: NetflixBestOf+Documentaries+MovieSuggestions+television+movies
-            limit: 15
-            collapse-after: 5
-
-          - type: reddit
-            title: Piracy & Self-Hosted Media
-            subreddit: Piracy+selfhosted+PleX+jellyfin
-            limit: 10
-            collapse-after: 5
 
   - name: Finance
     columns:

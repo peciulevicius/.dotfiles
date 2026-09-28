@@ -10,6 +10,11 @@ Newest first-ish; dates are when the work was finished.
 
 ## 2026-09-28 — Glance layout: status column moved left
 
+- Later the same morning: Home split into **three columns** (homelab left,
+  services middle, Training + Coach team right); **Media** page removed; ntfy
+  removed from the page and Glance's `ntfy` network (the standalone ntfy is
+  unused — still running, candidate for removal).
+
 - Home page: the small column now sits on the **left** with the clock on top;
   weather removed; Glance's `server-stats` dropped (it shows the Docker VM, not
   the Mac). The health widget is now **Server** and adds CPU load, containers

@@ -8,15 +8,20 @@ copy → diff → recreate workflow.
 
 ## Layout (redesigned 2026-09-27)
 
-**Home page**: a `small` column on the **left** (the status panels — where
-the eye lands first) and one `full`-width column for services:
+**Home page** (three columns since 2026-09-28): a `small` **left** column for
+the homelab, a `full`-width middle column for services, and a `small`
+**right** column for the athlete team.
 
-Left column, top to bottom: `clock` (24h), **Training**, **Coach team**,
-**Server** (the former Homelab health widget plus CPU, containers and uptime),
-**Sleeping apps**, `dns-stats` (Pi-hole), `repository` (this repo),
+Left, top to bottom: `clock` (24h), **Server** (the former Homelab health
+widget plus CPU, containers and uptime), **Sleeping apps**, `dns-stats`
+(Pi-hole). Right: **Training**, **Coach team**, `repository` (this repo),
 `calendar`. `weather` was removed and Glance's built-in `server-stats` was
 dropped 2026-09-28: inside Docker Desktop it reports the Linux VM, not the Mac,
-so its numbers disagreed with the Server widget.
+so its numbers disagreed with the Server widget. The **Media** page was
+removed the same day (two subreddits and app release notes — not used). ntfy
+is off the page too: nothing uses the standalone instance any more (the Coach
+team posts to Discord; Odysseus has its own bundled ntfy); the service itself
+still runs.
 
 Main column:
 1. **`monitor` — "Always-On Services"**: a compact status grid, `check-url`
