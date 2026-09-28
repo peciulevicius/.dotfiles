@@ -8,7 +8,7 @@ Personal knowledge management with Obsidian, synced across devices with Syncthin
 |------|------|
 | Obsidian | PKM app (desktop + mobile) |
 | Syncthing | Live vault sync (Mac ↔ Mac mini ↔ iPhone) |
-| Rclone → B2 | Offsite backup (nightly, via rclone-backup.sh) |
+| Rclone → Cloudflare R2 | Offsite backup (nightly, via rclone-backup.sh) |
 | Kindle highlights | Via Readwise or manual export |
 
 ## Vault Structure
@@ -90,7 +90,7 @@ Install Möbius Sync (iOS), add the Mac mini as a device, accept the shared fold
 
 ## Backup
 
-Obsidian vault is backed up to Backblaze B2 nightly via the rclone backup script (alongside Docker configs). No git needed — Syncthing handles live sync, rclone handles offsite backup.
+Obsidian vault is backed up to Cloudflare R2 nightly via the rclone backup script (alongside Docker configs). No git needed — Syncthing handles live sync, rclone handles offsite backup.
 
 Excluded from backup: `.obsidian/workspace*`, `.obsidian/plugins/`, `.DS_Store`, `.stfolder`.
 
