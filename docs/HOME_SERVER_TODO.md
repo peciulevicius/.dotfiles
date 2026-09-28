@@ -36,6 +36,13 @@ Section names in *italics* are headings below.
 
 ### 👤 Needs you (UI / device / credentials / decision)
 
+- **🛡️ Tailscale / VPN (2026-09-28):**
+  - [ ] 👤 Approve the Mac mini as an exit node: admin → Machines → `macmini` → ⋯ → *Edit route settings* → **Use as exit node** (already advertised; this is the "Lithuanian IP" option)
+  - [ ] 👤 Disable key expiry on `transmission-ts` (Machines → ⋯ → *Disable key expiry*) — still 2027-03-25
+  - [ ] 👤 iPhone + MacBook: Exit Node → Mullvad → pick a country (Poland/Warsaw nearest); iPhone *Settings → VPN → Tailscale ⓘ → Connect On Demand* to keep it on
+  - [ ] 👤 **Passkey admin user** (stop using the Google login now): admin → Users → *Invite users* → open link → sign up with a passkey → make it Admin → log in with it on each device
+  - [ ] 📅 **2026-10-28 (calendar event set): fresh tailnet on `peciulevicius.com`** (custom OIDC + WebFinger) — re-add all devices, move the Mullvad add-on, re-apply DNS/exit nodes/key-expiry policy, update 100.x IPs everywhere. Can't switch the current tailnet: it's a gmail.com tailnet, and GitHub/Apple can't be switch targets.
+
 - [x] ~~Discord two-way chat with Coach + Dietitian~~ — bridge live 2026-09-27
 - **Delete the Claude.ai export** once the Coach team and Studio brief look right: `~/Downloads/claude_export/`, `claude_export_full.json`, `export_from_claude.md` (they hold every chat, not just training)
 - **Coach team decisions waiting in Paperclip:** COA-6 (this week + military week training plan) and the Dietitian's COA-7 (weight plan + portions) once it posts
