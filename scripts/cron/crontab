@@ -42,7 +42,7 @@ PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin
 
 # Jellyfin + Audiobookshelf miss new files on SMB — restart them every 30 min.
 # Delete once the Jellyfin API key is wired into Radarr/Sonarr → Connect.
-*/30 * * * * ~/.dotfiles/scripts/utils/run-with-notify.sh "SMB library rescan" ~/.dotfiles/scripts/utils/smb-watcher-rescan.sh >> ~/logs/smb-rescan.log 2>&1
+# SMB library rescan cron removed 2026-09-28 — it woke the Sablier sleepers (see smb-watcher-rescan.sh header).
 
 # Weekly homelab audit (Sunday 9am) — drift, containers, backups, disk, secrets
 0 9 * * 0 ~/.dotfiles/scripts/utils/run-with-notify.sh "Homelab audit" ~/.dotfiles/scripts/utils/homelab-audit.sh >> ~/logs/homelab-audit.log 2>&1

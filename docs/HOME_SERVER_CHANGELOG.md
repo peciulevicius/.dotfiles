@@ -8,6 +8,16 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-28 — SMB rescan cron removed (it kept sleepers awake)
+
+- `smb-watcher-rescan.sh` ran every 30 min and did `docker restart jellyfin
+  audiobookshelf`. `docker restart` also starts a *stopped* container, so both
+  scale-to-zero apps were woken every 30 min and never slept — and anyone
+  streaming was cut off. Found by the update-system work. Cron line removed:
+  every Sablier start is a fresh start with a full library scan, which covers
+  the SMB-watcher gap. The script stays for manual use and now only restarts
+  what's already running.
+
 ## 2026-09-28 — Image updates: WUD checker + one-command safe upgrades
 
 - New service **WUD** (`services/wud`, What's Up Docker 9.2.0 + a GET-only

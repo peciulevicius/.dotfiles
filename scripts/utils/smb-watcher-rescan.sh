@@ -22,6 +22,18 @@
 # can do per service: generate the key in that service's own dashboard. Once
 # both exist, this script (and its cron line) can be deleted.
 
+# 2026-09-28: removed from cron. Both apps now scale to zero (Sablier), and
+# every Sablier start is a fresh container start = a full library scan, so a
+# timed restart is unnecessary. Worse, `docker restart` also STARTS a stopped
+# container, so the 30-minute cron kept both awake permanently and cut off
+# anyone mid-stream. Kept for manual use; it now only restarts what is
+# already running.
+
 set -euo pipefail
-docker restart jellyfin audiobookshelf >/dev/null
-echo "Jellyfin + Audiobookshelf restarted — forces a library scan on startup"
+for c in jellyfin audiobookshelf; do
+  if [[ "$(docker inspect -f '{{.State.Running}}' "$c" 2>/dev/null)" == "true" ]]; then
+    docker restart "$c" >/dev/null && echo "$c restarted — forces a library scan"
+  else
+    echo "$c asleep — skipped (it scans on its next start)"
+  fi
+done
