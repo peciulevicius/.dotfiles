@@ -8,6 +8,15 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-28 — Obsidian vault audit
+
+- Vault snapshot to `~/backups/obsidian-vault-pre-cleanup-2026-09-28.tgz`, then an
+  audit: 35 notes, 21 of them unfilled `setup-obsidian.sh` skeletons, no broken
+  links/duplicates/orphans. Only an empty test note and a stale Syncthing
+  conflict file were moved (to `_cleanup-2026-09-28/` in the vault); the rest
+  is a proposal in that folder's README (templates plugin, merge Scribe
+  imports into project notes, archive skeletons). Nothing deleted.
+
 ## 2026-09-28 — Pi-hole upstream encrypted (unbound, DNS-over-TLS)
 
 - New `unbound` container in the Pi-hole stack (`klutchell/unbound:v1.26.1`,
