@@ -8,6 +8,22 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-28 — Transmission through Mullvad, with a real kill switch
+
+- Tailscale Mullvad add-on bought. `transmission-ts` exits via
+  `se-sto-wg-201.mullvad.ts.net`; Transmission's traffic shows a Mullvad IP.
+- Kill-switch test **failed first**: a sidecar restart (e.g. `tailscale down`)
+  left a few seconds on the home IP before Tailscale reconnected. Fixed with
+  `services/transmission/killswitch.sh` as the sidecar entrypoint: policy
+  routing sends Transmission's user (PUID) to an `unreachable` table unless
+  Tailscale's exit-node route matches. Re-tested: restart window, exit node
+  cleared, sidecar stopped — all fail closed.
+- Published-port web UI broke with the exit node (Docker Desktop hands the
+  container a fake `8.8.8.8` source, replies went into the tunnel); fixed with
+  a source-port-9091 rule. Peer port 51413 no longer published.
+- Transmission was stopped from ~12:15 until the tests passed; it held no
+  torrents while briefly auto-restarted, so nothing ran on the home IP.
+
 ## 2026-09-28 — Finance page: real holdings pipeline
 
 - New `scripts/utils/finance-status.sh` (cron daily 07:00) pulls IBKR

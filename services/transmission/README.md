@@ -28,7 +28,7 @@ deleted.
 | Port | Purpose |
 |------|---------|
 | 9091 | Web UI + RPC (published by `transmission-ts`) |
-| 51413 | BitTorrent peer connections, TCP + UDP (published by `transmission-ts`) |
+| ~~51413~~ | Peer port — **no longer published** (2026-09-28): all peer traffic goes through Mullvad, which has no port forwarding, so an inbound port on the home IP is useless |
 
 ## Integration
 
@@ -89,59 +89,68 @@ exit node is built and tested.
   `transmission-ts` in the Tailscale admin console (Machines → … → *Disable key
   expiry*), or it drops off the tailnet.
 
-### Switching the exit node on (after buying the Mullvad add-on)
+### Exit node — live since 2026-09-28
 
-1. 👤 Tailscale admin → Settings → **Mullvad VPN** → buy, then add
-   `transmission-ts` (and the phone) to the allowed devices.
-2. Pick a node from inside the sidecar:
-   ```bash
-   docker exec transmission-ts tailscale exit-node list            # all
-   docker exec transmission-ts tailscale exit-node list --filter=SE # one country
-   docker exec transmission-ts tailscale exit-node suggest          # nearest
-   ```
-3. In `docker-compose.yml` (repo, then copy to `~/services/transmission/`),
-   uncomment and fill:
-   ```yaml
-   TS_EXTRA_ARGS: --exit-node=<mullvad-node> --exit-node-allow-lan-access=true
-   ```
-   `--exit-node-allow-lan-access` is required, not optional: the Docker
-   network (Sonarr/Radarr/Glance) and published-port traffic arrive from
-   local subnets, and without it Tailscale routes the replies into the tunnel,
-   so the web UI and RPC go dark. It only affects locally-connected subnets;
-   internet traffic still goes to Mullvad.
-4. `docker compose up -d --force-recreate`, then the leak test:
-   ```bash
-   # must differ from `curl -s https://ifconfig.me` on the host
-   docker exec transmission curl -s https://ifconfig.me
-   docker exec transmission curl -s https://am.i.mullvad.net/connected
-   ```
-   Also add a magnet from a torrent-IP checker (e.g. ipleak.net's torrent
-   test) and confirm the reported IP is Mullvad's.
-5. Peer port: Mullvad removed port forwarding in 2023, so with the exit node
-   on, inbound peer connections on `51413` stop working (Transmission becomes
-   passive-only; downloads still work, slower on poorly-seeded torrents).
-   The published port is harmless and kept for now.
+Mullvad add-on bought; `transmission-ts` uses **`se-sto-wg-201.mullvad.ts.net`**
+(Stockholm) with `--exit-node-allow-lan-access`. The choice is stored in the
+node's prefs (`./data/tailscale`), so it survives restarts; `TS_EXTRA_ARGS` in
+the compose only matters on a fresh login. Change node:
+```bash
+docker exec transmission-ts tailscale exit-node list --filter=SE
+docker exec transmission-ts tailscale set --exit-node=<node> --exit-node-allow-lan-access=true
+```
+Leak check any time (Transmission runs as PUID 501 — test as that user; root
+in the sidecar is tailscaled and deliberately *not* restricted):
+```bash
+docker exec -u 501 transmission curl -s https://am.i.mullvad.net/ip   # must be a Mullvad IP
+curl -s https://am.i.mullvad.net/ip                                   # host = home IP
+```
 
-### Kill switch — what is and isn't guaranteed
+Peer port: Mullvad removed port forwarding in 2023, so Transmission is
+passive-only (downloads work, slower on poorly seeded torrents, less seeding).
+The published `51413` was removed.
 
-Checked against Tailscale's docs on 2026-09-26; state it precisely:
+### Kill switch — `killswitch.sh` (tested 2026-09-28)
 
-- **Sidecar stopped or crashed → no leak.** Tested: with `transmission-ts`
-  stopped, `transmission` has only `lo` and every outbound connection fails.
-  It never falls back to Docker's normal bridge.
-- **Exit node set but offline/unreachable → not documented by Tailscale.**
-  The exit-node docs don't say whether traffic is dropped or falls back. The
-  only documented fail-close behaviour is for an exit node whose *key has
-  expired* ("routes remain configured … but become unreachable"). An open
-  feature request, tailscale/tailscale#19781 (May 2026), reports traffic
-  silently falling back to direct routing when an exit node goes down, on all
-  platforms including Linux, and asks for a real kill switch. Other reports
-  (#10379) describe the opposite — the internet just stops.
-- **So: do not treat Tailscale as a kill switch.** Once the exit node is on,
-  test it empirically (block the exit node, e.g. switch to a bogus/offline one,
-  and try `docker exec transmission curl https://ifconfig.me`). If it falls
-  back, add an explicit iptables rule in the sidecar that only allows egress
-  via `tailscale0` plus the local subnets. Tracked in `docs/HOME_SERVER_TODO.md`.
+Tailscale is **not** a kill switch on its own. Measured before the fix: with
+the exit node set, `tailscale down` made containerboot exit, Docker restarted
+the sidecar, and for the seconds before Tailscale reconnected traffic left on
+the **home IP**. (An iptables rule added at runtime didn't help either — the
+restart rebuilds the network namespace, and Tailscale resets the filter table.)
+
+`killswitch.sh` is now the sidecar's entrypoint. On every start, *before*
+Tailscale runs, it:
+- adds `ip rule 5300: uidrange <PUID> → table 200`, where table 200 holds only
+  the local Docker subnet and `unreachable default`. It sits *after*
+  Tailscale's rules (5210–5270 → table 52), so with the exit node up, table
+  52's `default dev tailscale0` wins and Transmission goes through Mullvad;
+  in every other state (Tailscale starting, down, or up without an exit node)
+  Transmission's traffic is unreachable instead of falling back.
+- adds `ip rule 5200: tcp sport 9091 → main` so web-UI/RPC replies go out
+  the normal way. Docker Desktop delivers published-port connections with a
+  fake outside source (seen as `8.8.8.8`), so without it the reply follows
+  the exit-node default into the tunnel and the UI times out. Only source
+  port 9091 matches; peer traffic never does.
+
+Test results (2026-09-28, as uid 501):
+
+| Scenario | Result |
+|---|---|
+| Exit node up | `89.37.63.63` — Mullvad Stockholm ✅ |
+| Sidecar (re)starting, first seconds | `Host is unreachable`, then Mullvad ✅ |
+| Tailscale up, exit node cleared | `Host is unreachable` ✅ (root still sees home IP — expected) |
+| Sidecar stopped | `transmission` has no network at all ✅ |
+| Web UI via published port / Mac Tailscale IP | 401 (login) ✅ |
+| Sonarr + Radarr download-client test | 200 ✅ |
+
+⚠️ If `transmission-ts` restarts on its own, `transmission` keeps a handle on
+the old (dead) network namespace — fail-closed, but it stops working until
+`docker compose up -d --force-recreate transmission` in `~/services/transmission`.
+
+Known, accepted: DNS for tracker hostnames uses Docker's resolver (home
+connection), because `TS_ACCEPT_DNS=false` keeps container-name resolution.
+That reveals *which trackers* are looked up to the resolver, not swarm
+participation, which is what IP-based monitoring uses.
 
 ### Rollback
 

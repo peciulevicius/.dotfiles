@@ -15,13 +15,17 @@ services:
     container_name: transmission-ts
     image: tailscale/tailscale:v1.102.5
     hostname: transmission-ts
+    # Kill switch first, then Tailscale (see killswitch.sh).
+    entrypoint: ["/bin/sh", "/killswitch.sh"]
     restart: unless-stopped
     ports:
       - "${TRANSMISSION_PORT:-9091}:9091"
-      - "51413:51413"
-      - "51413:51413/udp"
+      # No 51413 peer port: all peer traffic goes through Mullvad, which has
+      # no port forwarding (removed 2023), so an inbound port on the home IP
+      # is useless — and would pair the home IP with the swarm.
     volumes:
       - ./data/tailscale:/var/lib/tailscale
+      - ./killswitch.sh:/killswitch.sh:ro
     devices:
       - /dev/net/tun:/dev/net/tun
     cap_add:
@@ -38,13 +42,15 @@ services:
       TS_ACCEPT_DNS: "false"
       TS_ENABLE_HEALTH_CHECK: "true"
       TS_LOCAL_ADDR_PORT: "127.0.0.1:9002"
-      # Exit node (Tailscale Mullvad add-on) — not active yet. To enable,
-      # uncomment, put the node from `docker exec transmission-ts tailscale
-      # exit-node list` in place of <mullvad-node>, then
-      # `docker compose up -d --force-recreate`. allow-lan-access keeps
-      # replies to the media network and to published ports off the tunnel;
-      # without it the web UI/RPC become unreachable. Full steps: README.md.
-      # TS_EXTRA_ARGS: --exit-node=<mullvad-node> --exit-node-allow-lan-access=true
+      # Exit node: Tailscale Mullvad add-on, active since 2026-09-28. The
+      # choice is persisted in ./data/tailscale (prefs), so this line only
+      # matters on a fresh login. Change node: `tailscale exit-node list`,
+      # then `tailscale set --exit-node=<node>` in the container.
+      # allow-lan-access keeps replies to the media network and published
+      # ports off the tunnel; without it the web UI/RPC become unreachable.
+      TS_EXTRA_ARGS: --exit-node=se-sto-wg-201.mullvad.ts.net --exit-node-allow-lan-access=true
+      # Transmission's PUID — killswitch.sh routes only this user's traffic.
+      KILLSWITCH_UID: ${PUID:-1000}
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:9002/healthz"]
       interval: 30s
