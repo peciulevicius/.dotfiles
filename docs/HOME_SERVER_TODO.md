@@ -52,7 +52,7 @@ Section names in *italics* are headings below.
 - Coach: upload skill zip, add the `tp-mcp` custom connector in claude.ai, "Coach" Project — *🏃 Coach in the Claude app*
 - Website: `checkOrigin` decision, `IP_HASH_SALT` secret, Resend domain check; janioniu: sort your local TODO edits, confirm placeholder facts with Dad, Purelymail domain, Workers Builds toggle — *🌐 Other repo backlogs* and below
 - Gravatar, branded signature, Google account photo — *✉️ Email identity*
-- Email: catch-all, inbound test, iPhone Mail, deliverability / mail-tester — *📋 Open user steps*
+- Email: inbound test, more folders/filters, email signature (logo + name), then deliverability / mail-tester (catch-all + iPhone Mail done 2026-09-28) — *📋 Open user steps*
 - Reset Odysseus 2FA; first coaching session in Odysseus — *⚡ Batch 2026-09-24*
 - Rotate the Vaultwarden admin token (Claude can do the hash + `.env`; you save it) — *3. Rotate the Vaultwarden admin token*
 - Credential + email pass per service, NAS account passwords, `~/credentials-import.md` — *6. One pass per service*
@@ -60,7 +60,7 @@ Section names in *italics* are headings below.
 - Odysseus: chat-history exports, ChatGPT memories by hand, API balance/top-up check, save admin password to Vaultwarden — *8. Odysseus*
 - MacBook: gitleaks hook + `sync.sh` (Tailscale re-auth done 2026-09-28) — *8a. Public-repo hygiene*
 - R2 token scope, Cloudflare account 2FA — *8b. Cloudflare/R2 security check*
-- `pmset autorestartatconnect`, UPS decision, NAS auto power-on — *8c. Power outage recovery*
+- **🔋 Buy a UPS** (decided 2026-09-28; FileVault stays on, so a reboot needs you at the machine — the UPS makes short outages not reboot at all). ~€80–130, shoebox size, draws 2–5 W itself, battery swap every 3–5 y. Pick one with **USB (HID)** so macOS/NUT can shut down cleanly: e.g. **APC Back-UPS BX750MI / BX950MI** or **Eaton 5E 850i USB**. Compare prices on kaina24.lt; LT shops: Varle.lt, Pigu.lt, 1a.lt, Senukai; or Amazon.de. Mac mini + NAS ≈ 30 W → ~20–40 min runtime. Claude: after it arrives, wire up clean shutdown (macOS Energy settings + NAS). `autorestart` is already on (checked 2026-09-28); NAS auto power-on still to check — *8c. Power outage recovery*
 - notebook.koplugin, Supernote, cancel YouTube Music/Premium, music-folder cleanup, Jellyfin/ABS API keys, Nextcloud/Paperless (on-demand; decide later) — *9. Maintenance backlog*
 - Kindle wallpapers, KOReader speed workaround, `.smbdelete` cleanup, `read-along` tag, OTA check, Searchable PDF test — *Quick wins left over from 2026-09-20*
 - LiveSync plugin on each device — *🔗 Obsidian LiveSync*
@@ -259,9 +259,9 @@ token, email DNS cutover, coach build) are in the changelog.
 
 - [ ] 👤 **Email** — DNS + MX live on Purelymail 2026-09-25, Email Routing
       disabled, domain saved, `dziugas@` user created. Remaining:
-      1. Purelymail → Routing → catch-all `*@peciulevicius.com` → `dziugas@`.
+      1. ~~Purelymail → Routing → catch-all `*@peciulevicius.com` → `dziugas@`~~ — done 2026-09-28
       2. Test: mail `inbox@peciulevicius.com` from Gmail, check webmail.
-      3. iPhone Apple Mail + Sieve filters (log in as `dziugas@`). Consumers
+      3. ~~iPhone Apple Mail~~ — done 2026-09-28 (first folder created; more folders + Sieve filters later). Consumers
          were repointed 2026-09-26; revoke is in 🔝 Next up; the Gmail
          redirect decision is under *De-Google → Email*.
       4. Deliverability: first mails to Gmail landed in Spam (new domain, no

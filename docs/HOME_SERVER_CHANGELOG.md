@@ -8,6 +8,14 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-28 — WUD login fixed
+
+- WUD rejected the login after the credentials were changed in `.env`: WUD 9
+  only reads `WUD_AUTH_ADMIN_*` on first start. Store moved aside
+  (`~/backups/wud-store-2026-09-28/`), WUD re-bootstrapped with the current
+  `.env`, scripts' copy (`~/.config/homelab/wud.env`) synced; the report runs
+  again. Gotcha documented in `services/wud/README.md`.
+
 ## 2026-09-28 — SMB rescan cron removed (it kept sleepers awake)
 
 - `smb-watcher-rescan.sh` ran every 30 min and did `docker restart jellyfin

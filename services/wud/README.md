@@ -83,6 +83,13 @@ labels:
 - **WUD 9 won't start without an admin user** (`Authentication is
   mandatory`) — the credentials in `.env` are required, not optional. The
   scripts read a copy in `~/.config/homelab/wud.env` (chmod 600).
+- **Changing the admin login:** `WUD_AUTH_ADMIN_*` are **bootstrap** values —
+  read only on the very first start, then stored in `data/wud.sqlite`. Editing
+  `.env` later does nothing (seen 2026-09-28: "Username or password error").
+  To change it: edit `.env`, then `docker compose stop wud`, move
+  `data/wud.sqlite*` aside (it's only a cache), `docker compose up -d wud`,
+  and update `WUD_USER`/`WUD_PASSWORD` in `~/.config/homelab/wud.env` so
+  `update-report.sh` keeps working.
 - `data/` holds a live SQLite cache — excluded from the R2 backup; it rebuilds
   on the next daily check.
 - ~100–150 MB RAM (limit 192 MB) + ~10 MB for the proxy.
