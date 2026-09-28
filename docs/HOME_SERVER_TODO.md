@@ -47,7 +47,6 @@ Section names in *italics* are headings below.
 
 - [x] ~~Discord two-way chat with Coach + Dietitian~~ — bridge live 2026-09-27
 - **Delete the Claude.ai export** once the Coach team and Studio brief look right: `~/Downloads/claude_export/`, `claude_export_full.json`, `export_from_claude.md` (they hold every chat, not just training)
-- **Coach team decisions waiting in Paperclip:** COA-6 (this week + military week training plan) and the Dietitian's COA-7 (weight plan + portions) once it posts
 - Mail wrap-up: Kuma + Calibre-Web test mails, approve `dziugas@` as an Amazon sender, Gmail→Kindle filter — *🔝 Next up*
 - Coach: upload skill zip, add the `tp-mcp` custom connector in claude.ai, "Coach" Project — *🏃 Coach in the Claude app*
 - Website: `checkOrigin` decision, `IP_HASH_SALT` secret, Resend domain check; janioniu: sort your local TODO edits, confirm placeholder facts with Dad, Purelymail domain, Workers Builds toggle — *🌐 Other repo backlogs* and below
@@ -58,7 +57,7 @@ Section names in *italics* are headings below.
 - Credential + email pass per service, NAS account passwords, `~/credentials-import.md` — *6. One pass per service*
 - Vaultwarden Chrome extension on the work laptop — *7. Vaultwarden Chrome extension*
 - Odysseus: chat-history exports, ChatGPT memories by hand, API balance/top-up check, save admin password to Vaultwarden — *8. Odysseus*
-- MacBook: gitleaks hook + `sync.sh`, re-auth Tailscale (key expired 2026-09-02) — *8a. Public-repo hygiene*
+- MacBook: gitleaks hook + `sync.sh` (Tailscale re-auth done 2026-09-28) — *8a. Public-repo hygiene*
 - R2 token scope, Cloudflare account 2FA — *8b. Cloudflare/R2 security check*
 - `pmset autorestartatconnect`, UPS decision, NAS auto power-on — *8c. Power outage recovery*
 - notebook.koplugin, Supernote, cancel YouTube Music/Premium, music-folder cleanup, Jellyfin/ABS API keys, Nextcloud/Paperless (on-demand; decide later) — *9. Maintenance backlog*
@@ -113,7 +112,6 @@ Section names in *italics* are headings below.
 - Old photo archives into Immich (needs T7 + judgement) — *Import old photo archives into Immich*
 - Paperless tags/types — *Paperless-NGX — organise documents*
 - Brave Shields for Linkwarden — *Linkwarden*
-- 👤 Disable key expiry on `transmission-ts` (Tailscale admin → Machines → transmission-ts → ⋯ → Disable key expiry) — still set to 2027-03-25 — *VPN for torrents*
 - Capture Shortcut, Web Clipper, 30-day habit, Kindle/KOReader items — *Notes*
 - "Sign in with Google" audit, Gmail redirect decision, Takeout — *De-Google*
 - Calendar + Contacts to Nextcloud — *Calendar + Contacts*
