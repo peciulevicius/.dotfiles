@@ -167,13 +167,19 @@ and [support article](https://support.budgetbakers.com/hc/en-us/articles/1076147
 1. In the Wallet web app, open your profile (top right) → **Settings** →
    generate a personal **API token**. The first token triggers an initial
    sync; API calls can return HTTP 409 until it finishes.
-2. On the Mac mini, in Terminal (token is not echoed):
+2. On the Mac mini, in Terminal (token is not echoed). ⚠️ `read -p` means
+   something different in zsh (reads from a coprocess, not "show a prompt") —
+   the default shell here is zsh, so use `printf` for the prompt, not `-p`:
    ```bash
-   read -rsp "Wallet API token: " T; echo
+   printf "Wallet API token: "; read -rs T; echo
    mkdir -p ~/.config/homelab
    umask 077; printf 'BUDGETBAKERS_API_TOKEN=%s\n' "$T" > ~/.config/homelab/budgetbakers.env; unset T
-   ~/.dotfiles/scripts/utils/finance-status.sh && echo ok
+   ~/.dotfiles/scripts/utils/finance-status.sh --print | grep -A2 '"budgetbakers"'
    ```
+   Check the output: `"ok": true` means it worked; `"not configured"` means
+   the token didn't save (the file is probably empty — `cat
+   ~/.config/homelab/budgetbakers.env` to check) — `&& echo ok` alone does
+   **not** prove it worked, the script exits 0 either way.
 3. If the Wallet contains accounts in more than one currency, consolidate the
    reporting balances to one currency before relying on its net-worth total.
    The cross-provider display currency follows the first connected provider.
@@ -192,12 +198,19 @@ and [support article](https://support.budgetbakers.com/hc/en-us/articles/1076147
 2. Client Portal → *Settings* → **Flex Web Service** (under Reporting) →
    enable, then **Generate token** (pick the longest validity; it expires,
    and the widget will show the error when it does).
-3. On the Mac mini, in Terminal (nothing is echoed):
+3. On the Mac mini, in Terminal (token not echoed). ⚠️ Use `printf` for the
+   prompts, not `read -p` — in zsh (the default shell here) `-p` means
+   "read from a coprocess", not "show a prompt", and fails or silently
+   reads nothing:
    ```bash
-   read -rsp "Flex token: " T; echo; read -rp "Query ID: " Q
+   printf "Flex token: "; read -rs T; echo
+   printf "Query ID: "; read -r Q
    umask 077; printf 'IBKR_FLEX_TOKEN=%s\nIBKR_FLEX_QUERY_ID=%s\n' "$T" "$Q" > ~/.config/homelab/ibkr-flex.env; unset T
-   ~/.dotfiles/scripts/utils/finance-status.sh && echo ok
+   ~/.dotfiles/scripts/utils/finance-status.sh --print | grep -A2 '"ibkr"'
    ```
+   Check the output: `"ok": true` means it worked. If it still says
+   `"not configured"`, check `cat ~/.config/homelab/ibkr-flex.env` — both
+   values must be non-empty.
 4. Refresh the Finance page.
 
 **Adding another account later.** Each provider is a `fetch_<name>()` in the

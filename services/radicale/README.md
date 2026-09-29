@@ -31,10 +31,12 @@ Show it once to copy into Vaultwarden / the phone:
 grep RADICALE_PASSWORD ~/.config/homelab/radicale.env | cut -d= -f2-
 ```
 
-Change the password:
+Change the password (⚠️ use `printf` for the prompt, not `read -p` — in zsh,
+the default shell here, `-p` means "read from a coprocess", not "show a
+prompt", and silently breaks):
 ```bash
 cd ~/services/radicale
-read -rsp "New Radicale password: " PW; echo
+printf "New Radicale password: "; read -rs PW; echo
 docker run --rm -e PW="$PW" httpd:2.4-alpine sh -c 'htpasswd -nbB -C 12 dziugas "$PW"' > users
 sed -i '' "s|^RADICALE_PASSWORD=.*|RADICALE_PASSWORD=$PW|" ~/.config/homelab/radicale.env; unset PW
 docker compose restart radicale
