@@ -30,6 +30,13 @@ chat/below — assign this before anything else, it's the freshest bug.
 
 ## 🔝 Next up — finish the mail switch
 
+- [ ] 👤 **Automatic PR reviews:** connect `.dotfiles` in Codex's hosted code
+  review settings and enable automatic review. Generate a Claude Code
+  subscription token locally, save it as the repository secret
+  `CLAUDE_CODE_OAUTH_TOKEN`, set `CLAUDE_PR_REVIEW_ENABLED=true`, and merge the
+  review workflow PR. Both providers need account setup; no paid API key is
+  configured. See [PR reviews](guides/PR_REVIEWS.md).
+
 kindle_sync, Kuma SMTP and Calibre-Web SMTP all run on Purelymail since
 2026-09-26 (changelog). Remaining:
 - [ ] 👤 Kuma → "Uptime Kuma" notification → **Test**; Calibre-Web → Admin →

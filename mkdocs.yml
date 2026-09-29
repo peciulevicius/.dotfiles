@@ -58,6 +58,7 @@ nav:
       - Modern CLI Tools: MODERN_CLI_TOOLS.md
       - Utility Scripts: UTILITY_SCRIPTS.md
       - Tutorials: tutorials/TOOL_TUTORIALS.md
+      - AI pull request reviews: guides/PR_REVIEWS.md
 
   - Self-Hosted:
       - Services Overview: SERVICES.md
