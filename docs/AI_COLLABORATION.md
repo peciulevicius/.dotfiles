@@ -54,6 +54,19 @@ agents to read health or finance records.
 - Agent memory is not a substitute for current docs, live checks, or user
   confirmation for a consequential operational action.
 
+## Routine work and approvals
+
+The user's preference is to authorize routine implementation, commits and
+PR creation as part of the task, with confirmation for destructive or major
+changes. Repository instructions cannot remove client sandbox prompts.
+In the desktop app, enable **Auto-review** under **Settings → General →
+Permissions**, then select **Approve for me** beneath the composer. Eligible
+escalations go to an automatic reviewer; major actions still need explicit
+authorization when they have not already been approved. Full access removes
+the sandbox boundary. See the official
+[permission modes](https://learn.chatgpt.com/docs/permission-modes) and
+[automatic review guide](https://learn.chatgpt.com/docs/sandboxing/auto-review).
+
 ## Adding documentation
 
 - Add or update a service's `README.md` for durable setup, architecture,

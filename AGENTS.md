@@ -25,6 +25,25 @@ relevant service README and TODO section before changing operational code.
 - Before editing, inspect `git status` and preserve unrelated user changes.
 - Run the checks relevant to the changed files and report what was run.
 
+## Approval preferences
+
+Routine edits, focused branches, commits, pushes to those branches, and opening
+PRs are authorized within the user's requested work. Proceed without asking
+for each step. Ask before major operational changes, irreversible termination,
+deleting data, rewriting shared history, or merging/deploying a PR when that
+action has not already been authorized. Prepare the concrete change and its
+recovery plan before asking. Sandbox and account permission requirements still
+apply; these instructions do not change a client's permission mode.
+
+## Code Review Rules
+
+Read `.github/AI_REVIEW_RULES.md` when available. Focus on concrete introduced
+bugs, with the failing scenario and file/line. Check secret handling, partial
+recovery and saved state, stale agent references, accidental wakes/retries,
+notification routing, and whether separately staged live files were updated.
+Skip style preferences and mechanical checks already enforced by CI. Never
+copy private memory into a review or merge a PR on the user's behalf.
+
 ## Where to look
 
 - Repository overview: [README.md](README.md)
