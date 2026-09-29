@@ -9,25 +9,6 @@ checked against the live system; done items moved to the changelog.
 
 ---
 
-## 🤖 Assigned to Codex — BudgetBakers 400 error (2026-09-29)
-
-Real token saved to `~/.config/homelab/budgetbakers.env` and confirmed
-non-empty; `scripts/utils/finance-status.sh --print` returns:
-```
-"budgetbakers": {"ok": false, "error": "HTTPError: HTTP Error 400: Bad Request"}
-```
-The `fetch_budgetbakers()` code (added 2026-09-29 by Codex, see
-`docs/HOME_SERVER_CHANGELOG.md`) was written from BudgetBakers' published
-docs without a real token to test against — something in the request shape
-is wrong now that a real token exists (wrong auth header format, wrong
-endpoint path, a required param the docs didn't make obvious, or the
-"beta" API needing something extra). The 400 means the request reached
-BudgetBakers and was rejected, so this is fixable with the real token
-already in place, no new credential needed. Prompt to give Codex is in
-chat/below — assign this before anything else, it's the freshest bug.
-
----
-
 ## 🔝 Next up — finish the mail switch
 
 kindle_sync, Kuma SMTP and Calibre-Web SMTP all run on Purelymail since

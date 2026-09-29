@@ -167,10 +167,10 @@ def fetch_ibkr():
             "positions": positions}
 
 
-def wallet_pages(endpoint, key, token, extra=None):
+def wallet_pages(endpoint, key, token, extra=None, page_limit=200):
     items, offset = [], 0
     while True:
-        params = {"limit": 200, "offset": offset, **(extra or {})}
+        params = {"limit": page_limit, "offset": offset, **(extra or {})}
         page = get_json(f"{WALLET}/{endpoint}", params, token)
         items.extend(page.get(key, []))
         next_offset = page.get("nextOffset")
@@ -185,7 +185,8 @@ def fetch_budgetbakers():
     if not token:
         raise LookupError("not configured")
     accounts = wallet_pages("accounts", "accounts", token, {"archived": "false"})
-    budgets = wallet_pages("budgets", "budgets", token, {"closed": "false"})
+    # The budgets endpoint has a lower cap than the other Wallet collections.
+    budgets = wallet_pages("budgets", "budgets", token, {"closed": "false"}, page_limit=20)
     categories = wallet_pages("categories", "categories", token)
     category_names = {str(c.get("id")): c.get("name", "Budget") for c in categories}
     balances = []

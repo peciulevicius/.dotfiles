@@ -158,7 +158,8 @@ token generated in the Wallet web app under profile → Settings. The script
 uses `GET /v1/api/accounts` (computed `balance.currentBalance`, currency) and
 `GET /v1/api/budgets` (current period `spending.current.effectiveLimit` and
 `spent`), plus `GET /v1/api/categories` to label budget categories. Calls are
-paginated, max 200 items/page. BudgetBakers documents 300 requests/hour/client,
+paginated; accounts and categories accept up to 200 items/page, while budgets
+are capped at 20. BudgetBakers documents 300 requests/hour/client,
 HTTP 429 with `Retry-After`, and rate-limit headers. We make three requests
 per refresh in the normal case. See the [REST API page](https://budgetbakers.com/en/products/wallet/integrations/rest-api/)
 and [support article](https://support.budgetbakers.com/hc/en-us/articles/10761479741586-Rest-API-MCP).
