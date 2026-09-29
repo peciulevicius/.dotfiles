@@ -652,8 +652,17 @@ fallback, so `scripts/utils/paperclip-fallback.sh` (cron, every 5 min) does it:
   `~/.config/homelab/paperclip-fallback/state.json` (chmod 600), then
   @mentions the agent on the interrupted issue so the work resumes. Discord gets
   a "⚡ Claude limit hit" post.
-- **Restores** (hourly probe, or `--restore`): a tiny `claude -p` Haiku request
-  inside the container; when it answers `OK`, each saved agent is PATCHed back.
+- **Checks recovery** (hourly probe, or `--restore`): a tiny `claude -p` Haiku
+  request inside the container. The script no longer PATCHes the same agent
+  back to Claude because that path is known to fail; it reports that a fresh
+  hire is needed.
+- **Reconciles manual rehires:** `--reconcile` is a dry-run by default. When a
+  saved old ID is paused/terminated and explicitly named retired, it requires
+  exactly one live agent with the saved name, adapter and model. `--reconcile
+  --apply` then adds the saved skills, remaps active agents' `reportsTo` links
+  and open issue assignments, and clears that state record only if every API
+  write succeeds. It never renames or terminates the retired agent. Check
+  third-party references such as the Discord bridge separately.
 - `--status`, `--dry-run`.
 
 **Why OpenRouter, not Anthropic API credit:** Paperclip strips `ANTHROPIC_*` /
@@ -689,8 +698,9 @@ it, and the restore bug hit *every* switched agent, not just one.** 10 agents
 across all 3 companies (Homelab Lead; Coach, Dietitian; CEO, CTO, Head of
 Marketing, Security Engineer, Backend Developer, Copywriter, UI/UX Designer)
 got switched and none restored automatically. Fixing it by hand surfaced
-three knock-on problems the script doesn't handle, beyond the PATCH failure
-itself:
+three knock-on problems beyond the PATCH failure itself. The old script did
+not handle these; `--reconcile` now repairs them for already-hired exact
+replacements:
 1. **Manager references break.** CEO, CTO and Coach are managers — giving
    them a new agent ID orphans every direct report's `reportsTo` (and
    *their* reports, transitively). Fix order matters: rehire root-first
@@ -699,23 +709,32 @@ itself:
    were *not* switched themselves (e.g. Engineering Manager, DevOps, the
    whole marketing team all pointed at the old CEO/CTO/Head of Marketing).
 2. **Company skills are lost.** `adapterConfig.paperclipSkillSync` lives on
-   the agent record; a rehire starts with none. Re-attach per the table
-   above (`PATCH` the new agent with `adapterConfig.paperclipSkillSync.desiredSkills`,
-   each key as `company/<companyId>/<skill-slug>` — list a company's
-   available keys with `GET /api/companies/<id>/skills`).
+   the agent record; a rehire starts with none. `--reconcile` restores the
+   saved keys with `POST /api/agents/<id>/skills/sync` in `add` mode, so other
+   assignments are preserved.
 3. **Anything hardcoding the old agent ID goes stale.** The Discord bridge's
    `CHANNEL_MAP` (`~/services/discord-bridge/.env`) pins Coach/Dietitian by
-   ID — update and `docker compose up -d` there. Any open Paperclip issue
-   assigned to the old ID needs reassigning to the new one, or the new agent
-   never sees it (check with `GET /api/companies/<id>/issues`, filter
-   `assigneeAgentId`).
+   ID — update and `docker compose up -d` there. `--reconcile` reassigns open
+   Paperclip issues from the old ID to the matching replacement; external
+   references such as the Discord map still need a separate update.
+
+The replacements were hired manually. A live audit later found five Homelab
+agents still reporting to the retired Homelab Lead ID, and the local fallback
+state still listed all ten old IDs. `--reconcile` now repairs saved skills,
+reporting links, and open issue assignments for already-hired exact
+replacements. It leaves unrelated agents and retired records alone.
 
 **So `AUTO_SWITCH` is off again**, same day it was turned on. Switching
 *away* is safe to automate; restore is not, until it does a real
 pause+rehire with the three remaps above instead of a bare PATCH — that's
 follow-up work, not done yet. Until then: a limit hit only **notifies**
 (`⚡ Claude limit hit`), and you either wait for the subscription to reset or
-run `--switch` by hand, knowing restore will need the manual recipe above.
+run `--switch` by hand. When the subscription is back, use `--reconcile` to
+preview any already-hired replacements, then `--reconcile --apply` to repair
+their links. If no replacement exists, hire a fresh Claude agent through the
+board approval flow; `--restore` deliberately refuses the broken same-agent
+PATCH. Auto-switch remains off until a complete rehire-and-approval workflow
+can safely handle future incidents.
 
 **Coach company:** an `OpenRouter (shared)` connection was added 2026-09-29
 (`POST /api/companies/<id>/ai-connections`, same key), so Coach/Dietitian are

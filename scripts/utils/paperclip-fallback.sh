@@ -1,19 +1,21 @@
 #!/usr/bin/env bash
 # Paperclip usage-limit fallback: when the Claude Pro subscription hits its
 # limit, move claude_local agents to OpenRouter (cheap model) so work doesn't
-# stall, and move them back when the subscription answers again.
+# stall, then reconcile a fresh approved Claude hire after the limit clears.
 #
 #   paperclip-fallback.sh            # cron mode (every 5 min): detect → act
 #   paperclip-fallback.sh --status   # show state + recent limit failures
 #   paperclip-fallback.sh --switch   # force fallback now
 #   paperclip-fallback.sh --restore  # probe subscription, restore agents
-#   add --dry-run to any of them to print actions without changing anything
+#   paperclip-fallback.sh --reconcile # preview stale retired-ID remaps
+#   paperclip-fallback.sh --reconcile --apply # apply the verified remaps
+#   add --dry-run to any mutating mode to print actions without changing anything
 #
 # Why OpenRouter and not Anthropic API credit: Paperclip strips ANTHROPIC_*
 # auth env from agents that have a managed AI connection, and there is no
 # Anthropic API-key connection — so the only switchable fallback is the
-# shared OpenRouter connection with the opencode_local harness. It is also
-# ~10x cheaper per run (deepseek-v3.2 vs Sonnet via API).
+# shared OpenRouter connection with the opencode_local harness. Returning to
+# Claude requires a new approved agent; the same-record PATCH is not reliable.
 #
 # ⚠️ Restore limitation (found 2026-09-29): switching an agent BACK to the
 # subscription runs Paperclip's Claude "hello probe", which currently reports
@@ -34,16 +36,24 @@ chmod 700 "$STATE_DIR"
 
 MODE=cron
 DRY_RUN=0
+APPLY=0
 for arg in "$@"; do
   case "$arg" in
     --status) MODE=status ;;
     --switch) MODE=switch ;;
     --restore) MODE=restore ;;
+    --reconcile) MODE=reconcile ;;
+    --apply) APPLY=1 ;;
     --dry-run) DRY_RUN=1 ;;
     -h|--help) sed -n '2,30p' "$0"; exit 0 ;;
     *) echo "unknown argument: $arg" >&2; exit 2 ;;
   esac
 done
+if [[ "$MODE" == "reconcile" && "$APPLY" != 1 ]]; then DRY_RUN=1; fi
+if [[ "$MODE" != "reconcile" && "$APPLY" == 1 ]]; then
+  echo "--apply is only valid with --reconcile" >&2
+  exit 2
+fi
 
 probe_subscription() {
   # Tiny Haiku request through the container's Claude Code login.
@@ -64,14 +74,14 @@ export PAPERCLIP_PW="$PW"
 unset PW
 
 MODE="$MODE" DRY_RUN="$DRY_RUN" STATE_FILE="$STATE_DIR/state.json" \
-AUTO_SWITCH="${AUTO_SWITCH:-0}" FALLBACK_MODEL="${FALLBACK_MODEL:-openrouter/deepseek/deepseek-v3.2}" \
+APPLY="$APPLY" AUTO_SWITCH="${AUTO_SWITCH:-0}" FALLBACK_MODEL="${FALLBACK_MODEL:-openrouter/deepseek/deepseek-v3.2}" \
 LOOKBACK_MIN="${LOOKBACK_MIN:-15}" PROBE_EVERY_MIN="${PROBE_EVERY_MIN:-60}" \
 python3 - <<'PY'
-import http.cookiejar, json, os, subprocess, sys, time, urllib.request
+import http.cookiejar, json, os, subprocess, sys, time, urllib.parse, urllib.request
 from datetime import datetime, timezone
 
 BASE = "http://127.0.0.1:3100"
-MODE, DRY = os.environ["MODE"], os.environ["DRY_RUN"] == "1"
+MODE, DRY, APPLY = os.environ["MODE"], os.environ["DRY_RUN"] == "1", os.environ["APPLY"] == "1"
 STATE_FILE = os.environ["STATE_FILE"]
 AUTO = os.environ["AUTO_SWITCH"] == "1"
 MODEL = os.environ["FALLBACK_MODEL"]
@@ -201,20 +211,88 @@ try:
         return switched, skipped, rewoken
 
     def restore():
-        restored, failed = [], []
-        for aid, rec in list(st["agents"].items()):
-            if DRY:
-                restored.append(rec["name"])
+        # The same agent record cannot reliably cross back from OpenCode to
+        # Claude. Never retry the known-broken PATCH; rehire is a board action.
+        failed = [f"{rec['name']} (requires a fresh Claude hire; same-record restore is unsupported)"
+                  for rec in st["agents"].values()]
+        return [], failed
+
+    def reconcile():
+        """Repair references left behind by the incident's manual rehires.
+
+        Only touch records explicitly marked retired and paused/terminated,
+        and only when one live agent exactly matches the original name,
+        adapter, and model. Never terminate or rename agents here.
+        """
+        reconciled, skipped, failed = [], [], []
+        terminal_issues = {"done", "cancelled", "canceled", "rejected"}
+        for old_id, rec in list(st["agents"].items()):
+            cid = rec.get("company")
+            company = comp.get(cid)
+            if not company:
+                skipped.append(f"{rec.get('name', old_id)} (company not found)")
                 continue
-            code, res = api("PATCH", f"/api/agents/{aid}", rec["orig"])
-            if code == 200 and (res or {}).get("adapterType") == rec["orig"]["adapterType"]:
-                restored.append(rec["name"])
-                del st["agents"][aid]
+            code, old = api("GET", f"/api/agents/{old_id}")
+            if code != 200 or not isinstance(old, dict):
+                skipped.append(f"{rec.get('name', old_id)} (old agent unavailable)")
+                continue
+            if ("retired" not in (old.get("name") or "").lower()
+                    or old.get("status") not in ("paused", "terminated")):
+                skipped.append(f"{rec.get('name', old_id)} (not a paused retired agent)")
+                continue
+            orig = rec.get("orig") or {}
+            orig_model = (orig.get("adapterConfig") or {}).get("model")
+            candidates = [a for a in company["agents"]
+                          if a.get("id") != old_id
+                          and a.get("name") == rec.get("name")
+                          and a.get("adapterType") == orig.get("adapterType")
+                          and (a.get("adapterConfig") or {}).get("model") == orig_model
+                          and a.get("status") in ("active", "idle", "running")]
+            if len(candidates) != 1:
+                skipped.append(f"{rec.get('name', old_id)} (expected one matching live replacement; found {len(candidates)})")
+                continue
+            new = candidates[0]
+            desired_skills = ((orig.get("adapterConfig") or {}).get("paperclipSkillSync") or {}).get("desiredSkills", [])
+            reports = [a for a in company["agents"]
+                       if a.get("reportsTo") == old_id
+                       and "retired" not in (a.get("name") or "").lower()
+                       and a.get("status") != "terminated"]
+            query = urllib.parse.urlencode({"assigneeAgentId": old_id})
+            code, result = api("GET", f"/api/companies/{cid}/issues?{query}")
+            if code != 200:
+                failed.append(f"{rec.get('name', old_id)} (could not list assigned issues: {code})")
+                continue
+            open_issues = [i for i in items(result, "issues", "items", "data")
+                           if i.get("status") not in terminal_issues]
+            issue_refs = [f"{i.get('identifier') or i['id']}:{i.get('status')}" for i in open_issues]
+            print(f"{'[dry-run] ' if DRY else ''}{company['name']}/{rec['name']}: replacement {new['id']}; "
+                  f"add {len(desired_skills)} saved skill(s), reports={[a.get('name') for a in reports]}, "
+                  f"open issues={issue_refs}")
+            if DRY:
+                reconciled.append(rec["name"])
+                continue
+            errors = []
+            if desired_skills:
+                code, result = api("POST", f"/api/agents/{new['id']}/skills/sync",
+                                   {"mode": "add", "desiredSkills": desired_skills})
+                if code != 200:
+                    errors.append(f"skills ({(result or {}).get('error') or code})")
+            for agent in reports:
+                code, result = api("PATCH", f"/api/agents/{agent['id']}", {"reportsTo": new["id"]})
+                if code != 200:
+                    errors.append(f"reportsTo {agent.get('name')} ({code})")
+            for issue in open_issues:
+                code, result = api("PATCH", f"/api/issues/{issue['id']}", {"assigneeAgentId": new["id"]})
+                if code != 200:
+                    errors.append(f"issue {issue.get('identifier') or issue['id']} ({code})")
+            if errors:
+                failed.append(f"{rec['name']} (partial; " + ", ".join(errors) + ")")
             else:
-                failed.append(f"{rec['name']} ({(res or {}).get('error') or code})")
+                reconciled.append(rec["name"])
+                del st["agents"][old_id]
         if not st["agents"]:
             st.update(active=False, since=None)
-        return restored, failed
+        return reconciled, skipped, failed
 
     if MODE == "status":
         print(json.dumps({"active": st.get("active"), "since": st.get("since"),
@@ -222,6 +300,11 @@ try:
                           "recent_limit_failures": [f"{comp[c]['name']}: run {r['id'][:8]} at {r['finishedAt']}" for c, r in limit_runs],
                           "companies_without_openrouter": [v["name"] for v in comp.values() if not v["openrouter"]],
                           "auto_switch": AUTO}, indent=1))
+    elif MODE == "reconcile":
+        rs, sk, fl = reconcile()
+        save(st)
+        print("would reconcile:" if DRY else "reconciled:", rs,
+              "\nskipped:", sk, "\nfailed:", fl, "\napplied:", APPLY and not DRY)
     elif MODE == "switch" or (MODE == "cron" and limit_runs and not st.get("active") and AUTO):
         sw, sk, rw = switch()
         save(st)
@@ -241,9 +324,10 @@ try:
                 notify("✅ Claude subscription back", f"Restored {len(rs)} agents: {', '.join(rs)}.", "ok")
             if fl:
                 notify("⚠️ Paperclip restore needs a click",
-                       "Subscription answers again, but Paperclip refused to move these agents back: "
-                       + ", ".join(fl) + ". Paperclip → agent → Configuration → adapter Claude + "
-                       "'My Claude subscription' → Save. See services/paperclip/README.md → Usage-limit fallback.", "warn")
+                       "Claude is available again, but these agents cannot switch harness in place: "
+                       + ", ".join(fl) + ". Use --reconcile if a fresh matching hire already exists; "
+                       "otherwise request and approve a new Claude hire. See services/paperclip/README.md "
+                       "→ Usage-limit fallback.", "warn")
         save(st)
     elif MODE == "cron" and limit_runs and not st.get("active"):
         if now - st.get("notified_limit_at", 0) > 3 * 3600:

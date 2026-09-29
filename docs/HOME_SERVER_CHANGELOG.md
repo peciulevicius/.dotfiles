@@ -6,6 +6,18 @@ is often what you need when something similar breaks again.
 
 Newest first-ish; dates are when the work was finished.
 
+## 2026-09-29 — Paperclip fallback reconciliation guard
+
+The fallback script no longer retries the known-broken same-agent PATCH when
+Claude usage returns. Added an explicit dry-run-first `--reconcile` flow for
+agents already replaced through Paperclip's board approval: it requires a
+paused/terminated retired record and one exact live name/adapter/model match,
+then can restore saved skills and remap reporting links and open issues before
+clearing that stale state entry. It never terminates agents; auto-switch stays
+off pending a complete rehire-and-approval flow. A read-only live audit found
+five Homelab agents still linked to the retired Homelab Lead and ten stale
+fallback records; apply is tracked in the TODO for after the PR is reviewed.
+
 ---
 
 ## 2026-09-29 — AUTO_SWITCH incident: 10 agents stuck, fixed by hand, feature reverted to notify-only
@@ -2637,4 +2649,3 @@ fire, flood or theft. Moving T5 offsite is what makes this genuinely 3-2-1.
   finance refresh. Credentials and generated amounts stay outside this repo.
 - Added setup docs and a TODO for the user's Wallet token and remaining IBKR
   setup. No credentials were added.
-

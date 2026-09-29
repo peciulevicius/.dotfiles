@@ -55,7 +55,7 @@ Section names in *italics* are headings below.
 
 ### 👤 Needs you (UI / device / credentials / decision)
 
-- [x] ~~⚡ Paperclip usage-limit fallback~~ — done 2026-09-29: Coach company got an OpenRouter connection, Copywriter was fixed (pause + rehire, not a connection re-test — the subscription was never actually broken), `AUTO_SWITCH=1` is on. Details + the real fix if this happens again: `services/paperclip/README.md` → *Usage-limit fallback*.
+- [x] ~~⚡ Paperclip usage-limit watchdog~~ — detects and notifies about Claude limits; OpenRouter connections are provisioned in all three companies. `AUTO_SWITCH` is **off** after the restore incident; same-agent restoration is unsafe. Reconcile the already-rehired agents after the recovery PR is merged. Details: `services/paperclip/README.md` → *Usage-limit fallback*.
 - **🧠 Shared AI memory (2026-09-29):**
   - [ ] 👤 NAS: create a shared folder **`backups`** (UGREEN → Control Panel → Shared Folder → Create; give `macmini` R/W). Then Claude adds it to `SHARES` in `scripts/utils/mount-nas.sh` — the nightly backup starts copying `~/ai-memory` there automatically.
   - [ ] 👤 Odysseus: save the current admin password to Vaultwarden and put it in `~/services/odysseus/.env` (`ODYSSEUS_ADMIN_PASSWORD`) — the `.env` one no longer matches, so API automation can't log in.
@@ -209,6 +209,8 @@ Section names in *italics* are headings below.
 - 👤 Optional: Uptime Kuma **DNS** monitor for the resolver chain (Kuma has no monitor API — UI step): + Add New Monitor → DNS → hostname `example.com`, resolver `host.docker.internal` port 53 → alerts if Pi-hole *or* unbound stops answering.
 
 ### 🤖 Claude can do next
+
+- Paperclip: after the recovery PR is merged, run `paperclip-fallback.sh --reconcile` and review the planned remaps; then use `--reconcile --apply` to repair saved skills, reporting links, open issues, and stale fallback state. Keep auto-switch off until a full rehire-and-approval workflow is implemented.
 
 - [x] ~~Rotate the **Radarr + Sonarr API keys**~~ — **done 2026-09-27**
   (Prowlarr, Jellyseerr, Bazarr updated + tested; see changelog).
