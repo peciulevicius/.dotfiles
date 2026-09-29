@@ -6,6 +6,8 @@ is often what you need when something similar breaks again.
 
 Newest first-ish; dates are when the work was finished.
 
+---
+
 ## 2026-09-29 — AUTO_SWITCH incident: 10 agents stuck, fixed by hand, feature reverted to notify-only
 
 A real Claude limit hit fired the usage-limit fallback the same day it was
