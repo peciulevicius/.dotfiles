@@ -56,8 +56,8 @@ Section names in *italics* are headings below.
 - Mail wrap-up: Kuma + Calibre-Web test mails, approve `dziugas@` as an Amazon sender, Gmail→Kindle filter — *🔝 Next up*
 - Coach: upload skill zip, add the `tp-mcp` custom connector in claude.ai, "Coach" Project — *🏃 Coach in the Claude app*
 - Website: `checkOrigin` decision, `IP_HASH_SALT` secret, Resend domain check; janioniu: sort your local TODO edits, confirm placeholder facts with Dad, Purelymail domain, Workers Builds toggle — *🌐 Other repo backlogs* and below
-- Gravatar, install signature v2, Gmail avatar decision — *✉️ Email identity*
-- Email: inbound test, more folders/filters, email signature (logo + name), then deliverability / mail-tester (catch-all + iPhone Mail done 2026-09-28) — *📋 Open user steps*
+- 👤 Install signature v2 on Mac Mail (select your account in the left column → + → paste, or `config/email/install-mac-signature.sh` for the dark-mode logo) + iPhone (`signature.txt`). Avatar: **decided 2026-09-28 — skip** (Gravatar isn't shown by Gmail/Apple Mail; BIMI logo needs a $650+/yr certificate; Google-account photo conflicts with de-Google) — *✉️ Email identity*
+- Email: inbound test, more folders/filters (catch-all, iPhone Mail, signature built, mail-tester **10/10** — done 2026-09-28/29) — *📋 Open user steps*
 - Reset Odysseus 2FA; first coaching session in Odysseus — *⚡ Batch 2026-09-24*
 - Rotate the Vaultwarden admin token (Claude can do the hash + `.env`; you save it) — *3. Rotate the Vaultwarden admin token*
 - Credential + email pass per service, NAS account passwords, `~/credentials-import.md` — *6. One pass per service*
@@ -69,7 +69,6 @@ Section names in *italics* are headings below.
 - notebook.koplugin, Supernote, cancel YouTube Music/Premium, music-folder cleanup, Jellyfin/ABS API keys, Nextcloud/Paperless (on-demand; decide later) — *9. Maintenance backlog*
 - Kindle wallpapers, KOReader speed workaround, `.smbdelete` cleanup, `read-along` tag, OTA check, Searchable PDF test — *Quick wins left over from 2026-09-20*
 - LiveSync plugin on each device — *🔗 Obsidian LiveSync*
-- 👤 **Empty the Trash** (15GB of caches moved there 2026-09-28 — Finder → Empty Trash) — *💾 Disk*
 - T5 offsite trip — *Get one copy of the photos out of the building*
 - Immich missing thumbnails job — *Regenerate missing Immich thumbnails*
 - KOReader OPDS + Calibre-Web shelf check — *Move the Calibre library off SMB onto the SSD*
