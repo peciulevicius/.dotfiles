@@ -777,8 +777,18 @@ Reassigning an issue may wake its replacement agent, including for blocked
 issues. Inspect current runs after applying; avoid repeating assignments that
 already point at the replacement.
 
-**So `AUTO_SWITCH` is off again**, same day it was turned on. Switching
-*away* is safe to automate; restore is not, until it does a real
+**Watchdog safeguards.** Limit detection uses Paperclip's provider-quota code
+or recognized Claude subscription messages; a generic rate-limit/429,
+turn/budget cap, context-window failure or login error does not qualify.
+Only current, unpaused Claude agents contribute failures. Old retired run
+history cannot trigger a new fallback alert. A process lock prevents cron and
+manual repair racing; each successful switch/reference repair is saved
+immediately. Invalid saved state stops processing rather than resetting the
+original configurations. Auto-switch remains disabled; these safeguards do
+not fix the separate harness restoration defect.
+
+**So `AUTO_SWITCH` is off again**, same day it was turned on. Automatic
+switching must wait until restore does a real
 pause+rehire with the three remaps above instead of a bare PATCH — that's
 follow-up work, not done yet. Until then: a limit hit only **notifies**
 (`⚡ Claude limit hit`), and you either wait for the subscription to reset or

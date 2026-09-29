@@ -8,6 +8,16 @@ Newest first-ish; dates are when the work was finished.
 
 ## 2026-09-29 — Paperclip fallback reconciliation guard
 
+Follow-up safeguards (2026-09-30): quota detection no longer treats every
+failure containing "limit" as subscription exhaustion. It uses the upstream
+provider-quota code or recognized Claude quota messages, excludes generic
+429/auth/turn/context/budget errors, and ignores retired or paused agents'
+history. Added a process lock, private atomic state writes, immediate saves
+after each successful operation, and refusal to discard corrupted state.
+Fresh agent configuration/status is checked before a switch; busy agents are
+skipped. Offline classifier/state checks and shell lint passed. This does not
+enable automatic switching or solve the separate authentication restore bug.
+
 The fallback script no longer retries the known-broken same-agent PATCH when
 Claude usage returns. Added an explicit dry-run-first `--reconcile` flow for
 agents already replaced through Paperclip's board approval: it requires a

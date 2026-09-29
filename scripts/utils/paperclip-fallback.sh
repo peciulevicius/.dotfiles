@@ -77,7 +77,7 @@ MODE="$MODE" DRY_RUN="$DRY_RUN" STATE_FILE="$STATE_DIR/state.json" \
 APPLY="$APPLY" AUTO_SWITCH="${AUTO_SWITCH:-0}" FALLBACK_MODEL="${FALLBACK_MODEL:-openrouter/deepseek/deepseek-v3.2}" \
 LOOKBACK_MIN="${LOOKBACK_MIN:-15}" PROBE_EVERY_MIN="${PROBE_EVERY_MIN:-60}" \
 python3 - <<'PY'
-import http.cookiejar, json, os, subprocess, sys, time, urllib.parse, urllib.request
+import fcntl, http.cookiejar, json, os, re, subprocess, sys, time, urllib.parse, urllib.request
 from datetime import datetime, timezone
 
 BASE = "http://127.0.0.1:3100"
@@ -88,6 +88,14 @@ MODEL = os.environ["FALLBACK_MODEL"]
 LOOKBACK = int(os.environ["LOOKBACK_MIN"]) * 60
 PROBE_EVERY = int(os.environ["PROBE_EVERY_MIN"]) * 60
 now = time.time()
+
+# Cron and a manual repair must never race over the saved original configs.
+lock_fd = os.open(STATE_FILE + ".lock", os.O_CREAT | os.O_RDWR, 0o600)
+try:
+    fcntl.flock(lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+except BlockingIOError:
+    print("Another Paperclip fallback operation is running; no changes.")
+    sys.exit(0)
 
 jar = http.cookiejar.CookieJar()
 opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(jar))
@@ -125,26 +133,47 @@ def notify(title, body, level="info"):
 
 def load():
     try:
-        return json.load(open(STATE_FILE))
-    except (OSError, ValueError):
+        with open(STATE_FILE) as source:
+            state = json.load(source)
+    except FileNotFoundError:
         return {"active": False, "agents": {}, "notified_limit_at": 0, "last_probe": 0}
+    except (OSError, ValueError):
+        raise SystemExit("Fallback state is unreadable; preserve it and repair before retrying.")
+    if not isinstance(state, dict) or not isinstance(state.get("agents"), dict):
+        raise SystemExit("Unexpected fallback state shape; preserve it and review before retrying.")
+    return state
 
 def save(st):
     if DRY:
         return
     tmp = STATE_FILE + ".tmp"
-    with open(tmp, "w") as f:
+    with open(tmp, "w", opener=lambda path, flags: os.open(path, flags, 0o600)) as f:
+        os.chmod(tmp, 0o600)
         json.dump(st, f, indent=1)
-    os.chmod(tmp, 0o600)
+        f.flush()
+        os.fsync(f.fileno())
     os.replace(tmp, STATE_FILE)
 
 def ts(s):
     return datetime.fromisoformat(s.replace("Z", "+00:00")).timestamp()
 
 def is_limit(run):
-    err = (run.get("error") or "") + " " + json.dumps(run.get("resultJson") or "")
-    e = err.lower()
-    return run.get("status") == "failed" and "limit" in e and "access failure" not in e
+    if run.get("status") != "failed":
+        return False
+    # Prefer Paperclip's own provider-quota classification. A generic 429,
+    # max-turn cap, context-window failure or login error is not a spent
+    # subscription and must not initiate provider switching.
+    if run.get("errorCode") == "provider_quota":
+        return True
+    result = run.get("resultJson") or {}
+    if not isinstance(result, dict):
+        result = {}
+    terminal = [run.get("error") or ""]
+    terminal += [result.get(key) or "" for key in ("error", "errorMessage", "result", "errors", "subtype")]
+    e = " ".join(value if isinstance(value, str) else json.dumps(value) for value in terminal).lower()
+    if re.search(r"access failure|login.{0,20}required|not logged in|(?:max|maximum)[_ -]?turn|context.{0,20}(?:window|length)|max.{0,20}budget", e):
+        return False
+    return bool(re.search(r"you['’]ve hit your (?:\w+ )?limit|session limit (?:reached|exceeded)|out of extra usage|extra usage\b|claude usage limit reached|5[- ]?hour limit reached|weekly limit reached|usage limit reached|usage cap reached|servicequotaexceededexception", e))
 
 code, _ = api("POST", "/api/auth/sign-in/email",
               {"email": "dziugas@peciulevicius.com", "password": os.environ.pop("PAPERCLIP_PW")})
@@ -162,7 +191,12 @@ try:
         orc = next((x for x in conns if x.get("provider") == "openrouter" and x.get("status") == "connected"), None)
         agents = api("GET", f"/api/companies/{cid}/agents")[1] or []
         runs = api("GET", f"/api/companies/{cid}/heartbeat-runs?limit=50")[1] or []
-        recent_limit = [r for r in runs if is_limit(r) and r.get("finishedAt") and now - ts(r["finishedAt"]) < LOOKBACK]
+        current_claude = {a["id"] for a in agents
+            if a.get("adapterType") == "claude_local" and a.get("status") not in ("paused", "terminated", "pending_approval")
+            and "retired" not in a.get("name", "").lower() and "duplicate hire" not in a.get("name", "").lower()}
+        recent_limit = [r for r in runs if r.get("agentId") in current_claude
+            and r.get("adapterType", "claude_local") == "claude_local" and is_limit(r)
+            and r.get("finishedAt") and 0 <= now - ts(r["finishedAt"]) < LOOKBACK]
         comp[cid] = {"name": c["name"], "openrouter": orc, "agents": agents, "limit_runs": recent_limit}
     limit_runs = [(cid, r) for cid, v in comp.items() for r in v["limit_runs"]]
 
@@ -178,7 +212,13 @@ try:
                 if not orc:
                     skipped.append(f"{v['name']}/{a['name']} (no OpenRouter connection in company)")
                     continue
-                full = api("GET", f"/api/agents/{a['id']}")[1]
+                code, full = api("GET", f"/api/agents/{a['id']}")
+                if code != 200 or not isinstance(full, dict):
+                    skipped.append(f"{v['name']}/{a['name']} (cannot verify current configuration)")
+                    continue
+                if full.get("adapterType") != "claude_local" or full.get("status") in ("running", "paused", "terminated", "pending_approval"):
+                    skipped.append(f"{v['name']}/{a['name']} (configuration changed or agent is busy/paused)")
+                    continue
                 orig = {"adapterType": full["adapterType"], "adapterConfig": full["adapterConfig"],
                         "runtimeConfig": full["runtimeConfig"]}
                 body = {"adapterType": "opencode_local",
@@ -192,6 +232,8 @@ try:
                 code, res = api("PATCH", f"/api/agents/{a['id']}", body)
                 if code == 200 and (res or {}).get("adapterType") == "opencode_local":
                     st["agents"][a["id"]] = {"company": cid, "name": a["name"], "orig": orig}
+                    st.update(active=True, since=st.get("since") or now, last_probe=now)
+                    save(st)  # Preserve each successful switch if a later call fails.
                     switched.append(f"{v['name']}/{a['name']}")
                 else:
                     skipped.append(f"{v['name']}/{a['name']} (PATCH {code}: {(res or {}).get('error')})")
@@ -292,6 +334,7 @@ try:
             else:
                 reconciled.append(rec["name"])
                 del st["agents"][old_id]
+                save(st)  # Retain completed repairs across a later API failure.
         # Pending reference repairs are not agents still running on fallback.
         # Keep their saved configs for retry, without hourly subscription probes
         # and restore alerts for records that have already been retired.
