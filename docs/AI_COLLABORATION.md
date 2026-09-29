@@ -31,6 +31,16 @@ Codex session or on every computer. On the Mac mini, an agent with access to
 that path can use it; otherwise, use the repository's versioned docs and do
 not assume private memory is available.
 
+For Paperclip, the folder is mounted into the shared container and can be
+reached across companies. A mount alone does not inject memory into an agent's
+prompt: each agent needs instructions to read the relevant notes. Today that
+guidance is present on selected company leaders and the Coach/Dietitian agents,
+not yet verified across every active agent. The reusable text is in
+[`services/paperclip/shared-ai-memory-addendum.md`](../services/paperclip/shared-ai-memory-addendum.md).
+Applying it to every agent is a separate, reviewable Paperclip configuration
+change; it should preserve role-specific ownership and avoid telling unrelated
+agents to read health or finance records.
+
 ## Memory boundaries
 
 - Read `~/ai-memory/README.md` before using or editing the private shared

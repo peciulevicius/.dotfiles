@@ -17,6 +17,9 @@ relevant service README and TODO section before changing operational code.
 - Never commit credentials, tokens, private exports, or generated personal
   data. Keep machine-specific state in ignored files or the external shared
   memory described in `docs/AI_COLLABORATION.md`.
+- When working on the Mac mini, read `~/ai-memory/README.md` and the relevant
+  project note before cross-project or operational work. Follow its privacy,
+  inbox, and ownership rules; do not copy private memory into this repository.
 - Make operational changes only when the task calls for them. Prefer a
   read-only preview first and document any live follow-up clearly.
 - Before editing, inspect `git status` and preserve unrelated user changes.
