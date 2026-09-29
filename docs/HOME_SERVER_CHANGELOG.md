@@ -8,6 +8,25 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-29 — AUTO_SWITCH incident: 10 agents stuck, fixed by hand, feature reverted to notify-only
+
+A real Claude limit hit fired the usage-limit fallback the same day it was
+turned on; 10 `claude_local` agents across Homelab, Coach and Studio switched
+to OpenRouter and none restored automatically. Fixed by hand (pause + rehire
+each, in manager-before-child order; re-attached lost company skills; fixed
+the Discord bridge's stale `CHANNEL_MAP`; reassigned an in-flight Paperclip
+issue to the new Coach ID). `AUTO_SWITCH` is off again pending a real
+rehire-based restore path. Full incident + the manual recipe:
+`services/paperclip/README.md` → *Usage-limit fallback*.
+
+Also fixed the same day: `PAPERCLIP_TOOL_ACTION_SIGNING_SECRET` was never set
+for the main Paperclip instance (only auto-generated for its internal
+worktree feature), silently blocking every signed write action — including
+the Coach's TrainingPeaks writes. Generated and added to
+`~/services/paperclip/.env`, container recreated, confirmed working.
+
+---
+
 ## 2026-09-29 — Claude/Codex handoff protocol for Studio engineering
 
 - Studio's engineering line already splits by harness (CTO + Backend Developer

@@ -684,10 +684,38 @@ onto the *same* agent record is what fails; a brand-new agent record on
 was fixed — see below). Re-testing or reconnecting the subscription in the UI
 does **not** fix this, since the connection was never the problem.
 
-Given that, `AUTO_SWITCH=1` is **on** — switching away is reliable, and when
-the automatic restore hits this per-agent bug it posts a "needs a click"
-Discord message instead of silently stranding the agent; the click is
-*re-hire*, per above, not a connection re-test.
+**⚠️ Incident, same day: `AUTO_SWITCH=1` was turned on, a real limit hit fired
+it, and the restore bug hit *every* switched agent, not just one.** 10 agents
+across all 3 companies (Homelab Lead; Coach, Dietitian; CEO, CTO, Head of
+Marketing, Security Engineer, Backend Developer, Copywriter, UI/UX Designer)
+got switched and none restored automatically. Fixing it by hand surfaced
+three knock-on problems the script doesn't handle, beyond the PATCH failure
+itself:
+1. **Manager references break.** CEO, CTO and Coach are managers — giving
+   them a new agent ID orphans every direct report's `reportsTo` (and
+   *their* reports, transitively). Fix order matters: rehire root-first
+   (no manager, or manager not itself being replaced), then children,
+   PATCHing `reportsTo` to each new ID as you go — including agents that
+   were *not* switched themselves (e.g. Engineering Manager, DevOps, the
+   whole marketing team all pointed at the old CEO/CTO/Head of Marketing).
+2. **Company skills are lost.** `adapterConfig.paperclipSkillSync` lives on
+   the agent record; a rehire starts with none. Re-attach per the table
+   above (`PATCH` the new agent with `adapterConfig.paperclipSkillSync.desiredSkills`,
+   each key as `company/<companyId>/<skill-slug>` — list a company's
+   available keys with `GET /api/companies/<id>/skills`).
+3. **Anything hardcoding the old agent ID goes stale.** The Discord bridge's
+   `CHANNEL_MAP` (`~/services/discord-bridge/.env`) pins Coach/Dietitian by
+   ID — update and `docker compose up -d` there. Any open Paperclip issue
+   assigned to the old ID needs reassigning to the new one, or the new agent
+   never sees it (check with `GET /api/companies/<id>/issues`, filter
+   `assigneeAgentId`).
+
+**So `AUTO_SWITCH` is off again**, same day it was turned on. Switching
+*away* is safe to automate; restore is not, until it does a real
+pause+rehire with the three remaps above instead of a bare PATCH — that's
+follow-up work, not done yet. Until then: a limit hit only **notifies**
+(`⚡ Claude limit hit`), and you either wait for the subscription to reset or
+run `--switch` by hand, knowing restore will need the manual recipe above.
 
 **Coach company:** an `OpenRouter (shared)` connection was added 2026-09-29
 (`POST /api/companies/<id>/ai-connections`, same key), so Coach/Dietitian are

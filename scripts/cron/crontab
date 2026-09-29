@@ -54,12 +54,14 @@ PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin
 # into ~/services/paperclip/reports, mounted :ro at /reports in the container.
 # The Homelab company's weekly routine reads it at 10:00. No secrets go in.
 30 9 * * 0 ~/.dotfiles/scripts/utils/run-with-notify.sh "Paperclip reports" ~/.dotfiles/scripts/utils/paperclip-reports.sh >> ~/logs/paperclip-reports.log 2>&1
-# Paperclip usage-limit watchdog (every 5 min). AUTO_SWITCH=1 (2026-09-29):
-# on a Claude limit hit it moves agents to OpenRouter automatically and
-# restarts the interrupted work. Restore-to-subscription is best-effort —
-# Paperclip has a real bug switching some agents back (services/paperclip/
-# README.md → "Usage-limit fallback"); when that hits, it posts a "needs a
-# click" Discord message instead of leaving the agent stuck silently.
-*/5 * * * * AUTO_SWITCH=1 ~/.dotfiles/scripts/utils/paperclip-fallback.sh >> ~/logs/paperclip-fallback.log 2>&1
+# Paperclip usage-limit watchdog (every 5 min). AUTO_SWITCH is OFF again
+# (2026-09-29, same day — a real limit hit fired it and it switched 10
+# agents across all 3 companies to OpenRouter, then Paperclip's restore bug
+# hit ALL of them, not just one: broken org-chart manager references, lost
+# skill attachments, and a stale Discord-bridge agent ID. Fixed by hand;
+# details + the exact manual recipe: services/paperclip/README.md →
+# "Usage-limit fallback". Re-enable only once restore does a proper
+# pause+rehire (with manager/skill/issue remap) instead of a bare PATCH.
+*/5 * * * * ~/.dotfiles/scripts/utils/paperclip-fallback.sh >> ~/logs/paperclip-fallback.log 2>&1
 # Monthly: remind to check prepaid AI credits + subscriptions (list lives privately in the Obsidian vault)
 0 10 1 * * /bin/bash -c 'source ~/.dotfiles/scripts/lib/notify.sh && notify_discord "💳 Monthly money check" "Check prepaid balances (OpenRouter, Anthropic console, Codex usage) and update Obsidian → 💰 Finance/Subscriptions & Credits."' >> ~/logs/monthly-reminder.log 2>&1
