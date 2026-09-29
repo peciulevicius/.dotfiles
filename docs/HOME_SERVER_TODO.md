@@ -51,7 +51,7 @@ Section names in *italics* are headings below.
 - Mail wrap-up: Kuma + Calibre-Web test mails, approve `dziugas@` as an Amazon sender, Gmail→Kindle filter — *🔝 Next up*
 - Coach: upload skill zip, add the `tp-mcp` custom connector in claude.ai, "Coach" Project — *🏃 Coach in the Claude app*
 - Website: `checkOrigin` decision, `IP_HASH_SALT` secret, Resend domain check; janioniu: sort your local TODO edits, confirm placeholder facts with Dad, Purelymail domain, Workers Builds toggle — *🌐 Other repo backlogs* and below
-- Gravatar, branded signature, Google account photo — *✉️ Email identity*
+- Gravatar, install signature v2, Gmail avatar decision — *✉️ Email identity*
 - Email: inbound test, more folders/filters, email signature (logo + name), then deliverability / mail-tester (catch-all + iPhone Mail done 2026-09-28) — *📋 Open user steps*
 - Reset Odysseus 2FA; first coaching session in Odysseus — *⚡ Batch 2026-09-24*
 - Rotate the Vaultwarden admin token (Claude can do the hash + `.env`; you save it) — *3. Rotate the Vaultwarden admin token*
@@ -208,14 +208,22 @@ Section names in *italics* are headings below.
 
 ## ✉️ Email identity
 
-- [ ] 👤 Gravatar: logo on `hello@peciulevicius.com`, own photo on
-      `dziugas@peciulevicius.com`.
-- [ ] 👤 Install the branded signature (from `peciulevicius.com/email/signature/`,
-      live) in Odysseus, iPhone Mail, Purelymail webmail. Keep it a
-      light HTML *signature*, not a heavy template — image-heavy mail scores
-      worse with spam filters.
-- [ ] 👤 Decide on a Google account photo for Gmail recipients (conflicts with
-      de-Googling — default: no).
+Details and the option table: `config/email/README.md`.
+
+- [ ] 👤 **Gravatar** (recommended, free): gravatar.com → sign up with
+      `dziugas@peciulevicius.com` → upload photo or logo. Optionally the logo
+      on `hello@peciulevicius.com`. Shows in apps/some clients, not in Gmail
+      or Apple Mail.
+- [ ] 👤 **Install the signature** (v2, `config/email/`, no title line):
+      Mac Mail — select the account in the **left column** (not "All
+      Signatures") → + → paste from Safari → untick "Always match my default
+      message font" → *Choose Signature*; or `install-mac-signature.sh` for
+      the full light/dark logo swap. iPhone Mail — paste `signature.txt`
+      (Settings → Apps → Mail → Signature → Per Account). Webmail optional.
+- [ ] 👤 **Sender avatar in Gmail** — decide: accept the letter (default),
+      Google-account photo (free, conflicts with de-Googling), or BIMI CMC
+      (~$650+/yr — over budget). Deliverability itself is fine: mail-tester
+      10/10 on 2026-09-29.
 
 ---
 

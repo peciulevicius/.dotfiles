@@ -8,6 +8,19 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-29 — Email signature v2 + avatar options
+
+- `config/email/signature.html`: title line dropped; light/dark logo swap
+  (white `logo-dark.png` on dark via `prefers-color-scheme`, already live on
+  the site) with a black-logo-on-white-tile fallback for Gmail and any client
+  that strips styles. Render-checked light/dark, with and without the style
+  block. `install-mac-signature.sh` writes it into Apple Mail raw so the swap
+  survives (pasting drops it). Mac Mail steps rewritten (the greyed-out
+  *Choose Signature* = signature created under "All Signatures").
+- Sender-avatar options documented (BIMI CMC/VMC prices, Google-account
+  photo, Gravatar); recommendation: Gravatar, accept Gmail's letter.
+  mail-tester 10/10.
+
 ## 2026-09-29 — Vetted design, dev and security skills (Claude Code + Paperclip Studio)
 
 - Eight third-party skills reviewed file-by-file, pinned to a commit and

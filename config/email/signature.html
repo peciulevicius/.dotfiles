@@ -1,15 +1,26 @@
 <!-- Email signature — Džiugas Pečiulevičius. Install steps: README.md in this folder.
-     Table + inline CSS only (mail clients strip <style>). Dark-mode safe: the
-     logo sits on its own white tile, the name inherits the client's text colour,
-     secondary lines use a mid-grey that reads on white and on black. -->
+     Table + inline CSS. Light/dark logo:
+       - Default (every client, incl. Gmail and anything that strips the style block):
+         black logo on a small white tile — readable on light and dark.
+       - Clients that honour prefers-color-scheme AND keep the style block
+         (Apple Mail when installed as raw HTML — see README "Full light/dark
+         swap"): the tile version is hidden and the white logo is shown on the
+         dark background with no tile.
+     Pasting via Safari drops the style block, so a pasted copy simply keeps
+     the fallback — nothing breaks. -->
+<style>
+  @media (prefers-color-scheme: dark) {
+    .sig-logo-light { display: none !important; }
+    .sig-logo-dark { display: block !important; width: 36px !important; height: 36px !important; max-height: none !important; overflow: visible !important; }
+  }
+</style>
 <table cellpadding="0" cellspacing="0" border="0" role="presentation" style="border-collapse: collapse; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
   <tr>
     <td style="padding: 0 12px 0 0; vertical-align: middle;">
-      <a href="https://peciulevicius.com" style="text-decoration: none;"><img src="https://peciulevicius.com/email/logo.png" width="36" height="36" alt="peciulevicius.com" style="display: block; width: 36px; height: 36px; border: 0; background-color: #ffffff; border-radius: 8px; padding: 4px;"></a>
+      <a href="https://peciulevicius.com" style="text-decoration: none;"><img class="sig-logo-light" src="https://peciulevicius.com/email/logo.png" width="36" height="36" alt="peciulevicius.com" style="display: block; width: 36px; height: 36px; border: 0; background-color: #ffffff; border-radius: 8px; padding: 4px;"><!--[if !mso]><!--><img class="sig-logo-dark" src="https://peciulevicius.com/email/logo-dark.png" width="0" height="0" alt="" style="display: none; width: 0; height: 0; max-height: 0; overflow: hidden; border: 0;"><!--<![endif]--></a>
     </td>
     <td style="padding: 0 0 0 12px; vertical-align: middle; border-left: 1px solid #a1a1aa;">
       <div style="font-size: 14px; font-weight: 600; line-height: 20px;">D&#382;iugas Pe&#269;iulevi&#269;ius</div>
-      <div style="color: #71717a; font-size: 13px; line-height: 18px;">Full-stack developer</div>
       <div style="font-size: 13px; line-height: 18px;"><a href="https://peciulevicius.com" style="color: #71717a; text-decoration: none;">peciulevicius.com</a> <span style="color: #a1a1aa;">&middot;</span> <a href="mailto:dziugas@peciulevicius.com" style="color: #71717a; text-decoration: none;">dziugas@peciulevicius.com</a></div>
     </td>
   </tr>
