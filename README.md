@@ -1,5 +1,8 @@
 # .dotfiles
 
+> Agents: start with [AGENTS.md](AGENTS.md) and
+> [docs/AI_COLLABORATION.md](docs/AI_COLLABORATION.md).
+
 > Modern, cross-platform dotfiles with comprehensive tooling for macOS, Linux (Arch, Debian/Ubuntu, Kali), and Windows/WSL.
 
 ## ✨ Features

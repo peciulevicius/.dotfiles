@@ -1,0 +1,92 @@
+# AI collaboration in this repository
+
+This repo is the versioned source for machine configuration, operational
+scripts, service runbooks, and shared repository instructions. Keep
+cross-project personal context out of Git; it belongs in the private shared
+memory on the Mac mini.
+
+## Start here
+
+1. Read the root `AGENTS.md` (Codex and compatible coding agents) or
+   `CLAUDE.md` (Claude Code). Both point to this guide.
+2. Check `git status` and preserve any existing edits.
+3. Read the relevant service README and the matching TODO or reference entry.
+4. Keep repository changes on a focused branch and open a PR.
+5. Update the TODO when work remains and the changelog when work is complete.
+
+## Which tool holds what
+
+| Surface | Use it for | Source of truth |
+|---|---|---|
+| `AGENTS.md` | Durable repository rules for Codex and compatible agents | This repo |
+| `CLAUDE.md` | Claude Code entry point and link to shared rules | This repo |
+| `config/claude/` | Claude Code agents, skills, rules, commands, and setup | This repo; see `config/claude/README.md` |
+| `~/ai-memory` on the Mac mini (`/ai-memory` in Paperclip and Odysseus) | Private cross-project context and agent handoffs | Private local Git repo; read its `README.md` first |
+| Paperclip company skills and agent instructions | Company-specific role guidance and capabilities | Paperclip company configuration; mirrored selectively in this repo |
+| Odysseus memories and skills | User-facing chat memory and portable `SKILL.md` capabilities | Odysseus data plus `~/ai-memory` |
+
+The shared `~/ai-memory` mount currently connects Paperclip agents, Odysseus,
+and Claude Code on the Mac mini. It is not automatically mounted in every
+Codex session or on every computer. On the Mac mini, an agent with access to
+that path can use it; otherwise, use the repository's versioned docs and do
+not assume private memory is available.
+
+## Memory boundaries
+
+- Read `~/ai-memory/README.md` before using or editing the private shared
+  memory, when that path is available.
+- Put durable, broadly useful repository facts and procedures here, where
+  future contributors can review them through Git and PRs.
+- Put private preferences, personal details, and cross-project handoffs in
+  `~/ai-memory`; follow its inbox and ownership rules.
+- Never copy secrets, credentials, health or finance records, private chat
+  exports, or personal memory into this public dotfiles repository.
+- Agent memory is not a substitute for current docs, live checks, or user
+  confirmation for a consequential operational action.
+
+## Adding documentation
+
+- Add or update a service's `README.md` for durable setup, architecture,
+  operations, and recovery steps.
+- Add verified machine facts to `docs/HOME_SERVER_REFERENCE.md` and active
+  work to `docs/HOME_SERVER_TODO.md`.
+- Move completed TODO entries into `docs/HOME_SERVER_CHANGELOG.md` with the
+  completion date and a short explanation of the result.
+- Add new top-level guides to the documentation navigation in `mkdocs.yml`;
+  link them from `README.md` or `docs/START_HERE.md` when they are useful
+  entry points.
+- Use Markdown, relative links, concrete commands, and explicit notes about
+  which steps need a human, credentials, or live system access.
+- Treat live system state as time-sensitive: include when it was checked and
+  avoid presenting an old observation as a current guarantee.
+
+## Skills and agent handoffs
+
+Claude Code skills are maintained in `config/claude/skills/` and installed by
+`scripts/setup/setup-claude.sh`. For skills shared by Claude Code and Codex,
+use `.agents/skills/<name>/SKILL.md` as the source and expose it to Claude
+through `.claude/skills/`. Both tools support the open Agent Skills format;
+Claude-specific frontmatter extensions and tool integrations may not work in
+Codex. The existing Claude skill tree is not automatically discovered by
+Codex, and this repo does not yet have a shared Codex skill installed. Paperclip
+may have separately installed company skills; see `services/paperclip/README.md`.
+Odysseus stores skills as `SKILL.md` directories, but still needs them imported
+into its own data store. See the official [Claude Code skills guide](https://code.claude.com/docs/en/skills)
+and [Codex skills guide](https://developers.openai.com/codex/skills/).
+
+Use one reviewed source per portable skill and document any generated or
+installed copies instead of letting versions drift. Keep Claude-only hooks,
+agents, settings, and slash command behavior under `config/claude/`.
+
+Agents can exchange durable notes through `~/ai-memory` only when both have
+filesystem access to it. Paperclip task assignment, reports, comments, and
+company instructions are separate coordination channels; they do not make
+Claude and Codex sessions automatically share live conversation context.
+
+Codex can delegate pieces of a current task to subagents when the client and
+task support it. Those subagents are scoped to that Codex task; they are not
+Paperclip hires and do not become persistent members of a company. Claude Code
+has its own subagent and agent-team features. Cross-tool handoffs should use a
+shared file, a Paperclip issue or comment, or a PR so the receiving agent can
+read the context. A company organization does not by itself synchronize its
+agents' context with another company or another tool.
