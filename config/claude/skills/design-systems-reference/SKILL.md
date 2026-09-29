@@ -1,14 +1,19 @@
 ---
 name: design-systems-reference
-description: Reference design systems (colors, type scale, spacing, radii, components, do/don't) analysed from real products — Linear, Stripe, Supabase, Vercel, Raycast, Resend, Cal.com, Expo, Sentry, PostHog, Notion, Revolut. Use when a brief says "make it feel like X", when picking a coherent token system for a new app, or when a design needs a concrete, proven reference instead of invented defaults.
+description: Reference design systems (colors, type scale, spacing, radii, components, do/don't) analysed from 74 real products — defaults Linear, Stripe, Supabase, Vercel, Raycast, Resend, Cal.com, Expo, Sentry, PostHog, Notion, Revolut, plus 62 more (Apple, Airbnb, Figma, Spotify, Tesla, …). Use when a brief says "make it feel like X", when picking a coherent token system for a new app, or when a design needs a concrete, proven reference instead of invented defaults.
 ---
 
 # Design systems reference
 
 `systems/<brand>.md` each hold one DESIGN.md: a plain-text analysis of that
 product's visual language — YAML tokens (colors, typography, spacing, radii)
-followed by component patterns and rules. Available: linear.app, stripe,
-supabase, vercel, raycast, resend, cal, expo, sentry, posthog, notion, revolut.
+followed by component patterns and rules.
+
+**Defaults** (SaaS / dev-tool / fintech / mobile — start here): linear.app,
+stripe, supabase, vercel, raycast, resend, cal, expo, sentry, posthog, notion,
+revolut.
+
+**All 74** (`ls systems/`): airbnb, airtable, apple, binance, bmw, bmw-m, bugatti, cal, claude, clay, clickhouse, cohere, coinbase, composio, cursor, dell-1996, elevenlabs, expo, ferrari, figma, framer, hashicorp, hp, ibm, intercom, kraken, lamborghini, linear.app, lovable, mastercard, meta, minimax, mintlify, miro, mistral.ai, mongodb, nike, nintendo-2001, notion, nvidia, ollama, opencode.ai, pinterest, playstation, posthog, raycast, renault, replicate, resend, revolut, runwayml, sanity, sentry, shopify, slack, spacex, spotify, starbucks, stripe, supabase, superhuman, tesla, theverge, together.ai, uber, vercel, vodafone, voltagent, warp, webflow, wired, wise, x.ai, zapier.
 
 ## How to use
 

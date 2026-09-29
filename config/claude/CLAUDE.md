@@ -32,6 +32,15 @@ Džiugas — full-stack TypeScript developer. Building a SaaS product (landing +
 - Don't suggest refactors beyond what's asked.
 - When uncertain about approach, ask before building.
 
+## Skills — use these
+Vetted and pinned in `~/.dotfiles/config/claude/skills/` (sources in each `SOURCE.md`).
+- Building UI → `frontend-design`; landing pages/redesigns → also `design-taste-frontend`; "make it feel like X" → `design-systems-reference`
+- Building from a screenshot/mockup → `image-to-code`
+- UI/UX/accessibility audit → `web-design-guidelines`
+- React / Next.js → `vercel-react-best-practices`; Expo / React Native → `vercel-react-native-skills`
+- Browser testing/screenshots → `playwright-cli` (installed globally); scripted local webapp tests → `webapp-testing`
+- Security review of a diff/PR → `differential-review`; dependency risk → `supply-chain-risk-auditor` (+ `pnpm audit` — it doesn't read `pnpm-lock.yaml`)
+
 ## Rules (loaded on demand)
 @rules/typescript.md
 @rules/git.md

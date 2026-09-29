@@ -569,7 +569,7 @@ after that.
 
 ## Skills (Studio, 2026-09-29)
 
-Eight vetted third-party skills are installed in the **Studio** company's
+Eleven vetted third-party skills are installed in the **Studio** company's
 skill library and attached to the agents that build things. The canonical,
 reviewed copies live in `config/claude/skills/<name>/` (each with a
 `SOURCE.md`: upstream repo, pinned commit, license, review notes) and are the
@@ -577,12 +577,12 @@ same ones Claude Code uses — details in `config/claude/README.md` → *Skills*
 
 | Agent | Skills added (plus the default `paperclip` skill it already had) |
 |---|---|
-| UI/UX Designer | `frontend-design`, `design-taste-frontend`, `web-design-guidelines`, `design-systems-reference` |
-| Frontend Developer (Codex) | `frontend-design`, `web-design-guidelines`, `design-systems-reference`, `vercel-react-best-practices` |
+| UI/UX Designer | `frontend-design`, `design-taste-frontend`, `web-design-guidelines`, `design-systems-reference`, `image-to-code` |
+| Frontend Developer (Codex) | `frontend-design`, `web-design-guidelines`, `design-systems-reference`, `vercel-react-best-practices`, `image-to-code` |
 | Mobile Developer (Codex) | `frontend-design`, `design-systems-reference`, `vercel-react-native-skills` |
-| CTO | `frontend-design`, `web-design-guidelines`, `vercel-react-best-practices`, `differential-review` |
-| Security Engineer | `differential-review` |
-| QA Engineer (OpenCode) | `playwright-cli`, `web-design-guidelines` |
+| CTO | `frontend-design`, `web-design-guidelines`, `vercel-react-best-practices`, `differential-review`, `supply-chain-risk-auditor` |
+| Security Engineer | `differential-review`, `supply-chain-risk-auditor` |
+| QA Engineer (OpenCode) | `playwright-cli`, `web-design-guidelines`, `webapp-testing` |
 
 **How they were installed (API, no UI needed).** Paperclip's GitHub import
 only takes unmodified upstream folders pinned to a commit, and several of our
@@ -592,8 +592,13 @@ created as a company-managed skill from the local folder:
 `POST /api/companies/<id>/skills` with `{name, slug, description, markdown:
 <SKILL.md>, sharingScope: "company"}`, then one
 `PATCH /api/companies/<id>/skills/<skillId>/files` `{path, content}` per
-supporting file. All eight classify as trust level **`assets`** (no
-executable scripts). Attaching them used
+supporting file. The first eight plus `image-to-code` classify as trust level **`assets`** (no
+executable scripts); `webapp-testing` and `supply-chain-risk-auditor` (added
+later on 2026-09-29, along with all 74 design systems in
+`design-systems-reference`) are **`scripts_executables`** — reviewed Python
+(a localhost dev-server wrapper; a stdlib registry collector that never runs
+package code). To check attachments, read `desiredSkills` in
+`GET /api/agents/<id>/skills` — its `entries` list the whole company library. Attaching them used
 `POST /api/agents/<agentId>/skills/sync` with `{mode: "add", desiredSkills:
 ["paperclipai/paperclip/paperclip", "company/<companyId>/<slug>", …]}` —
 listing the default `paperclip` skill explicitly so it can't be dropped. This

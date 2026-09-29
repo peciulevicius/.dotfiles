@@ -8,6 +8,22 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-29 — Remaining skills vendored, playwright-cli installed
+
+- After the same review, vendored the three skills first left out —
+  `image-to-code` (taste-skill; Claude adaptation note, since upstream
+  assumed Codex image generation), `webapp-testing` (Anthropic),
+  `supply-chain-risk-auditor` (Trail of Bits; stdlib collector, token only
+  sent to api.github.com, never runs package code) — and all 74 design systems
+  in `design-systems-reference` (12 stay the defaults). Pinned + `SOURCE.md`
+  each; symlinked into `~/.claude/skills`.
+- `playwright-cli` 0.1.22 installed globally (`pnpm add -g`); smoke test
+  screenshot of peciulevicius.com OK, using the installed Chrome.
+- Global `config/claude/CLAUDE.md` gained a *Skills — use these* section so
+  future sessions pick the right skill. Paperclip Studio: new skills attached
+  (image-to-code → UI/UX + Frontend, webapp-testing → QA,
+  supply-chain-risk-auditor → Security + CTO); no runs started.
+
 ## 2026-09-29 — Email signature v2 + avatar options
 
 - `config/email/signature.html`: title line dropped; light/dark logo swap
