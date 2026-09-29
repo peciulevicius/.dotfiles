@@ -92,6 +92,11 @@ Section names in *italics* are headings below.
     requests* read/write → Paperclip secret in the Homelab company → bind as
     `GH_TOKEN` on the Web Engineer. Until then it can only hand over patches.
     Steps: README → *GitHub token for the Web Engineer*.
+  - 👤 **GitHub connector for Homelab** (2026-09-29, separate from the
+    Web Engineer PAT above): connect GitHub in Homelab's Connectors page so
+    agents there can read/open PRs against `peciulevicius/.dotfiles` itself,
+    not just the peciulevicius.com repo. Fine-grained PAT, that repo only,
+    Contents + Pull requests read/write, no admin, never direct push to main.
   - **Move `GITHUB_TOKEN_HOMELAB` out of `.env`** into Vaultwarden *before
     the next* `docker compose up -d` — Paperclip now holds it as a secret, and
     `env_file` would otherwise expose it to every agent.
