@@ -8,6 +8,20 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-29 — Paperclip usage-limit watchdog (notify-only for now)
+
+- New `scripts/utils/paperclip-fallback.sh` (cron every 5 min): detects Claude
+  subscription limit failures, can move `claude_local` agents to OpenRouter
+  (deepseek-v3.2, ~13× cheaper per run than Sonnet via API; Anthropic API
+  isn't switchable because Paperclip strips `ANTHROPIC_*` env on managed
+  bindings) and restore them after a probe. Tested: detection on real history
+  (limit ≠ access failures), dry-run, and a real switch of Copywriter.
+- Blocker found: switching back to the subscription fails Paperclip's Claude
+  hello probe ("login is required" while real runs work); rollback is a no-op.
+  So cron runs **notify-only** (`AUTO_SWITCH=0`); Copywriter stays on
+  OpenRouter until restored in the UI. Details: `services/paperclip/README.md`
+  → *Usage-limit fallback*.
+
 ## 2026-09-29 — Shared AI memory + Odysseus on OpenRouter
 
 - New `~/ai-memory` (markdown, local git with 15-min auto-commit, R2 nightly,

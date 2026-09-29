@@ -338,6 +338,17 @@ First vendored into `peciulevicius.com` (2026-09-26).
 
 ## Homelab scripts
 
+### paperclip-fallback.sh
+
+Usage-limit watchdog for Paperclip (cron every 5 min, `~/logs/paperclip-fallback.log`).
+Detects Claude-subscription limit failures and, with `--switch` or
+`AUTO_SWITCH=1`, moves non-paused `claude_local` agents to OpenRouter
+(deepseek-v3.2), saving their configs in `~/.config/homelab/paperclip-fallback/`;
+`--restore` probes the subscription and moves them back; `--status`,
+`--dry-run`. Auto-switch is off for now because Paperclip refuses the switch
+back (false "login required" hello probe) — details and fix steps in
+`services/paperclip/README.md` → *Usage-limit fallback*.
+
 ### setup-services.sh
 
 Copies each service's `docker-compose.yml`, scripts and `.env.example` into

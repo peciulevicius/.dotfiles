@@ -624,6 +624,60 @@ keeps version history: `GET …/skills/<skillId>/versions`).
 - OpenCode agents share the container's `~/.claude/skills` (Paperclip warns
   about this); the Claude and Codex agents get an ephemeral per-run copy.
 
+## Usage-limit fallback (2026-09-29)
+
+When the Claude Pro subscription hits its limit, `claude_local` runs fail with
+*"ACP agent reported a terminal limit failure"* (`errorCode acpx_turn_failed`,
+no reset time anywhere in the run, log or events). Paperclip has no built-in
+fallback, so `scripts/utils/paperclip-fallback.sh` (cron, every 5 min) does it:
+
+- **Detects** failed runs whose error mentions a *limit* (not "access failure")
+  in the last 15 min, across all companies.
+- **Switches** (with `--switch`, or automatically when `AUTO_SWITCH=1`) every
+  non-paused `claude_local` agent to `opencode_local` +
+  `openrouter/deepseek/deepseek-v3.2` on the company's shared OpenRouter
+  connection, saving each agent's exact config in
+  `~/.config/homelab/paperclip-fallback/state.json` (chmod 600), then
+  @mentions the agent on the interrupted issue so the work resumes. Discord gets
+  a "⚡ Claude limit hit" post.
+- **Restores** (hourly probe, or `--restore`): a tiny `claude -p` Haiku request
+  inside the container; when it answers `OK`, each saved agent is PATCHed back.
+- `--status`, `--dry-run`.
+
+**Why OpenRouter, not Anthropic API credit:** Paperclip strips `ANTHROPIC_*` /
+`CLAUDE_CODE_OAUTH_TOKEN` from an agent's env whenever a managed AI connection
+is bound (`stripAiAuthBindings`), and there is no Anthropic API-key connection,
+so "same Claude, pay per token" isn't available. OpenRouter is also cheaper: a
+typical run (~100k input / ~8k output tokens) is ≈ $0.40 on Sonnet via API vs
+≈ $0.03 on deepseek-v3.2 — roughly 13× less. Quality is lower; it's a stop-gap.
+The switch uses the connection's `grantId` (listed on
+`GET /api/companies/<id>/ai-connections`), which the PATCH requires.
+
+**⚠️ Why `AUTO_SWITCH` is off (the restore problem).** Switching *to* OpenRouter
+works (tested on Copywriter, no run started). Switching *back* to the
+subscription fails: Paperclip validates a new binding with a Claude "hello
+probe", and that probe reports *"Claude ACP is available, but login is
+required"* even though real runs succeed (the Coach ran fine the same morning;
+`POST /api/companies/<id>/adapters/claude_local/test-environment` reproduces
+it). The API refuses the PATCH with *"The selected AI connection failed
+validation in this agent's environment"*, and `config-revisions/…/rollback`
+returns 200 without changing anything. So an automatic switch would strand
+agents on DeepSeek. Until that's fixed, the cron job only **notifies** on a limit
+hit, and a restore that Paperclip refuses sends a "needs a click" Discord post.
+To try fixing it: Paperclip → Company settings → AI connections → *My Claude
+subscription* → re-test/re-connect, then re-run the test-environment call above;
+when it passes, set `AUTO_SWITCH=1` on the cron line.
+
+**Coach company has no OpenRouter connection**, so Coach/Dietitian are never
+switched (listed as skipped). Adding one is a UI step (secret-store writes are
+blocked for Claude): Coach → Company settings → AI connections → add OpenRouter
+(shared, the same key) → install company-wide.
+
+**Copywriter (Studio) is currently on OpenRouter/DeepSeek** — it was the
+switch test agent (2026-09-29) and couldn't be moved back for the reason above.
+It's idle with no tasks. Restore it in the UI (agent → Configuration → Claude,
+*My Claude subscription*, model `claude-sonnet-5`) once the validation passes.
+
 ## Keeping usage down (the rules this setup follows)
 
 1. **Timer heartbeats off** on every agent. Wakes come from assignments,
