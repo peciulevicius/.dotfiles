@@ -8,6 +8,22 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-29 — Vetted design, dev and security skills (Claude Code + Paperclip Studio)
+
+- Eight third-party skills reviewed file-by-file, pinned to a commit and
+  vendored into `config/claude/skills/` with a `SOURCE.md` each:
+  `frontend-design` (Anthropic), `design-taste-frontend` (taste-skill),
+  `web-design-guidelines` (Vercel, rules vendored instead of fetched from
+  `main` at runtime), `design-systems-reference` (12 DESIGN.md systems),
+  `playwright-cli` (Microsoft, install line pinned), `vercel-react-best-practices`,
+  `vercel-react-native-skills`, `differential-review` (Trail of Bits).
+  Rejected: `webapp-testing` (overlap), `image-to-code` (Codex/image-gen only),
+  `supply-chain-risk-auditor` (ships network-calling scripts).
+- Same eight created in the Paperclip Studio skill library via the API and
+  attached to UI/UX Designer, Frontend, Mobile, CTO, Security Engineer and QA
+  (`services/paperclip/README.md` → *Skills*). No runs started, no agent
+  un-paused.
+
 ## 2026-09-29 — Email signature + deliverability audit
 
 - New `config/email/`: `signature.html` (table + inline CSS, dark-mode safe —

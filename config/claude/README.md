@@ -11,7 +11,7 @@ config/claude/
 ├── settings.example.json  # Reference copy
 ├── statusline.sh          # 3-line status display (model, tokens, usage bars)
 ├── agents/                # 19 specialist sub-agents
-├── skills/                # 36 reusable skill packs
+├── skills/                # 44 reusable skill packs (8 vendored third-party, see below)
 ├── rules/                 # 10 rule files (loaded on demand via @rules/)
 ├── commands/              # 2 slash commands (/new-project, /dotfiles)
 └── hooks/                 # Shell hooks (notify-done.sh, etc.)
@@ -64,7 +64,7 @@ All files are symlinked to `~/.claude/` by `scripts/setup/setup-claude.sh`.
 | `support-engineer` | Troubleshooting, docs |
 | `technical-writer` | READMEs, guides |
 
-## Skills (36)
+## Skills (44)
 
 Invoke with `/name`, or Claude triggers them when the task matches (skills
 marked *manual* have `disable-model-invocation: true`).
@@ -122,6 +122,33 @@ private memory at runtime)
 | `adaptive-endurance-coach` | Triathlon coach + sports nutrition (MIT, vendored from mprecilio20/adaptive-endurance-coach). TrainingPeaks is the source of truth via the local `trainingpeaks-mcp`; athlete memory in `~/.training/` |
 | `personal-finance` | Budget tables, investing principles, read-only IBKR portfolio review, Lithuanian tax basics |
 | `pkm-notes` | Obsidian + Kindle Scribe → `kindle_sync.py` pipeline, capture-first triage, reading list |
+
+**Vendored third-party** (added 2026-09-29). Each folder has a `SOURCE.md`
+with the upstream repo, the **pinned commit**, the license, exactly what was
+reviewed, and any local edits. They are copied into the repo on purpose —
+skills are instructions that agents with shell access follow, so nothing is
+fetched at runtime and an update is a deliberate re-vendor + review.
+
+| Skill | What it does | Source @ commit | License |
+|-------|--------------|-----------------|---------|
+| `frontend-design` | Design direction ("taste"): subject-grounded palette/type/layout plan, reviewed against AI-default looks, then built and self-critiqued. The default design skill. | anthropics/skills @ `8a1541c` | Apache-2.0 |
+| `design-taste-frontend` | Heavier anti-slop rulebook for landing pages, portfolios and redesigns (brief → design read → dials → pre-flight checklist). ~35k tokens when loaded. | Leonxlnx/taste-skill @ `ce26fc2` | MIT |
+| `web-design-guidelines` | UI audit against Vercel's Web Interface Guidelines, `file:line` findings. Rules vendored locally (upstream fetches them from `main` at runtime — removed). | vercel-labs/web-interface-guidelines @ `e3d624b` | MIT |
+| `design-systems-reference` | 12 real design systems as DESIGN.md token sets (Linear, Stripe, Supabase, Vercel, Raycast, Resend, Cal.com, Expo, Sentry, PostHog, Notion, Revolut) — derive, don't clone. Local wrapper. | VoltAgent/awesome-design-md @ `f696123` | MIT |
+| `playwright-cli` | Drive a real browser from the shell: snapshots, clicks, screenshots, tracing, test generation. Needs the CLI: `pnpm add -g @playwright/cli@0.1.22` (not installed by default; pulls ~500 MB of browsers). | microsoft/playwright-cli @ `b85c7a7` | Apache-2.0 |
+| `vercel-react-best-practices` | 70 React/Next.js performance rules (waterfalls, bundle size, server, re-renders). | vercel-labs/agent-skills @ `063bee9` | MIT |
+| `vercel-react-native-skills` | React Native / Expo performance rules (lists, animation, navigation, UI). | vercel-labs/agent-skills @ `063bee9` | MIT |
+| `differential-review` | Trail of Bits' security review of a diff/PR: risk triage, git-blame on removed checks, blast radius, attacker modelling, written report. Complements `security-audit` (whole-codebase checklist). | trailofbits/skills @ `82fe822` | CC-BY-SA-4.0 |
+
+Considered and **not** vendored: Anthropic `webapp-testing` (overlaps
+`playwright-cli` + `testing`), taste-skill's `image-to-code` (Codex-only, needs
+an image-generation tool first — Claude reads screenshots directly), the other
+62 awesome-design-md brands (bulk; add a brand by copying one more file after
+review), Trail of Bits `supply-chain-risk-auditor` (ships Python that calls
+registries; `check` + `pnpm audit` cover it for now).
+
+The same 8 skills are installed in the Paperclip **Studio** company — see
+`services/paperclip/README.md` → *Skills*.
 
 The homelab skills (`homelab-service`, `credential-rotation`, `homelab-audit`)
 live here too since 2026-09-25 — one place for every skill. They only trigger

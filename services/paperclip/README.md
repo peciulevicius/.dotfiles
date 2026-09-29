@@ -567,6 +567,50 @@ though its heartbeat is off. Approve or reject the decision it raises under
 **Approvals**/the issue's connection cards; it only touches TrainingPeaks
 after that.
 
+## Skills (Studio, 2026-09-29)
+
+Eight vetted third-party skills are installed in the **Studio** company's
+skill library and attached to the agents that build things. The canonical,
+reviewed copies live in `config/claude/skills/<name>/` (each with a
+`SOURCE.md`: upstream repo, pinned commit, license, review notes) and are the
+same ones Claude Code uses — details in `config/claude/README.md` → *Skills*.
+
+| Agent | Skills added (plus the default `paperclip` skill it already had) |
+|---|---|
+| UI/UX Designer | `frontend-design`, `design-taste-frontend`, `web-design-guidelines`, `design-systems-reference` |
+| Frontend Developer (Codex) | `frontend-design`, `web-design-guidelines`, `design-systems-reference`, `vercel-react-best-practices` |
+| Mobile Developer (Codex) | `frontend-design`, `design-systems-reference`, `vercel-react-native-skills` |
+| CTO | `frontend-design`, `web-design-guidelines`, `vercel-react-best-practices`, `differential-review` |
+| Security Engineer | `differential-review` |
+| QA Engineer (OpenCode) | `playwright-cli`, `web-design-guidelines` |
+
+**How they were installed (API, no UI needed).** Paperclip's GitHub import
+only takes unmodified upstream folders pinned to a commit, and several of our
+copies carry reviewed local edits (the pinned guidelines, the pinned
+Playwright install line, the Trail of Bits agent note). So each skill was
+created as a company-managed skill from the local folder:
+`POST /api/companies/<id>/skills` with `{name, slug, description, markdown:
+<SKILL.md>, sharingScope: "company"}`, then one
+`PATCH /api/companies/<id>/skills/<skillId>/files` `{path, content}` per
+supporting file. All eight classify as trust level **`assets`** (no
+executable scripts). Attaching them used
+`POST /api/agents/<agentId>/skills/sync` with `{mode: "add", desiredSkills:
+["paperclipai/paperclip/paperclip", "company/<companyId>/<slug>", …]}` —
+listing the default `paperclip` skill explicitly so it can't be dropped. This
+only edits agent config (recorded as a `skill-sync` config revision); it
+starts no run, and paused agents stay paused. Check with
+`GET /api/agents/<agentId>/skills`.
+
+**Updating a skill:** re-vendor and review in `config/claude/skills/`, then
+re-upload the changed files with the same `PATCH …/files` call (the library
+keeps version history: `GET …/skills/<skillId>/versions`).
+
+- `playwright-cli` needs the `playwright-cli` binary; it is **not** installed in
+  the Paperclip image. In a project with Playwright, `npx playwright cli` works;
+  otherwise the QA agent must ask before installing anything.
+- OpenCode agents share the container's `~/.claude/skills` (Paperclip warns
+  about this); the Claude and Codex agents get an ephemeral per-run copy.
+
 ## Keeping usage down (the rules this setup follows)
 
 1. **Timer heartbeats off** on every agent. Wakes come from assignments,
