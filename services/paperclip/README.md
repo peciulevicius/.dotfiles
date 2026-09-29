@@ -724,6 +724,22 @@ state still listed all ten old IDs. `--reconcile` now repairs saved skills,
 reporting links, and open issue assignments for already-hired exact
 replacements. It leaves unrelated agents and retired records alone.
 
+**Recovery applied 2026-09-29:** saved skills were restored and all three open
+issues were reassigned. Three of the five Homelab reporting links were repaired.
+Web Engineer and Security Engineer remain linked to the retired Lead: Paperclip
+returned 422 even for a `reportsTo`-only PATCH. In the installed server,
+`aiConnectionBindingSchema` reorders binding fields before a `JSON.stringify`
+comparison with the stored object. Identical bindings can therefore be treated
+as changed and trigger a provider login probe. This is a server defect, separate
+from actual subscription exhaustion; do not bypass validation or edit the DB.
+Keep the old Lead until those links are repaired. The saved state remains for
+retry, with `active: false` and `reconciliation_pending`, so retired records do
+not trigger hourly restore alerts. Reconciliation failures now return nonzero.
+
+Reassigning an issue may wake its replacement agent, including for blocked
+issues. Inspect current runs after applying; avoid repeating assignments that
+already point at the replacement.
+
 **So `AUTO_SWITCH` is off again**, same day it was turned on. Switching
 *away* is safe to automate; restore is not, until it does a real
 pause+rehire with the three remaps above instead of a bare PATCH — that's
@@ -748,8 +764,8 @@ restore bug. Fixed the same day: the stuck one is paused and renamed
 was hired (`claude_local`, `claude-sonnet-5`, same manager, same `AGENTS.md`)
 and approved. Confirmed idle, no `aiConnection` override needed (falls back to
 the company default, same as every other Sonnet agent in Studio).
-It's idle with no tasks. Restore it in the UI (agent → Configuration → Claude,
-*My Claude subscription*, model `claude-sonnet-5`) once the validation passes.
+The current Copywriter is the replacement. Do not switch the retired record
+back or create another duplicate.
 
 ## Keeping usage down (the rules this setup follows)
 

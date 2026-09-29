@@ -16,7 +16,14 @@ then can restore saved skills and remap reporting links and open issues before
 clearing that stale state entry. It never terminates agents; auto-switch stays
 off pending a complete rehire-and-approval flow. A read-only live audit found
 five Homelab agents still linked to the retired Homelab Lead and ten stale
-fallback records; apply is tracked in the TODO for after the PR is reviewed.
+fallback records. Applied on the live instance: restored saved skills, moved
+three open issue assignments, and repaired three reporting links. Two paused
+Claude reports reject `reportsTo`-only updates with 422 because the server
+compares an unchanged login binding by JSON property order and probes it again.
+Their saved state is retained for retry; retired records no longer count as
+active fallback agents or generate hourly restore alerts. Restore notices are
+deduplicated and partial reconciliation exits nonzero. The old Lead stays
+paused until its remaining reports can be repaired.
 
 ---
 

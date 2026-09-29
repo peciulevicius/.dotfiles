@@ -225,6 +225,7 @@ try:
         adapter, and model. Never terminate or rename agents here.
         """
         reconciled, skipped, failed = [], [], []
+        retired_ids = set()
         terminal_issues = {"done", "cancelled", "canceled", "rejected"}
         for old_id, rec in list(st["agents"].items()):
             cid = rec.get("company")
@@ -240,6 +241,7 @@ try:
                     or old.get("status") not in ("paused", "terminated")):
                 skipped.append(f"{rec.get('name', old_id)} (not a paused retired agent)")
                 continue
+            retired_ids.add(old_id)
             orig = rec.get("orig") or {}
             orig_model = (orig.get("adapterConfig") or {}).get("model")
             candidates = [a for a in company["agents"]
@@ -290,8 +292,13 @@ try:
             else:
                 reconciled.append(rec["name"])
                 del st["agents"][old_id]
-        if not st["agents"]:
-            st.update(active=False, since=None)
+        # Pending reference repairs are not agents still running on fallback.
+        # Keep their saved configs for retry, without hourly subscription probes
+        # and restore alerts for records that have already been retired.
+        st["reconciliation_pending"] = sorted(retired_ids.intersection(st["agents"]))
+        st["active"] = bool(set(st["agents"]) - retired_ids)
+        if not st["active"]:
+            st["since"] = None
         return reconciled, skipped, failed
 
     if MODE == "status":
@@ -305,6 +312,8 @@ try:
         save(st)
         print("would reconcile:" if DRY else "reconciled:", rs,
               "\nskipped:", sk, "\nfailed:", fl, "\napplied:", APPLY and not DRY)
+        if fl or sk:
+            sys.exit(1)
     elif MODE == "switch" or (MODE == "cron" and limit_runs and not st.get("active") and AUTO):
         sw, sk, rw = switch()
         save(st)
@@ -322,12 +331,13 @@ try:
             print("restored:", rs, "\nfailed:", fl)
             if rs:
                 notify("✅ Claude subscription back", f"Restored {len(rs)} agents: {', '.join(rs)}.", "ok")
-            if fl:
+            if fl and st.get("restore_notice") != fl:
                 notify("⚠️ Paperclip restore needs a click",
                        "Claude is available again, but these agents cannot switch harness in place: "
                        + ", ".join(fl) + ". Use --reconcile if a fresh matching hire already exists; "
                        "otherwise request and approve a new Claude hire. See services/paperclip/README.md "
                        "→ Usage-limit fallback.", "warn")
+                st["restore_notice"] = fl
         save(st)
     elif MODE == "cron" and limit_runs and not st.get("active"):
         if now - st.get("notified_limit_at", 0) > 3 * 3600:

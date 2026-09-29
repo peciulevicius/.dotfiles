@@ -55,7 +55,8 @@ Section names in *italics* are headings below.
 
 ### 👤 Needs you (UI / device / credentials / decision)
 
-- [x] ~~⚡ Paperclip usage-limit watchdog~~ — detects and notifies about Claude limits; OpenRouter connections are provisioned in all three companies. `AUTO_SWITCH` is **off** after the restore incident; same-agent restoration is unsafe. Reconcile the already-rehired agents after the recovery PR is merged. Details: `services/paperclip/README.md` → *Usage-limit fallback*.
+- [x] ~~⚡ Paperclip usage-limit watchdog~~ — detects and notifies about Claude limits; OpenRouter connections are provisioned in all three companies. `AUTO_SWITCH` is **off** after the restore incident. Recovery applied 2026-09-29: skills and three open issue assignments restored, three reporting links repaired.
+- [ ] **Paperclip binding validation defect:** repair Web Engineer and Homelab Security Engineer's `reportsTo` links to the replacement Lead. Their unchanged binding triggers a login probe because the server compares JSON property order. Keep the retired Lead and saved `reconciliation_pending` state until repaired. Then finish retired-record cleanup. Cross-provider automatic fallback (Claude → Codex → capped OpenRouter, with return to each role's original model) remains pending a reliable same-agent switch/restore path. Details: `services/paperclip/README.md` → *Usage-limit fallback*.
 - **🧠 Shared AI memory (2026-09-29):**
   - [ ] 👤 NAS: create a shared folder **`backups`** (UGREEN → Control Panel → Shared Folder → Create; give `macmini` R/W). Then Claude adds it to `SHARES` in `scripts/utils/mount-nas.sh` — the nightly backup starts copying `~/ai-memory` there automatically.
   - [ ] 👤 Odysseus: save the current admin password to Vaultwarden and put it in `~/services/odysseus/.env` (`ODYSSEUS_ADMIN_PASSWORD`) — the `.env` one no longer matches, so API automation can't log in.
