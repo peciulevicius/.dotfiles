@@ -163,9 +163,23 @@ Section names in *italics* are headings below.
 
 - 👤 **~2026-10-03:** `rm ~/services/uptime-kuma/data/kuma.db.bak-2026-09-26-*` (and other pre-change backups) — the weekly audit now flags any `*.bak-*` / `*.pre-*` file under `~/services` older than 7 days, so this reminds itself via Discord
 
-- **💰 Finance dashboard — connect each account** (read-only keys only, saved via `read -rs` into `~/.config/homelab/*.env`, never in chat). Pipeline: `scripts/utils/finance-status.sh` → Glance **Finance** page (and later Monifo, see below):
-  - [ ] 👤 **BudgetBakers Wallet** — generate a personal REST API token in Wallet web app → profile → Settings; save as `BUDGETBAKERS_API_TOKEN` in `~/.config/homelab/budgetbakers.env` (steps in `services/glance/README.md` → Finance). Premium API is in beta.
-  - [ ] 👤 **IBKR** — Flex Query (Open Positions + Cash Report + NAV, XML) + Flex Web Service token → `~/.config/homelab/ibkr-flex.env`; steps in `services/glance/README.md` → *Finance*. Claude: already wired.
+- **💰 Finance dashboard — connect each account** (read-only keys only, saved via `read -rs` into `~/.config/homelab/*.env`, never in chat). Pipeline: `scripts/utils/finance-status.sh` (7:00 daily) → `finance-memory-snapshot.sh` (7:05, writes `~/ai-memory/finance/`) → Glance **Finance** page (and later Monifo, see below). Both providers built + tested 2026-09-29, waiting on real credentials.
+  - [ ] 👤 **BudgetBakers Wallet** (lifetime Premium already owned) — generate a personal REST API token: Wallet app → profile → **Settings** → the REST API section. The first token triggers an initial sync; API calls can 409 until that finishes. Then, **on the Mac mini, in Terminal:**
+    ```bash
+    printf "Wallet API token: "; read -rs T; echo
+    mkdir -p ~/.config/homelab
+    umask 077; printf 'BUDGETBAKERS_API_TOKEN=%s\n' "$T" > ~/.config/homelab/budgetbakers.env; unset T
+    ~/.dotfiles/scripts/utils/finance-status.sh --print | grep -A2 '"budgetbakers"'
+    ```
+    ⚠️ **Do not use `read -rsp "prompt" VAR`** — in zsh (the default shell here) `-p` means "read from a coprocess", not "show a prompt"; it fails or silently reads nothing (hit 2026-09-29 — the token never saved, and `&& echo ok` looked like success because the script exits 0 either way, configured or not). Use the `printf` + `read -rs` form above instead. **Verify** the grep shows `"ok": true` — if it still says `"not configured"`, run `cat ~/.config/homelab/budgetbakers.env` and check the value after `=` isn't empty. Steps also in `services/glance/README.md` → Finance.
+  - [ ] 👤 **IBKR** — in Client Portal: **Performance & Reports → Flex Queries** → new Activity Flex Query named `glance` → tick **Open Positions**, **Cash Report**, **Net Asset Value (NAV) in Base / Change in NAV** → Format **XML**, Period **Last Business Day**, Date format `yyyyMMdd` → Save, note the **Query ID**. Then **Settings → Flex Web Service** (under Reporting) → enable → **Generate token** (pick the longest validity — it expires, and the widget shows the error when it does). Then, **on the Mac mini, in Terminal:**
+    ```bash
+    printf "Flex token: "; read -rs T; echo
+    printf "Query ID: "; read -r Q
+    umask 077; printf 'IBKR_FLEX_TOKEN=%s\nIBKR_FLEX_QUERY_ID=%s\n' "$T" "$Q" > ~/.config/homelab/ibkr-flex.env; unset T
+    ~/.dotfiles/scripts/utils/finance-status.sh --print | grep -A2 '"ibkr"'
+    ```
+    Same `read -p` warning as above applies — use `printf` for both prompts. **Verify** the same way: grep shows `"ok": true`, or check `cat ~/.config/homelab/ibkr-flex.env` for an empty value. Claude: script side already wired.
   - [ ] 👤 Decide whether/when to connect **Trading 212** — existing placeholder only; settings API offers read-only portfolio/account scopes (Invest + ISA; CFD account has no API).
   - [ ] 👤 Decide whether/when to connect **Kraken** — existing placeholder only; use *Query Funds* (+ *Query Closed Orders & Trades* for P&L).
   - [ ] 👤 Decide whether/when to connect **Capital.com** — existing placeholder only; API integrations key + custom password.
