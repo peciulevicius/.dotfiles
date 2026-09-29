@@ -164,11 +164,12 @@ Section names in *italics* are headings below.
 - 👤 **~2026-10-03:** `rm ~/services/uptime-kuma/data/kuma.db.bak-2026-09-26-*` (and other pre-change backups) — the weekly audit now flags any `*.bak-*` / `*.pre-*` file under `~/services` older than 7 days, so this reminds itself via Discord
 
 - **💰 Finance dashboard — connect each account** (read-only keys only, saved via `read -rs` into `~/.config/homelab/*.env`, never in chat). Pipeline: `scripts/utils/finance-status.sh` → Glance **Finance** page (and later Monifo, see below):
+  - [ ] 👤 **BudgetBakers Wallet** — generate a personal REST API token in Wallet web app → profile → Settings; save as `BUDGETBAKERS_API_TOKEN` in `~/.config/homelab/budgetbakers.env` (steps in `services/glance/README.md` → Finance). Premium API is in beta.
   - [ ] 👤 **IBKR** — Flex Query (Open Positions + Cash Report + NAV, XML) + Flex Web Service token → `~/.config/homelab/ibkr-flex.env`; steps in `services/glance/README.md` → *Finance*. Claude: already wired.
-  - [ ] 👤 **Trading 212** — Settings → API (beta) → generate a key with read-only scopes (portfolio, account). Claude: add provider (Invest + ISA; CFD account has no API).
-  - [ ] 👤 **Kraken** — Settings → API → key with only *Query Funds* (+ *Query Closed Orders & Trades* for P&L). Claude: add provider.
-  - [ ] 👤 **Capital.com** — Settings → API integrations → key + custom password. Claude: add provider (open positions + activity/transaction history → daily realised P&L).
-  - [ ] 👤 **Ledger** — list the public addresses/xpubs to track (no keys, no seed — public only). Claude: balances via public explorers.
+  - [ ] 👤 Decide whether/when to connect **Trading 212** — existing placeholder only; settings API offers read-only portfolio/account scopes (Invest + ISA; CFD account has no API).
+  - [ ] 👤 Decide whether/when to connect **Kraken** — existing placeholder only; use *Query Funds* (+ *Query Closed Orders & Trades* for P&L).
+  - [ ] 👤 Decide whether/when to connect **Capital.com** — existing placeholder only; API integrations key + custom password.
+  - [ ] 👤 Decide whether/when to connect **Ledger** — existing placeholder only; public addresses/xpubs (no keys or seed).
   - [ ] Swedbank / Revolut — no personal API: decide between open-banking aggregator (90-day re-consent) or monthly CSV import.
   - [ ] Decide: grow this into **Monifo as a personal self-hosted app** (P&L calendar, trade journal, dividends — the screenshots) instead of more Glance widgets. Glance keeps a one-card summary + link.
 

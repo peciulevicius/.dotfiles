@@ -36,6 +36,16 @@ Companion: [DEGOOGLE.md](DEGOOGLE.md). This is Gap 4 from that guide.
   originally its own `~/.training` mount, folded in the same day this was
   written, so it's now readable by every agent here, Odysseus included.
 
+### Finance context is read-only
+
+Glance combines read-only account data from IBKR Flex and BudgetBakers Wallet
+and shows Wallet's current-month budget versus actual spending. A daily
+summary is generated in `~/ai-memory/finance/`, which Paperclip agents and
+Odysseus may read to advise on budgets and net worth. **Agents may never place
+a trade, transfer, or payment; the human reviews advice and executes every
+financial action.** Credentials stay in `~/.config/homelab/` and account data
+is kept out of this public repository.
+
 ## Your three questions, answered up front
 
 **"Does a cloud backend mean my chats still go through AI servers?"**

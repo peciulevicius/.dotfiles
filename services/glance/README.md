@@ -139,14 +139,47 @@ calendar) were tried the same day and removed. They frame fine (no
 `X-Frame-Options`/`frame-ancestors`), but they render as light boxes that
 clash with the dark theme.
 
-### Portfolio: real holdings from IBKR
+### Portfolio: combined IBKR + BudgetBakers Wallet
 
-`scripts/utils/finance-status.sh` (cron, daily 07:00) pulls positions, cash
-and NAV through IBKR's **Flex Web Service**. That is a read-only token, with
-no daily login or 2FA and no trading permission. The script writes
-preformatted numbers to `~/services/glance/assets/finance.json`, so holdings
-never enter the repo. Until the token exists, the widget shows *Not configured
-yet*.
+`scripts/utils/finance-status.sh` (cron, daily 07:00) combines IBKR NAV and
+BudgetBakers Wallet account balances, and shows Wallet's current-month budget
+limits versus actual spending. It writes preformatted numbers to
+`~/services/glance/assets/finance.json`, so holdings never enter the repo.
+Each provider has its own cache: IBKR 30 minutes (Flex data is end-of-day),
+Wallet six hours (well below its documented 300 requests/hour/client limit).
+When providers use different currencies, the script converts to the first
+connected provider's currency using Frankfurter's daily reference rates.
+Account balances within Wallet must share one currency for a meaningful sum.
+
+**BudgetBakers API findings (checked 2026-09-29):** Premium-only REST API,
+currently described by BudgetBakers as beta. Base URL is
+`https://rest.budgetbakers.com/wallet`; authentication is a personal bearer
+token generated in the Wallet web app under profile → Settings. The script
+uses `GET /v1/api/accounts` (computed `balance.currentBalance`, currency) and
+`GET /v1/api/budgets` (current period `spending.current.effectiveLimit` and
+`spent`), plus `GET /v1/api/categories` to label budget categories. Calls are
+paginated, max 200 items/page. BudgetBakers documents 300 requests/hour/client,
+HTTP 429 with `Retry-After`, and rate-limit headers. We make three requests
+per refresh in the normal case. See the [REST API page](https://budgetbakers.com/en/products/wallet/integrations/rest-api/)
+and [support article](https://support.budgetbakers.com/hc/en-us/articles/10761479741586-Rest-API-MCP).
+
+**One-time setup (you, ~5 min):**
+1. In the Wallet web app, open your profile (top right) → **Settings** →
+   generate a personal **API token**. The first token triggers an initial
+   sync; API calls can return HTTP 409 until it finishes.
+2. On the Mac mini, in Terminal (token is not echoed):
+   ```bash
+   read -rsp "Wallet API token: " T; echo
+   mkdir -p ~/.config/homelab
+   umask 077; printf 'BUDGETBAKERS_API_TOKEN=%s\n' "$T" > ~/.config/homelab/budgetbakers.env; unset T
+   ~/.dotfiles/scripts/utils/finance-status.sh && echo ok
+   ```
+3. If the Wallet contains accounts in more than one currency, consolidate the
+   reporting balances to one currency before relying on its net-worth total.
+   The cross-provider display currency follows the first connected provider.
+4. Refresh the Finance page.
+
+**IBKR setup (you, ~10 min):**
 
 **One-time setup (you, ~10 min):**
 1. IBKR **Client Portal** → *Performance & Reports* → **Flex Queries** →

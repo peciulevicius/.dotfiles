@@ -302,7 +302,8 @@ Plain-markdown memory every agent reads and writes: Paperclip agents
 `~/ai-memory/README.md` (read first, write to `inbox/`, never delete others'
 notes, no secrets). Layout: `people-and-preferences.md`, `projects/`,
 `decisions/`, `inbox/`, **`training/`** (the Coach team's athlete memory —
-folded in the same day it was written, see below).
+folded in the same day it was written, see below), and **`finance/`** (private
+read-only summaries; agents may advise but never transact).
 - **Versioning:** local git repo, auto-committed every 15 min by
   `scripts/utils/ai-memory-commit.sh` (cron; log `~/logs/ai-memory.log`).
   Undo an agent's edit: `cd ~/ai-memory && git log -p` → `git revert <sha>`.

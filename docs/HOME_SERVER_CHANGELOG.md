@@ -2625,4 +2625,16 @@ fire, flood or theft. Moving T5 offsite is what makes this genuinely 3-2-1.
 - [x] ~~Ollama containers still running~~ — `ollama` and `open_webui` still in `~/services/ollama/`, should remove when home
 
 ---
+## 2026-09-29 — BudgetBakers finance view + private AI summaries
+
+- Extended `finance-status.sh` with BudgetBakers Wallet's read-only REST API
+  (bearer token), account balances, current-month budget versus actual, and
+  separate provider caches (IBKR 30m; Wallet 6h). Combined net worth and the
+  provider breakdown feed Glance's Portfolio widget; unavailable providers
+  remain explicit and stale data is retained on fetch errors.
+- Added private daily finance snapshots under `~/ai-memory/finance/` and a
+  README with agent read-only rules. Cron runs the snapshot job after the
+  finance refresh. Credentials and generated amounts stay outside this repo.
+- Added setup docs and a TODO for the user's Wallet token and remaining IBKR
+  setup. No credentials were added.
 

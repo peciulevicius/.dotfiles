@@ -38,6 +38,7 @@ set -uo pipefail
 OUT_DIR="${OUT_DIR:-$HOME/services/glance/assets}"
 OUT="$OUT_DIR/finance.json"
 IBKR_ENV="$HOME/.config/homelab/ibkr-flex.env"
+BUDGETBAKERS_ENV="$HOME/.config/homelab/budgetbakers.env"
 
 from_file=""
 print=0
@@ -54,12 +55,13 @@ mkdir -p "$OUT_DIR"
 tmp="$(mktemp)"
 trap 'rm -f "$tmp"' EXIT
 
-IBKR_ENV="$IBKR_ENV" FROM_FILE="$from_file" PREV="$OUT" python3 - > "$tmp" <<'PY'
+IBKR_ENV="$IBKR_ENV" BUDGETBAKERS_ENV="$BUDGETBAKERS_ENV" FROM_FILE="$from_file" PREV="$OUT" OUT_DIR="$OUT_DIR" python3 - > "$tmp" <<'PY'
 import json, os, re, sys, time, urllib.parse, urllib.request
 import xml.etree.ElementTree as ET
 from datetime import datetime
 
 FLEX = "https://ndcdyn.interactivebrokers.com/AccountManagement/FlexWebService"
+WALLET = "https://rest.budgetbakers.com/wallet/v1/api"
 UA = {"User-Agent": "homelab-finance-status/1.0 (Python urllib)"}
 
 
@@ -79,6 +81,16 @@ def get(url, params):
     req = urllib.request.Request(url + "?" + urllib.parse.urlencode(params), headers=UA)
     with urllib.request.urlopen(req, timeout=60) as r:
         return r.read()
+
+
+def get_json(url, params=None, token=None):
+    headers = {**UA, "Accept": "application/json"}
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+    query = "?" + urllib.parse.urlencode(params or {}) if params else ""
+    req = urllib.request.Request(url + query, headers=headers)
+    with urllib.request.urlopen(req, timeout=30) as r:
+        return json.loads(r.read())
 
 
 def f(x):
@@ -155,7 +167,65 @@ def fetch_ibkr():
             "positions": positions}
 
 
-PROVIDERS = {"ibkr": fetch_ibkr}
+def wallet_pages(endpoint, key, token, extra=None):
+    items, offset = [], 0
+    while True:
+        params = {"limit": 200, "offset": offset, **(extra or {})}
+        page = get_json(f"{WALLET}/{endpoint}", params, token)
+        items.extend(page.get(key, []))
+        next_offset = page.get("nextOffset")
+        if next_offset is None:
+            return items
+        offset = next_offset
+
+
+def fetch_budgetbakers():
+    env = read_env(os.environ["BUDGETBAKERS_ENV"])
+    token = env.get("BUDGETBAKERS_API_TOKEN")
+    if not token:
+        raise LookupError("not configured")
+    accounts = wallet_pages("accounts", "accounts", token, {"archived": "false"})
+    budgets = wallet_pages("budgets", "budgets", token, {"closed": "false"})
+    categories = wallet_pages("categories", "categories", token)
+    category_names = {str(c.get("id")): c.get("name", "Budget") for c in categories}
+    balances = []
+    for a in accounts:
+        if a.get("excludeFromStats") or not isinstance(a.get("balance"), dict):
+            continue
+        b = a["balance"]
+        balances.append({"symbol": a.get("name") or "Wallet account",
+                         "description": a.get("accountType", ""), "qty": 1,
+                         "currency": b.get("currencyCode") or a.get("currencyCode", "EUR"),
+                         "native_value": f(b.get("currentBalance"))})
+    currencies = {x["currency"] for x in balances}
+    if len(currencies) > 1:
+        raise RuntimeError("Wallet accounts use multiple currencies; set them to one reporting currency before combining")
+    currency = next(iter(currencies), "EUR")
+    positions = [{"symbol": x["symbol"], "description": x["description"], "qty": x["qty"],
+                  "currency": currency, "value_base": x["native_value"], "pnl_base": 0.0}
+                 for x in balances]
+    month = datetime.now().strftime("%Y-%m")
+    budget_rows = []
+    for budget in budgets:
+        period = ((budget.get("spending") or {}).get("current") or {})
+        period_start = period.get("periodStart") or ""
+        if period_start[:7] != month:
+            continue
+        spent = period.get("spent")
+        limit = period.get("effectiveLimit")
+        names = [category_names.get(str(cid), "Budget") for cid in budget.get("categoryIds", [])]
+        budget_rows.append({"name": budget.get("name") or (", ".join(names) or "Budget"),
+                            "currency": budget.get("currencyCode") or currency,
+                            "spent": f(spent), "limit": f(limit) if limit is not None else None,
+                            "month": month})
+    return {"ok": True, "error": None, "as_of": datetime.now().strftime("%Y-%m-%d"),
+            "currency": currency, "nav": sum(x["value_base"] for x in positions),
+            "cash": sum(x["value_base"] for x in positions), "day_pnl": None,
+            "unrealized_pnl": 0.0, "positions": positions, "budgets": budget_rows,
+            "configured": True}
+
+
+PROVIDERS = {"ibkr": (fetch_ibkr, 1800), "budgetbakers": (fetch_budgetbakers, 21600)}
 
 try:
     prev = json.load(open(os.environ["PREV"])).get("providers", {})
@@ -163,9 +233,27 @@ except (FileNotFoundError, ValueError):
     prev = {}
 
 providers = {}
-for name, fn in PROVIDERS.items():
+for name, (fn, ttl) in PROVIDERS.items():
     try:
-        providers[name] = fn()
+        cache_path = os.path.join(os.environ["OUT_DIR"], f"finance-{name}-cache.json")
+        config_path = os.environ["IBKR_ENV"] if name == "ibkr" else os.environ["BUDGETBAKERS_ENV"]
+        configured = bool(os.environ.get("FROM_FILE")) if name == "ibkr" else bool(read_env(config_path).get("BUDGETBAKERS_API_TOKEN"))
+        if name == "ibkr":
+            configured = configured or all(read_env(config_path).get(k) for k in ("IBKR_FLEX_TOKEN", "IBKR_FLEX_QUERY_ID"))
+        if not configured:
+            raise LookupError("not configured")
+        try:
+            cache = json.load(open(cache_path))
+        except (FileNotFoundError, ValueError):
+            cache = {}
+        if (not os.environ.get("FROM_FILE") and cache.get("saved_at", 0) + ttl > time.time()
+                and cache.get("data", {}).get("ok")):
+            providers[name] = cache["data"]
+        else:
+            data = fn()
+            providers[name] = data
+            with open(cache_path, "w") as cf:
+                json.dump({"saved_at": time.time(), "data": data}, cf)
     except LookupError as e:
         providers[name] = {"ok": False, "error": str(e), "configured": False}
     except Exception as e:  # keep last good data, flag it stale
@@ -178,6 +266,32 @@ for name, fn in PROVIDERS.items():
 
 live = [p for p in providers.values() if p.get("ok")]
 currency = live[0]["currency"] if live else "EUR"
+for p in live:
+    if p["currency"] != currency:
+        try:
+            fx = get_json("https://api.frankfurter.app/latest", {"from": p["currency"], "to": currency})["rates"][currency]
+        except Exception as e:
+            p["ok"] = False
+            p["error"] = f"FX conversion unavailable: {type(e).__name__}"
+            continue
+        for key in ("nav", "cash", "unrealized_pnl", "day_pnl"):
+            if p.get(key) is not None:
+                p[key] *= fx
+        for pos in p.get("positions", []):
+            pos["value_base"] *= fx
+            pos["pnl_base"] *= fx
+        for budget in p.get("budgets", []):
+            if budget["currency"] != currency:
+                try:
+                    rate = get_json("https://api.frankfurter.app/latest", {"from": budget["currency"], "to": currency})["rates"][currency]
+                    budget["spent"] *= rate
+                    if budget["limit"] is not None:
+                        budget["limit"] *= rate
+                    budget["currency"] = currency
+                except Exception:
+                    pass
+    p["currency"] = currency
+live = [p for p in providers.values() if p.get("ok")]
 sym = {"EUR": "€", "USD": "$", "GBP": "£"}.get(currency, currency + " ")
 
 
@@ -196,6 +310,10 @@ unreal = sum(p["unrealized_pnl"] for p in live)
 cost = total_nav - unreal
 combined = sorted((dict(pos, provider=n) for n, p in providers.items() if p.get("ok")
                    for pos in p["positions"]), key=lambda x: -abs(x["value_base"]))
+provider_breakdown = [{"name": n.upper() if n == "ibkr" else "BudgetBakers",
+                       "value": money(p["nav"]), "currency": currency,
+                       "ok": True, "stale": bool(p.get("stale"))}
+                      for n, p in providers.items() if p.get("ok")]
 top = [{"symbol": x["symbol"], "provider": x["provider"],
         "value": money(x["value_base"]),
         "pct": f"{100 * x['value_base'] / total_nav:.0f}%" if total_nav else "–",
@@ -209,6 +327,7 @@ out = {
     "ok": bool(live),
     "total": {
         "value": money(total_nav) if live else "–",
+        "value_numeric": total_nav if live else None,
         "currency": currency,
         "day_pnl": money(day_pnl, sign=True), "day_level": level(day_pnl),
         "unrealized_pnl": money(unreal, sign=True) if live else "–",
@@ -219,6 +338,14 @@ out = {
         "stale": any(p.get("stale") for p in live),
     },
     "positions": top,
+    "provider_breakdown": provider_breakdown,
+    "budget_categories": [{"name": b["name"], "currency": b["currency"],
+                           "spent": money(b["spent"]),
+                           "limit": money(b["limit"]) if b["limit"] is not None else "–",
+                           "remaining": money(b["limit"] - b["spent"]) if b["limit"] is not None else "–",
+                           "spent_numeric": b["spent"], "limit_numeric": b["limit"]}
+                          for p in providers.values() if p.get("ok")
+                          for b in p.get("budgets", [])[:6]],
     "errors": [f"{n}: {p['error']}" for n, p in providers.items() if p.get("error")],
     "providers": providers,
 }
