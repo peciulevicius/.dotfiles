@@ -6,8 +6,6 @@ is often what you need when something similar breaks again.
 
 Newest first-ish; dates are when the work was finished.
 
----
-
 ## 2026-09-29 — AUTO_SWITCH incident: 10 agents stuck, fixed by hand, feature reverted to notify-only
 
 A real Claude limit hit fired the usage-limit fallback the same day it was
@@ -2627,6 +2625,18 @@ fire, flood or theft. Moving T5 offsite is what makes this genuinely 3-2-1.
 ---
 ## 2026-09-29 — BudgetBakers finance view + private AI summaries
 
+### Wallet page-size fix and private health checks
+
+The Wallet API accepts up to 200 items per page for accounts and categories,
+but rejects a 200-item request for budgets with HTTP 400 (`limit must be at
+most 20`). `finance-status.sh` uses a 20-item page for budgets and retains
+200-item pages for the other collections. Confirmed against the saved token:
+the provider returns `ok: true`; token and account values were not printed.
+The follow-up `--health` mode reads cached provider booleans without fetching
+or printing balances, positions, error text or credentials. Setup instructions
+now use it instead of printing credential files. Corrected the stale TODO
+claim that Wallet still needed a token. See `services/glance/README.md`.
+
 - Extended `finance-status.sh` with BudgetBakers Wallet's read-only REST API
   (bearer token), account balances, current-month budget versus actual, and
   separate provider caches (IBKR 30m; Wallet 6h). Combined net worth and the
@@ -2637,4 +2647,3 @@ fire, flood or theft. Moving T5 offsite is what makes this genuinely 3-2-1.
   finance refresh. Credentials and generated amounts stay outside this repo.
 - Added setup docs and a TODO for the user's Wallet token and remaining IBKR
   setup. No credentials were added.
-

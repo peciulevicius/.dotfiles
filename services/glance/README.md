@@ -158,7 +158,8 @@ token generated in the Wallet web app under profile → Settings. The script
 uses `GET /v1/api/accounts` (computed `balance.currentBalance`, currency) and
 `GET /v1/api/budgets` (current period `spending.current.effectiveLimit` and
 `spent`), plus `GET /v1/api/categories` to label budget categories. Calls are
-paginated, max 200 items/page. BudgetBakers documents 300 requests/hour/client,
+paginated; accounts and categories accept up to 200 items/page, while budgets
+are capped at 20. BudgetBakers documents 300 requests/hour/client,
 HTTP 429 with `Retry-After`, and rate-limit headers. We make three requests
 per refresh in the normal case. See the [REST API page](https://budgetbakers.com/en/products/wallet/integrations/rest-api/)
 and [support article](https://support.budgetbakers.com/hc/en-us/articles/10761479741586-Rest-API-MCP).
@@ -174,12 +175,14 @@ and [support article](https://support.budgetbakers.com/hc/en-us/articles/1076147
    printf "Wallet API token: "; read -rs T; echo
    mkdir -p ~/.config/homelab
    umask 077; printf 'BUDGETBAKERS_API_TOKEN=%s\n' "$T" > ~/.config/homelab/budgetbakers.env; unset T
-   ~/.dotfiles/scripts/utils/finance-status.sh --print | grep -A2 '"budgetbakers"'
+   ~/.dotfiles/scripts/utils/finance-status.sh
+   ~/.dotfiles/scripts/utils/finance-status.sh --health
    ```
-   Check the output: `"ok": true` means it worked; `"not configured"` means
-   the token didn't save (the file is probably empty — `cat
-   ~/.config/homelab/budgetbakers.env` to check) — `&& echo ok` alone does
-   **not** prove it worked, the script exits 0 either way.
+   Check `providers.budgetbakers`: `"ok": true` and `"stale": false` mean the
+   fetch worked; `"configured": false` means the token did not save. Repeat
+   the hidden prompt if necessary. Do not print the credential file or paste
+   it into chat. `&& echo ok` alone does **not** prove a provider worked;
+   unused providers may remain unconfigured while the script exits zero.
 3. If the Wallet contains accounts in more than one currency, consolidate the
    reporting balances to one currency before relying on its net-worth total.
    The cross-provider display currency follows the first connected provider.
@@ -206,11 +209,13 @@ and [support article](https://support.budgetbakers.com/hc/en-us/articles/1076147
    printf "Flex token: "; read -rs T; echo
    printf "Query ID: "; read -r Q
    umask 077; printf 'IBKR_FLEX_TOKEN=%s\nIBKR_FLEX_QUERY_ID=%s\n' "$T" "$Q" > ~/.config/homelab/ibkr-flex.env; unset T
-   ~/.dotfiles/scripts/utils/finance-status.sh --print | grep -A2 '"ibkr"'
+   ~/.dotfiles/scripts/utils/finance-status.sh
+   ~/.dotfiles/scripts/utils/finance-status.sh --health
    ```
-   Check the output: `"ok": true` means it worked. If it still says
-   `"not configured"`, check `cat ~/.config/homelab/ibkr-flex.env` — both
-   values must be non-empty.
+   Check `providers.ibkr`: `"ok": true` and `"stale": false` mean it worked.
+   `"configured": false` means a token/query ID is missing; repeat the hidden
+   setup prompt. Do not print the credential file. `--health` only reads the
+   cached snapshot and prints booleans; it does not fetch or show balances.
 4. Refresh the Finance page.
 
 **Adding another account later.** Each provider is a `fetch_<name>()` in the

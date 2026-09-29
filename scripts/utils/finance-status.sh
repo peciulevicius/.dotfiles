@@ -3,6 +3,8 @@
 #
 #   finance-status.sh                     # fetch every configured provider
 #   finance-status.sh --print             # also print the JSON
+#   finance-status.sh --health            # read cached provider health only;
+#                                         # no fetch, amounts or credentials
 #   finance-status.sh --from-file X.xml   # parse a saved IBKR Flex statement
 #                                         # instead of calling IBKR (testing)
 #
@@ -42,14 +44,41 @@ BUDGETBAKERS_ENV="$HOME/.config/homelab/budgetbakers.env"
 
 from_file=""
 print=0
+health=0
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --print) print=1 ;;
+    --health) health=1 ;;
     --from-file) from_file="${2:-}"; shift ;;
     *) echo "unknown option: $1" >&2; exit 2 ;;
   esac
   shift
 done
+
+if [[ $health -eq 1 ]]; then
+  if [[ $print -eq 1 || -n "$from_file" ]]; then
+    echo "--health reads cached status; use it alone" >&2
+    exit 2
+  fi
+  python3 - "$OUT" <<'PY'
+import json, sys
+try:
+    with open(sys.argv[1]) as source:
+        snapshot = json.load(source)
+    providers = snapshot["providers"]
+    health = {name: {"ok": bool(provider.get("ok")),
+                     "configured": bool(provider.get("configured") or provider.get("ok")),
+                     "stale": bool(provider.get("stale")),
+                     "error_present": bool(provider.get("error"))}
+              for name, provider in providers.items()}
+    print(json.dumps({"updated": snapshot.get("updated"), "ok": bool(snapshot.get("ok")),
+                      "providers": health}, indent=2))
+except (OSError, ValueError, KeyError, TypeError, AttributeError):
+    print(json.dumps({"ok": False, "error": "Snapshot missing or unreadable; run finance-status.sh first."}))
+    sys.exit(1)
+PY
+  exit $?
+fi
 
 mkdir -p "$OUT_DIR"
 tmp="$(mktemp)"
@@ -167,10 +196,10 @@ def fetch_ibkr():
             "positions": positions}
 
 
-def wallet_pages(endpoint, key, token, extra=None):
+def wallet_pages(endpoint, key, token, extra=None, page_limit=200):
     items, offset = [], 0
     while True:
-        params = {"limit": 200, "offset": offset, **(extra or {})}
+        params = {"limit": page_limit, "offset": offset, **(extra or {})}
         page = get_json(f"{WALLET}/{endpoint}", params, token)
         items.extend(page.get(key, []))
         next_offset = page.get("nextOffset")
@@ -185,7 +214,8 @@ def fetch_budgetbakers():
     if not token:
         raise LookupError("not configured")
     accounts = wallet_pages("accounts", "accounts", token, {"archived": "false"})
-    budgets = wallet_pages("budgets", "budgets", token, {"closed": "false"})
+    # The budgets endpoint has a lower cap than the other Wallet collections.
+    budgets = wallet_pages("budgets", "budgets", token, {"closed": "false"}, page_limit=20)
     categories = wallet_pages("categories", "categories", token)
     category_names = {str(c.get("id")): c.get("name", "Budget") for c in categories}
     balances = []
