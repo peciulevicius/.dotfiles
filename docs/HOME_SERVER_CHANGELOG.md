@@ -213,6 +213,22 @@ the Coach's TrainingPeaks writes. Generated and added to
   `.env`, scripts' copy (`~/.config/homelab/wud.env`) synced; the report runs
   again. Gotcha documented in `services/wud/README.md`.
 
+## 2026-09-29 — Corrected stale maintenance and power-recovery guidance
+
+- Verified the live crontab has no 30-minute media restart; updated the TODO
+  to describe optional awake-session API refresh, rather than reinstating a
+  job that woke Sablier sleepers. Removed obsolete ntfy installation advice
+  and duplicate Transmission key-expiry instructions. MacBook re-auth was
+  already recorded done; only key-expiry verification remains. Calibre's
+  KOReader check is explicitly a device step.
+- `pmset -g custom` reports `autorestart 1`. The installed Apple `pmset` manual
+  defines it as automatic restart on power loss. Corrected the rebuild guide,
+  TODO and audit skill's old kernel-panic-only claim and extra-flag advice.
+  No power settings changed; no power cut/reboot attempted. UPS purchase and
+  supervised physical recovery testing remain user steps.
+- Updated the audit skill to use the already-installed WUD daily report,
+  rather than claiming the retired quarterly registry job still runs.
+
 ## 2026-09-28 — SMB rescan cron removed (it kept sleepers awake)
 
 - `smb-watcher-rescan.sh` ran every 30 min and did `docker restart jellyfin
@@ -1754,6 +1770,11 @@ rewriting history.
 
 ## 2026-09-22 (power outage) — Auto-restart gap found, monitoring gap found, two research questions settled
 
+**2026-09-29 correction:** the setting interpretation below was wrong.
+Apple's installed `pmset` manual defines `autorestart` as restart on power
+loss, and it is already enabled. Use the corrected rebuild guide and TODO;
+do not run the extra-flag command from this historical entry.
+
 **Power outage — Mac mini never came back on its own.** `pmset -g` showed
 `autorestart 1` (restart-after-kernel-panic) but **`autorestartatconnect` was
 never set at all** — the actual "power on when AC returns" setting is a
@@ -2637,4 +2658,3 @@ fire, flood or theft. Moving T5 offsite is what makes this genuinely 3-2-1.
   finance refresh. Credentials and generated amounts stay outside this repo.
 - Added setup docs and a TODO for the user's Wallet token and remaining IBKR
   setup. No credentials were added.
-

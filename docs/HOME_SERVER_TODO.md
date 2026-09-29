@@ -5,7 +5,9 @@ Outstanding work only. Finished items live in
 
 👤 = needs you (a UI, a device, a password or a decision). Unmarked = Claude
 can do it in a session. Last truth pass: **2026-09-26** — every open item was
-checked against the live system; done items moved to the changelog.
+checked against the live system; done items moved to the changelog. Partial
+truth pass **2026-09-29** corrected power settings, the removed rescan schedule,
+obsolete ntfy advice, and duplicate VPN/device steps; it was not a full audit.
 
 ---
 
@@ -168,7 +170,8 @@ Section names in *italics* are headings below.
   step-by-step table in `SERVICES.md` → *Connecting each app*. Nextcloud app
   waits for the keep-or-remove decision (Nextcloud is on-demand for now); Finamp/Amperfy not used (self-hosted
   music dropped 2026-09-26, Spotify kept). Also install: Bitwarden, Ente Auth,
-  Obsidian + LiveSync, ntfy, Swiftfin/Infuse, Odysseus home-screen web app.
+  Obsidian + LiveSync, Swiftfin/Infuse, Odysseus home-screen web app. Standalone
+  ntfy was removed 2026-09-28; agent chat/notifications use Discord.
 
 - 👤 Ad blocking: Brave iOS / AdGuard for YouTube (Tailscale → Pi-hole done 2026-09-26) — *Pi-hole → Ad blocking everywhere*
 
@@ -464,11 +467,10 @@ repeat.
       `~/.dotfiles/scripts/sync.sh` there once (it sets `core.hooksPath`), then
       `brew install gitleaks`. (The statusline commit on 2026-09-23 came from a
       clone without it.) Can't be checked from the Mac mini.
-- [ ] 👤 **MacBook Air's Tailscale key expired 2026-09-02** (`tailscale status`,
-      2026-09-25). Log in again and **Disable key expiry** for it in the admin
-      console. The node named `localhost` (expires 2027-03-04) is the iPhone
-      (`iphone13mini` — iOS reports its hostname as `localhost`); disable its
-      expiry too.
+- [ ] 👤 **Verify key-expiry policy for the MacBook and iPhone** in the
+      Tailscale admin console. MacBook re-auth was recorded as complete on
+      2026-09-28; do not ask to log in again based only on the older expired-key
+      snapshot. The iPhone may appear as `localhost` (`iphone13mini`).
 
 ### 8b. 🔒 Cloudflare/R2 security check — added 2026-09-21
 
@@ -491,11 +493,15 @@ services' `.env` files stay encrypted at rest). That also rules out Mac mini
 auto-login. The external dead-man's switch is live since 2026-09-25, so a
 whole-house outage now alerts.
 
-- [ ] 👤 `sudo pmset -a autorestartatconnect 1` — needs an interactive
-      password. Still not set on 2026-09-25 (`pmset -g custom` shows only
-      `autorestart 1`, which is restart-after-panic, not power-on-at-AC).
-- [ ] 👤 Decide on a **UPS** for the Mac mini + NAS (~€100–150) — brief
-      outages then never cut power at all, and FileVault stays.
+- [ ] 👤 **Verify physical power-loss recovery when you are present**, after
+      choosing a maintenance window. `pmset -g custom` shows `autorestart 1`
+      (checked 2026-09-29); Apple's installed `man pmset` defines it as restart
+      on power loss. The earlier claim that it only handles kernel panics was
+      wrong. Do not change an undocumented extra flag based on that claim.
+      FileVault still requires a person to unlock the disk on cold boot.
+- [ ] 👤 **Buy the UPS** already decided on 2026-09-28 — brief outages then
+      never cut power at all, and FileVault stays. USB/HID required for the
+      planned clean-shutdown setup; see the index above.
 - [ ] 👤 Confirm the NAS's own **"Auto power-on when power is supplied"** (+
       WOL) is enabled (NAS UI → Hardware & Power). A self-recovering Mac mini
       is useless if the NAS stays off.
@@ -534,10 +540,11 @@ whole-house outage now alerts.
 - [ ] 👤 **Delete the old staged dirs** `rm -rf ~/services/beets ~/services/lidarr`
       (containers and images already removed 2026-09-26), and after a week of
       Uptime Kuma running fine, `rm ~/services/uptime-kuma/data/kuma.db.bak-2026-09-26-music`.
-- [ ] **SMB library-rescan stopgap** (2026-09-22, still cron'd every 30 min):
-      `scripts/utils/smb-watcher-rescan.sh` restarts Jellyfin + Audiobookshelf
-      because neither's file watcher reliably sees new files over SMB. Each
-      real fix needs one 30-second thing only you can do:
+- [ ] **Optional immediate library refresh while a media server is awake.**
+      The 30-minute restart cron was removed 2026-09-28 (verified absent in
+      the installed crontab 2026-09-29); it woke Sablier sleepers and interrupted
+      playback. Sleeping apps scan when they next start. The remaining API
+      integrations could refresh new items during a long-running session:
       - [ ] 👤 **Jellyfin** — dashboard → Admin → **API Keys → +** → send me the
             key, I'll wire it into Radarr's and Sonarr's Settings → Connect.
             Instant refresh, no restart, no playback interruption.
@@ -869,7 +876,7 @@ done
 
 Follow-ups left:
 
-- [ ] Verify OPDS still serves to KOReader afterwards, and that Calibre-Web
+- [ ] 👤 Verify OPDS still serves to KOReader afterwards, and that Calibre-Web
       opens a shelf (the old `disk I/O error` path) — server side checked
       2026-09-25 (login 200, OPDS answers 401 Basic, no DB errors); the
       logged-in KOReader + shelf check needs you
@@ -1039,8 +1046,8 @@ replaces the old Gluetun plan. Details and the switch-on steps:
 `services/transmission/README.md` → *Tailscale sidecar*.
 
 - [x] ~~👤 Buy the Tailscale Mullvad add-on and allow `transmission-ts` + the phone~~ — 2026-09-28
-- [ ] 👤 Disable key expiry on `transmission-ts` (Machines → … → Disable key
-      expiry) — otherwise it drops off the tailnet on 2027-03-25.
+- [x] ~~Disable key expiry on `transmission-ts`~~ — recorded complete
+      2026-09-28 in the VPN index above; no repeat action needed.
 - [x] ~~Claude: exit node~~ — `se-sto-wg-201` (Stockholm), web UI + Sonarr/Radarr tests pass (2026-09-28)
 - [x] ~~Claude: leak test~~ — Transmission's user egresses as a Mullvad IP (2026-09-28)
 - [x] ~~Claude: kill-switch test~~ — it **did** leak on restart; fixed with
