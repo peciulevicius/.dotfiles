@@ -736,6 +736,40 @@ Keep the old Lead until those links are repaired. The saved state remains for
 retry, with `active: false` and `reconciliation_pending`, so retired records do
 not trigger hourly restore alerts. Reconciliation failures now return nonzero.
 
+**Guarded local image patch:** `Dockerfile.binding-order` normalizes both
+bindings with the same schema before comparing them. It patches the source
+and compiled server, refuses an unexpected code shape, and keeps all existing
+validation for actual binding changes. It does not fix same-agent harness
+restoration; automatic failover remains disabled. Build from this service
+directory:
+
+```bash
+docker build -f Dockerfile.binding-order -t paperclip-homelab:2026.916.1-binding-order .
+```
+
+Stage the reviewed compose file, set
+`PAPERCLIP_IMAGE=paperclip-homelab:2026.916.1-binding-order` in the private
+live `.env`, and recreate Paperclip only when no runs are active. Rollback is
+removing that override and recreating on the pinned upstream image; the patch
+has no database migrations. Re-run `--reconcile --apply` after the patched
+server is healthy. Do not carry this patch blindly into an upstream upgrade.
+
+**Scheduled routines also need remapping.** The live weekly Homelab report,
+daily Coach check-in and paused Studio standup still referenced old IDs. All
+three were moved to their exact replacements on 2026-09-29, preserving active
+or paused status. Use the incident cleanup utility to inspect any leftovers:
+
+```bash
+python3 scripts/utils/paperclip-retired-agents.py
+python3 scripts/utils/paperclip-retired-agents.py --repair-routines --apply
+```
+
+After explicit termination approval, `--retire --apply` only accepts the 11
+paused obsolete Coach/Studio records from this incident, requires unique live
+replacements and no open issues, live reports, routine references or Discord
+mapping references, and rechecks status before each termination. It preserves
+history and excludes the old Homelab Lead. Do not delete historical records.
+
 Reassigning an issue may wake its replacement agent, including for blocked
 issues. Inspect current runs after applying; avoid repeating assignments that
 already point at the replacement.
