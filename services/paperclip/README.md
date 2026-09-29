@@ -656,28 +656,42 @@ typical run (~100k input / ~8k output tokens) is ≈ $0.40 on Sonnet via API vs
 The switch uses the connection's `grantId` (listed on
 `GET /api/companies/<id>/ai-connections`), which the PATCH requires.
 
-**⚠️ Why `AUTO_SWITCH` is off (the restore problem).** Switching *to* OpenRouter
-works (tested on Copywriter, no run started). Switching *back* to the
-subscription fails: Paperclip validates a new binding with a Claude "hello
-probe", and that probe reports *"Claude ACP is available, but login is
-required"* even though real runs succeed (the Coach ran fine the same morning;
-`POST /api/companies/<id>/adapters/claude_local/test-environment` reproduces
-it). The API refuses the PATCH with *"The selected AI connection failed
-validation in this agent's environment"*, and `config-revisions/…/rollback`
-returns 200 without changing anything. So an automatic switch would strand
-agents on DeepSeek. Until that's fixed, the cron job only **notifies** on a limit
-hit, and a restore that Paperclip refuses sends a "needs a click" Discord post.
-To try fixing it: Paperclip → Company settings → AI connections → *My Claude
-subscription* → re-test/re-connect, then re-run the test-environment call above;
-when it passes, set `AUTO_SWITCH=1` on the cron line.
+**⚠️ The restore problem — real, but per-agent, not company-wide.** Switching
+*to* OpenRouter works (tested on Copywriter, no run started). Switching *back*
+to the subscription can fail on a specific agent: Paperclip validates the new
+binding and refuses the PATCH with *"The selected AI connection failed
+validation in this agent's environment"*, while
+`POST /api/companies/<id>/adapters/claude_local/test-environment`
+(company-wide) reports `"status": "pass"` at the very same time — so this
+is **not** the subscription or the login; it's specific to an agent that has
+run under a different harness. `config-revisions/…/rollback` doesn't help
+either: switching harness doesn't create a revision to roll back to, so it
+returns 200 and changes nothing.
 
-**Coach company has no OpenRouter connection**, so Coach/Dietitian are never
-switched (listed as skipped). Adding one is a UI step (secret-store writes are
-blocked for Claude): Coach → Company settings → AI connections → add OpenRouter
-(shared, the same key) → install company-wide.
+**The actual fix, confirmed 2026-09-29: pause + rename the stuck agent, hire a
+fresh one with the same name, role, manager and `AGENTS.md`.** A PATCH back
+onto the *same* agent record is what fails; a brand-new agent record on
+`claude_local` from the start works immediately (that's exactly how Copywriter
+was fixed — see below). Re-testing or reconnecting the subscription in the UI
+does **not** fix this, since the connection was never the problem.
 
-**Copywriter (Studio) is currently on OpenRouter/DeepSeek** — it was the
-switch test agent (2026-09-29) and couldn't be moved back for the reason above.
+Given that, `AUTO_SWITCH=1` is **on** — switching away is reliable, and when
+the automatic restore hits this per-agent bug it posts a "needs a click"
+Discord message instead of silently stranding the agent; the click is
+*re-hire*, per above, not a connection re-test.
+
+**Coach company:** an `OpenRouter (shared)` connection was added 2026-09-29
+(`POST /api/companies/<id>/ai-connections`, same key), so Coach/Dietitian are
+covered too. ⚠️ Two identical connections exist there from a retry — harmless
+(same key twice), tidy up in Company settings → AI connections when
+convenient; no `DELETE` route was found for it via the API.
+
+**Copywriter (Studio)** was the switch test agent (2026-09-29) and hit the
+restore bug. Fixed the same day: the stuck one is paused and renamed
+*"Copywriter (retired 2026-09-29, harness-switch bug)"*; a fresh `Copywriter`
+was hired (`claude_local`, `claude-sonnet-5`, same manager, same `AGENTS.md`)
+and approved. Confirmed idle, no `aiConnection` override needed (falls back to
+the company default, same as every other Sonnet agent in Studio).
 It's idle with no tasks. Restore it in the UI (agent → Configuration → Claude,
 *My Claude subscription*, model `claude-sonnet-5`) once the validation passes.
 

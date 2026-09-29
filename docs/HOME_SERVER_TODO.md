@@ -36,7 +36,7 @@ Section names in *italics* are headings below.
 
 ### 👤 Needs you (UI / device / credentials / decision)
 
-- **⚡ Paperclip usage-limit fallback** (watchdog built 2026-09-29, notify-only): (1) Paperclip → Company settings → AI connections → *My Claude subscription* → re-test/re-connect so the Claude "hello probe" passes; (2) restore **Copywriter** (Studio) to Claude / My Claude subscription / `claude-sonnet-5` — it was the switch test and is on OpenRouter DeepSeek; (3) Coach company → add the OpenRouter connection (shared, same key) so Coach/Dietitian can fall back too; then Claude sets `AUTO_SWITCH=1`. Details: `services/paperclip/README.md` → *Usage-limit fallback*
+- [x] ~~⚡ Paperclip usage-limit fallback~~ — done 2026-09-29: Coach company got an OpenRouter connection, Copywriter was fixed (pause + rehire, not a connection re-test — the subscription was never actually broken), `AUTO_SWITCH=1` is on. Details + the real fix if this happens again: `services/paperclip/README.md` → *Usage-limit fallback*.
 - **🧠 Shared AI memory (2026-09-29):**
   - [ ] 👤 NAS: create a shared folder **`backups`** (UGREEN → Control Panel → Shared Folder → Create; give `macmini` R/W). Then Claude adds it to `SHARES` in `scripts/utils/mount-nas.sh` — the nightly backup starts copying `~/ai-memory` there automatically.
   - [ ] 👤 Odysseus: save the current admin password to Vaultwarden and put it in `~/services/odysseus/.env` (`ODYSSEUS_ADMIN_PASSWORD`) — the `.env` one no longer matches, so API automation can't log in.

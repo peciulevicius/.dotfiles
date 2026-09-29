@@ -8,6 +8,26 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-29 — Paperclip usage-limit fallback finished, AUTO_SWITCH on
+
+- **The subscription was never actually broken.** `POST /api/companies/<id>/adapters/claude_local/test-environment`
+  reports `"status": "pass"` with the OAuth token detected — the earlier "hello
+  probe" failure only ever reproduced on a specific agent that had been
+  switched to a different harness, not company-wide.
+- **Real fix found:** a PATCH back onto the *same* agent record fails
+  validation; a brand-new agent record on `claude_local` works immediately.
+  Fixed **Copywriter** (Studio) this way: paused + renamed the stuck one,
+  hired a fresh `Copywriter` with the same role/manager/`AGENTS.md`, approved.
+  Confirmed idle on `claude-sonnet-5`/subscription.
+- **Coach company** got its own `OpenRouter (shared)` connection (same key),
+  so Coach/Dietitian are covered by the fallback too. (One harmless duplicate
+  connection exists from a retry — no API delete route found; cosmetic only.)
+- `AUTO_SWITCH=1` is now on the cron line: a Claude-limit hit moves agents to
+  OpenRouter automatically and restarts the interrupted work; a restore that
+  hits the per-agent bug posts a "needs a click" Discord message, and the
+  click is *re-hire*, not a connection re-test (`services/paperclip/README.md`
+  → *Usage-limit fallback* has the exact steps).
+
 ## 2026-09-29 — `.training` folded into `ai-memory` (one shared tree)
 
 - `~/.training` (the Coach team's athlete/nutrition memory, its own mount
