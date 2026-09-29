@@ -36,7 +36,7 @@ reached across companies. A mount alone does not inject memory into an agent's
 prompt: each agent needs instructions to read the relevant notes. Today that
 guidance is present on selected company leaders and the Coach/Dietitian agents,
 not yet verified across every active agent. The reusable text is in
-[`services/paperclip/shared-ai-memory-addendum.md`](../services/paperclip/shared-ai-memory-addendum.md).
+[`services/paperclip/shared-ai-memory-addendum.md`](https://github.com/peciulevicius/.dotfiles/blob/main/services/paperclip/shared-ai-memory-addendum.md).
 Applying it to every agent is a separate, reviewable Paperclip configuration
 change; it should preserve role-specific ownership and avoid telling unrelated
 agents to read health or finance records.
