@@ -8,6 +8,22 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-29 — Email signature + deliverability audit
+
+- New `config/email/`: `signature.html` (table + inline CSS, dark-mode safe —
+  logo on a white tile, name inherits the client colour), `signature.txt` for
+  iPhone, install steps in the README. Reuses the site's hosted
+  `https://peciulevicius.com/email/logo.png` and wording.
+- DNS audit for `peciulevicius.com` (authoritative + public resolvers): MX
+  `mailserver.purelymail.com`; one SPF `v=spf1 include:_spf.purelymail.com
+  ~all`; DKIM `purelymail1/2/3._domainkey` → Purelymail keys; DMARC CNAME →
+  `dmarcroot.purelymail.com` (`p=reject`); BIMI record present. No changes
+  needed.
+- Live test: sent via Purelymail SMTP to port25's `check-auth` verifier — no
+  reply after 8 min (service appears dead); a copy went to the Gmail inbox for
+  a header check (Gmail → ⋮ → *Show original* shows SPF/DKIM/DMARC). mail-
+  tester.com can't be scripted (address generated in JS) — manual step.
+
 ## 2026-09-28 — Radicale: calendars, contacts and to-dos (Nextcloud plan dropped)
 
 - New always-on service `services/radicale/` (`tomsquest/docker-radicale:3.8.1.1`,
