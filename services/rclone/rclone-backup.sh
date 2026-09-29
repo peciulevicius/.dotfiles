@@ -278,6 +278,46 @@ else
   ((ERRORS++))
 fi
 
+# Backup 7: shared AI agent memory (~/ai-memory) — plain markdown that
+# Paperclip agents, Odysseus and Claude Code all read and write, plus its local
+# git history (.git, so any agent edit stays revertable after a restore). Tiny.
+# Also copied to the NAS (second local copy, different disk) if the `backups`
+# share is mounted; that part is a warning, not an error, until the share exists.
+AIMEM_DIR="$HOME/ai-memory"
+AIMEM_DEST="${AIMEM_DEST:-${RCLONE_REMOTE}:peciulevicius-backups/ai-memory}"
+AIMEM_NAS_DIR="${AIMEM_NAS_DIR:-/Volumes/backups/ai-memory}"
+
+if [[ -d "$AIMEM_DIR" ]]; then
+  log_info "Backing up $AIMEM_DIR → $AIMEM_DEST"
+  AIMEM_CMD=(rclone sync "$AIMEM_DIR" "$AIMEM_DEST")
+  AIMEM_CMD+=(--exclude ".DS_Store")
+  AIMEM_CMD+=($RCLONE_FLAGS)
+  [[ "$DRY_RUN" == "true" ]] && AIMEM_CMD+=(--dry-run)
+
+  if "${AIMEM_CMD[@]}" 2>&1 | tee -a "$LOG_FILE"; then
+    log_ok "AI memory backup complete"
+  else
+    log_err "AI memory backup failed — check $LOG_FILE"
+    ((ERRORS++))
+  fi
+
+  if [[ -d "$(dirname "$AIMEM_NAS_DIR")" ]]; then
+    if [[ "$DRY_RUN" == "true" ]]; then
+      log_info "[dry-run] would rsync $AIMEM_DIR → $AIMEM_NAS_DIR"
+    elif mkdir -p "$AIMEM_NAS_DIR" && rsync -a --delete --exclude='.DS_Store' "$AIMEM_DIR/" "$AIMEM_NAS_DIR/" 2>&1 | tee -a "$LOG_FILE"; then
+      log_ok "AI memory copied to NAS ($AIMEM_NAS_DIR)"
+    else
+      log_err "AI memory NAS copy failed — check $LOG_FILE"
+      ((ERRORS++))
+    fi
+  else
+    log_warn "NAS share for $AIMEM_NAS_DIR not mounted — AI memory NAS copy skipped (R2 copy still made)"
+  fi
+else
+  log_err "AI memory not found at $AIMEM_DIR — NOT backed up"
+  ((ERRORS++))
+fi
+
 # Uptime Kuma push URL lives in .env — the token in it lets anyone report this
 # backup as healthy, so it must never be in this public repo.
 HEARTBEAT_URL="${HEARTBEAT_URL:-}"

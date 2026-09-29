@@ -7,6 +7,33 @@ Companion: [DEGOOGLE.md](DEGOOGLE.md). This is Gap 4 from that guide.
 
 ---
 
+## Decision 2026-09-29 — Odysseus on OpenRouter + a shared `~/ai-memory`
+
+- **Your Claude Pro subscription cannot power Odysseus.** Paperclip can use it
+  because its `claude_local` agents run **Anthropic's own Claude Code CLI**
+  (logged in with the plan) — that's the sanctioned client. Odysseus is a
+  third-party app that would call the model API with the subscription's
+  credentials, which Anthropic's terms forbid and actively block. Same for
+  ChatGPT/Codex. Odysseus therefore runs on **pay-per-token** backends.
+- **Backends now:** an **OpenRouter** endpoint (same key as Paperclip's
+  OpenRouter connection) is the **default chat model** —
+  `deepseek/deepseek-v3.2` (cheap, strong). Pinned alternatives:
+  `google/gemini-3.5-flash-lite` (fastest/cheapest), `moonshotai/kimi-k2.5`
+  (step up). The existing **Anthropic** API endpoint stays (task/utility
+  models on Haiku) until its prepaid credit is used up, then remove it in
+  Admin → Models. Local Ollama models were tried and judged not good enough
+  (inconsistent, hallucinate on anything non-trivial) — not the default.
+- **Shared memory:** `~/ai-memory` — plain markdown, local git repo
+  (auto-committed every 15 min, so any agent edit is revertable), backed up
+  nightly to R2 (+ NAS copy once the `backups` share exists) and monthly to
+  T5/T7. Mounted into Paperclip at `/ai-memory` (Coach, Dietitian, Homelab
+  Lead and Studio CEO instructions tell them to read it and write to
+  `inbox/`) and into Odysseus at `/ai-memory` (added to
+  `tool_path_extra_roots` in `data/settings.json`, so its built-in file tools
+  can read/write it — no separate MCP server needed). The Obsidian vault stays
+  personal: agents don't write to it (Odysseus only has it read-only for RAG).
+  Domain memory stays where it is (`~/.training` for the Coach team).
+
 ## Your three questions, answered up front
 
 **"Does a cloud backend mean my chats still go through AI servers?"**

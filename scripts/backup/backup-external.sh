@@ -4,7 +4,8 @@
 #   ./backup-external.sh /Volumes/T7        # explicit target
 #   ./backup-external.sh                    # defaults to /Volumes/Backup (T5)
 #
-# Covers Immich photos + the Immich database, audiobooks, and Calibre books.
+# Covers Immich photos + the Immich database, audiobooks, Calibre books, and
+# the AI memories (~/ai-memory, ~/.training).
 # Does NOT cover movies/TV — too large, and re-downloadable.
 #
 # The database matters as much as the photos: originals on disk are named by
@@ -111,6 +112,9 @@ sync_dir "$DB_DUMPS" "$TARGET/db-dumps" "Database dumps"
 # 4. Audiobooks + books
 sync_dir "$NAS_AUDIOBOOKS" "$TARGET/audiobooks" "Audiobooks"
 sync_dir "$BOOKS_DIR" "$TARGET/calibre-books" "Calibre books"
+# Shared AI agent memory (includes its .git history) and the Coach team memory.
+sync_dir "$HOME/ai-memory" "$TARGET/ai-memory" "AI memory"
+sync_dir "$HOME/.training" "$TARGET/training" "Training memory"
 
 # Thumbnails are deliberately skipped: they live on the internal SSD now and
 # Immich regenerates them from the originals in minutes.

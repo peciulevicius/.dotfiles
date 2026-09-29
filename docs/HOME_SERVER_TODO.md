@@ -36,6 +36,11 @@ Section names in *italics* are headings below.
 
 ### 👤 Needs you (UI / device / credentials / decision)
 
+- **🧠 Shared AI memory (2026-09-29):**
+  - [ ] 👤 NAS: create a shared folder **`backups`** (UGREEN → Control Panel → Shared Folder → Create; give `macmini` R/W). Then Claude adds it to `SHARES` in `scripts/utils/mount-nas.sh` — the nightly backup starts copying `~/ai-memory` there automatically.
+  - [ ] 👤 Odysseus: save the current admin password to Vaultwarden and put it in `~/services/odysseus/.env` (`ODYSSEUS_ADMIN_PASSWORD`) — the `.env` one no longer matches, so API automation can't log in.
+  - [ ] 👤 When the Anthropic API credit is used up: Odysseus → Admin → Models → disable the "Anthropic" endpoint and set task/utility models to an OpenRouter one.
+
 - 👤 Save the **WUD** login to Vaultwarden (entry *WUD*, URL `http://100.81.171.49:3070`) — values in `~/services/wud/.env`
 - **🛡️ Tailscale / VPN (2026-09-28):**
   - [x] ~~Approve the Mac mini as an exit node~~ — approved 2026-09-28, visible on the iPhone

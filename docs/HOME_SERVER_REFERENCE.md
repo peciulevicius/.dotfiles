@@ -294,6 +294,26 @@ line and wiring: `services/pihole/README.md` → *Encrypted upstream*.
   arrays in scripts meant for cron.
 - Compose labels with a regex ending in `$` need `$$` (compose interpolation).
 
+## Shared AI memory — `~/ai-memory` (2026-09-29)
+
+Plain-markdown memory every agent reads and writes: Paperclip agents
+(`/ai-memory`, read-write), Odysseus (`/ai-memory`, via its file tools —
+`tool_path_extra_roots`), Claude Code on the Mac mini. Rules for agents are in
+`~/ai-memory/README.md` (read first, write to `inbox/`, never delete others'
+notes, no secrets, no health/finance/dating). Layout: `people-and-preferences.md`,
+`projects/`, `decisions/`, `inbox/`.
+- **Versioning:** local git repo, auto-committed every 15 min by
+  `scripts/utils/ai-memory-commit.sh` (cron; log `~/logs/ai-memory.log`).
+  Undo an agent's edit: `cd ~/ai-memory && git log -p` → `git revert <sha>`.
+  Never pushed anywhere.
+- **Backups:** nightly `rclone sync` to `r2:peciulevicius-backups/ai-memory`
+  (Backup 7 in `rclone-backup.sh`, includes `.git`); a second copy is
+  rsynced to `/Volumes/backups/ai-memory` on the NAS when the `backups` share
+  is mounted (warns, doesn't fail, until then); monthly T5/T7 via
+  `backup-external.sh` (with `~/.training`).
+- Not the Obsidian vault (personal, agents don't write there) and not
+  `~/.training` (Coach team's domain memory).
+
 ## Radicale (calendar / contacts / tasks)
 
 - `http://100.81.171.49:5232/`, Tailscale + localhost only, user `dziugas`

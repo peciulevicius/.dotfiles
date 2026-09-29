@@ -554,6 +554,14 @@ TrainingPeaks access for the Dietitian is a separate tool profile,
 Dietitian does not execute (it hits the signed-approval path, which is
 unconfigured on this instance).
 
+**Shared memory `/ai-memory` (2026-09-29).** `~/ai-memory` is mounted
+read-write at `/ai-memory` (outside `/paperclip`, same chown reason as
+`/training`). The Coach, Dietitian, Homelab Lead and Studio CEO got a
+"Shared memory — /ai-memory" section in their AGENTS.md (read the README
+first; write durable facts to `inbox/<date>-<agent>.md`; never delete others'
+notes; no secrets). Odysseus sees the same folder. Details:
+`docs/HOME_SERVER_REFERENCE.md` → *Shared AI memory*.
+
 **Claude.ai memory import.** The athlete's triathlon and food Claude.ai
 projects (memory, docs, chats) were copied from the account export into
 `~/.training/imports/claude-ai-2026-09-27/`; nothing unrelated to training or

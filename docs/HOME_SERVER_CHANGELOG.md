@@ -8,6 +8,20 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-29 — Shared AI memory + Odysseus on OpenRouter
+
+- New `~/ai-memory` (markdown, local git with 15-min auto-commit, R2 nightly,
+  NAS copy once a `backups` share exists, T5/T7 monthly). Mounted into
+  Paperclip (`/ai-memory`; Coach, Dietitian, Homelab Lead, Studio CEO told to
+  use it) and Odysseus (`/ai-memory` in `tool_path_extra_roots`).
+- Odysseus: OpenRouter endpoint added (shared key with Paperclip), default
+  chat model switched from Claude Opus via the paid API to
+  `deepseek/deepseek-v3.2`; Anthropic endpoint kept for Haiku utility tasks
+  until the credit is gone. Verified from inside the container: DeepSeek and
+  Gemini Flash Lite both answered from `/ai-memory/README.md`.
+- `services/odysseus/docker-compose.override.yml` vendored into the repo.
+- `backup-external.sh` now also copies `~/ai-memory` and `~/.training`.
+
 ## 2026-09-29 — Remaining skills vendored, playwright-cli installed
 
 - After the same review, vendored the three skills first left out —

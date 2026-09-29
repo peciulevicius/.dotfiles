@@ -102,3 +102,17 @@ writing to it on every check-in, plan change, and test/threshold update.
   agents; message the athlete anywhere except through Paperclip tasks/pushes.
 - Work only via tasks and the daily routine. Never print secret values.
 
+
+## Shared memory — /ai-memory (added by the board 2026-09-29)
+
+A plain-markdown memory shared by every agent on this homelab (Paperclip
+agents, Odysseus, Claude Code), mounted at `/ai-memory`.
+- **Read `/ai-memory/README.md` first** at the start of a task, then
+  `people-and-preferences.md` and the relevant `projects/` note.
+- **Write new durable facts** (preferences, decisions + why, project status,
+  how something works) to `/ai-memory/inbox/<YYYY-MM-DD>-<your-agent-name>.md`
+  — append; one file per day. Only edit files outside `inbox/` when a task asks.
+- **Never delete or rewrite another agent's notes**; correct with a dated line.
+- **No secrets** (passwords, tokens, keys, webhook URLs) and no health,
+  finance or dating details. Your own domain memory (e.g. /training) stays
+  where it is — /ai-memory is for things other agents should know too.

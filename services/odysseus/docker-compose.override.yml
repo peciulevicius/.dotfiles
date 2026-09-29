@@ -1,0 +1,25 @@
+# Local overrides for this host. Kept separate so `git pull` of upstream
+# never clobbers them.
+#
+# SearXNG publishes 127.0.0.1:8080 upstream, which collides with Nextcloud on
+# this machine. Odysseus reaches it over the compose network as
+# http://searxng:8080, so the host port serves no purpose here — drop it.
+
+services:
+  searxng:
+    ports: !reset []
+
+  # AI coach: training memory (~/.training, backed up to R2 nightly) is
+  # mounted so Odysseus tools can read/write it. Paired with
+  # "tool_path_extra_roots": ["/training"] in data/settings.json.
+  odysseus:
+    volumes:
+      - ${HOME}/.training:/training
+      # Shared AI memory (~/ai-memory — markdown, local git, backed up to R2 +
+      # NAS), read-write for Odysseus's file tools. Paired with "/ai-memory"
+      # in tool_path_extra_roots in data/settings.json. Same folder Paperclip
+      # agents see at /ai-memory. Added 2026-09-29.
+      - ${HOME}/ai-memory:/ai-memory
+      # Obsidian vault, read-only, inside personal_docs so RAG may index it
+      # (Odysseus only allows RAG directories under /app/data/personal_docs).
+      - ${HOME}/obsidian-vault:/app/data/personal_docs/obsidian:ro

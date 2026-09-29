@@ -78,6 +78,11 @@ services:
       # `chown -R /paperclip` at every start fails on a mount it doesn't own
       # cleanly and crash-loops (hit 2026-09-26 with /reports).
       - ${HOME}/.training:/training
+      # Shared AI memory (plain markdown, local git repo, backed up to R2 +
+      # NAS) that every agent reads/writes — Paperclip agents, Odysseus, Claude
+      # Code. Read-write; outside /paperclip for the same chown reason.
+      # Rules for agents live in /ai-memory/README.md.
+      - ${HOME}/ai-memory:/ai-memory
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://127.0.0.1:3100/api/health"]
       interval: 60s

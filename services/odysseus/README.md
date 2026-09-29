@@ -21,6 +21,25 @@ Gap 4 of the de-Googling effort: *own the file, rent the compute.*
 
 **Port:** 7001 · **Source:** <https://github.com/odysseus-dev/odysseus> · AGPL-3.0
 
+## Backends + shared memory (2026-09-29)
+
+- **Default chat model: OpenRouter `deepseek/deepseek-v3.2`** (endpoint
+  "OpenRouter", key = the same OpenRouter key Paperclip uses, stored
+  encrypted in `data/app.db`). Pinned: `google/gemini-3.5-flash-lite`,
+  `moonshotai/kimi-k2.5`. The Anthropic endpoint stays for task/utility
+  (Haiku) until its API credit runs out — then disable it in Admin → Models.
+  The Claude Pro subscription **can't** be used here (third-party app —
+  against Anthropic's terms); see `docs/guides/SELF_HOSTED_AI.md`.
+- The OpenRouter endpoint was added through the app's own ORM inside the
+  container (the admin password in `.env` no longer matches the UI one, so the
+  HTTP API login failed). To change it later, use Admin → Models in the UI.
+- **`/ai-memory`** (shared agent memory, `~/ai-memory`) is mounted read-write
+  and listed in `tool_path_extra_roots` in `data/settings.json`, next to
+  `/training`. The Obsidian vault is mounted read-only for RAG only.
+- **`docker-compose.override.yml` is now kept in this repo** (it used to live
+  only in the upstream clone): copy it to `~/services/odysseus/` after a
+  re-clone, then `docker compose up -d`.
+
 ## The one thing to get right
 
 🔒 **Sensitive topics go to the local model, never the cloud one.**
