@@ -134,7 +134,7 @@ PY
     # shellcheck source=/dev/null
     source "$HOME/.dotfiles/scripts/lib/notify.sh"
     notify_discord "🐳 Weekly image updates" \
-      "$table"$'\n\n'"Upgrade one: upgrade-service.sh <service> <tag>" info
+      "$table"$'\n\n'"Upgrade one: upgrade-service.sh <service> <tag>" info updates
     ;;
   *) echo "$table" ;;
 esac

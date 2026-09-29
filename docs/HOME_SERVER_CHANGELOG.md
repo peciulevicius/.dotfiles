@@ -6,6 +6,41 @@ is often what you need when something similar breaks again.
 
 Newest first-ish; dates are when the work was finished.
 
+## 2026-09-29 — Paperclip fallback reconciliation guard
+
+Follow-up safeguards (2026-09-30): quota detection no longer treats every
+failure containing "limit" as subscription exhaustion. It uses the upstream
+provider-quota code or recognized Claude quota messages, excludes generic
+429/auth/turn/context/budget errors, and ignores retired or paused agents'
+history. Added a process lock, private atomic state writes, immediate saves
+after each successful operation, and refusal to discard corrupted state.
+Fresh agent configuration/status is checked before a switch; busy agents are
+skipped. Offline classifier/state checks and shell lint passed. This does not
+enable automatic switching or solve the separate authentication restore bug.
+
+The fallback script no longer retries the known-broken same-agent PATCH when
+Claude usage returns. Added an explicit dry-run-first `--reconcile` flow for
+agents already replaced through Paperclip's board approval: it requires a
+paused/terminated retired record and one exact live name/adapter/model match,
+then can restore saved skills and remap reporting links and open issues before
+clearing that stale state entry. It never terminates agents; auto-switch stays
+off pending a complete rehire-and-approval flow. A read-only live audit found
+five Homelab agents still linked to the retired Homelab Lead and ten stale
+fallback records. Applied on the live instance: restored saved skills, moved
+three open issue assignments, and repaired three reporting links. Two paused
+Claude reports reject `reportsTo`-only updates with 422 because the server
+compares an unchanged login binding by JSON property order and probes it again.
+Built a guarded local image that compares both bindings after schema parsing.
+After approval, deployed it with no active runs, backed up the live files and
+verified server health. Both remaining reporting updates then succeeded. All
+five reporting links are repaired and fallback state is cleared. Restore
+notices are deduplicated and partial reconciliation exits nonzero. Remapped
+the weekly Homelab report, daily Coach check-in and paused Studio standup to
+their replacements, preserving routine states. All retired records remain
+paused pending explicit termination approval; no history was deleted.
+
+---
+
 ## 2026-09-29 — AUTO_SWITCH incident: 10 agents stuck, fixed by hand, feature reverted to notify-only
 
 A real Claude limit hit fired the usage-limit fallback the same day it was
@@ -25,8 +60,34 @@ the Coach's TrainingPeaks writes. Generated and added to
 
 ---
 
+## 2026-09-29 — Separate operational notification identities
+
+The notification helper sets sender names for jobs, Paperclip, reminders and
+updates, with route-specific private webhook config. Renamed the original
+shared webhook live to **Homelab Jobs**; verified Kuma sets **Uptime Kuma** on
+each of its messages. Jobs therefore stop impersonating Kuma immediately.
+Kuma's monitors already have repeat alerts disabled.
+
+Prepared an idempotent, preview-first migration with **Homelab** and **AI**
+categories, four notification destinations, and separate webhooks. Existing
+Coach/Dietitian channels move to AI, retaining their IDs and threads; the
+Dietitian spelling typo is corrected. Live apply awaits the bridge bot's
+missing Manage Channels and Manage Webhooks permissions. Existing channel
+permission overrides are preserved. Updated the mail/monitor and notification
+runbooks with setup and testing steps. Bridge configuration resolves current
+hires by name/company instead of reinstalling retired IDs. Monthly reminders
+select their own route.
+
 ## 2026-09-29 — Claude/Codex handoff protocol for Studio engineering
 
+- Consistent shared-memory guidance subsequently appended and verified on all
+  **31 current Paperclip agents**, including paused departments, across all
+  three companies. No role text removed; no models, assignments, or statuses
+  edited. Retired and duplicate hires excluded. Originals saved privately in
+  `~/.config/homelab/paperclip-instruction-backups/`; preview/apply utility is
+  `scripts/utils/paperclip-memory-guidance.py`. Rerun verified 31 configured,
+  zero pending, zero writes. Sensitive training/finance context stays in its
+  domain folders; the general inbox is for non-sensitive durable facts.
 - Studio's engineering line already splits by harness (CTO + Backend Developer
   on Claude; Engineering Manager + Frontend/Mobile/DevOps on Codex) — added an
   explicit protocol instead of leaving the split implicit: CTO designs
@@ -210,6 +271,22 @@ the Coach's TrainingPeaks writes. Generated and added to
   (`~/backups/wud-store-2026-09-28/`), WUD re-bootstrapped with the current
   `.env`, scripts' copy (`~/.config/homelab/wud.env`) synced; the report runs
   again. Gotcha documented in `services/wud/README.md`.
+
+## 2026-09-29 — Corrected stale maintenance and power-recovery guidance
+
+- Verified the live crontab has no 30-minute media restart; updated the TODO
+  to describe optional awake-session API refresh, rather than reinstating a
+  job that woke Sablier sleepers. Removed obsolete ntfy installation advice
+  and duplicate Transmission key-expiry instructions. MacBook re-auth was
+  already recorded done; only key-expiry verification remains. Calibre's
+  KOReader check is explicitly a device step.
+- `pmset -g custom` reports `autorestart 1`. The installed Apple `pmset` manual
+  defines it as automatic restart on power loss. Corrected the rebuild guide,
+  TODO and audit skill's old kernel-panic-only claim and extra-flag advice.
+  No power settings changed; no power cut/reboot attempted. UPS purchase and
+  supervised physical recovery testing remain user steps.
+- Updated the audit skill to use the already-installed WUD daily report,
+  rather than claiming the retired quarterly registry job still runs.
 
 ## 2026-09-28 — SMB rescan cron removed (it kept sleepers awake)
 
@@ -1751,6 +1828,11 @@ token) and update `.env`; that makes the leaked one worthless without
 rewriting history.
 
 ## 2026-09-22 (power outage) — Auto-restart gap found, monitoring gap found, two research questions settled
+
+**2026-09-29 correction:** the setting interpretation below was wrong.
+Apple's installed `pmset` manual defines `autorestart` as restart on power
+loss, and it is already enabled. Use the corrected rebuild guide and TODO;
+do not run the extra-flag command from this historical entry.
 
 **Power outage — Mac mini never came back on its own.** `pmset -g` showed
 `autorestart 1` (restart-after-kernel-panic) but **`autorestartatconnect` was

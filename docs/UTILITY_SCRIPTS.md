@@ -344,10 +344,12 @@ Usage-limit watchdog for Paperclip (cron every 5 min, `~/logs/paperclip-fallback
 Detects Claude-subscription limit failures and, with `--switch` or
 `AUTO_SWITCH=1`, moves non-paused `claude_local` agents to OpenRouter
 (deepseek-v3.2), saving their configs in `~/.config/homelab/paperclip-fallback/`;
-`--restore` probes the subscription and moves them back; `--status`,
-`--dry-run`. Auto-switch is off for now because Paperclip refuses the switch
-back (false "login required" hello probe) — details and fix steps in
-`services/paperclip/README.md` → *Usage-limit fallback*.
+`--restore` probes the subscription but does not PATCH a stuck agent back to
+Claude. `--reconcile` previews remaps for already-rehired, retired agents;
+`--reconcile --apply` adds their saved skills, updates reporting links and open
+issues, and clears matching stale state. Auto-switch remains off until a full
+rehire-and-approval workflow is safe. Details: `services/paperclip/README.md`
+→ *Usage-limit fallback*.
 
 ### setup-services.sh
 

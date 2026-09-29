@@ -5,11 +5,20 @@ Outstanding work only. Finished items live in
 
 👤 = needs you (a UI, a device, a password or a decision). Unmarked = Claude
 can do it in a session. Last truth pass: **2026-09-26** — every open item was
-checked against the live system; done items moved to the changelog.
+checked against the live system; done items moved to the changelog. Partial
+truth pass **2026-09-29** corrected power settings, the removed rescan schedule,
+obsolete ntfy advice, and duplicate VPN/device steps; it was not a full audit.
 
 ---
 
 ## 🔝 Next up — finish the mail switch
+
+- [ ] 👤 **Discord notification migration:** grant the bridge bot's server
+  role Manage Channels and Manage Webhooks, then run
+  `python3 scripts/utils/configure-discord-notifications.py --apply`.
+  Preview verified 2026-09-29; currently blocked by those missing permissions.
+  Destinations: `#uptime-alerts`, `#homelab-jobs`, `#ai-agents`,
+  `#homelab-reminders`. Kuma repeats are already disabled. See the cron README.
 
 kindle_sync, Kuma SMTP and Calibre-Web SMTP all run on Purelymail since
 2026-09-26 (changelog). Remaining:
@@ -36,9 +45,12 @@ Section names in *italics* are headings below.
 
 ### 👤 Needs you (UI / device / credentials / decision)
 
-- [x] ~~⚡ Paperclip usage-limit fallback~~ — done 2026-09-29: Coach company got an OpenRouter connection, Copywriter was fixed (pause + rehire, not a connection re-test — the subscription was never actually broken), `AUTO_SWITCH=1` is on. Details + the real fix if this happens again: `services/paperclip/README.md` → *Usage-limit fallback*.
+- [x] ~~⚡ Paperclip usage-limit watchdog~~ — detects and notifies about Claude limits; OpenRouter connections are provisioned in all three companies. `AUTO_SWITCH` is **off** after the restore incident. Recovery applied 2026-09-29: skills and three open issue assignments restored, three reporting links repaired.
+- [x] ~~Paperclip unchanged-binding validation defect~~ — deployed the guarded local patch from the recovery PR after approval; Web Engineer and Homelab Security Engineer's reporting updates now succeed. All five reporting links, three issue assignments and three routine assignments are repaired; fallback state is cleared.
+- [ ] **Paperclip retired-record cleanup:** the 11 obsolete Coach/Studio records pass reference checks; termination awaits explicit approval. The old Homelab Lead is now unreferenced but excluded from that 11-record plan. Cross-provider automatic fallback (Claude → Codex → capped OpenRouter, with return to each role's original model) remains pending a reliable same-agent switch/restore path. Keep `AUTO_SWITCH=0`. Details: `services/paperclip/README.md` → *Usage-limit fallback*.
 - **🧠 Shared AI memory (2026-09-29):**
-  - [ ] 👤 NAS: create a shared folder **`backups`** (UGREEN → Control Panel → Shared Folder → Create; give `macmini` R/W). Then Claude adds it to `SHARES` in `scripts/utils/mount-nas.sh` — the nightly backup starts copying `~/ai-memory` there automatically.
+  - [x] ~~NAS: create the `backups` share and mount it at `/Volumes/backups`~~ — done 2026-09-29; first `~/ai-memory` copy verified on the NAS. See `docs/HOME_SERVER_CHANGELOG.md`.
+  - [x] ~~Consistent memory instructions across Paperclip agents~~ — appended and verified on all 31 current agents (including paused departments), 2026-09-29. Claude/Codex repository guidance points to the same private tree. New hires: `paperclip-memory-guidance.py` preview then `--apply`; role instructions preserved, private originals backed up.
   - [ ] 👤 Odysseus: save the current admin password to Vaultwarden and put it in `~/services/odysseus/.env` (`ODYSSEUS_ADMIN_PASSWORD`) — the `.env` one no longer matches, so API automation can't log in.
   - [ ] 👤 When the Anthropic API credit is used up: Odysseus → Admin → Models → disable the "Anthropic" endpoint and set task/utility models to an OpenRouter one.
 
@@ -149,7 +161,8 @@ Section names in *italics* are headings below.
   step-by-step table in `SERVICES.md` → *Connecting each app*. Nextcloud app
   waits for the keep-or-remove decision (Nextcloud is on-demand for now); Finamp/Amperfy not used (self-hosted
   music dropped 2026-09-26, Spotify kept). Also install: Bitwarden, Ente Auth,
-  Obsidian + LiveSync, ntfy, Swiftfin/Infuse, Odysseus home-screen web app.
+  Obsidian + LiveSync, Swiftfin/Infuse, Odysseus home-screen web app. Standalone
+  ntfy was removed 2026-09-28; agent chat/notifications use Discord.
 
 - 👤 Ad blocking: Brave iOS / AdGuard for YouTube (Tailscale → Pi-hole done 2026-09-26) — *Pi-hole → Ad blocking everywhere*
 
@@ -184,6 +197,8 @@ Section names in *italics* are headings below.
 - 👤 Optional: Uptime Kuma **DNS** monitor for the resolver chain (Kuma has no monitor API — UI step): + Add New Monitor → DNS → hostname `example.com`, resolver `host.docker.internal` port 53 → alerts if Pi-hole *or* unbound stops answering.
 
 ### 🤖 Claude can do next
+
+- Paperclip: after the recovery PR is merged, run `paperclip-fallback.sh --reconcile` and review the planned remaps; then use `--reconcile --apply` to repair saved skills, reporting links, open issues, and stale fallback state. Keep auto-switch off until a full rehire-and-approval workflow is implemented.
 
 - [x] ~~Rotate the **Radarr + Sonarr API keys**~~ — **done 2026-09-27**
   (Prowlarr, Jellyseerr, Bazarr updated + tested; see changelog).
@@ -430,6 +445,13 @@ coding.
 
 ### 8a. 🔐 Public-repo hygiene — added 2026-09-23
 
+- [ ] 👤 **Automatic PR reviews:** connect `.dotfiles` in Codex's hosted code
+  review settings and enable automatic review. Generate a Claude Code
+  subscription token locally, save it as the repository secret
+  `CLAUDE_CODE_OAUTH_TOKEN`, set `CLAUDE_PR_REVIEW_ENABLED=true`, and merge the
+  review workflow PR. Both providers need account setup; no paid API key is
+  configured. See [PR reviews](guides/PR_REVIEWS.md).
+
 Full secret audit done (gitleaks over all 492 commits): only one leak ever —
 the Uptime Kuma backup push token, public since **2026-05-09**. Rotated
 2026-09-25; the pre-commit hook, CI and the weekly audit guard against a
@@ -439,11 +461,10 @@ repeat.
       `~/.dotfiles/scripts/sync.sh` there once (it sets `core.hooksPath`), then
       `brew install gitleaks`. (The statusline commit on 2026-09-23 came from a
       clone without it.) Can't be checked from the Mac mini.
-- [ ] 👤 **MacBook Air's Tailscale key expired 2026-09-02** (`tailscale status`,
-      2026-09-25). Log in again and **Disable key expiry** for it in the admin
-      console. The node named `localhost` (expires 2027-03-04) is the iPhone
-      (`iphone13mini` — iOS reports its hostname as `localhost`); disable its
-      expiry too.
+- [ ] 👤 **Verify key-expiry policy for the MacBook and iPhone** in the
+      Tailscale admin console. MacBook re-auth was recorded as complete on
+      2026-09-28; do not ask to log in again based only on the older expired-key
+      snapshot. The iPhone may appear as `localhost` (`iphone13mini`).
 
 ### 8b. 🔒 Cloudflare/R2 security check — added 2026-09-21
 
@@ -466,11 +487,15 @@ services' `.env` files stay encrypted at rest). That also rules out Mac mini
 auto-login. The external dead-man's switch is live since 2026-09-25, so a
 whole-house outage now alerts.
 
-- [ ] 👤 `sudo pmset -a autorestartatconnect 1` — needs an interactive
-      password. Still not set on 2026-09-25 (`pmset -g custom` shows only
-      `autorestart 1`, which is restart-after-panic, not power-on-at-AC).
-- [ ] 👤 Decide on a **UPS** for the Mac mini + NAS (~€100–150) — brief
-      outages then never cut power at all, and FileVault stays.
+- [ ] 👤 **Verify physical power-loss recovery when you are present**, after
+      choosing a maintenance window. `pmset -g custom` shows `autorestart 1`
+      (checked 2026-09-29); Apple's installed `man pmset` defines it as restart
+      on power loss. The earlier claim that it only handles kernel panics was
+      wrong. Do not change an undocumented extra flag based on that claim.
+      FileVault still requires a person to unlock the disk on cold boot.
+- [ ] 👤 **Buy the UPS** already decided on 2026-09-28 — brief outages then
+      never cut power at all, and FileVault stays. USB/HID required for the
+      planned clean-shutdown setup; see the index above.
 - [ ] 👤 Confirm the NAS's own **"Auto power-on when power is supplied"** (+
       WOL) is enabled (NAS UI → Hardware & Power). A self-recovering Mac mini
       is useless if the NAS stays off.
@@ -509,10 +534,11 @@ whole-house outage now alerts.
 - [ ] 👤 **Delete the old staged dirs** `rm -rf ~/services/beets ~/services/lidarr`
       (containers and images already removed 2026-09-26), and after a week of
       Uptime Kuma running fine, `rm ~/services/uptime-kuma/data/kuma.db.bak-2026-09-26-music`.
-- [ ] **SMB library-rescan stopgap** (2026-09-22, still cron'd every 30 min):
-      `scripts/utils/smb-watcher-rescan.sh` restarts Jellyfin + Audiobookshelf
-      because neither's file watcher reliably sees new files over SMB. Each
-      real fix needs one 30-second thing only you can do:
+- [ ] **Optional immediate library refresh while a media server is awake.**
+      The 30-minute restart cron was removed 2026-09-28 (verified absent in
+      the installed crontab 2026-09-29); it woke Sablier sleepers and interrupted
+      playback. Sleeping apps scan when they next start. The remaining API
+      integrations could refresh new items during a long-running session:
       - [ ] 👤 **Jellyfin** — dashboard → Admin → **API Keys → +** → send me the
             key, I'll wire it into Radarr's and Sonarr's Settings → Connect.
             Instant refresh, no restart, no playback interruption.
@@ -844,7 +870,7 @@ done
 
 Follow-ups left:
 
-- [ ] Verify OPDS still serves to KOReader afterwards, and that Calibre-Web
+- [ ] 👤 Verify OPDS still serves to KOReader afterwards, and that Calibre-Web
       opens a shelf (the old `disk I/O error` path) — server side checked
       2026-09-25 (login 200, OPDS answers 401 Basic, no DB errors); the
       logged-in KOReader + shelf check needs you
@@ -1014,8 +1040,8 @@ replaces the old Gluetun plan. Details and the switch-on steps:
 `services/transmission/README.md` → *Tailscale sidecar*.
 
 - [x] ~~👤 Buy the Tailscale Mullvad add-on and allow `transmission-ts` + the phone~~ — 2026-09-28
-- [ ] 👤 Disable key expiry on `transmission-ts` (Machines → … → Disable key
-      expiry) — otherwise it drops off the tailnet on 2027-03-25.
+- [x] ~~Disable key expiry on `transmission-ts`~~ — recorded complete
+      2026-09-28 in the VPN index above; no repeat action needed.
 - [x] ~~Claude: exit node~~ — `se-sto-wg-201` (Stockholm), web UI + Sonarr/Radarr tests pass (2026-09-28)
 - [x] ~~Claude: leak test~~ — Transmission's user egresses as a Mullvad IP (2026-09-28)
 - [x] ~~Claude: kill-switch test~~ — it **did** leak on restart; fixed with

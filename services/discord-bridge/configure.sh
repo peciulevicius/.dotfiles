@@ -5,10 +5,47 @@
 set -euo pipefail
 
 ENV_FILE="$HOME/services/discord-bridge/.env"
-COACH_ID="12432817-656c-4c59-aa19-bdc57e4c6377"
-DIETITIAN_ID="895d2ed3-141a-4400-8b3b-0d42aea56b77"
 
 [[ -f "$ENV_FILE" ]] || { echo "Run services/setup-services.sh discord-bridge first."; exit 1; }
+
+# Resolve current hires each time. Rehires get new IDs; never reinstall retired
+# IDs from a historical configuration. Fail before writing if ambiguous.
+agent_ids=$(python3 - <<'PY'
+import http.cookiejar, json, os, pathlib, shlex, urllib.request
+base = 'http://127.0.0.1:3100'
+values = {}
+for line in (pathlib.Path.home() / '.config/homelab/paperclip-admin.env').read_text().splitlines():
+    if line.strip() and not line.lstrip().startswith('#') and '=' in line:
+        key, value = line.split('=', 1)
+        parts = shlex.split(value)
+        values[key] = parts[0] if parts else ''
+opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
+def api(method, path, data=None):
+    request = urllib.request.Request(base + path, method=method,
+        headers={'Origin': base, 'Content-Type': 'application/json'},
+        data=json.dumps(data).encode() if data is not None else None)
+    with opener.open(request, timeout=30) as response:
+        return json.load(response)
+api('POST', '/api/auth/sign-in/email', {
+    'email': values.get('PAPERCLIP_ADMIN_EMAIL', 'dziugas@peciulevicius.com'),
+    'password': values['PAPERCLIP_ADMIN_PASSWORD']})
+try:
+    companies = [c for c in api('GET', '/api/companies') if c['name'] == 'Coach']
+    if len(companies) != 1:
+        raise SystemExit('Expected exactly one Coach company')
+    agents = api('GET', '/api/companies/' + companies[0]['id'] + '/agents')
+    for name in ('Coach', 'Dietitian'):
+        matches = [a for a in agents if a['name'] == name
+            and a['status'] not in ('terminated', 'pending_approval')]
+        if len(matches) != 1:
+            raise SystemExit('Expected exactly one current ' + name + ' agent')
+        print(matches[0]['id'])
+finally:
+    api('POST', '/api/auth/sign-out', {})
+PY
+)
+COACH_ID=$(printf '%s\n' "$agent_ids" | sed -n '1p')
+DIETITIAN_ID=$(printf '%s\n' "$agent_ids" | sed -n '2p')
 
 read -rsp "Discord bot token (hidden, paste + Enter): " token; echo
 

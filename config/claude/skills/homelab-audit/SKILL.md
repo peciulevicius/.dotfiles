@@ -32,13 +32,16 @@ embedded in URLs — and add a rule to `.gitleaks.toml` when you find a new
 pattern.
 
 **Outdated images.** Pinned tags never move, so Watchtower being on proves
-nothing. List every pinned image with a newer upstream release:
+nothing. WUD checks daily; refresh its report of pinned images:
 ```bash
-~/.dotfiles/scripts/utils/check-image-updates.py --outdated
+~/.dotfiles/scripts/utils/update-report.sh
 ```
-It marks each jump as patch/minor/major and flags database majors that need a
-data migration. It only reports — bump one service at a time after reading
-the release notes. The same check runs quarterly from cron.
+Read Glance's Updates card or the report in `~/logs/update-report.log` for
+safe/major/held entries. The older `check-image-updates.py --outdated` remains
+an optional direct-registry check; its quarterly cron was replaced 2026-09-28.
+These checks only report — bump one service at a time after reading the
+release notes and the WUD holds table. Use `upgrade-service.sh` for approved
+upgrades and preserve the data-migration safeguards.
 Pi-hole (publicly exposed, controls DNS) and Vaultwarden come first. A client
 failing against a server that logs 200s is often a version mismatch.
 
@@ -52,7 +55,10 @@ clients, Calibre-Web and Uptime Kuma SMTP) — see `credential-rotation`.
 `curl -s localhost:7878/api/v3/releaseprofile -H "X-Api-Key: …"`.
 
 **Offsite + monitoring gaps** — is the Healthchecks.io dead-man's switch in
-place yet? Is `autorestartatconnect` set (`pmset -g | grep autorestart`)?
+place and fresh? Is documented power-loss restart enabled
+(`pmset -g custom` → `autorestart 1`, see `man pmset`)? Do not treat this as
+proof of physical recovery or change an undocumented flag. FileVault cold
+boots still need a person; an outage test needs a maintenance window.
 
 **Docs vs reality.** Spot-check claims in `.claude/CLAUDE.md`,
 `docs/START_HERE.md` and `docs/HOME_SERVER_TODO.md` against live state —

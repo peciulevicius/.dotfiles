@@ -573,6 +573,27 @@ first; write durable facts to `inbox/<date>-<agent>.md`; never delete others'
 notes; no secrets). Odysseus sees the same folder. Details:
 `docs/HOME_SERVER_REFERENCE.md` → *Shared AI memory*.
 
+**Memory guidance across all companies.** Verified on all 31 current agents
+on 2026-09-29, including paused departments. The same
+`shared-ai-memory-addendum.md` is appended to each instruction entry file;
+role text stays intact. Retired/duplicate hires are excluded. New hires can
+be brought into line with:
+
+```bash
+python3 ~/.dotfiles/scripts/utils/paperclip-memory-guidance.py          # preview
+python3 ~/.dotfiles/scripts/utils/paperclip-memory-guidance.py --apply  # append + verify
+```
+
+Apply saves private originals under
+`~/.config/homelab/paperclip-instruction-backups/<timestamp>/` (directory 700,
+files 600), checks for concurrent edits, and refuses running targets. It uses
+Paperclip's instruction bundle API; it does not edit models or pause/resume
+agents. A partial failure is retryable: preview first. Changed versioned
+guidance requires review rather than silently replacing existing text. To
+undo a particular update, open that agent's instructions in Paperclip and
+restore the saved JSON file's `content` into the recorded `path`; review any
+newer role edits before restoring. Keep these backups private.
+
 **Claude.ai memory import.** The athlete's triathlon and food Claude.ai
 projects (memory, docs, chats) were copied from the account export into
 `~/ai-memory/training/imports/claude-ai-2026-09-27/` (path moved 2026-09-29
@@ -652,8 +673,17 @@ fallback, so `scripts/utils/paperclip-fallback.sh` (cron, every 5 min) does it:
   `~/.config/homelab/paperclip-fallback/state.json` (chmod 600), then
   @mentions the agent on the interrupted issue so the work resumes. Discord gets
   a "⚡ Claude limit hit" post.
-- **Restores** (hourly probe, or `--restore`): a tiny `claude -p` Haiku request
-  inside the container; when it answers `OK`, each saved agent is PATCHed back.
+- **Checks recovery** (hourly probe, or `--restore`): a tiny `claude -p` Haiku
+  request inside the container. The script no longer PATCHes the same agent
+  back to Claude because that path is known to fail; it reports that a fresh
+  hire is needed.
+- **Reconciles manual rehires:** `--reconcile` is a dry-run by default. When a
+  saved old ID is paused/terminated and explicitly named retired, it requires
+  exactly one live agent with the saved name, adapter and model. `--reconcile
+  --apply` then adds the saved skills, remaps active agents' `reportsTo` links
+  and open issue assignments, and clears that state record only if every API
+  write succeeds. It never renames or terminates the retired agent. Check
+  third-party references such as the Discord bridge separately.
 - `--status`, `--dry-run`.
 
 **Why OpenRouter, not Anthropic API credit:** Paperclip strips `ANTHROPIC_*` /
@@ -689,8 +719,9 @@ it, and the restore bug hit *every* switched agent, not just one.** 10 agents
 across all 3 companies (Homelab Lead; Coach, Dietitian; CEO, CTO, Head of
 Marketing, Security Engineer, Backend Developer, Copywriter, UI/UX Designer)
 got switched and none restored automatically. Fixing it by hand surfaced
-three knock-on problems the script doesn't handle, beyond the PATCH failure
-itself:
+three knock-on problems beyond the PATCH failure itself. The old script did
+not handle these; `--reconcile` now repairs them for already-hired exact
+replacements:
 1. **Manager references break.** CEO, CTO and Coach are managers — giving
    them a new agent ID orphans every direct report's `reportsTo` (and
    *their* reports, transitively). Fix order matters: rehire root-first
@@ -699,23 +730,95 @@ itself:
    were *not* switched themselves (e.g. Engineering Manager, DevOps, the
    whole marketing team all pointed at the old CEO/CTO/Head of Marketing).
 2. **Company skills are lost.** `adapterConfig.paperclipSkillSync` lives on
-   the agent record; a rehire starts with none. Re-attach per the table
-   above (`PATCH` the new agent with `adapterConfig.paperclipSkillSync.desiredSkills`,
-   each key as `company/<companyId>/<skill-slug>` — list a company's
-   available keys with `GET /api/companies/<id>/skills`).
+   the agent record; a rehire starts with none. `--reconcile` restores the
+   saved keys with `POST /api/agents/<id>/skills/sync` in `add` mode, so other
+   assignments are preserved.
 3. **Anything hardcoding the old agent ID goes stale.** The Discord bridge's
    `CHANNEL_MAP` (`~/services/discord-bridge/.env`) pins Coach/Dietitian by
-   ID — update and `docker compose up -d` there. Any open Paperclip issue
-   assigned to the old ID needs reassigning to the new one, or the new agent
-   never sees it (check with `GET /api/companies/<id>/issues`, filter
-   `assigneeAgentId`).
+   ID — update and `docker compose up -d` there. `--reconcile` reassigns open
+   Paperclip issues from the old ID to the matching replacement; external
+   references such as the Discord map still need a separate update.
 
-**So `AUTO_SWITCH` is off again**, same day it was turned on. Switching
-*away* is safe to automate; restore is not, until it does a real
+The replacements were hired manually. A live audit later found five Homelab
+agents still reporting to the retired Homelab Lead ID, and the local fallback
+state still listed all ten old IDs. `--reconcile` now repairs saved skills,
+reporting links, and open issue assignments for already-hired exact
+replacements. It leaves unrelated agents and retired records alone.
+
+**Recovery applied 2026-09-29:** saved skills were restored and all three open
+issues were reassigned. Initial recovery repaired three of the five Homelab
+reporting links. Web Engineer and Security Engineer returned 422 even for a
+`reportsTo`-only PATCH. In the upstream server,
+`aiConnectionBindingSchema` reorders binding fields before a `JSON.stringify`
+comparison with the stored object. Identical bindings can therefore be treated
+as changed and trigger a provider login probe. This is a server defect, separate
+from actual subscription exhaustion; do not bypass validation or edit the DB.
+The guarded local image below was built and deployed after approval, with no
+active runs and backups of the live compose/env. Paperclip came back healthy;
+both remaining reporting updates then succeeded without login probes. All five
+links are now repaired, saved fallback agents are empty, `active` is false and
+`reconciliation_pending` is empty. Retired records remain paused pending
+termination approval. Reconciliation failures return nonzero and preserve state.
+
+**Guarded local image patch:** `Dockerfile.binding-order` normalizes both
+bindings with the same schema before comparing them. It patches the source
+and compiled server, refuses an unexpected code shape, and keeps all existing
+validation for actual binding changes. It does not fix same-agent harness
+restoration; automatic failover remains disabled. Build from this service
+directory:
+
+```bash
+docker build -f Dockerfile.binding-order -t paperclip-homelab:2026.916.1-binding-order .
+```
+
+Stage the reviewed compose file, set
+`PAPERCLIP_IMAGE=paperclip-homelab:2026.916.1-binding-order` in the private
+live `.env`, and recreate Paperclip only when no runs are active. Rollback is
+removing that override and recreating on the pinned upstream image; the patch
+has no database migrations. Re-run `--reconcile --apply` after the patched
+server is healthy. Do not carry this patch blindly into an upstream upgrade.
+
+**Scheduled routines also need remapping.** The live weekly Homelab report,
+daily Coach check-in and paused Studio standup still referenced old IDs. All
+three were moved to their exact replacements on 2026-09-29, preserving active
+or paused status. Use the incident cleanup utility to inspect any leftovers:
+
+```bash
+python3 scripts/utils/paperclip-retired-agents.py
+python3 scripts/utils/paperclip-retired-agents.py --repair-routines --apply
+```
+
+After explicit termination approval, `--retire --apply` only accepts the 11
+paused obsolete Coach/Studio records from this incident, requires unique live
+replacements and no open issues, live reports, routine references or Discord
+mapping references, and rechecks status before each termination. It preserves
+history and excludes the old Homelab Lead. Do not delete historical records.
+
+Reassigning an issue may wake its replacement agent, including for blocked
+issues. Inspect current runs after applying; avoid repeating assignments that
+already point at the replacement.
+
+**Watchdog safeguards.** Limit detection uses Paperclip's provider-quota code
+or recognized Claude subscription messages; a generic rate-limit/429,
+turn/budget cap, context-window failure or login error does not qualify.
+Only current, unpaused Claude agents contribute failures. Old retired run
+history cannot trigger a new fallback alert. A process lock prevents cron and
+manual repair racing; each successful switch/reference repair is saved
+immediately. Invalid saved state stops processing rather than resetting the
+original configurations. Auto-switch remains disabled; these safeguards do
+not fix the separate harness restoration defect.
+
+**So `AUTO_SWITCH` is off again**, same day it was turned on. Automatic
+switching must wait until restore does a real
 pause+rehire with the three remaps above instead of a bare PATCH — that's
 follow-up work, not done yet. Until then: a limit hit only **notifies**
 (`⚡ Claude limit hit`), and you either wait for the subscription to reset or
-run `--switch` by hand, knowing restore will need the manual recipe above.
+run `--switch` by hand. When the subscription is back, use `--reconcile` to
+preview any already-hired replacements, then `--reconcile --apply` to repair
+their links. If no replacement exists, hire a fresh Claude agent through the
+board approval flow; `--restore` deliberately refuses the broken same-agent
+PATCH. Auto-switch remains off until a complete rehire-and-approval workflow
+can safely handle future incidents.
 
 **Coach company:** an `OpenRouter (shared)` connection was added 2026-09-29
 (`POST /api/companies/<id>/ai-connections`, same key), so Coach/Dietitian are
@@ -729,8 +832,8 @@ restore bug. Fixed the same day: the stuck one is paused and renamed
 was hired (`claude_local`, `claude-sonnet-5`, same manager, same `AGENTS.md`)
 and approved. Confirmed idle, no `aiConnection` override needed (falls back to
 the company default, same as every other Sonnet agent in Studio).
-It's idle with no tasks. Restore it in the UI (agent → Configuration → Claude,
-*My Claude subscription*, model `claude-sonnet-5`) once the validation passes.
+The current Copywriter is the replacement. Do not switch the retired record
+back or create another duplicate.
 
 ## Keeping usage down (the rules this setup follows)
 

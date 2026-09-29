@@ -75,16 +75,23 @@ or create a **new** R2 API token in the Cloudflare dashboard (scope it to the
 | Setting | Command / place | Why |
 |---|---|---|
 | Never sleep | `scripts/setup/mac-mini.sh sleep off` (or `sudo pmset -a sleep 0 disksleep 0`) | A sleeping Mac mini runs nothing — no sync, no backups, no SSH |
-| Restart after a crash | `sudo pmset -a autorestart 1` | Kernel-panic recovery (already on) |
-| **Power on when AC returns** | `sudo pmset -a autorestartatconnect 1` | A *separate* flag from `autorestart`; it was missing during the 2026-09-22 outage and the Mac stayed off |
+| **Restart after power loss** | `sudo pmset -a autorestart 1`; check with `pmset -g custom` | Apple's installed `man pmset` defines this as automatic restart on power loss; already `1` on 2026-09-29 |
 | Remote Login (SSH) | System Settings → General → Sharing, or `scripts/setup/mac-mini.sh ssh on` | `ssh macmini` from the laptop (`config/ssh/config` has the `Host macmini` entry) |
 | FileVault | **Keep it on** (decided 2026-09-22) | Trade-off below |
 
 ⚠️ **FileVault vs unattended recovery.** With FileVault on, every cold boot
 stops at a pre-boot password screen — so after a power outage someone has to
-be there once, even with `autorestartatconnect`. The alternative (FileVault
+be there once, even with automatic restart enabled. The alternative (FileVault
 off) would leave every service's `.env` secrets readable on a stolen disk.
 The decision is to accept the one manual step.
+
+**Correction (2026-09-29):** older versions of this guide incorrectly called
+`autorestart` a kernel-panic-only setting and prescribed `autorestartatconnect`.
+Use the documented setting above. Apple's [Energy settings guide](https://support.apple.com/guide/mac-help/change-energy-settings-mchlp1168/mac)
+describes restart after power failure. Its newer [power-connected startup](https://support.apple.com/en-us/125517)
+menu is available only on supported newer Macs/macOS versions; it should not
+be assumed to exist on this server. The configured value is verified; physical
+outage recovery has not been tested in this session.
 
 ### 3.2 Dotfiles + tools
 
@@ -324,7 +331,7 @@ before relying on it (a NAS-based target is an open TODO).
 |---|---|
 | **A service can't see its files** | [NAS.md](NAS.md) ladder: mount gone? → `mount-nas.sh`; NAS reachable? `nc -z DH4300PLUS-DP.local 445`; wrong path in `.env`? container started before the mount? → `docker compose restart` |
 | **New movie/audiobook not appearing** | SMB file watchers miss changes. Wait for the 30-min rescan or `docker restart jellyfin audiobookshelf`. Radarr/Sonarr queue shows `downloadClientUnavailable`? → credentials to Transmission are stale (see `credential-rotation`) |
-| **Power outage** | Mac mini powers back on (if `autorestartatconnect` is set) but stops at the **FileVault password** — someone types it once. Then shares mount via LaunchAgent and watchdogs restart containers. Uptime Kuma runs on the same box and is down too; the external Healthchecks.io dead-man's switch (`scripts/utils/heartbeat.sh`, live since 2026-09-25) is what alerts |
+| **Power outage** | Mac mini is configured for automatic restart (`autorestart 1`, physical recovery still to verify) and stops at the **FileVault password** — someone types it once. Then shares mount via LaunchAgent and watchdogs restart containers. Uptime Kuma runs on the same box and is down too; the external Healthchecks.io dead-man's switch (`scripts/utils/heartbeat.sh`, live since 2026-09-25) is what alerts |
 | **NAS down** | Shares vanish; NAS-backed services stop seeing data (the watchdog remounts once it's back). Check power, then nas.peciulevicius.com → Storage |
 | **One NAS disk fails** | RAID 5 keeps running degraded — replace the disk promptly; a second failure loses the array |
 | **NAS lost entirely** | Photos: R2 `immich-photos` + T7/T5. DB dumps: R2 + drives. Books: R2 `calibre-books`. Media: re-download. Rebuild shares, then §3.8 |
