@@ -64,4 +64,4 @@ PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin
 # pause+rehire (with manager/skill/issue remap) instead of a bare PATCH.
 */5 * * * * ~/.dotfiles/scripts/utils/paperclip-fallback.sh >> ~/logs/paperclip-fallback.log 2>&1
 # Monthly: remind to check prepaid AI credits + subscriptions (list lives privately in the Obsidian vault)
-0 10 1 * * /bin/bash -c 'source ~/.dotfiles/scripts/lib/notify.sh && notify_discord "💳 Monthly money check" "Check prepaid balances (OpenRouter, Anthropic console, Codex usage) and update Obsidian → 💰 Finance/Subscriptions & Credits."' >> ~/logs/monthly-reminder.log 2>&1
+0 10 1 * * /bin/bash -c 'source ~/.dotfiles/scripts/lib/notify.sh && notify_discord "💳 Monthly money check" "Check prepaid balances (OpenRouter, Anthropic console, Codex usage) and update Obsidian → 💰 Finance/Subscriptions & Credits." info reminders' >> ~/logs/monthly-reminder.log 2>&1

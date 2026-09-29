@@ -63,20 +63,49 @@ which posts to Discord when a job **starts** failing and again when it
 instead of 24 a day. If it stays broken it re-nags once every `REMIND_HOURS`
 (default 24).
 
-Configure the webhook once:
+Keep uptime alerts, jobs, agent events and reminders separate:
+
+| Sender | Channel | Private config key |
+|---|---|---|
+| Uptime Kuma | `#uptime-alerts` | Stored in Kuma; not used by jobs |
+| Homelab Jobs / Homelab Updates | `#homelab-jobs` | `DISCORD_JOBS_WEBHOOK_URL` |
+| Paperclip | `#ai-agents` | `DISCORD_AGENTS_WEBHOOK_URL` |
+| Homelab Reminders | `#homelab-reminders` | `DISCORD_REMINDERS_WEBHOOK_URL` |
+
+For the existing shared webhook, preview and migrate with:
+
+```bash
+python3 ~/.dotfiles/scripts/utils/configure-discord-notifications.py
+python3 ~/.dotfiles/scripts/utils/configure-discord-notifications.py --apply
+```
+
+The migration uses the bridge bot's private token. Its server role needs
+**Manage Channels** and **Manage Webhooks** (also allowed in the target
+category/channels). It reuses matching channels and its own webhooks, moves
+Kuma's existing webhook without changing Kuma's saved URL, and saves private
+job URLs with mode 600. A failure can leave some channels created; rerun to
+finish. It does not post test messages. Preview on 2026-09-29 was blocked by
+the bot lacking these permissions; separate channels are not yet live.
+
+For manual configuration, create one webhook per destination and save:
 
 ```bash
 mkdir -p ~/.config/homelab
 cat > ~/.config/homelab/notify.env <<'EOF'
-DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/...
+DISCORD_JOBS_WEBHOOK_URL=https://discord.com/api/webhooks/...
+DISCORD_AGENTS_WEBHOOK_URL=https://discord.com/api/webhooks/...
+DISCORD_REMINDERS_WEBHOOK_URL=https://discord.com/api/webhooks/...
 EOF
 chmod 600 ~/.config/homelab/notify.env
 ```
 
-Use the **same webhook Uptime Kuma already posts to** (Uptime Kuma → Settings →
-Notifications → the Discord entry → copy the URL) so service up/down alerts and
-job failures land in one channel. Without the file the wrapper is a silent
-no-op — jobs must never fail just because notifications aren't set up.
+The legacy `DISCORD_WEBHOOK_URL` remains a jobs fallback; the migration points
+it at the jobs webhook so old scripts cannot post through Kuma. Before
+migration, routes without their own webhook still share that destination, but
+the helper sets separate sender names. `notify_discord title message level
+route` selects a route (default `jobs`); unknown routes are ignored. Webhook
+sender names do not require separate Discord bot applications. Missing config
+is a silent no-op so a notification outage cannot fail the underlying job.
 
 State lives in `~/.local/state/homelab-jobs/<job>.state`.
 

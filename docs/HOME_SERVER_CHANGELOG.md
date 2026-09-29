@@ -6,6 +6,19 @@ is often what you need when something similar breaks again.
 
 Newest first-ish; dates are when the work was finished.
 
+## 2026-09-29 — Separate operational notification identities
+
+The notification helper sets sender names for jobs, Paperclip, reminders and
+updates, with route-specific private webhook config. Prepared an idempotent,
+preview-first Discord migration to move Kuma's existing webhook to its own
+channel and provision separate destinations; live apply awaits the bridge
+bot's missing management permissions. Kuma's monitors already have repeat
+alerts disabled. Updated its stale mail/monitor runbook. Bridge configuration
+now resolves current hires by name and company instead of reinstalling the
+retired Coach/Dietitian IDs. Monthly reminders select their own route.
+
+---
+
 ---
 
 ## 2026-09-29 — AUTO_SWITCH incident: 10 agents stuck, fixed by hand, feature reverted to notify-only
@@ -2637,4 +2650,3 @@ fire, flood or theft. Moving T5 offsite is what makes this genuinely 3-2-1.
   finance refresh. Credentials and generated amounts stay outside this repo.
 - Added setup docs and a TODO for the user's Wallet token and remaining IBKR
   setup. No credentials were added.
-

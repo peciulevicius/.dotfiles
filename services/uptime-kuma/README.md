@@ -1,6 +1,7 @@
 # Uptime Kuma
 
-Self-hosted uptime monitoring with status pages and notifications.
+Uptime monitoring, status pages, and service down/recovery notifications.
+Installed image: `louislam/uptime-kuma:1.23.17`; container `uptime_kuma`.
 
 ## Ports
 
@@ -16,58 +17,46 @@ docker compose up -d
 
 Open `http://localhost:3001` to set up your admin account on first visit.
 
-## Email Notifications (Resend SMTP)
+## Notification scope
 
-Set up once in the UI. Uses Resend as SMTP relay — already in the SaaS stack, free tier (3000 emails/month), works with `peciulevicius.com`.
+Kuma sends monitor **down** and **recovery** events. Cron job failures, image
+update reports, agent quota/restore events, and reminders use separate
+webhooks; their sender is not Kuma.
 
-**Settings → Notifications → Add notification:**
+The live audit on 2026-09-29 found `resend_interval = 0` on every monitor,
+so repeat down notifications are disabled. Most HTTP monitors have three
+retries before declaring a failure. Keep **Resend Notification** at zero in
+each monitor to retain transition-only alerts.
 
-| Field | Value |
-|-------|-------|
-| Notification Type | Email (SMTP) |
-| Friendly Name | `Resend` |
-| Hostname | `smtp.resend.com` |
-| Port | `465` |
-| Security | SSL/TLS |
-| Username | `resend` |
-| Password | Resend API key (from resend.com → API Keys) |
-| From Email | `alerts@peciulevicius.com` |
-| To Email | your personal email |
+Discord migration is prepared in
+[`configure-discord-notifications.py`](../../scripts/utils/configure-discord-notifications.py).
+It moves Kuma's existing webhook into `#uptime-alerts`, retaining the saved
+URL, and creates separate job/agent/reminder webhooks. The live bot still
+needs **Manage Channels** and **Manage Webhooks** before that migration can
+run. Until then the helper distinguishes job senders in the existing channel.
+See [notification routing](../../scripts/cron/README.md#notifications).
 
-After saving, click **Test** — you should receive a test email within seconds.
+Email already uses **Purelymail**, configured 2026-09-26. See the maintained
+[email guide](../../docs/guides/EMAIL.md) for SMTP settings. SMTP credentials
+are saved in Kuma's private configuration; do not copy them into this repo.
 
-> `alerts@peciulevicius.com` needs to be a verified sender in Resend. Your `peciulevicius.com`
-> domain is already on Cloudflare — Resend will show DNS records to add (TXT + MX, ~2 min).
+## Monitors and backup heartbeat
 
-> **Future:** Once Migadu is set up (De-Google TODO #18), switch to `smtp.migadu.com:465`,
-> username = full email address, password = Migadu app password.
+Configure monitors in the UI. Addresses must be reachable **from the Kuma
+container**; `localhost` there refers to Kuma itself. Use the Mac mini's
+reachable address or a hostname appropriate to the service's Docker network.
 
-After adding the channel: tick **"Default Enabled"** so all future monitors get alerts automatically.
+Some services are deliberately paused or started on demand. Their monitors
+may remain paused; review the service runbook before enabling one. The live
+roster includes Paperclip, CouchDB, Glance, Pi-hole, Immich, Vaultwarden and
+the media stack; the UI is the source of truth for current addresses/status.
 
-## Monitors
+The **Rclone Backup** push monitor is already wired to nightly backups. Its
+live expected interval is 86,399 seconds. The push URL is a credential kept
+outside Git. Missing a daily push produces a down event and the next success
+produces recovery. This is separate from job execution alerts in
+`#homelab-jobs`.
 
-Add in the UI (Add New Monitor → HTTP/HTTPS):
-
-| Name | URL |
-|------|-----|
-| Immich | `http://localhost:2283` |
-| Vaultwarden | `http://localhost:8001` |
-| Nextcloud | `http://localhost:8080` |
-| Jellyfin | `http://localhost:8096` |
-| Syncthing | `http://localhost:8384` |
-| Paperless | `http://localhost:8000` |
-| Linkwarden | `http://localhost:3005` |
-| Grafana | `http://localhost:3000` |
-| Pi-hole | `http://localhost:8053` |
-| Glance | `https://home.peciulevicius.com` |
-
-## Rclone backup heartbeat (TODO #14)
-
-Once email alerts are confirmed working, wire up the nightly backup heartbeat:
-
-1. Uptime Kuma → Add Monitor → type: **Push**
-2. Copy the heartbeat URL
-3. Add to end of `~/.dotfiles/services/rclone/rclone-backup.sh`:
-   ```bash
-   curl -fs "https://uptime.peciulevicius.com/api/push/YOUR_KEY" > /dev/null || true
-   ```
+For a machine-wide outage (when Kuma itself cannot run), the external
+[Healthchecks heartbeat](../../scripts/cron/README.md#setting-up-the-heartbeat-once)
+covers the Mac mini.

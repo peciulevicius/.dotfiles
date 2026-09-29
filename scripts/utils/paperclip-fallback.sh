@@ -55,7 +55,7 @@ probe_subscription() {
 notify() {
   # shellcheck source=/dev/null
   source "$HOME/.dotfiles/scripts/lib/notify.sh"
-  notify_discord "$1" "$2" "${3:-info}" || true
+  notify_discord "$1" "$2" "${3:-info}" agents || true
 }
 export -f notify probe_subscription
 
