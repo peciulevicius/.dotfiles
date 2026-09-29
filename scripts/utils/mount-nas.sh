@@ -16,7 +16,7 @@ set -uo pipefail
 NAS_MDNS="DH4300PLUS-DP.local"      # drift-proof; preferred
 NAS_FALLBACK_IPS=(192.168.1.73 192.168.1.75)  # only used if mDNS mount fails
 NAS_USER="macmini"
-SHARES=(media immich audiobooks books unsorted)
+SHARES=(media immich audiobooks books unsorted backups)
 LOG="/opt/homebrew/var/log/mount-nas.log"
 
 # A NAS rebuilding/checking its RAID5 array after a hard power cut can take

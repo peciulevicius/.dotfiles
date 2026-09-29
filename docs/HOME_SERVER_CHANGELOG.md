@@ -8,6 +8,16 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-29 — NAS `backups` share mounted
+
+- The user created a `backups` share on the NAS for the AI-memory second
+  copy (`backup-external.sh`/`rclone-backup.sh` already had the destination
+  wired, waiting for the share). Mounted at `/Volumes/backups`
+  (`smb://macmini@DH4300PLUS-DP.local/backups`) and added to
+  `mount-nas.sh`'s `SHARES` list so it survives reboots and the periodic
+  remount check. First copy of `~/ai-memory` (now including `training/`)
+  run manually and confirmed on the NAS.
+
 ## 2026-09-29 — Paperclip usage-limit fallback finished, AUTO_SWITCH on
 
 - **The subscription was never actually broken.** `POST /api/companies/<id>/adapters/claude_local/test-environment`
