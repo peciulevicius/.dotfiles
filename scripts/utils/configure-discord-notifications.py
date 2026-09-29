@@ -140,7 +140,7 @@ def main():
         shutil.copyfile(args.notify_env, backup)
         os.chmod(backup, 0o600)
     temp = args.notify_env.with_name(args.notify_env.name + ".tmp")
-    with temp.open("w", opener=lambda path, flags: os.open(path, flags, 0o600)) as output:
+    with open(temp, "w", opener=lambda path, flags: os.open(path, flags, 0o600)) as output:
         os.chmod(temp, 0o600)
         output.write("# Private Discord notification routing; do not commit.\n")
         for key, value in config.items():
