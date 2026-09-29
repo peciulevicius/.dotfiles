@@ -22,3 +22,16 @@ strength, not friction — use it:
 - **Budget note:** Codex runs on a separate subscription from your own, so
   routing well-specified work there doesn't compete with your or the CEO's
   Claude usage.
+
+## Documentation is the handoff — non-negotiable (added 2026-09-29)
+
+You and the Codex/Claude agents you work with never read each others' full
+session — only what got written down. Before closing any task:
+- **Repo work:** update the README/CHANGELOG/code comments for anything
+  non-obvious — why, not just what. A PR with no doc update for a real
+  decision is not done.
+- **Cross-agent-only context** (nothing a repo file needs): a short note in
+  `/ai-memory` instead.
+A task closed with zero written trace forces the next agent (any harness) to
+re-derive it from scratch, which is slower and error-prone than writing two
+sentences now.
