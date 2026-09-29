@@ -539,12 +539,14 @@ own Discord webhook secret `DIETITIAN_DISCORD_WEBHOOK` → `#ai-training-dietiti
 composition (Garmin Index S2 → TrainingPeaks), weight periodisation, training/
 race fuelling, meal prep and Barbora shopping lists; Coach owns training.
 Instructions: `dietitian-agents-addendum.md` (Coach's: `coach-agents-addendum.md`).
-Memory split inside the shared `/training` mount: shared files at the root
-(`athlete_profile.md`, `race_calendar.md`, `preferences.md`, `conversations/`,
-`imports/`); Coach writes `plans/`, `coaching_notes.md`, `progress_reviews/`;
-Dietitian writes `nutrition/` (incl. `today.md`, which the daily check-in
-quotes). They hand work to each other as Paperclip tasks. Fuelling numbers are
-*current practice*, not rules — both agents may propose changes.
+Memory split inside `/ai-memory/training/` (its own `/training` mount until
+2026-09-29, folded into the shared `/ai-memory` tree — see below): shared
+files at the root (`athlete_profile.md`, `race_calendar.md`, `preferences.md`,
+`conversations/`, `imports/`); Coach writes `plans/`, `coaching_notes.md`,
+`progress_reviews/`; Dietitian writes `nutrition/` (incl. `today.md`, which
+the daily check-in quotes). They hand work to each other as Paperclip tasks.
+Fuelling numbers are *current practice*, not rules — both agents may propose
+changes.
 
 TrainingPeaks access for the Dietitian is a separate tool profile,
 **"TrainingPeaks (read-only)"** (`profileKey: tp-readonly`), created with
@@ -564,7 +566,8 @@ notes; no secrets). Odysseus sees the same folder. Details:
 
 **Claude.ai memory import.** The athlete's triathlon and food Claude.ai
 projects (memory, docs, chats) were copied from the account export into
-`~/.training/imports/claude-ai-2026-09-27/`; nothing unrelated to training or
+`~/ai-memory/training/imports/claude-ai-2026-09-27/` (path moved 2026-09-29
+along with the rest of `~/.training`); nothing unrelated to training or
 food. TrainingPeaks stays the source of truth for FTP, thresholds, zones and
 weight; old chat numbers are history only.
 

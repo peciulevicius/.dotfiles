@@ -69,19 +69,18 @@ services:
       # runs `chown -R /paperclip` as root on every start and exits non-zero on
       # a read-only mount there -> crash loop (hit 2026-09-26).
       - ./reports:/reports:ro
-      # Coach agent's persistent athlete memory (adaptive-endurance-coach
-      # skill format: athlete_profile.md, metrics/, plans/, coaching_notes.md,
-      # …). Same tree Claude Code and Odysseus already read/write on the host
-      # at ~/.training — nightly R2 backup already covers it, this just gives
-      # the in-container Coach agent the same path. Read-write, and NOT under
-      # /paperclip for the same reason as /reports above: the entrypoint's
-      # `chown -R /paperclip` at every start fails on a mount it doesn't own
-      # cleanly and crash-loops (hit 2026-09-26 with /reports).
-      - ${HOME}/.training:/training
       # Shared AI memory (plain markdown, local git repo, backed up to R2 +
       # NAS) that every agent reads/writes — Paperclip agents, Odysseus, Claude
-      # Code. Read-write; outside /paperclip for the same chown reason.
-      # Rules for agents live in /ai-memory/README.md.
+      # Code. Read-write; outside /paperclip for the same chown reason as
+      # /reports above (the entrypoint's `chown -R /paperclip` at every start
+      # fails on a mount it doesn't own cleanly and crash-loops, hit
+      # 2026-09-26). Rules for agents live in /ai-memory/README.md.
+      #
+      # 2026-09-29: the Coach team's athlete memory (adaptive-endurance-coach
+      # skill format: athlete_profile.md, metrics/, plans/, coaching_notes.md,
+      # …) used to be its own mount at /training (host ~/.training). Folded
+      # into /ai-memory/training/ — one shared tree, one mount, one backup
+      # step — instead of a separate one just for the Coach/Dietitian.
       - ${HOME}/ai-memory:/ai-memory
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://127.0.0.1:3100/api/health"]

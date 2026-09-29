@@ -55,7 +55,7 @@ Each value is coloured green, amber or red.
 **How it works.** Glance can't see any of that from inside its container:
 macOS swap, the APFS *data* volume (`df /` only shows the sealed system
 volume, ~38%, while the real disk is ~90%), backup stamps in `~/logs`, the
-Paperclip board and `~/.training`. So `scripts/utils/homelab-status.sh` runs on
+Paperclip board and `~/ai-memory/training/`. So `scripts/utils/homelab-status.sh` runs on
 the host every 5 minutes (cron) and writes
 `~/services/glance/assets/status.json`.
 

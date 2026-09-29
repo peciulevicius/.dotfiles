@@ -78,7 +78,7 @@ docker ps -a --filter label=sablier.enable=true \
   --format '{{.Label "sablier.group"}} {{.State}}' 2>/dev/null > "$tmpdir/sablier" || true
 
 # ── Coach team ─────────────────────────────────────────────────────────────
-today_line=$(grep -v -e '^#' -e '^[[:space:]]*$' "$HOME/.training/nutrition/today.md" 2>/dev/null | head -1)
+today_line=$(grep -v -e '^#' -e '^[[:space:]]*$' "$HOME/ai-memory/training/nutrition/today.md" 2>/dev/null | head -1)
 
 # ── Paperclip: pending approvals + issues waiting on the board ─────────────
 pc_ok=0

@@ -300,19 +300,32 @@ Plain-markdown memory every agent reads and writes: Paperclip agents
 (`/ai-memory`, read-write), Odysseus (`/ai-memory`, via its file tools —
 `tool_path_extra_roots`), Claude Code on the Mac mini. Rules for agents are in
 `~/ai-memory/README.md` (read first, write to `inbox/`, never delete others'
-notes, no secrets, no health/finance/dating). Layout: `people-and-preferences.md`,
-`projects/`, `decisions/`, `inbox/`.
+notes, no secrets). Layout: `people-and-preferences.md`, `projects/`,
+`decisions/`, `inbox/`, **`training/`** (the Coach team's athlete memory —
+folded in the same day it was written, see below).
 - **Versioning:** local git repo, auto-committed every 15 min by
   `scripts/utils/ai-memory-commit.sh` (cron; log `~/logs/ai-memory.log`).
   Undo an agent's edit: `cd ~/ai-memory && git log -p` → `git revert <sha>`.
   Never pushed anywhere.
 - **Backups:** nightly `rclone sync` to `r2:peciulevicius-backups/ai-memory`
-  (Backup 7 in `rclone-backup.sh`, includes `.git`); a second copy is
-  rsynced to `/Volumes/backups/ai-memory` on the NAS when the `backups` share
-  is mounted (warns, doesn't fail, until then); monthly T5/T7 via
-  `backup-external.sh` (with `~/.training`).
-- Not the Obsidian vault (personal, agents don't write there) and not
-  `~/.training` (Coach team's domain memory).
+  (Backup 7 in `rclone-backup.sh`, includes `.git`, so `training/` too); a
+  second copy is rsynced to `/Volumes/backups/ai-memory` on the NAS when the
+  `backups` share is mounted; monthly T5/T7 via `backup-external.sh`.
+- Not the Obsidian vault — personal, agents don't write there.
+
+### `~/ai-memory/training/` — was a separate `~/.training` mount
+
+Started 2026-09-27 as its own mount for the Coach team (adaptive-endurance-coach
+skill format: `athlete_profile.md`, `race_calendar.md`, `preferences.md`,
+`coaching_notes.md`, `nutrition/`, `plans/`, `metrics/`, `progress_reviews/`,
+`race_plans/`, `imports/`). Folded into `~/ai-memory/training/` on 2026-09-29:
+one shared tree and one mount (`/ai-memory` in Paperclip and Odysseus) instead
+of two, and one backup step instead of two. Every agent with `/ai-memory`
+access can now see it, including Odysseus — a deliberate trade-off the user
+chose over the earlier separation (this domain data used to be excluded from
+the shared tree specifically to keep it out of Odysseus's reach). Coach and
+Dietitian instructions (`services/paperclip/{coach,dietitian}-agents-addendum.md`)
+were updated to the new paths and pushed to both agents' live instructions.
 
 ## Radicale (calendar / contacts / tasks)
 

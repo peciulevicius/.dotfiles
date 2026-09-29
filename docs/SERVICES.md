@@ -869,8 +869,9 @@ paused weekday standup. All heartbeats off. *Coach* (live 2026-09-27): a two-age
 athlete team — **Coach** (training; TrainingPeaks + Strava MCP, 06:30 daily
 check-in) and **Dietitian** (nutrition, body composition, meal prep, Barbora
 lists; read-only TrainingPeaks). Both post to Discord `#ai-training-coach`;
-two-way chat goes through `discord-bridge` below. `/training` (`~/.training`)
-is already mounted read-write into the container. Details, API recipes and
+two-way chat goes through `discord-bridge` below. Their memory lives at
+`/ai-memory/training/` (shared `~/ai-memory` mount, merged from a separate
+`~/.training` mount on 2026-09-29). Details, API recipes and
 usage rules: `services/paperclip/README.md`.
 
 ```bash

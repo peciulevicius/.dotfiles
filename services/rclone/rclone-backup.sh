@@ -252,35 +252,16 @@ if [[ "${BACKUP_IMMICH_PHOTOS:-false}" == "true" ]]; then
   fi
 fi
 
-# Backup 6: AI coach athlete memory (~/.training) — written by the
-# adaptive-endurance-coach skill from Claude Code and Odysseus: profile, race
-# calendar, injuries, nutrition plan, decision log, plan versions. Tiny, and
-# irreplaceable — it's the coaching history the next decision is based on.
-# Only an error if the directory is missing entirely (it's created at setup).
-TRAINING_DIR="$HOME/.training"
-TRAINING_DEST="${TRAINING_DEST:-${RCLONE_REMOTE}:peciulevicius-backups/training}"
+# Backup 6 used to be a separate sync of ~/.training (the AI coach's athlete
+# memory: profile, race calendar, nutrition plan, decision log). Folded into
+# ~/ai-memory/training/ on 2026-09-29 — Backup 7 below now covers it, one
+# tree instead of two. (Old backups stay under the "training" prefix in R2 as
+# history; new ones land under "ai-memory".)
 
-if [[ -d "$TRAINING_DIR" ]]; then
-  log_info "Backing up $TRAINING_DIR → $TRAINING_DEST"
-  TRAINING_CMD=(rclone sync "$TRAINING_DIR" "$TRAINING_DEST")
-  TRAINING_CMD+=(--exclude ".DS_Store")
-  TRAINING_CMD+=($RCLONE_FLAGS)
-  [[ "$DRY_RUN" == "true" ]] && TRAINING_CMD+=(--dry-run)
-
-  if "${TRAINING_CMD[@]}" 2>&1 | tee -a "$LOG_FILE"; then
-    log_ok "Training memory backup complete"
-  else
-    log_err "Training memory backup failed — check $LOG_FILE"
-    ((ERRORS++))
-  fi
-else
-  log_err "Training memory not found at $TRAINING_DIR — NOT backed up"
-  ((ERRORS++))
-fi
-
-# Backup 7: shared AI agent memory (~/ai-memory) — plain markdown that
-# Paperclip agents, Odysseus and Claude Code all read and write, plus its local
-# git history (.git, so any agent edit stays revertable after a restore). Tiny.
+# Backup 7: shared AI agent memory (~/ai-memory, including the Coach team's
+# ~/ai-memory/training/) — plain markdown that Paperclip agents, Odysseus and
+# Claude Code all read and write, plus its local git history (.git, so any
+# agent edit stays revertable after a restore). Tiny.
 # Also copied to the NAS (second local copy, different disk) if the `backups`
 # share is mounted; that part is a warning, not an error, until the share exists.
 AIMEM_DIR="$HOME/ai-memory"

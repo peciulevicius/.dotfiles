@@ -32,7 +32,9 @@ Companion: [DEGOOGLE.md](DEGOOGLE.md). This is Gap 4 from that guide.
   `tool_path_extra_roots` in `data/settings.json`, so its built-in file tools
   can read/write it — no separate MCP server needed). The Obsidian vault stays
   personal: agents don't write to it (Odysseus only has it read-only for RAG).
-  Domain memory stays where it is (`~/.training` for the Coach team).
+  The Coach team's athlete/nutrition data lives at `~/ai-memory/training/` —
+  originally its own `~/.training` mount, folded in the same day this was
+  written, so it's now readable by every agent here, Odysseus included.
 
 ## Your three questions, answered up front
 

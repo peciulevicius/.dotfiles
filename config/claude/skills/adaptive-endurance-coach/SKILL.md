@@ -29,10 +29,13 @@ each — map the upstream names used below to whatever this client actually has:
   Battery, stress) and body composition (weight, muscle mass, BMI…) into TP.
   All of it comes back through `tp_get_metrics` — there is no Garmin connector,
   don't look for one.
-- **Athlete memory `~/.training/`**: on the Mac mini that is
-  `/Users/dziugaspeciulevicius/.training/`, backed up nightly to R2. Inside
-  Odysseus it is bind-mounted at **`/training/`** (on the agent's allowed file
-  roots). Same files either way — resolve `~/.training/` to `/training/` there.
+- **Athlete memory `~/.training/`**: this skill's own default convention when
+  used standalone (Claude Code on a host, no container). **In this homelab it
+  resolves to `~/ai-memory/training/`** instead — folded into the shared
+  `/ai-memory` mount on 2026-09-29 (Paperclip's Coach/Dietitian, and Odysseus
+  via `tool_path_extra_roots`, both see it there, not at a bare `/training/`
+  any more). If you're running this skill somewhere else with no such
+  convention, `~/.training/` as written below is correct as-is.
 - Auth failures (`tp_auth_status` invalid): the browser cookie expired —
   tell the athlete to refresh it (steps in
   `~/.dotfiles/services/trainingpeaks-mcp/README.md`). Never ask for the cookie

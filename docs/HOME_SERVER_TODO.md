@@ -209,7 +209,7 @@ Section names in *italics* are headings below.
       phone. Check the official Strava connector is enabled. (Fallback OAuth
       client id is in your chat with Claude, not in this repo.)
 - [ ] 👤 Claude Project "Coach" with the skill + pinned summary (the app can't read
-      `~/.training`).
+      `~/ai-memory/training`).
 
 ## ✉️ Email identity
 
@@ -260,7 +260,7 @@ token, email DNS cutover, coach build) are in the changelog.
       from outside without reading the secret; tick it yourself when done.
 - [ ] 👤 **AI coach — first coaching session in Odysseus.** Everything else is
       built and connected (TrainingPeaks 85 tools, Strava 11 tools,
-      `~/.training` mounted). Not in the claude.ai app/phone until the
+      `~/ai-memory/training` mounted). Not in the claude.ai app/phone until the
       *Coach in the Claude app* steps are done — use Odysseus over Tailscale on
       the phone meanwhile.
 - [ ] Optional, local models: no bigger model (RAM ceiling ~8B). OpenCode +

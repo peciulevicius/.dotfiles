@@ -8,6 +8,27 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-29 — `.training` folded into `ai-memory` (one shared tree)
+
+- `~/.training` (the Coach team's athlete/nutrition memory, its own mount
+  since 2026-09-27) is now `~/ai-memory/training/` — one mount
+  (`/ai-memory`) in Paperclip and Odysseus instead of two, one backup step
+  instead of two. The user's reasoning: `.training` only ever existed for AI
+  agents to read/write, same as `ai-memory`, so a separate tree added nothing.
+- Every agent with `/ai-memory` access (Paperclip's Coach, Dietitian, Homelab
+  Lead, Studio CEO, plus Odysseus) can now see the training data too — a
+  deliberate trade-off the user chose over the narrower access `.training`
+  had on its own. Coach/Dietitian instructions rewritten to the new paths and
+  pushed to both agents' live AGENTS.md; verified both containers see
+  `/ai-memory/training/` and no longer mount a bare `/training`.
+- Backups: `rclone-backup.sh`'s separate "Backup 6" step removed (Backup 7,
+  ai-memory, now covers it — old R2 backups stay under the `training/` prefix
+  as history, new ones land under `ai-memory/`); `backup-external.sh`'s
+  redundant `~/.training` sync line removed; `homelab-status.sh`'s
+  `nutrition/today.md` path updated for the Glance widget.
+- Odysseus's `data/settings.json` `tool_path_extra_roots` no longer lists the
+  now-nonexistent `/training`, just `/ai-memory`.
+
 ## 2026-09-29 — Paperclip usage-limit watchdog (notify-only for now)
 
 - New `scripts/utils/paperclip-fallback.sh` (cron every 5 min): detects Claude
