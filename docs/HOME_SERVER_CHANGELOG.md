@@ -8,6 +8,19 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-29 — Claude/Codex handoff protocol for Studio engineering
+
+- Studio's engineering line already splits by harness (CTO + Backend Developer
+  on Claude; Engineering Manager + Frontend/Mobile/DevOps on Codex) — added an
+  explicit protocol instead of leaving the split implicit: CTO designs
+  architecture and does final review, Engineering Manager's Codex team
+  executes against a spec and reports back on the same issue rather than
+  closing it. Both told to read `/ai-memory` first and use it instead of
+  re-explaining conventions per task; company skills (frontend-design,
+  web-design-guidelines, vercel-react-best-practices, etc.) apply to both
+  harnesses equally. Pushed live to both agents'' AGENTS.md; addenda tracked
+  as `services/paperclip/{cto,engineering-manager}-claude-codex-handoff-addendum.md`.
+
 ## 2026-09-29 — NAS `backups` share mounted
 
 - The user created a `backups` share on the NAS for the AI-memory second

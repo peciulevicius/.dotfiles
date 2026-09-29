@@ -539,6 +539,15 @@ own Discord webhook secret `DIETITIAN_DISCORD_WEBHOOK` → `#ai-training-dietiti
 composition (Garmin Index S2 → TrainingPeaks), weight periodisation, training/
 race fuelling, meal prep and Barbora shopping lists; Coach owns training.
 Instructions: `dietitian-agents-addendum.md` (Coach's: `coach-agents-addendum.md`).
+
+**Studio's Claude/Codex handoff (2026-09-29).** CTO (Claude) and Engineering
+Manager (Codex) got an explicit protocol appended to their AGENTS.md — CTO
+designs + reviews, Engineering Manager's Codex team (Frontend, Mobile, DevOps)
+executes against a spec and reports back on the issue rather than closing it.
+Tracked as `cto-claude-codex-handoff-addendum.md` and
+`engineering-manager-claude-codex-handoff-addendum.md`. Both harnesses already
+share `/ai-memory` and this company's skills (same container, same mount —
+nothing harness-specific needed).
 Memory split inside `/ai-memory/training/` (its own `/training` mount until
 2026-09-29, folded into the shared `/ai-memory` tree — see below): shared
 files at the root (`athlete_profile.md`, `race_calendar.md`, `preferences.md`,
