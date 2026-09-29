@@ -58,7 +58,7 @@ Section names in *italics* are headings below.
 - [x] ~~⚡ Paperclip usage-limit fallback~~ — done 2026-09-29: Coach company got an OpenRouter connection, Copywriter was fixed (pause + rehire, not a connection re-test — the subscription was never actually broken), `AUTO_SWITCH=1` is on. Details + the real fix if this happens again: `services/paperclip/README.md` → *Usage-limit fallback*.
 - **🧠 Shared AI memory (2026-09-29):**
   - [x] ~~NAS: create the `backups` share and mount it at `/Volumes/backups`~~ — done 2026-09-29; first `~/ai-memory` copy verified on the NAS. See `docs/HOME_SERVER_CHANGELOG.md`.
-  - [ ] Bring every active Paperclip agent's memory instructions into line with `services/paperclip/shared-ai-memory-addendum.md`, keeping training and finance notes limited to agents that need them. Verify the Codex and Claude Code instructions on the Mac mini point to the same private `~/ai-memory` rules.
+  - [x] ~~Consistent memory instructions across Paperclip agents~~ — appended and verified on all 31 current agents (including paused departments), 2026-09-29. Claude/Codex repository guidance points to the same private tree. New hires: `paperclip-memory-guidance.py` preview then `--apply`; role instructions preserved, private originals backed up.
   - [ ] 👤 Odysseus: save the current admin password to Vaultwarden and put it in `~/services/odysseus/.env` (`ODYSSEUS_ADMIN_PASSWORD`) — the `.env` one no longer matches, so API automation can't log in.
   - [ ] 👤 When the Anthropic API credit is used up: Odysseus → Admin → Models → disable the "Anthropic" endpoint and set task/utility models to an OpenRouter one.
 

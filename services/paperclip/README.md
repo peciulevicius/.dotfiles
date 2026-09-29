@@ -573,6 +573,27 @@ first; write durable facts to `inbox/<date>-<agent>.md`; never delete others'
 notes; no secrets). Odysseus sees the same folder. Details:
 `docs/HOME_SERVER_REFERENCE.md` → *Shared AI memory*.
 
+**Memory guidance across all companies.** Verified on all 31 current agents
+on 2026-09-29, including paused departments. The same
+`shared-ai-memory-addendum.md` is appended to each instruction entry file;
+role text stays intact. Retired/duplicate hires are excluded. New hires can
+be brought into line with:
+
+```bash
+python3 ~/.dotfiles/scripts/utils/paperclip-memory-guidance.py          # preview
+python3 ~/.dotfiles/scripts/utils/paperclip-memory-guidance.py --apply  # append + verify
+```
+
+Apply saves private originals under
+`~/.config/homelab/paperclip-instruction-backups/<timestamp>/` (directory 700,
+files 600), checks for concurrent edits, and refuses running targets. It uses
+Paperclip's instruction bundle API; it does not edit models or pause/resume
+agents. A partial failure is retryable: preview first. Changed versioned
+guidance requires review rather than silently replacing existing text. To
+undo a particular update, open that agent's instructions in Paperclip and
+restore the saved JSON file's `content` into the recorded `path`; review any
+newer role edits before restoring. Keep these backups private.
+
 **Claude.ai memory import.** The athlete's triathlon and food Claude.ai
 projects (memory, docs, chats) were copied from the account export into
 `~/ai-memory/training/imports/claude-ai-2026-09-27/` (path moved 2026-09-29

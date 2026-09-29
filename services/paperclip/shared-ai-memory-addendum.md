@@ -12,6 +12,8 @@ your assigned work.
   it to `/ai-memory/inbox/<YYYY-MM-DD>-<your-agent-name>.md` for human triage.
 - Never delete or rewrite another agent's notes. Do not store credentials,
   secrets, private chat exports, or unrelated personal details.
+- Keep health and finance details in their designated domain folders;
+  do not copy them into the general inbox or project/preferences notes.
 - `training/` contains health and nutrition details. Read it only when the
   assigned work requires it. Only Coach and Dietitian normally write there.
 - `finance/` contains private read-only account summaries. Read it only for

@@ -34,12 +34,14 @@ not assume private memory is available.
 For Paperclip, the folder is mounted into the shared container and can be
 reached across companies. A mount alone does not inject memory into an agent's
 prompt: each agent needs instructions to read the relevant notes. Today that
-guidance is present on selected company leaders and the Coach/Dietitian agents,
-not yet verified across every active agent. The reusable text is in
+guidance was appended and verified on all **31 current agents** on 2026-09-29,
+including paused department agents; retired/duplicate records were excluded.
+Role instructions and pause/resume settings were preserved. The reusable text is in
 [`services/paperclip/shared-ai-memory-addendum.md`](https://github.com/peciulevicius/.dotfiles/blob/main/services/paperclip/shared-ai-memory-addendum.md).
-Applying it to every agent is a separate, reviewable Paperclip configuration
-change; it should preserve role-specific ownership and avoid telling unrelated
-agents to read health or finance records.
+Use `python3 scripts/utils/paperclip-memory-guidance.py` for a read-only check;
+`--apply` installs it on new current agents after saving private originals.
+The script stops on changed guidance, concurrent edits, or running targets.
+Training and finance folders are only read for relevant assigned work.
 
 ## Memory boundaries
 
@@ -66,6 +68,17 @@ authorization when they have not already been approved. Full access removes
 the sandbox boundary. See the official
 [permission modes](https://learn.chatgpt.com/docs/permission-modes) and
 [automatic review guide](https://learn.chatgpt.com/docs/sandboxing/auto-review).
+
+For **Codex CLI 0.159.0** on this Mac mini, the installed CLI help confirms:
+
+```bash
+codex --approve-for-me resume --last
+```
+
+The current CLI's `/permissions` picker can also select **Approve for me**.
+This uses automatic approval review with the workspace sandbox. Routine saved
+command approvals are also reusable. Changing repository guidance alone does
+not change the active CLI permission mode.
 
 ## Adding documentation
 

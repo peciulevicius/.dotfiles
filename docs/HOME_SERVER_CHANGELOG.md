@@ -29,6 +29,14 @@ the Coach's TrainingPeaks writes. Generated and added to
 
 ## 2026-09-29 — Claude/Codex handoff protocol for Studio engineering
 
+- Consistent shared-memory guidance subsequently appended and verified on all
+  **31 current Paperclip agents**, including paused departments, across all
+  three companies. No role text removed; no models, assignments, or statuses
+  edited. Retired and duplicate hires excluded. Originals saved privately in
+  `~/.config/homelab/paperclip-instruction-backups/`; preview/apply utility is
+  `scripts/utils/paperclip-memory-guidance.py`. Rerun verified 31 configured,
+  zero pending, zero writes. Sensitive training/finance context stays in its
+  domain folders; the general inbox is for non-sensitive durable facts.
 - Studio's engineering line already splits by harness (CTO + Backend Developer
   on Claude; Engineering Manager + Frontend/Mobile/DevOps on Codex) — added an
   explicit protocol instead of leaving the split implicit: CTO designs
@@ -2637,4 +2645,3 @@ fire, flood or theft. Moving T5 offsite is what makes this genuinely 3-2-1.
   finance refresh. Credentials and generated amounts stay outside this repo.
 - Added setup docs and a TODO for the user's Wallet token and remaining IBKR
   setup. No credentials were added.
-
