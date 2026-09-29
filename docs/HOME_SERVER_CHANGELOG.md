@@ -20,10 +20,14 @@ fallback records. Applied on the live instance: restored saved skills, moved
 three open issue assignments, and repaired three reporting links. Two paused
 Claude reports reject `reportsTo`-only updates with 422 because the server
 compares an unchanged login binding by JSON property order and probes it again.
-Their saved state is retained for retry; retired records no longer count as
-active fallback agents or generate hourly restore alerts. Restore notices are
-deduplicated and partial reconciliation exits nonzero. The old Lead stays
-paused until its remaining reports can be repaired.
+Built a guarded local image that compares both bindings after schema parsing.
+After approval, deployed it with no active runs, backed up the live files and
+verified server health. Both remaining reporting updates then succeeded. All
+five reporting links are repaired and fallback state is cleared. Restore
+notices are deduplicated and partial reconciliation exits nonzero. Remapped
+the weekly Homelab report, daily Coach check-in and paused Studio standup to
+their replacements, preserving routine states. All retired records remain
+paused pending explicit termination approval; no history was deleted.
 
 ---
 

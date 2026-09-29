@@ -3,7 +3,7 @@
 
 --repair-routines remaps schedules to exact replacements, preserving status.
 --retire terminates the 11 obsolete Coach/Studio records after reference checks.
-The old Homelab Lead is excluded pending its remaining reporting repairs.
+The old Homelab Lead is excluded from this 11-record termination plan.
 """
 import argparse
 import http.cookiejar
@@ -19,6 +19,14 @@ parser.add_argument('--retire', action='store_true')
 args = parser.parse_args()
 if args.apply and not (args.repair_routines or args.retire):
     parser.error('--apply requires --repair-routines or --retire')
+incident_ids = {
+    '12432817-656c-4c59-aa19-bdc57e4c6377', '895d2ed3-141a-4400-8b3b-0d42aea56b77',
+    '91aa51ef-6082-4e36-9f27-3bd069837f09', '302c3396-9d7d-486c-a222-ce88681c9554',
+    '84bfdfa1-eca5-4e50-ba1a-db3e43223a66', 'a5c3aa59-3045-4f76-b984-ef59b56bba52',
+    'ad9a200b-cea6-4ec0-b5a1-6a0f56dd28fe', '06da5d90-9cbe-4fbb-b6cd-dae01422c17a',
+    '262b7b28-8d45-4187-be5a-512c4e854fa8', '7ade1d2e-a346-4889-93af-c9756df55ed7',
+    'f3fd798b-9a80-4f69-a8db-02b1ac9e0b1a',
+}
 base = 'http://127.0.0.1:3100'
 credentials = {}
 for line in (Path.home() / '.config/homelab/paperclip-admin.env').read_text().splitlines():
@@ -52,8 +60,14 @@ api('POST', '/api/auth/sign-in/email', {'email': 'dziugas@peciulevicius.com',
     'password': credentials.pop('PAPERCLIP_ADMIN_PASSWORD')})
 try:
     candidates = []
+    seen_incident_ids = set()
     for company in api('GET', '/api/companies'):
         agents = items(api('GET', '/api/companies/' + company['id'] + '/agents'))
+        for agent in agents:
+            if agent['id'] in incident_ids:
+                seen_incident_ids.add(agent['id'])
+                if agent['status'] not in ('paused', 'terminated'):
+                    raise RuntimeError('Incident record is no longer paused/terminated; refusing changed plan')
         routines = items(api('GET', '/api/companies/' + company['id'] + '/routines'))
         for routine in routines:
             old = next((a for a in agents if a['id'] == routine.get('assigneeAgentId')
@@ -75,8 +89,8 @@ try:
             if (agent['status'] != 'paused' or '2026-09-29' not in name
                     or not any(word in name.lower() for word in ('retired', 'duplicate hire'))):
                 continue
-            # The old Lead has two unresolved reports; explicitly exclude it.
-            if company['name'] == 'Homelab':
+            # Only the exact 11-record termination plan is authorized here.
+            if agent['id'] not in incident_ids:
                 continue
             replacement = [a for a in agents if a['name'] == name.split(' (')[0]
                 and a['status'] in ('active', 'idle', 'running')]
@@ -103,8 +117,17 @@ try:
     if any(agent['id'] in mapping for agent in candidates):
         raise RuntimeError('Discord bridge still references a retirement candidate')
     if args.apply and args.retire:
-        if len(candidates) != 11:
-            raise RuntimeError('Expected exactly the 11 approved obsolete records; refusing changed plan')
+        if seen_incident_ids != incident_ids:
+            raise RuntimeError('An incident record is missing; refusing unchecked plan')
+        ready_ids = {agent['id'] for agent in candidates}
+        # Earlier completed terminations are skipped on retry. A blocked paused
+        # record is not silently skipped during an approved batch.
+        paused_ids = set()
+        for agent_id in incident_ids:
+            if api('GET', '/api/agents/' + agent_id)['status'] == 'paused':
+                paused_ids.add(agent_id)
+        if ready_ids != paused_ids:
+            raise RuntimeError('An incident record still has references; refusing partial cleanup')
         for agent in candidates:
             current = api('GET', '/api/agents/' + agent['id'])
             if current['status'] != 'paused' or current['name'] != agent['name']:

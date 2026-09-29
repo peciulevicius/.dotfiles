@@ -725,16 +725,19 @@ reporting links, and open issue assignments for already-hired exact
 replacements. It leaves unrelated agents and retired records alone.
 
 **Recovery applied 2026-09-29:** saved skills were restored and all three open
-issues were reassigned. Three of the five Homelab reporting links were repaired.
-Web Engineer and Security Engineer remain linked to the retired Lead: Paperclip
-returned 422 even for a `reportsTo`-only PATCH. In the installed server,
+issues were reassigned. Initial recovery repaired three of the five Homelab
+reporting links. Web Engineer and Security Engineer returned 422 even for a
+`reportsTo`-only PATCH. In the upstream server,
 `aiConnectionBindingSchema` reorders binding fields before a `JSON.stringify`
 comparison with the stored object. Identical bindings can therefore be treated
 as changed and trigger a provider login probe. This is a server defect, separate
 from actual subscription exhaustion; do not bypass validation or edit the DB.
-Keep the old Lead until those links are repaired. The saved state remains for
-retry, with `active: false` and `reconciliation_pending`, so retired records do
-not trigger hourly restore alerts. Reconciliation failures now return nonzero.
+The guarded local image below was built and deployed after approval, with no
+active runs and backups of the live compose/env. Paperclip came back healthy;
+both remaining reporting updates then succeeded without login probes. All five
+links are now repaired, saved fallback agents are empty, `active` is false and
+`reconciliation_pending` is empty. Retired records remain paused pending
+termination approval. Reconciliation failures return nonzero and preserve state.
 
 **Guarded local image patch:** `Dockerfile.binding-order` normalizes both
 bindings with the same schema before comparing them. It patches the source
