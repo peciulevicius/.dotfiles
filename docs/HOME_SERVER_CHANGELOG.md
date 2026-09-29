@@ -6,19 +6,6 @@ is often what you need when something similar breaks again.
 
 Newest first-ish; dates are when the work was finished.
 
-## 2026-09-29 — Separate operational notification identities
-
-The notification helper sets sender names for jobs, Paperclip, reminders and
-updates, with route-specific private webhook config. Prepared an idempotent,
-preview-first Discord migration to move Kuma's existing webhook to its own
-channel and provision separate destinations; live apply awaits the bridge
-bot's missing management permissions. Kuma's monitors already have repeat
-alerts disabled. Updated its stale mail/monitor runbook. Bridge configuration
-now resolves current hires by name and company instead of reinstalling the
-retired Coach/Dietitian IDs. Monthly reminders select their own route.
-
----
-
 ---
 
 ## 2026-09-29 — AUTO_SWITCH incident: 10 agents stuck, fixed by hand, feature reverted to notify-only
@@ -39,6 +26,24 @@ the Coach's TrainingPeaks writes. Generated and added to
 `~/services/paperclip/.env`, container recreated, confirmed working.
 
 ---
+
+## 2026-09-29 — Separate operational notification identities
+
+The notification helper sets sender names for jobs, Paperclip, reminders and
+updates, with route-specific private webhook config. Renamed the original
+shared webhook live to **Homelab Jobs**; verified Kuma sets **Uptime Kuma** on
+each of its messages. Jobs therefore stop impersonating Kuma immediately.
+Kuma's monitors already have repeat alerts disabled.
+
+Prepared an idempotent, preview-first migration with **Homelab** and **AI**
+categories, four notification destinations, and separate webhooks. Existing
+Coach/Dietitian channels move to AI, retaining their IDs and threads; the
+Dietitian spelling typo is corrected. Live apply awaits the bridge bot's
+missing Manage Channels and Manage Webhooks permissions. Existing channel
+permission overrides are preserved. Updated the mail/monitor and notification
+runbooks with setup and testing steps. Bridge configuration resolves current
+hires by name/company instead of reinstalling retired IDs. Monthly reminders
+select their own route.
 
 ## 2026-09-29 — Claude/Codex handoff protocol for Studio engineering
 

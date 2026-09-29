@@ -72,6 +72,13 @@ Keep uptime alerts, jobs, agent events and reminders separate:
 | Paperclip | `#ai-agents` | `DISCORD_AGENTS_WEBHOOK_URL` |
 | Homelab Reminders | `#homelab-reminders` | `DISCORD_REMINDERS_WEBHOOK_URL` |
 
+The migration groups uptime, jobs and reminders under **Homelab**, and agent
+events plus the existing Coach/Dietitian chats under **AI**. It fixes the
+`ai-training-dietitial` spelling without replacing the channel: messages,
+threads, webhook URLs and bridge IDs survive. Existing channel permission
+overrides are preserved; new destinations copy the current homelab channel's
+overrides. No channels or messages are deleted.
+
 For the existing shared webhook, preview and migrate with:
 
 ```bash
@@ -86,6 +93,21 @@ Kuma's existing webhook without changing Kuma's saved URL, and saves private
 job URLs with mode 600. A failure can leave some channels created; rerun to
 finish. It does not post test messages. Preview on 2026-09-29 was blocked by
 the bot lacking these permissions; separate channels are not yet live.
+
+In Discord: **Server Settings → Roles → COACH_BOT → Permissions**, enable
+**Manage Channels** and **Manage Webhooks**, then save. Allow these in target
+category overrides too if denied there. Administrator is unnecessary.
+After applying, use Kuma's notification **Test** button: only `#uptime-alerts`
+should receive its message. For a job route check, run in Bash:
+
+```bash
+source ~/.dotfiles/scripts/lib/notify.sh
+notify_discord "Routing check" "Manual job notification test" info jobs
+```
+
+Repeat with `agents` or `reminders` as the fourth argument to check those
+destinations. To test two-way chat, use the bridge README's one-line message;
+that invokes an agent and consumes its normal usage allowance.
 
 For manual configuration, create one webhook per destination and save:
 
@@ -106,6 +128,10 @@ the helper sets separate sender names. `notify_discord title message level
 route` selects a route (default `jobs`); unknown routes are ignored. Webhook
 sender names do not require separate Discord bot applications. Missing config
 is a silent no-op so a notification outage cannot fail the underlying job.
+
+The original shared webhook's default name was changed live to **Homelab
+Jobs** on 2026-09-29. Kuma explicitly sets **Uptime Kuma** on its messages, so
+jobs no longer appear to come from Kuma before the channel migration either.
 
 State lives in `~/.local/state/homelab-jobs/<job>.state`.
 
