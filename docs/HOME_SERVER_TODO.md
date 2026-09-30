@@ -163,23 +163,16 @@ Section names in *italics* are headings below.
 
 - 👤 **~2026-10-03:** `rm ~/services/uptime-kuma/data/kuma.db.bak-2026-09-26-*` (and other pre-change backups) — the weekly audit now flags any `*.bak-*` / `*.pre-*` file under `~/services` older than 7 days, so this reminds itself via Discord
 
-- **💰 Finance dashboard — connect each account** (read-only keys only, saved via `read -rs` into `~/.config/homelab/*.env`, never in chat). Pipeline: `scripts/utils/finance-status.sh` (7:00 daily) → `finance-memory-snapshot.sh` (7:05, writes `~/ai-memory/finance/`) → Glance **Finance** page. Wallet is connected and verified; IBKR still needs its credentials.
-  - [x] ~~BudgetBakers Wallet token and HTTP 400~~ — fixed 2026-09-29; live 07:00 refresh on 2026-09-30 reports `ok: true`, configured and not stale. The private 07:05 snapshot exists. Budgets use a 20-item page. Check cached provider booleans with `finance-status.sh --health`; setup/rotation steps live in `services/glance/README.md` → Finance. Do not generate another token just because the older TODO said it was missing.
-  - [ ] 👤 **IBKR** — in Client Portal: **Performance & Reports → Flex Queries** → new Activity Flex Query named `glance` → tick **Open Positions**, **Cash Report**, **Net Asset Value (NAV) in Base / Change in NAV** → Format **XML**, Period **Last Business Day**, Date format `yyyyMMdd` → Save, note the **Query ID**. Then **Settings → Flex Web Service** (under Reporting) → enable → **Generate token** (pick the longest validity — it expires, and the widget shows the error when it does). Then, **on the Mac mini, in Terminal:**
-    ```bash
-    printf "Flex token: "; read -rs T; echo
-    printf "Query ID: "; read -r Q
-    umask 077; printf 'IBKR_FLEX_TOKEN=%s\nIBKR_FLEX_QUERY_ID=%s\n' "$T" "$Q" > ~/.config/homelab/ibkr-flex.env; unset T
-    ~/.dotfiles/scripts/utils/finance-status.sh
-    ~/.dotfiles/scripts/utils/finance-status.sh --health
-    ```
-    In zsh, use `printf` for prompts (`read -p` reads a coprocess). Check `providers.ibkr`: `ok: true` and `stale: false` mean the fetch worked; `configured: false` means a token/query ID is missing. Repeat the hidden prompt if needed; do not print the credential file. Claude: script side already wired.
-  - [ ] 👤 Decide whether/when to connect **Trading 212** — existing placeholder only; settings API offers read-only portfolio/account scopes (Invest + ISA; CFD account has no API).
-  - [ ] 👤 Decide whether/when to connect **Kraken** — existing placeholder only; use *Query Funds* (+ *Query Closed Orders & Trades* for P&L).
-  - [ ] 👤 Decide whether/when to connect **Capital.com** — existing placeholder only; API integrations key + custom password.
-  - [ ] 👤 Decide whether/when to connect **Ledger** — existing placeholder only; public addresses/xpubs (no keys or seed).
-  - [ ] Swedbank / Revolut — no personal API: decide between open-banking aggregator (90-day re-consent) or monthly CSV import.
-  - [ ] Decide: grow this into **Monifo as a personal self-hosted app** (P&L calendar, trade journal, dividends — the screenshots) instead of more Glance widgets. Glance keeps a one-card summary + link.
+- **💰 Finance dashboard — direct accounts** (read-only credentials, local hidden prompts; setup in `services/glance/README.md` → Finance). Pipeline: `finance-status.sh` (07:00) → `finance-memory-snapshot.sh` (07:05) → Glance. IBKR and Trading 212 collectors are implemented; neither account is connected yet.
+  - [x] ~~BudgetBakers Wallet HTTP 400~~ — transport repair completed 2026-09-29. The 2026-09-30 successful fetch did not establish balance accuracy. Wallet was removed from the collector, card and future private summaries at the user's request; old historical records are excluded from new portfolio comparisons.
+  - [x] ~~Direct IBKR / Trading 212 account collection~~ — implemented 2026-09-30. Each provider exposes native value, date and connection status. The EUR total covers connected investments only; stale/partial data is labelled. Trading 212 uses its reported account total without adding investments or pie cash again.
+  - [ ] 👤 **IBKR:** create a one-account Activity Flex query (Account Information, Open Positions Summary, Cash Report, NAV / Change in NAV; XML, Last Business Day, `yyyyMMdd`) and a Flex Web Service token. Save with the hidden prompts in the Glance runbook. Compare the native NAV against the broker's same-date statement.
+  - [ ] 👤 **Trading 212:** create an Invest/Stocks ISA key + secret with account-data read permission only. Save with the runbook's hidden prompts, refresh, and compare its native total with the app. No order permission is needed.
+  - [ ] **Trading 212 holdings detail:** account totals and unrealised P&L are implemented; per-instrument positions are a follow-up.
+  - [ ] **Kraken:** implement direct read-only exchange balance collection, then connect a key with Query Funds only. No trading, transfers or withdrawal permissions.
+  - [ ] **Capital.com / Ledger:** confirm which accounts to include; Ledger uses public addresses/xpubs only, never seeds or private keys.
+  - [ ] **Swedbank / Revolut:** choose a personal open-banking connection or CSV import.
+  - [ ] Decide whether to grow this into **Monifo as a personal self-hosted app** (P&L calendar, trade journal, dividends). Glance keeps a summary and link.
 
 - 👤 Optional: Uptime Kuma **DNS** monitor for the resolver chain (Kuma has no monitor API — UI step): + Add New Monitor → DNS → hostname `example.com`, resolver `host.docker.internal` port 53 → alerts if Pi-hole *or* unbound stops answering.
 

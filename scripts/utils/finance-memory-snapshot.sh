@@ -21,6 +21,7 @@ import json
 import os
 import re
 import sys
+import tempfile
 from datetime import date
 
 source, dest, snapshots, today = sys.argv[1:]
@@ -29,6 +30,9 @@ with open(source, encoding="utf-8") as f:
 total = data.get("total", {})
 value = total.get("value_numeric")
 currency = total.get("currency", "")
+coverage = ",".join(data.get("coverage", []))
+comparable = bool(data.get("ok")) and data.get("schema") == 2 and not total.get("stale") and not total.get("partial")
+marker = f"schema:2; providers:{coverage}; currency:{currency}"
 
 previous = None
 this_date = date.fromisoformat(today)
@@ -41,27 +45,34 @@ for path in sorted(glob.glob(os.path.join(snapshots, "????-??-??.md")), reverse=
     if old_date >= this_date or old_date.month == this_date.month and old_date.year == this_date.year:
         continue
     with open(path, encoding="utf-8") as f:
-        match = re.search(r"<!-- finance-value:([-+0-9.eE]+); currency:([A-Z]+) -->", f.read())
-    if match and match.group(2) == currency:
+        match = re.search(r"<!-- finance-value:([-+0-9.eE]+); (schema:2; providers:[a-z0-9_,]+; currency:[A-Z]+) -->", f.read())
+    if comparable and match and match.group(2) == marker:
         previous = float(match.group(1))
         break
 
 if value is None:
-    net_worth = "Unavailable — no provider has a current snapshot."
+    portfolio = "Unavailable — no provider has a current snapshot."
     change = "Unavailable"
 else:
-    net_worth = f"{currency} {value:,.2f}"
+    portfolio = f"{currency} {value:,.2f}"
     change = "No comparable prior-month snapshot" if previous is None else f"{currency} {value - previous:+,.2f} ({(value - previous) / previous * 100:+.1f}%)" if previous else f"{currency} {value - previous:+,.2f} (prior value was zero)"
 
 providers = data.get("provider_breakdown", [])
-budgets = data.get("budget_categories", [])
-lines = [f"# Finance snapshot — {today}", "", f"- Net worth: {net_worth}",
-         f"- Month-over-month change: {change}", "", "## Providers"]
-lines.extend([f"- {p.get('name', 'Provider')}: {p.get('value', 'unavailable')}" for p in providers] or ["- No connected provider data."])
-lines.extend(["", "## Current-month budget vs actual"])
-lines.extend([f"- {b.get('name', 'Budget')}: {b.get('spent', '–')} spent / {b.get('limit', '–')} budget" for b in budgets] or ["- No budget data available."])
-if value is not None:
-    lines.extend(["", f"<!-- finance-value:{value}; currency:{currency} -->"])
-with open(dest, "w", encoding="utf-8") as f:
-    f.write("\n".join(lines) + "\n")
+lines = [f"# Finance snapshot — {today}", "", f"- Connected investments: {portfolio}",
+         f"- Month-over-month value change (includes deposits/withdrawals): {change}",
+         f"- Freshness: {'stale or partial — check each provider' if not comparable else 'fresh fetched data'}",
+         "", "## Providers"]
+lines.extend([f"- {p.get('name', 'Provider')}: {p.get('value', 'unavailable')} — {p.get('status', 'unknown')}; {p.get('as_of', '')}" for p in providers] or ["- No connected provider data."])
+if value is not None and comparable:
+    lines.extend(["", f"<!-- finance-value:{value}; {marker} -->"])
+descriptor, temporary = tempfile.mkstemp(dir=snapshots, prefix=".finance-", suffix=".tmp")
+try:
+    with os.fdopen(descriptor, "w", encoding="utf-8") as output:
+        output.write("\n".join(lines) + "\n")
+        output.flush()
+        os.fsync(output.fileno())
+    os.replace(temporary, dest)
+finally:
+    if os.path.exists(temporary):
+        os.unlink(temporary)
 PY
