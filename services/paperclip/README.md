@@ -701,6 +701,20 @@ explicit API-key environments, paused/retired roles and busy targets. It uses
 the workspace sandbox, not Codex's new-agent bypass default. CLI flags let it
 run in Paperclip workspaces without requiring a Git repository.
 
+The probe must include the adapter's explicit `hello_probe_passed` check;
+a general pass with a skipped custom-command probe does not authorize a
+switch or return. Probe results are reused only for identical complete
+adapter configs within one company. Selected execution environments are
+excluded because their credentials can differ from the local host login.
+The current ten-role takeover uses the local host, without such a selection.
+
+Busy roles, failed subscription probes and concurrent edits defer their own
+targets while other eligible roles continue. Queued/running checks use the
+target agent's full summary history before and after the model probe, so
+another agent's newer runs cannot hide a queued target. Missing or changed
+saved identities retain their originals and report a deferral. A partial
+batch exits nonzero with the remaining journal intact.
+
 The recovery installer backs up the existing crontab and appends a single
 five-minute check, preserving every existing job. It stages the helper under
 `~/.config/homelab/paperclip-subscription-switch/restore.py`, so Git branch
@@ -710,6 +724,8 @@ retries at most hourly. Concurrently edited configurations are skipped;
 saved originals are retained. The check starts no tasks. Once all originals
 are restored the installed check becomes an inexpensive no-op. To update the
 staged helper while a takeover is active, rerun `--install-recovery --apply`.
+The installer saves a private `restore-*.bak` copy before replacing an existing
+helper, alongside its crontab backup. Recovery state is not replaced.
 
 This is an explicit, reversible subscription takeover, with a scheduled
 return. Automatic Claude ↔ Codex → capped OpenRouter selection and recovery

@@ -17,6 +17,7 @@ import subprocess
 import tempfile
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 
 BASE = "http://127.0.0.1:3100"
@@ -127,6 +128,12 @@ def main():
             descriptor, backup = tempfile.mkstemp(dir=STATE_DIR, prefix="crontab-", suffix=".bak")
             with os.fdopen(descriptor, "w") as output:
                 output.write(current.stdout)
+            if staged.exists():
+                descriptor, backup = tempfile.mkstemp(dir=STATE_DIR, prefix="restore-", suffix=".bak")
+                with os.fdopen(descriptor, "wb") as output:
+                    output.write(staged.read_bytes())
+                    output.flush()
+                    os.fsync(output.fileno())
             temporary = STATE_DIR / "restore.py.tmp"
             descriptor = os.open(temporary, os.O_CREAT | os.O_WRONLY | os.O_TRUNC, 0o600)
             with os.fdopen(descriptor, "wb") as output:
@@ -193,8 +200,24 @@ def main():
             checks = result.get("checks") or []
             print("Login probe:", adapter, result.get("status"),
                   ", ".join(check.get("code", "unknown") for check in checks))
-            if result.get("status") != "pass":
+            passed_code = adapter.removesuffix("_local") + "_hello_probe_passed"
+            if result.get("status") != "pass" or not any(
+                check.get("code") == passed_code for check in checks
+            ):
                 raise RuntimeError("Subscription probe did not pass; agent configurations were not changed.")
+
+        def has_live_run(company, aid):
+            # A company-wide recent-history limit can hide this agent's
+            # queued run behind other agents' newer completed runs. This
+            # pinned API supports an unbounded per-agent summary query.
+            query = urllib.parse.urlencode({"agentId": aid, "summary": "true"})
+            runs = api("GET", f"/api/companies/{company}/heartbeat-runs?{query}")
+            if not isinstance(runs, list) or any(
+                not isinstance(run, dict) or run.get("agentId") != aid
+                or not isinstance(run.get("status"), str) for run in runs
+            ):
+                raise RuntimeError("Target run status is unreadable; no PATCH was sent.")
+            return any(run["status"] in ("running", "queued") for run in runs)
 
         credentials = read_credentials()
         api("POST", "/api/auth/sign-in/email", {"email": "dziugas@peciulevicius.com",
@@ -211,9 +234,19 @@ def main():
                 return
             failures = []
             probed = set()
+            failed_probes = set()
+            if args.restore:
+                for aid, record in state["agents"].items():
+                    if aid not in agents:
+                        failures.append(record["identity"]["name"])
+                        print("Skip unavailable saved agent:", record["identity"]["name"])
             for agent in agents.values():
                 aid = agent["id"]
                 record = state["agents"].get(aid)
+                if record and identity(agent) != record["identity"]:
+                    failures.append(agent["name"])
+                    print("Skip changed saved identity:", agent["name"])
+                    continue
                 if args.restore:
                     if not record:
                         continue
@@ -260,20 +293,45 @@ def main():
                     print("Skip paused/retired role:", agent["name"])
                     failures.append(agent["name"])
                     continue
+                if agent.get("defaultEnvironmentId"):
+                    # These probes use the local host subscription. A selected
+                    # execution environment can have separate credentials,
+                    # including a paid API key, and must not borrow that proof.
+                    print("Skip selected execution environment:", agent["name"])
+                    failures.append(agent["name"])
+                    continue
                 print("Restore:" if args.restore else "Switch:", agent["name"], "→", target["adapterType"], target["adapterConfig"].get("model", "adapter default"))
                 if not args.apply:
                     continue
                 cid = agent["companyId"]
-                runs = api("GET", f"/api/companies/{cid}/heartbeat-runs?limit=100")
-                if any(r.get("agentId") == aid and r.get("status") in ("running", "queued") for r in runs):
-                    raise RuntimeError("A target agent has an active or queued run; retry when idle.")
-                probe_key = (cid, target["adapterType"], target["adapterConfig"].get("model"))
+                if has_live_run(cid, aid):
+                    failures.append(agent["name"])
+                    print("Skip active or queued run:", agent["name"])
+                    continue
+                probe_key = (cid, target["adapterType"],
+                             json.dumps(target["adapterConfig"], sort_keys=True))
+                if probe_key in failed_probes:
+                    failures.append(agent["name"])
+                    print("Skip failed subscription probe:", agent["name"])
+                    continue
                 if probe_key not in probed:
-                    probe(cid, target["adapterType"], target["adapterConfig"])
+                    try:
+                        probe(cid, target["adapterType"], target["adapterConfig"])
+                    except RuntimeError:
+                        failed_probes.add(probe_key)
+                        failures.append(agent["name"])
+                        print("Skip unavailable subscription:", agent["name"])
+                        continue
                     probed.add(probe_key)
                 fresh = api("GET", f"/api/agents/{aid}")
                 if config(fresh) != config(agent) or identity(fresh) != identity(agent) or fresh["status"] != agent["status"]:
-                    raise RuntimeError("Agent changed during preview; no PATCH was sent.")
+                    failures.append(agent["name"])
+                    print("Skip agent changed during preview:", agent["name"])
+                    continue
+                if has_live_run(cid, aid):
+                    failures.append(agent["name"])
+                    print("Skip run queued during probe:", agent["name"])
+                    continue
                 if not record:
                     record = {"identity": identity(agent), "original": config(agent),
                               "target": target, "created_at": datetime.now(timezone.utc).isoformat()}
@@ -298,7 +356,7 @@ def main():
                 save(state)
                 print("Verified:", agent["name"], actual["adapterType"], actual["adapterConfig"].get("model", "default"))
             if failures:
-                raise RuntimeError(f"{len(failures)} saved agents need review; their originals remain saved.")
+                raise RuntimeError(f"{len(failures)} agents deferred; their originals remain saved.")
             if not args.apply:
                 print("Preview only. No agent writes. Use --apply to perform the selected operation.")
         finally:

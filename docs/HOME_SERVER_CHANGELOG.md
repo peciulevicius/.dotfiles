@@ -6,6 +6,29 @@ is often what you need when something similar breaks again.
 
 Newest first-ish; dates are when the work was finished.
 
+## 2026-09-30 — isolate subscription recovery failures
+
+- A busy/queued role, concurrent edit or failed login probe no longer stops
+  other eligible roles in the batch. Missing saved agents and changed saved
+  identities are reported without clearing their original configurations.
+- Require the provider's explicit successful hello-response check. A general
+  adapter pass can mean its custom-command model probe was skipped, so that
+  result cannot authorize switching or recovery.
+- Probe reuse requires the same complete adapter config and company. Selected
+  execution environments are excluded from this local-login helper; their
+  credentials and paid routes need separate validation in the future router.
+- Check full per-agent run summaries before and after probes instead of the
+  last 100 company runs. New queued work cannot hide behind unrelated history.
+- Updating the staged helper also saves a private copy of its previous source;
+  the original configuration journal and recovery deadline are preserved.
+- Source prepared for a focused PR stacked on Paperclip recovery. Updating
+  the separately staged recovery helper is a live follow-up; this does not
+  enable automatic initial quota routing or change agent configurations.
+- Validation: 124 offline assertions covering batch isolation, explicit hello
+  proof, complete probe configs, missing/changed identities, queued work,
+  lost responses, exact restores, hourly deadlines and private staging
+  backups. Python syntax, whitespace checks and strict documentation passed.
+
 ## 2026-09-29 — Paperclip fallback reconciliation guard
 
 Follow-up safeguards (2026-09-30): quota detection no longer treats every
