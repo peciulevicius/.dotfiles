@@ -25,8 +25,10 @@ ten originals and the October 1 reset time are preserved.
 the held admission was cancelled by the review gate before provider execution.
 Paperclip accepted that admission-specific evidence through its supported
 recovery API, cleared the legacy hold and started a continuation. The issue is
-In progress. This does not certify any earlier run outcomes or prove the setup
-task is complete; the continuation result still needs observation.
+In review after the resumed continuation and its follow-up both failed with
+`provider_quota`. A new human-only vendor-access question is pending in
+Paperclip and must be answered there. This does not certify any earlier run
+outcomes or prove the setup task is complete.
 
 **Follow-up, 10:50 Vilnius:** Wallet was removed at the user's request. Glance
 now has direct IBKR/Trading 212 feeds; both need read-only credentials. A fresh
@@ -65,7 +67,7 @@ and Manage Webhooks. The channel migration has not been applied.
 | Area | Verified result |
 |---|---|
 | Paperclip | Approved binding-comparison patch is running; health is `ok`. Five reporting links, three open issue assignments and three routines now point to the replacements. |
-| Codex command tools | Live policy applied; command boundaries and a real model command/output passed as server UID 1000. STU-13's separate hold is now cleared; a continuation started, with completion unverified. |
+| Codex command tools | Live policy applied; command boundaries and a real model command/output passed as server UID 1000. STU-13's hold is cleared; two runs failed with provider quota, and a human-only vendor-access question is pending. |
 | Coaching push configuration | Live Codex and saved Claude refs repaired; actual child-process injection and Discord GET metadata checks passed. No test post sent; normal delivery remains unverified. |
 | Coach routine | Before the Codex takeover, the scheduled 06:30 run succeeded at 06:33 on the recovered Claude Sonnet agent. Studio standup remains paused. |
 | Recovery state | Legacy OpenRouter watchdog is inactive. The separate subscription-switch helper tracks ten temporary Codex roles and their original settings. Automatic all-provider routing remains off. |
@@ -92,7 +94,7 @@ prevent an assignment or routine from starting another run later.
 | [50 — Trading 212 holdings](https://github.com/peciulevicius/.dotfiles/pull/50) | Stacked on #49. Broker-reported wallet amounts and total quantities include pie shares once. Missing detail warns without hiding a valid account summary. Source/widget staged; credentials and reconciliation remain owner steps. |
 | [51 — Shared repository skill](https://github.com/peciulevicius/.dotfiles/pull/51) | Stacked on #43. One canonical `homelab-service` skill with Claude project/installer aliases, verified native Codex discovery and guidance that preserves separately staged live changes. Other skills and company imports remain separate. |
 | [52 — Recovery isolation](https://github.com/peciulevicius/.dotfiles/pull/52) | Stacked on #42. Explicit hello proof, complete config probe caching, independent role deferral, full per-agent queued-run checks and backups of replaced staged helpers. Updated helper staged live; original journal/deadline preserved. |
-| [53 — Runner and coaching bindings](https://github.com/peciulevicius/.dotfiles/pull/53) | Stacked on #52. Missing webhook refs repaired live and retained for Claude return. Policy applied after approval; actual commands/model tool output and runtime injection pass. Normal Discord posting remains unverified; STU-13 resumed after supported evidence reconciliation, with completion unverified. |
+| [53 — Runner and coaching bindings](https://github.com/peciulevicius/.dotfiles/pull/53) | Stacked on #52. Missing webhook refs repaired live and retained for Claude return. Policy applied after approval; actual commands/model tool output and runtime injection pass. Normal Discord posting remains unverified; STU-13 hold cleared through supported evidence reconciliation; follow-up runs hit provider quota and a vendor-access question awaits owner input. |
 
 The host's cron executes scripts directly from `~/.dotfiles`. Its checkout is
 left on `preview/overnight-fixes-2026-09-30` so the fixes coexist. Switching it
