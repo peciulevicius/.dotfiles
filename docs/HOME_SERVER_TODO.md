@@ -195,7 +195,11 @@ Section names in *italics* are headings below.
 
 - Paperclip: recovery and reference repairs were applied and verified
   2026-09-29. A temporary unbound Claude → Codex takeover was applied on
-  2026-09-30 with saved original models and a scheduled guarded return. Next
+  2026-09-30 with saved original models and a scheduled guarded return.
+  Recovery now isolates busy/changed/unavailable roles and failed probes,
+  requires a real hello result, and preserves unresolved originals. This
+  subscription helper excludes selected execution environments; host-login
+  proof is insufficient for their separate credentials. Next
   engineering work is automatic routing across subscriptions and managed
   connections, preserving IDs, instructions, skills and assignments. Host-login tests do not prove managed credentials
   work; restoring a null binding currently retains OpenRouter. Keep
