@@ -4,16 +4,24 @@ Morning status checked on the Mac mini after the 07:00 finance refresh and
 07:05 private snapshot. Source changes are in focused PRs; none were merged.
 Read the service runbooks for current procedures, since this is a dated record.
 
+**Follow-up, 10:50 Vilnius:** Wallet was removed at the user's request. Glance
+now has direct IBKR/Trading 212 feeds; both need read-only credentials. A fresh
+Paperclip Codex device login fixed its revoked refresh token. Ten active
+unbound Claude roles now temporarily use Codex on their existing IDs. Original
+Opus/Sonnet configs are saved; a staged cron check starts guarded recovery
+after **Thursday, 1 October, 11:00 Vilnius**. Failed Claude probes retry hourly.
+This update supersedes the earlier Wallet and Claude runtime observations.
+
 ## What is live
 
 | Area | Verified result |
 |---|---|
 | Paperclip | Approved binding-comparison patch is running; health is `ok`. Five reporting links, three open issue assignments and three routines now point to the replacements. |
 | Coach routine | The scheduled 06:30 run succeeded at 06:33 on the current Claude Sonnet agent. Studio standup remains paused. |
-| Recovery state | `active: false`, no switched or unconfirmed agents, no pending reconciliation. Automatic switching remains off. |
+| Recovery state | Legacy OpenRouter watchdog is inactive. The separate subscription-switch helper tracks ten temporary Codex roles and their original settings. Automatic all-provider routing remains off. |
 | Shared memory | All 31 current Paperclip agents have the shared guidance; a fresh preview reports zero pending writes. Private originals were backed up before installation. |
 | Discord identities | The legacy jobs webhook is named **Homelab Jobs**. Kuma explicitly sends as **Uptime Kuma** and its repeat alerts are disabled. |
-| Wallet | Actual Glance feed refreshed at 07:00: Wallet is configured, healthy and not stale. The private daily snapshot was written at 07:05. IBKR is still unconfigured. |
+| Finance | Wallet removed from live Glance, served data and today's private summary. IBKR/Trading 212 each show unconfigured; no broker balances have been reconciled yet. Historical Wallet summaries are excluded from new comparisons. |
 
 Paperclip had no active or queued runs at the morning check. This does not
 prevent an assignment or routine from starting another run later.
@@ -22,8 +30,8 @@ prevent an assignment or routine from starting another run later.
 
 | PR | Changes |
 |---|---|
-| [41 — Wallet](https://github.com/peciulevicius/.dotfiles/pull/41) | Budget pages use the API's 20-item maximum. Added cached health output that omits balances, holdings, credentials and error text. Corrected the stale token TODO and recorded the live morning refresh. |
-| [42 — Paperclip recovery](https://github.com/peciulevicius/.dotfiles/pull/42) | Rehire/reference repairs, guarded server binding comparison, retired-record preflight, quota classification, process lock, private atomic state writes, pre-PATCH recovery journal and budget checks. Includes restore constraints and sidebar instructions. |
+| [41 — Direct finance feeds](https://github.com/peciulevicius/.dotfiles/pull/41) | Replaces Wallet with direct IBKR/Trading 212 summaries, separate source/status/date, private native caches and coverage-aware daily memory. Live widget/feed migrated; credentials and account reconciliation remain user steps. |
+| [42 — Paperclip recovery](https://github.com/peciulevicius/.dotfiles/pull/42) | Rehire/reference repairs and guarded binding comparison, plus the reversible same-ID Codex takeover and staged scheduled recovery. Originals are saved before writes; concurrent edits and failed probes retain them. |
 | [43 — Shared AI guidance](https://github.com/peciulevicius/.dotfiles/pull/43) | `AGENTS.md`/`CLAUDE.md` entry points, documentation and memory rules, reusable instruction rollout, CLI approval guidance. Fixed the failed strict documentation build on the original branch. |
 | [44 — Discord](https://github.com/peciulevicius/.dotfiles/pull/44) | Separate routes/senders, idempotent channel/category migration, preserved permissions/history, Dietitian typo correction, bridge lookup of current hires, notification runbooks. |
 | [45 — PR reviews](https://github.com/peciulevicius/.dotfiles/pull/45) | Guarded subscription-based Claude review workflow, shared review rules and Codex/Claude activation guide. Account setup remains required. |
@@ -43,6 +51,18 @@ OpenRouter automatic chain. `AUTO_SWITCH=0` stays in effect. The watchdog
 detects recognized Claude quota failures and notifies; it does not mistake
 generic 429, login, context, turn or budget failures for an exhausted plan.
 
+For today's unbound subscription roles, use:
+
+```bash
+python3 scripts/utils/paperclip-subscription-switch.py --status
+python3 scripts/utils/paperclip-subscription-switch.py --restore
+```
+
+The second command previews exact original configurations. Recovery after
+the saved reset time requires a real Claude response before applying them.
+The staged helper survives a Git checkout change. Paused roles and managed
+bindings are excluded; duplicate hires are unnecessary for this takeover.
+
 The remaining restore constraints are concrete:
 
 - The managed binding's validation can fail while the separate host-login
@@ -60,14 +80,13 @@ Original configurations are saved before a switch request. A lost response
 leaves an unconfirmed journal entry; inspect it with `--reconcile` before any
 recovery probe. Reconciliation preserves unknown or concurrent changes.
 
-The 31 current agents are configured as follows; these are configuration facts,
+The 31 current agents are configured after the takeover as follows; these are configuration facts,
 not a benchmark of which model is best:
 
 | Configuration | Agents |
 |---|---:|
-| Claude Opus 5 | 3 |
-| Claude Sonnet 5 | 9 |
-| Codex, model not explicitly set | 8 |
+| Claude Sonnet 5 (paused managed roles) | 2 |
+| Codex, model not explicitly set (10 temporary + 8 existing) | 18 |
 | OpenRouter DeepSeek v3.2 | 8 |
 | OpenRouter Gemini 3.5 Flash Lite | 2 |
 | OpenRouter Qwen3 Coder | 1 |
@@ -75,9 +94,9 @@ not a benchmark of which model is best:
 All 11 current OpenRouter agents have active $3 monthly hard-stop policies.
 The subscription roles have no such paid-fallback policies yet, so the guarded
 manual switch will skip them until a policy is explicitly configured. The
-eight Codex agents rely on defaults; inspect their actual successful run model
-before pinning one. No live model, budget or pause/resume settings were changed
-during this audit, and no benchmark runs were started.
+Codex agents rely on defaults; inspect actual successful run models before
+pinning a role/model split. The takeover changed ten runtimes and preserved
+pause/resume settings and paid budgets. No benchmark runs were started.
 
 ## Shared memories and skills
 
