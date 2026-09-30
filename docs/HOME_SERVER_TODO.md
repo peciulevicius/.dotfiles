@@ -15,13 +15,6 @@ obsolete ntfy advice, and duplicate VPN/device steps; it was not a full audit.
 
 ## 🔝 Next up — finish the mail switch
 
-- [ ] 👤 **Discord notification migration:** grant the bridge bot's server
-  role Manage Channels and Manage Webhooks, then run
-  `python3 scripts/utils/configure-discord-notifications.py --apply`.
-  Preview verified 2026-09-29; currently blocked by those missing permissions.
-  Destinations: `#uptime-alerts`, `#homelab-jobs`, `#ai-agents`,
-  `#homelab-reminders`. Kuma repeats are already disabled. See the cron README.
-
 kindle_sync, Kuma SMTP and Calibre-Web SMTP all run on Purelymail since
 2026-09-26 (changelog). Remaining:
 - [ ] 👤 Kuma → "Uptime Kuma" notification → **Test**; Calibre-Web → Admin →

@@ -47,8 +47,26 @@ def main():
             headers["Authorization"] = "Bot " + token
         req = urllib.request.Request(API + path, method=method, headers=headers,
             data=json.dumps(body).encode() if body is not None else None)
-        with urllib.request.urlopen(req, timeout=30) as response:
-            return json.load(response)
+        try:
+            with urllib.request.urlopen(req, timeout=30) as response:
+                return json.load(response)
+        except urllib.error.HTTPError as error:
+            # The initial Kuma webhook lookup embeds its secret token in the
+            # path. Keep diagnostics useful without ever printing that URL.
+            safe_path = "/webhooks/<saved webhook>" if webhook else path
+            detail = ""
+            if not webhook:
+                try:
+                    payload = json.loads(error.read().decode("utf-8"))
+                    message = payload.get("message")
+                    discord_code = payload.get("code")
+                    if isinstance(message, str) and len(message) <= 200:
+                        detail = f" ({message}; code {discord_code})"
+                except (UnicodeDecodeError, ValueError, AttributeError):
+                    pass
+            print(f"Discord API {method} {safe_path} returned HTTP {error.code}{detail}",
+                  file=sys.stderr)
+            raise
 
     # Capture the original shared webhook once; subsequent runs must not move
     # the legacy jobs webhook into the uptime channel.
@@ -115,13 +133,11 @@ def main():
             existing[name] = request("POST", f"/guilds/{guild_id}/channels", body)
         elif existing[name].get("parent_id") != parent_id:
             existing[name] = request("PATCH", "/channels/" + existing[name]["id"],
-                {"parent_id": parent_id,
-                 "permission_overwrites": existing[name].get("permission_overwrites", [])})
+                {"parent_id": parent_id})
     for canonical, channel in chats:
         if channel.get("parent_id") != categories["AI"]["id"] or channel["name"] != canonical:
-            request("PATCH", "/channels/" + channel["id"], {"name": canonical,
-                "parent_id": categories["AI"]["id"],
-                "permission_overwrites": channel.get("permission_overwrites", [])})
+            request("PATCH", "/channels/" + channel["id"],
+                {"name": canonical, "parent_id": categories["AI"]["id"]})
     for key, (name, sender) in ROUTES.items():
         channel_id = existing[name]["id"]
         hooks = request("GET", f"/channels/{channel_id}/webhooks")
