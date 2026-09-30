@@ -38,7 +38,7 @@ Companion: [DEGOOGLE.md](DEGOOGLE.md). This is Gap 4 from that guide.
 
 ### Finance context is read-only
 
-Glance reads IBKR Flex and Trading 212 account summaries directly, with
+Glance reads IBKR Flex, Trading 212 account summaries and Kraken wallet balances directly, with
 separate provider status and dates. Its total covers connected investments;
 Wallet balances and budgets are no longer used. A daily
 summary is generated in `~/ai-memory/finance/`, which Paperclip agents and

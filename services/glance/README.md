@@ -139,20 +139,22 @@ calendar) were tried the same day and removed. They frame fine (no
 `X-Frame-Options`/`frame-ancestors`), but they render as light boxes that
 clash with the dark theme.
 
-### Portfolio: direct IBKR and Trading 212 feeds
+### Portfolio: direct IBKR, Trading 212 and Kraken feeds
 
 Wallet was removed on 2026-09-30 at the user's request: a successful Wallet
 API request did not establish that its manually maintained balances were
 accurate. The collector no longer reads its token, account balances or budgets.
 
 `scripts/utils/finance-status.sh` calls `finance-data.py` daily at 07:00 and
-writes `~/services/glance/assets/finance.json`. Each broker has a separate
+writes `~/services/glance/assets/finance.json`. Each provider has a separate
 status, native-currency value, source and date. **Connected investments** is
-only the sum of connected broker accounts, not total personal net worth.
+only the sum of connected investment accounts, not total personal net worth.
 IBKR uses its reported end-of-day NAV. Trading 212 uses the reported live
 account total; its cash and investments are not added to that total again.
 Trading 212 currently supplies account totals and unrealised P&L; individual
-holdings on this card come from IBKR only.
+holdings on this card come from IBKR and Kraken. Kraken shows an indicative
+EUR value from wallet quantities and current spot bid/ask midpoints; it is
+not a broker-reported NAV. Each row shows the valuation source.
 
 The combined total defaults to EUR (`FINANCE_REPORT_CURRENCY` can override
 it). Cross-currency totals use Frankfurter daily reference rates, whose date
@@ -165,7 +167,7 @@ the percentage used cash in its denominator.
 
 Caches are private (`~/.config/homelab/finance-cache/`, directory 700/files
 600), keyed to the current credentials, and contain native amounts. IBKR's
-cache lasts 30 minutes; Trading 212's lasts two minutes. Fetch failures retain
+cache lasts 30 minutes; Trading 212's and Kraken's last two minutes. Fetch failures retain
 that account's last valid cache and mark it stale. Rotating credentials does
 not reuse the previous account's cache. The served snapshot contains private
 balances; retain Glance's existing access protection and never commit it.
@@ -214,6 +216,42 @@ chmod 600 ~/.config/homelab/trading212.env
 unset FINANCE_T212_KEY FINANCE_T212_SECRET
 ```
 
+#### Kraken setup
+
+Create a **dedicated key with Query Funds only**. No order, transfer,
+withdrawal or ledger-history permissions are needed. The only authenticated
+request is `POST /0/private/Balance`, which reads the default wallet's
+balances net of pending withdrawals. Other wallets and Futures accounts are
+outside this connector's coverage. API-key 2FA requiring an interactive OTP
+is not supported by this unattended collector. See the official
+[balance API](https://docs.kraken.com/api-reference/account-data/get-account-balance)
+and [authentication guide](https://docs.kraken.com/exchange/guides/rest/authentication).
+
+```bash
+mkdir -p ~/.config/homelab
+printf 'Kraken API key: '; read -rs FINANCE_KRAKEN_KEY; printf '\n'
+printf 'Kraken API secret: '; read -rs FINANCE_KRAKEN_SECRET; printf '\n'
+umask 077
+printf 'KRAKEN_API_KEY=%s\nKRAKEN_API_SECRET=%s\n' "$FINANCE_KRAKEN_KEY" "$FINANCE_KRAKEN_SECRET" > ~/.config/homelab/kraken.env
+chmod 600 ~/.config/homelab/kraken.env
+unset FINANCE_KRAKEN_KEY FINANCE_KRAKEN_SECRET
+```
+
+Public Assets, AssetPairs and Ticker requests supply the EUR valuation,
+using a direct spot market or at most two markets. Documented reward/staking
+suffixes use their base asset only when the mapping is unique. Tokenized
+`.T` assets, ambiguous assets and balances without a supported price route
+make the entire account unavailable; no balance is silently omitted.
+Cost basis and unrealised P&L are not available from the balance endpoint.
+Kraken cash and P&L therefore stay unknown, as do combined cash/P&L when
+Kraken is included; available broker amounts remain visible on their rows.
+
+The collector saves a monotonically increasing nonce privately before each
+signed request and locks it through the response. Do not share this key with
+another application or delete its `kraken-nonce-*.json` files. If nonce state
+is damaged, preserve it and create a new dedicated key rather than retrying
+with a lower nonce. Neither credentials nor raw API errors are printed.
+
 #### Check and reconcile
 
 ```bash
@@ -225,7 +263,9 @@ bash scripts/utils/finance-status.sh --health
 `ok` means parsed data is available, possibly from the last valid cache; check
 `stale` too. It does **not** confirm numerical accuracy. In Glance, compare
 each native account total with its broker app, using the same account and
-date (IBKR is end-of-day, Trading 212 is live). Check the combined total only
+date (IBKR is end-of-day; Trading 212 and Kraken are live). For Kraken,
+compare quantities first; its midpoint estimate can differ from the app's
+valuation. Check the combined total only
 after each provider reconciles. `--print` includes private financial data and
 is for local use only.
 
@@ -244,7 +284,6 @@ and are not used for the new portfolio's change calculation.
 
 #### Further accounts
 
-- **Kraken**: planned read-only exchange balance integration; not implemented.
 - **Capital.com**: planned account integration; not implemented.
 - **Ledger**: public addresses and price lookup; no seed or private keys.
 - **Swedbank / Revolut**: choose a personal open-banking connection or CSV import.

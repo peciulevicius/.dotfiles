@@ -6,6 +6,26 @@ is often what you need when something similar breaks again.
 
 Newest first-ish; dates are when the work was finished.
 
+## 2026-09-30 — direct Kraken balance connector
+
+- Added a Query Funds-only default-wallet collector. Its sole private request
+  reads balances; public spot markets supply an indicative EUR midpoint
+  estimate. No orders, transfers, withdrawals or raw API errors are emitted.
+- Quantities, provider source and unknown cash/P&L are explicit. Unpriced,
+  ambiguous and tokenized assets fail the account instead of disappearing
+  from its total. Valid private caches survive failed fetches with stale labels.
+- Signed reads use a private per-key monotonic nonce, persisted before the
+  request and locked until its response, including timeout recovery. Rotated
+  credentials cannot reuse another account's cached values.
+- Updated Glance and its runbook with provider valuation sources, native
+  cash/P&L where available, and hidden credential prompts. The source is
+  prepared in a focused PR; Kraken credentials and quantity reconciliation
+  remain owner steps. No live Kraken account has been queried.
+- Checks: official offline signature vector, nonce/timeout/permission/cache
+  recovery, direct/two-market/inverse EUR prices, reward suffixes, unavailable
+  asset handling, nullable P&L, unconfigured no-network collection, Python
+  syntax, Bash/ShellCheck and strict documentation build.
+
 ---
 
 ## 2026-09-29 — AUTO_SWITCH incident: 10 agents stuck, fixed by hand, feature reverted to notify-only
