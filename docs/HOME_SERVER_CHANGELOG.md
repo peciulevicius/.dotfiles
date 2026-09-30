@@ -45,6 +45,18 @@ runbooks with setup and testing steps. Bridge configuration resolves current
 hires by name/company instead of reinstalling retired IDs. Monthly reminders
 select their own route.
 
+Applied live on 2026-09-30 after the bot received those permissions. The
+existing Kuma webhook now targets `#uptime-alerts`; `#homelab-jobs`,
+`#ai-agents` and `#homelab-reminders` each have a dedicated bot webhook.
+Coach and Dietitian channels are under AI with their messages/threads retained,
+and the Dietitian channel spelling is corrected. A first apply attempt returned
+HTTP 403 while resending unchanged permission overrides on channel moves;
+the migration now leaves those overrides untouched, and the retry completed.
+Read-only API checks confirmed the channel layout, webhook names and Kuma
+destination. No test messages were sent. Private webhook URLs remain in
+`~/.config/homelab/notify.env`; the migration created a mode-0600
+`.pre-routing` backup.
+
 ## 2026-09-29 — Claude/Codex handoff protocol for Studio engineering
 
 - Studio's engineering line already splits by harness (CTO + Backend Developer
