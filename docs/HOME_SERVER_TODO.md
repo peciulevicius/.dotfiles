@@ -215,13 +215,16 @@ Section names in *italics* are headings below.
 - Paperclip: recovery and reference repairs were applied and verified
   2026-09-29. A temporary unbound Claude → Codex takeover was applied on
   2026-09-30 with saved original models and a scheduled guarded return.
-  Command execution is currently blocked by Docker's bubblewrap namespace
-  restriction; model hello probes did not test tools. PR #53 prepares the
-  default-deny policy and quota-free runner diagnostic. Live application
-  needs an approved brief container restart, then actual STU-13/tool output
-  verification. Coach/Dietitian secret references are repaired live and
-  preserved in saved Claude configs; actual Discord delivery still needs
-  verification after runner repair. Channel migration separately needs the
+  PR #53's default-deny syscall policy is applied live; actual command tools
+  and filesystem restrictions passed as server UID 1000, including a real
+  model tool call. Coach/Dietitian secret references are repaired live and
+  preserved in saved Claude configs. Runtime injection and Discord endpoint
+  GET checks pass; actual normal post delivery still needs verification.
+  STU-13 was requeued to Todo under its existing accepted approval, but a
+  saved `legacy_execution_requires_reconciliation` hold refuses its run.
+  Resolve that execution hold through supported recovery controls and verify
+  an actual task run; do not report the study as resumed or repeat its approval.
+  Channel migration separately needs the
   bot's Manage Channels and Manage Webhooks permissions.
   Recovery now isolates busy/changed/unavailable roles and failed probes,
   requires a real hello result, and preserves unresolved originals. This

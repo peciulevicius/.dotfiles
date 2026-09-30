@@ -2,7 +2,9 @@
 # Verify Codex's actual command sandbox without a model call or agent wake.
 set -euo pipefail
 
-docker exec -i "${PAPERCLIP_CONTAINER:-paperclip}" node <<'NODE'
+# The pinned image runs the Paperclip server as UID 1000; Docker exec defaults
+# to root. Exercise the same unprivileged identity as the agent subprocesses.
+docker exec --user "${PAPERCLIP_RUNTIME_USER:-1000}" -i "${PAPERCLIP_CONTAINER:-paperclip}" node <<'NODE'
 const fs = require('node:fs');
 const path = require('node:path');
 const assert = require('node:assert/strict');
