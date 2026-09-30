@@ -90,7 +90,8 @@ possible; the ownership/privacy rules are instructions, not filesystem ACLs.
 Portable `SKILL.md` content can be reused across tools. Existing Claude skill
 folders are not automatically discovered by host Codex. Paperclip injects its
 assigned company skills at run time. See
-[AI collaboration](../AI_COLLABORATION.md) for the paths and boundaries.
+[AI collaboration guide in PR 43](https://github.com/peciulevicius/.dotfiles/pull/43)
+for the paths and boundaries.
 
 ## Checks and how to verify
 
@@ -138,7 +139,7 @@ organization chart. These previews start no agent runs.
    For Claude, create/upload `CLAUDE_CODE_OAUTH_TOKEN`, enable
    `CLAUDE_PR_REVIEW_ENABLED`, and merge the reviewed workflow when ready.
    GitHub currently has neither the secret nor enable flag. Follow
-   [PR review setup](PR_REVIEWS.md).
+   [PR review setup in PR 45](https://github.com/peciulevicius/.dotfiles/pull/45).
 4. **Sidebar:** Settings → Experimental → **Streamlined UI** off restores the
    fuller legacy navigation. This presentation setting affects the instance;
    it is currently on. No UI build change was applied.
