@@ -56,6 +56,8 @@ Read-only API checks confirmed the channel layout, webhook names and Kuma
 destination. No test messages were sent. Private webhook URLs remain in
 `~/.config/homelab/notify.env`; the migration created a mode-0600
 `.pre-routing` backup.
+The live Kuma database was also queried read-only on 2026-09-30: all 24
+monitors have repeat notifications disabled (`resend_interval = 0`).
 
 ## 2026-09-29 — Claude/Codex handoff protocol for Studio engineering
 
