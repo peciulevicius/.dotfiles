@@ -4,6 +4,23 @@ Morning status checked on the Mac mini after the 07:00 finance refresh and
 07:05 private snapshot. Source changes are in focused PRs; none were merged.
 Read the service runbooks for current procedures, since this is a dated record.
 
+**Critical follow-up, 16:06 Vilnius:** the temporary Codex roles are selected
+and authenticated, but their command tools are **still blocked** by Docker's
+bubblewrap namespace restriction. The earlier hello probes did not test
+commands. PR #53 contains a tested default-deny syscall policy and guarded
+restart/rollback plan; live application awaits the requested major-operation
+approval. Disposable tests proved commands and workspace write boundaries.
+Do not treat the takeover as fully working until the live diagnostic and an
+actual agent tool run pass.
+
+Coach and Dietitian's missing webhook secret references **are repaired live**,
+read back against the active encrypted secrets, and retained in their saved
+Claude configurations. Actual agent Discord delivery remains unverified
+while commands are blocked. This repair is separate from the channel migration,
+which still needs Manage Channels and Manage Webhooks for the bridge bot.
+PR #52's stronger recovery helper is also staged live with its private backup;
+ten originals and the October 1 reset time are preserved.
+
 **Follow-up, 10:50 Vilnius:** Wallet was removed at the user's request. Glance
 now has direct IBKR/Trading 212 feeds; both need read-only credentials. A fresh
 Paperclip Codex device login fixed its revoked refresh token. Ten active
@@ -41,6 +58,8 @@ and Manage Webhooks. The channel migration has not been applied.
 | Area | Verified result |
 |---|---|
 | Paperclip | Approved binding-comparison patch is running; health is `ok`. Five reporting links, three open issue assignments and three routines now point to the replacements. |
+| Codex command tools | Broken in the temporary sandboxed roles. PR #53's policy passed isolated checks; live restart and actual task validation are pending. HTTP health and model hello success did not detect this failure. |
+| Coaching push configuration | Coach/Dietitian encrypted secret references restored in live Codex env and saved Claude env. Actual delivery remains unverified. |
 | Coach routine | Before the Codex takeover, the scheduled 06:30 run succeeded at 06:33 on the recovered Claude Sonnet agent. Studio standup remains paused. |
 | Recovery state | Legacy OpenRouter watchdog is inactive. The separate subscription-switch helper tracks ten temporary Codex roles and their original settings. Automatic all-provider routing remains off. |
 | Shared memory | All 31 current Paperclip agents have the shared guidance; a fresh preview reports zero pending writes. Private originals were backed up before installation. |
@@ -65,6 +84,8 @@ prevent an assignment or routine from starting another run later.
 | [49 — Kraken](https://github.com/peciulevicius/.dotfiles/pull/49) | Stacked on #41. Query Funds-only default-wallet collector, indicative EUR prices, private nonce/cache recovery, explicit coverage and hidden setup prompts. Widget/feed staged live; credentials remain an owner step. |
 | [50 — Trading 212 holdings](https://github.com/peciulevicius/.dotfiles/pull/50) | Stacked on #49. Broker-reported wallet amounts and total quantities include pie shares once. Missing detail warns without hiding a valid account summary. Source/widget staged; credentials and reconciliation remain owner steps. |
 | [51 — Shared repository skill](https://github.com/peciulevicius/.dotfiles/pull/51) | Stacked on #43. One canonical `homelab-service` skill with Claude project/installer aliases, verified native Codex discovery and guidance that preserves separately staged live changes. Other skills and company imports remain separate. |
+| [52 — Recovery isolation](https://github.com/peciulevicius/.dotfiles/pull/52) | Stacked on #42. Explicit hello proof, complete config probe caching, independent role deferral, full per-agent queued-run checks and backups of replaced staged helpers. Updated helper staged live; original journal/deadline preserved. |
+| [53 — Runner and coaching bindings](https://github.com/peciulevicius/.dotfiles/pull/53) | Stacked on #52. Missing webhook refs repaired live and retained for Claude return. Default-deny container policy and quota-free command diagnostic tested in isolation; live runner application and actual delivery remain pending. |
 
 The host's cron executes scripts directly from `~/.dotfiles`. Its checkout is
 left on `preview/overnight-fixes-2026-09-30` so the fixes coexist. Switching it
@@ -172,6 +193,7 @@ From the Mac mini repository root:
 
 ```bash
 bash scripts/utils/paperclip-fallback.sh --status
+bash scripts/utils/paperclip-sandbox-check.sh
 python3 scripts/utils/paperclip-subscription-switch.py --status
 python3 scripts/utils/paperclip-memory-guidance.py
 python3 scripts/utils/configure-discord-notifications.py
@@ -186,7 +208,9 @@ missing. Finance health shows IBKR, Trading 212 and Kraken unconfigured,
 without errors or balances. This is expected until credentials are saved.
 In Glance, open **Finance** and confirm its update time and three provider
 rows. In Paperclip, inspect the current Coach's Codex adapter and repaired
-organization chart. A normal message to Coach can verify the next real run;
+organization chart. The sandbox diagnostic currently fails until the reviewed
+policy is applied. Afterwards, a normal message to Coach can verify a real
+tool run and runtime webhook presence without printing the value;
 the status previews themselves start no runs. After Thursday's reset, the
 journal should empty only when real Claude probes and exact restores succeed.
 
