@@ -6,6 +6,23 @@ is often what you need when something similar breaks again.
 
 Newest first-ish; dates are when the work was finished.
 
+## 2026-09-30 — Trading 212 holdings detail
+
+- Added the read-only positions endpoint beside the account summary. Holdings
+  use reported wallet value and unrealised P&L in account currency, preserving
+  the instrument identifier and total quantity including pie shares.
+- Reported account totals remain authoritative; holdings/cash are not added
+  again. Missing, duplicate or mismatched-currency detail is omitted in full
+  with a warning, while a valid fresh summary remains available.
+- No older holdings are mixed into a fresh summary. Summary-only caches are
+  upgraded on refresh; failed summary reads retain labelled stale data.
+- Updated the dashboard, read-only permissions/runbook and TODO. No live
+  Trading 212 credentials are configured and no account has been queried.
+- Checks: 71 offline assertions covering Basic authentication, reported wallet
+  amounts, pie quantities, malformed/missing/duplicate detail, currency
+  mismatch, private errors, cache upgrades, stale recovery, cached health and
+  IBKR-only source mode; Python syntax, ShellCheck and strict docs passed.
+
 ## 2026-09-30 — direct Kraken balance connector
 
 - Added a Query Funds-only default-wallet collector. Its sole private request

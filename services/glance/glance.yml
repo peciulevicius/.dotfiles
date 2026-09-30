@@ -508,7 +508,7 @@ pages:
                 <li class="flex justify-between"><span>Unrealised</span><span class="lvl-{{ .JSON.String "total.unrealized_level" }}">{{ .JSON.String "total.unrealized_pnl" }}</span></li>
                 <li class="flex justify-between"><span>Cash</span><span>{{ .JSON.String "total.cash" }}</span></li>
               </ul>
-              <div class="size-h6 color-subdue" style="margin-top:12px">IBKR / Kraken holdings (Trading 212 summary only)</div>
+              <div class="size-h6 color-subdue" style="margin-top:12px">Largest reported holdings · IBKR / Trading 212 / Kraken</div>
               <ul class="list list-gap-4" style="margin-top:4px">
                 {{ range .JSON.Array "positions" }}<li class="flex justify-between size-h6"><span>{{ .String "symbol" }} <span class="color-subdue">{{ .String "provider" }} · {{ .String "pct" }}</span></span><span class="nowrap">{{ .String "value" }} <span class="lvl-{{ .String "pnl_level" }}">{{ .String "pnl" }}</span></span></li>{{ end }}
               </ul>

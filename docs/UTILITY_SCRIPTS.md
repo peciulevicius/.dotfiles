@@ -530,6 +530,9 @@ served snapshot and keeps credential-specific native caches outside Glance's
 assets. Each provider has its own status and date; the combined EUR figure
 covers connected investments only. Failed fetches mark cached data stale.
 Wallet balances and budgets are no longer collected.
+Trading 212 also reads positions; per-instrument wallet values use its account
+currency, and a detail failure keeps the fresh account total with a warning.
+Pie shares are not added twice, and holdings are never added to reported NAV.
 
 ```bash
 bash scripts/utils/finance-status.sh            # refresh; no balances printed
