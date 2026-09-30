@@ -540,17 +540,23 @@ whole-house outage now alerts.
 - [ ] 👤 **Delete the old staged dirs** `rm -rf ~/services/beets ~/services/lidarr`
       (containers and images already removed 2026-09-26), and after a week of
       Uptime Kuma running fine, `rm ~/services/uptime-kuma/data/kuma.db.bak-2026-09-26-music`.
-- [ ] **Optional immediate library refresh while a media server is awake.**
+- [ ] 👤 **Optional immediate library refresh while a media server is awake.**
       The 30-minute restart cron was removed 2026-09-28 (verified absent in
       the installed crontab 2026-09-29); it woke Sablier sleepers and interrupted
       playback. Sleeping apps scan when they next start. The remaining API
       integrations could refresh new items during a long-running session:
-      - [ ] 👤 **Jellyfin** — dashboard → Admin → **API Keys → +** → send me the
-            key, I'll wire it into Radarr's and Sonarr's Settings → Connect.
-            Instant refresh, no restart, no playback interruption.
-      - [ ] 👤 **Audiobookshelf** — same idea (Settings → API Keys), but check
-            whether LazyLibrarian even supports a "notify on import" hook for
-            it first — unconfirmed as of 2026-09-22.
+      - [ ] 👤 **Jellyfin** — dashboard → Admin → **API Keys → +**; then enter
+            the key directly in Radarr and Sonarr → Settings → Connect. Do not
+            paste the key into chat. Instant refresh, no restart, no playback
+            interruption.
+      - [x] Research the integration (2026-09-30): LazyLibrarian supports
+            **Notify on Download → Custom Script**, and Audiobookshelf's API
+            reference documents `POST /api/libraries/{id}/scan` (the reference
+            warns it is outdated).
+      - [ ] 👤 **Audiobookshelf setup:** verify the installed API and custom
+            script path, and ensure a request will not wake a sleeping Sablier
+            service. Create a dedicated Admin API token and keep it out of chat
+            and Git; configure only after those checks.
 - [ ] 🔴 **Rotate Immich's database password** (Claude, with a go-ahead — it
       restarts Immich). Found 2026-09-22: `~/services/immich/.env`'s
       `DB_PASSWORD` is still the old, reused personal password. Internal-only

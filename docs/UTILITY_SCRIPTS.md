@@ -45,7 +45,7 @@ listed in [scripts/cron/README.md](https://github.com/peciulevicius/.dotfiles/bl
 | `scripts/utils/mount-nas.sh` | Mount the NAS SMB shares | At login (launchd) |
 | `scripts/utils/nas-watchdog.sh` | Remount shares and restart NAS-backed containers | Every 5 minutes (launchd) |
 | `scripts/utils/docker-watchdog.sh` | Restart Docker Desktop or its engine when down or hung | Every 5 minutes (launchd) |
-| `scripts/utils/smb-watcher-rescan.sh` | Restart Jellyfin and Audiobookshelf so new NAS files are indexed | Every 30 minutes (cron) |
+| `scripts/utils/smb-watcher-rescan.sh` | Manually restart only already-running Jellyfin/Audiobookshelf containers to force a library scan | Manual only; not scheduled |
 
 ---
 
@@ -568,9 +568,12 @@ Details: [NAS.md](NAS.md).
 
 ### smb-watcher-rescan.sh
 
-Restarts Jellyfin and Audiobookshelf every 30 minutes because their file
-watchers miss new files on SMB. This is a stopgap until import notifications
-are configured; see
+Manually restarts Jellyfin and Audiobookshelf only when already running,
+because their file watchers can miss new files on SMB. It has no cron entry:
+the 30-minute job woke Sablier-managed sleepers and interrupted playback, so it
+was removed 2026-09-28. LazyLibrarian has a Notify on Download custom-script
+hook and Audiobookshelf documents a library-scan API, but the integration is
+not configured or tested here. See
 [HOME_SERVER_REFERENCE.md](HOME_SERVER_REFERENCE.md#file-watchers-miss-new-files-on-smb).
 
 ---

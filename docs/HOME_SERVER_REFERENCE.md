@@ -615,20 +615,27 @@ immediately. **Audiobookshelf** (`/Volumes/audiobooks`) runs the identical
 watcher-on-SMB pattern — no confirmed failure yet, covered preventively since
 the root cause is architectural, not specific to Jellyfin.
 
-**Stopgap, running now:** `scripts/utils/smb-watcher-rescan.sh` restarts
-both containers every 30 minutes via cron. Brief interruption for anyone
-actively using either at that moment, but new files stop needing a manual
-nudge either way.
+**Former stopgap, removed 2026-09-28:** `scripts/utils/smb-watcher-rescan.sh`
+restarted both containers every 30 minutes. The cron entry was removed because
+it woke Sablier-managed sleepers and interrupted playback. The live crontab was
+checked on 2026-09-30; neither recurring media-service restarts nor SMB rescan
+jobs remain. A sleeping service scans when it next starts.
 
 **Real fix, needs a person, per service:**
-- **Jellyfin** — generate an API key (dashboard → Admin → API Keys) and wire
-  it into Radarr's and Sonarr's Settings → Connect as a native Jellyfin
-  notification. Refreshes just the new item the moment import finishes, no
-  restart, no interruption.
-- **Audiobookshelf** — no equivalent documented "notify on import" hook from
-  LazyLibrarian as of 2026-09-22. Worth checking Audiobookshelf's own API for
-  a targeted scan-one-folder endpoint before assuming the blunt restart is
-  permanent for this one.
+- **Jellyfin** — generate an API key (dashboard → Admin → API Keys), then enter
+  it directly in Radarr and Sonarr → Settings → Connect as a native Jellyfin
+  notification. Keep the key in those local service settings; do not paste it
+  into chat or Git. This refreshes only the imported item, with no restart or
+  playback interruption.
+- **Audiobookshelf** — research on 2026-09-30 found LazyLibrarian's
+  [Notify on Download and custom-script notifier](https://lazylibrarian.gitlab.io/config_notifications/)
+  and Audiobookshelf's documented `POST /api/libraries/{id}/scan` endpoint in
+  its [API reference](https://api.audiobookshelf.org/). This suggests a
+  custom-script integration is possible, but it is not configured or tested
+  here. The API reference says it is outdated; verify the installed API and
+  how LazyLibrarian can access the script before wiring it. Audiobookshelf is
+  Sablier-managed, so the hook must not unexpectedly wake it. Keep its API
+  token private.
 
 See `HOME_SERVER_TODO.md`.
 

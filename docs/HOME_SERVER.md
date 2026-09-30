@@ -235,16 +235,16 @@ the newest `immich-*.sql` dump as above, and the photo/video originals:
 
 ### 3.9 Cron jobs
 
-Every job runs through `scripts/utils/run-with-notify.sh`, which posts to
-Discord when a job starts failing and when it recovers (webhook in
-`~/.config/homelab/notify.env`, outside the repo).
+The full schedule and current logs are listed in
+[`scripts/cron/README.md`](../scripts/cron/README.md). Most maintenance jobs use
+`scripts/utils/run-with-notify.sh`, which posts to Discord when a job starts
+failing and when it recovers. The live crontab is the source of truth.
 
 | When | Job | Script |
 |---|---|---|
 | Sun 04:00 | DB dumps → `~/backups/` | `scripts/backup/backup-databases.sh` |
 | Daily 05:00 | R2 backup | `~/services/rclone/rclone-backup.sh` (**staged copy** — it reads `.env` from its own directory) |
 | Hourly | Kindle Scribe → Obsidian | `pkm/kindle_sync.py` |
-| Every 30 min | Restart Jellyfin + Audiobookshelf so they see new NAS files | `scripts/utils/smb-watcher-rescan.sh` |
 | Sun 09:00 | Homelab audit | `scripts/utils/homelab-audit.sh` |
 
 Install from `scripts/cron/crontab` (the schedule's source of truth) and read
@@ -255,8 +255,9 @@ crontab < ~/.dotfiles/scripts/cron/crontab
 crontab -l
 ```
 
-⚠️ Check `scripts/cron/crontab` matches the table above before installing — the
-live crontab was changed on 2026-09-23 (backup path, two new jobs). See
+⚠️ Check `scripts/cron/crontab` and its full inventory before installing. The
+media-server restart job was removed 2026-09-28 because it woke Sablier
+sleepers and interrupted playback. See
 [scripts/cron/README.md](https://github.com/peciulevicius/.dotfiles/blob/main/scripts/cron/README.md)
 for the `crontab <file>` pitfall on macOS.
 
