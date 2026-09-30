@@ -52,6 +52,15 @@ Newest first-ish; dates are when the work was finished.
   failed with `provider_quota`; the issue is In review with a human-only vendor-
   access question pending. Task completion remains unverified.
 
+## 2026-09-30 — distinguish quota retry from provider failover
+
+- Paperclip schedules retries for classified `provider_quota` failures against
+  the same task owner at a parsed reset/retry time or default backoff. It does
+  not select another adapter or provider. Human-only questions and other holds
+  can still require owner action.
+- The local Claude usage watchdog is separate; its provider switch is guarded
+  and `AUTO_SWITCH` remains off. No provider configuration changed.
+
 ## 2026-09-30 — isolate subscription recovery failures
 
 - A busy/queued role, concurrent edit or failed login probe no longer stops

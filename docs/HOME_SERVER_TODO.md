@@ -206,7 +206,9 @@ Section names in *italics* are headings below.
   review after two resumed runs failed with `provider_quota`; a human-only
   vendor-access question is pending. Open STU-13 in Paperclip and answer it.
   No earlier outcomes were certified and no repeat approval was requested.
-  Automatic quota routing is disabled; the owner prefers Claude Max and asked
+  Automatic quota routing is disabled; Paperclip's built-in monitor can retry
+  a classified quota failure on the same owner at reset/default backoff but
+  does not change providers. The owner prefers Claude Max and asked
   for no further Codex-specific development.
   Channel migration separately needs the
   bot's Manage Channels and Manage Webhooks permissions.
