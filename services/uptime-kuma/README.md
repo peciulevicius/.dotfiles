@@ -28,13 +28,14 @@ so repeat down notifications are disabled. Most HTTP monitors have three
 retries before declaring a failure. Keep **Resend Notification** at zero in
 each monitor to retain transition-only alerts.
 
-Discord migration is prepared in
+Discord routing was applied live on 2026-09-30 using
 [`configure-discord-notifications.py`](../../scripts/utils/configure-discord-notifications.py).
-It moves Kuma's existing webhook into `#uptime-alerts`, retaining the saved
-URL, and creates separate job/agent/reminder webhooks. The live bot still
-needs **Manage Channels** and **Manage Webhooks** before that migration can
-run. Until then the helper distinguishes job senders in the existing channel.
-See [notification routing](../../scripts/cron/README.md#notifications).
+Kuma's existing webhook URL now targets `#uptime-alerts`. Jobs, Paperclip
+alerts and reminders each use separate channels and webhook senders. The
+existing coaching channels are under the AI category. A read-only API check
+verified channel placement and webhook names; no test posts were sent. Use the
+Kuma notification **Test** button to verify delivery. See
+[notification routing](../../scripts/cron/README.md#notifications).
 
 Email already uses **Purelymail**, configured 2026-09-26. See the maintained
 [email guide](../../docs/guides/EMAIL.md) for SMTP settings. SMTP credentials

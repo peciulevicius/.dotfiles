@@ -91,8 +91,9 @@ The migration uses the bridge bot's private token. Its server role needs
 category/channels). It reuses matching channels and its own webhooks, moves
 Kuma's existing webhook without changing Kuma's saved URL, and saves private
 job URLs with mode 600. A failure can leave some channels created; rerun to
-finish. It does not post test messages. Preview on 2026-09-29 was blocked by
-the bot lacking these permissions; separate channels are not yet live.
+finish. It does not post test messages. Applied live on 2026-09-30 after the
+bot received these permissions. Read-only API checks confirmed the channels,
+webhooks and Kuma destination; message delivery still needs the Kuma UI test.
 
 In Discord: **Server Settings → Roles → COACH_BOT → Permissions**, enable
 **Manage Channels** and **Manage Webhooks**, then save. Allow these in target

@@ -85,7 +85,8 @@ cd ~/services/discord-bridge && docker compose up -d --build   # after editing b
   [the cron notification runbook](../../scripts/cron/README.md#notifications).
   Creating notification channels/webhooks requires *Manage Channels* and
   *Manage Webhooks* on the bot's server role; ordinary two-way chat needs
-  neither. The existing bot lacked those management permissions on 2026-09-29.
+  neither. These permissions were granted on 2026-09-30 and the routing
+  migration was applied; the separate Kuma message test is still pending.
 - **Paperclip password changed:** update `PAPERCLIP_PASSWORD` in `.env` too
   (the `credential-rotation` skill lists this copy).
 
