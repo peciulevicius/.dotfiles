@@ -124,7 +124,10 @@ def ibkr(env, source=None):
         if rows:
             cash = number(rows[-1].get("endingCash"))
     positions = []
-    for position in statement.iter("OpenPosition"):
+    position_rows = list(statement.iter("OpenPosition"))
+    if position_rows and not any(row.get("levelOfDetail", "SUMMARY") == "SUMMARY" for row in position_rows):
+        raise DataError("Select Summary for Open Positions; lot-only reports are not complete holdings")
+    for position in position_rows:
         if position.get("levelOfDetail", "SUMMARY") != "SUMMARY":
             continue
         native = currency(position.get("currency"))
