@@ -70,6 +70,8 @@ succeeded. No test messages were sent. The private webhook file and its
 mode-0600 backup remain outside Git. The live monthly reminder now uses the
 reminders route, and the live finance cron label matches IBKR, Trading 212 and
 Kraken; its prior crontab is backed up privately.
+The Kuma database was queried read-only after the migration: 24 monitors,
+all with `resend_interval = 0`, so repeated down alerts are disabled.
 
 PR #44 and the combined draft PR #47 have refreshed docs/secrets/shell and
 GitGuardian checks passing. The Claude review check on #47 is skipped because
@@ -90,7 +92,7 @@ STU-13 remains In review with a human-only vendor-access question pending.
 | Coach routine | Before the Codex takeover, the scheduled 06:30 run succeeded at 06:33 on the recovered Claude Sonnet agent. Studio standup remains paused. |
 | Recovery state | Legacy OpenRouter watchdog is inactive. The separate subscription-switch helper tracks ten temporary Codex roles and their original settings. Automatic all-provider routing remains off. |
 | Shared memory | All 31 current Paperclip agents have the shared guidance; a fresh preview reports zero pending writes. Private originals were backed up before installation. |
-| Discord routing | `#uptime-alerts` receives Kuma's existing webhook; jobs, Paperclip and reminders use separate channels/webhooks. The two coaching channels are under AI. Channel layout and webhook metadata were API-verified; an actual message test remains pending. |
+| Discord routing | `#uptime-alerts` receives Kuma's existing webhook; jobs, Paperclip and reminders use separate channels/webhooks. The two coaching channels are under AI. Channel layout and webhook metadata were API-verified; a read-only database check found all 24 Kuma monitors have repeats disabled. An actual message test remains pending. |
 | Finance | Wallet removed from live Glance, served data and today's private summary. IBKR/Trading 212/Kraken each show unconfigured; account balances have not been reconciled. Kraken estimates EUR value from wallet quantities and spot midpoints. Historical Wallet summaries are excluded from new comparisons. |
 
 Paperclip had no active or queued runs at the morning check. This does not
