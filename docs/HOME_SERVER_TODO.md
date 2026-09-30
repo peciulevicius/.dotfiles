@@ -47,7 +47,7 @@ Section names in *italics* are headings below.
 
 - [x] ~~⚡ Paperclip usage-limit watchdog~~ — detects and notifies about Claude limits; OpenRouter connections are provisioned in all three companies. `AUTO_SWITCH` is **off** after the restore incident. Recovery applied 2026-09-29: skills and three open issue assignments restored, three reporting links repaired.
 - [x] ~~Paperclip unchanged-binding validation defect~~ — deployed the guarded local patch from the recovery PR after approval; Web Engineer and Homelab Security Engineer's reporting updates now succeed. All five reporting links, three issue assignments and three routine assignments are repaired; fallback state is cleared.
-- [ ] **Paperclip retired-record cleanup:** the 11 obsolete Coach/Studio records pass reference checks; termination awaits explicit approval. The old Homelab Lead is now unreferenced but excluded from that 11-record plan. Cross-provider automatic fallback (Claude → Codex → capped OpenRouter, with return to each role's original model) remains pending a reliable same-agent switch/restore path. Keep `AUTO_SWITCH=0`. Details: `services/paperclip/README.md` → *Usage-limit fallback*.
+- [ ] **Paperclip retired-record cleanup:** the 11 obsolete Coach/Studio records pass reference checks; termination awaits explicit approval. The old Homelab Lead is now unreferenced but excluded from that 11-record plan. The ten active unbound Claude roles were temporarily switched on their existing IDs to Codex on 2026-09-30 after a fresh container login. Their originals are saved; a staged cron check starts recovery after 2026-10-01 11:00 Vilnius and requires a real Claude probe. Automatic routing and managed-binding recovery remain pending. Keep `AUTO_SWITCH=0`. Details: `services/paperclip/README.md` → *Usage-limit fallback*.
 - **🧠 Shared AI memory (2026-09-29):**
   - [x] ~~NAS: create the `backups` share and mount it at `/Volumes/backups`~~ — done 2026-09-29; first `~/ai-memory` copy verified on the NAS. See `docs/HOME_SERVER_CHANGELOG.md`.
   - [x] ~~Consistent memory instructions across Paperclip agents~~ — appended and verified on all 31 current agents (including paused departments), 2026-09-29. Claude/Codex repository guidance points to the same private tree. New hires: `paperclip-memory-guidance.py` preview then `--apply`; role instructions preserved, private originals backed up.
@@ -192,9 +192,10 @@ Section names in *italics* are headings below.
 ### 🤖 Claude can do next
 
 - Paperclip: recovery and reference repairs were applied and verified
-  2026-09-29. Next engineering work is a supported provider switch/restore
-  round trip that preserves IDs, instructions, skills, assignments and each
-  role's original model. Host-login tests do not prove managed credentials
+  2026-09-29. A temporary unbound Claude → Codex takeover was applied on
+  2026-09-30 with saved original models and a scheduled guarded return. Next
+  engineering work is automatic routing across subscriptions and managed
+  connections, preserving IDs, instructions, skills and assignments. Host-login tests do not prove managed credentials
   work; restoring a null binding currently retains OpenRouter. Keep
   auto-switch off. The guarded manual switch requires an existing active
   monthly hard-stop policy of $3 or less; `--switch --dry-run` previews it.

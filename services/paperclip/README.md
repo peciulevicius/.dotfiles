@@ -679,6 +679,67 @@ keeps version history: `GET …/skills/<skillId>/versions`).
 - OpenCode agents share the container's `~/.claude/skills` (Paperclip warns
   about this); the Claude and Codex agents get an ephemeral per-run copy.
 
+## Temporary Claude → Codex takeover (2026-09-30)
+
+The ten recovered active Claude roles now use **unbound local subscription
+credentials**, so they can switch on the same agent IDs. Paused managed
+Claude roles still have the upstream binding limitation described below.
+Extra copies of agents do not create an automatic provider router.
+
+A real Codex CLI request initially failed because the container's refresh
+token had been revoked, although `codex login status` reported a login.
+After the account owner completed `docker exec -it paperclip codex login
+--device-auth`, real model probes passed in all three companies. All ten
+active Claude roles were temporarily moved to `codex_local` with the CLI
+engine and its configured default model. Paused roles, current Codex roles,
+OpenRouter roles, agent IDs, reporting links, instructions, skills and routine
+assignments were preserved. No tasks were triggered by this switch.
+
+`scripts/utils/paperclip-subscription-switch.py` previews by default:
+
+```bash
+python3 scripts/utils/paperclip-subscription-switch.py --status
+python3 scripts/utils/paperclip-subscription-switch.py --switch
+python3 scripts/utils/paperclip-subscription-switch.py --restore
+```
+
+Apply a temporary switch only after a tiny real Codex request passes:
+
+```bash
+python3 scripts/utils/paperclip-subscription-switch.py --switch --apply --restore-after 2026-10-01T11:00:00+03:00
+python3 scripts/utils/paperclip-subscription-switch.py --install-recovery --apply
+```
+
+The date above is this incident's **Thursday, 1 October, 11:00 Vilnius** reset
+estimate. Set a current timezone-aware timestamp for a future incident.
+Original Opus/Sonnet models and complete adapter/runtime configurations are
+journalled **before** each PATCH in a private directory (700, state 600).
+`--restore --apply` requires a real Claude request before restoring originals;
+failed probes leave Codex selected. The helper excludes managed bindings,
+explicit API-key environments, paused/retired roles and busy targets. It uses
+the workspace sandbox, not Codex's new-agent bypass default. CLI flags let it
+run in Paperclip workspaces without requiring a Git repository.
+
+The recovery installer backs up the existing crontab and appends a single
+five-minute check, preserving every existing job. It stages the helper under
+`~/.config/homelab/paperclip-subscription-switch/restore.py`, so Git branch
+changes do not remove tomorrow's recovery. Before the requested reset time,
+`--restore-due --apply` makes no model/API calls. After that, a failed probe
+retries at most hourly. Concurrently edited configurations are skipped;
+saved originals are retained. The check starts no tasks. Once all originals
+are restored the installed check becomes an inexpensive no-op. To update the
+staged helper while a takeover is active, rerun `--install-recovery --apply`.
+
+This is an explicit, reversible subscription takeover, with a scheduled
+return. Automatic Claude ↔ Codex → capped OpenRouter selection and recovery
+for managed bindings remain outstanding work. No paid fallback was enabled.
+
+Upstream already has [issue #14023](https://github.com/paperclipai/paperclip/issues/14023)
+and [PR #14027](https://github.com/paperclipai/paperclip/pull/14027) for clearing
+bindings and avoiding unnecessary validation. Both were open when checked
+2026-09-30; we did not file a duplicate. That PR's explicit-null schema and
+route changes are separate from our deployed comparison-only patch.
+
 ## Usage-limit fallback (2026-09-29)
 
 When the Claude Pro subscription hits its limit, `claude_local` runs fail with
