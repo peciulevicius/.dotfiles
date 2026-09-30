@@ -231,21 +231,20 @@ Kuma's monitors already have repeat alerts disabled.
 Prepared an idempotent, preview-first migration with **Homelab** and **AI**
 categories, four notification destinations, and separate webhooks. Existing
 Coach/Dietitian channels move to AI, retaining their IDs and threads; the
-Dietitian spelling typo is corrected. Live apply awaits the bridge bot's
-missing Manage Channels and Manage Webhooks permissions. Existing channel
-permission overrides are preserved. Updated the mail/monitor and notification
-runbooks with setup and testing steps. Bridge configuration resolves current
-hires by name/company instead of reinstalling retired IDs. Monthly reminders
-select their own route.
+Dietitian spelling typo is corrected. Existing channel permission overrides
+are preserved. Updated the mail/monitor and notification runbooks with setup
+and testing steps. Bridge configuration resolves current hires by name/company
+instead of reinstalling retired IDs. Monthly reminders select their own route.
 
-Applied live on 2026-09-30 after the bot received those permissions. The
-existing Kuma webhook now targets `#uptime-alerts`; `#homelab-jobs`,
+Applied live on 2026-09-30; the bot already had the required permissions. The
+first channel move returned HTTP 403 because the request resent unchanged
+permission overrides. The migration was corrected to leave existing overrides
+untouched, then retried successfully. The existing Kuma webhook now targets
+`#uptime-alerts`; `#homelab-jobs`,
 `#ai-agents` and `#homelab-reminders` each have a dedicated bot webhook.
 Coach and Dietitian channels are under AI with their messages/threads retained,
-and the Dietitian channel spelling is corrected. A first apply attempt returned
-HTTP 403 while resending unchanged permission overrides on channel moves;
-the migration now leaves those overrides untouched, and the retry completed.
-Read-only API checks confirmed the channel layout, webhook names and Kuma
+and the Dietitian channel spelling is corrected. Read-only API checks confirmed
+the channel layout, webhook names and Kuma
 destination. No test messages were sent. Private webhook URLs remain in
 `~/.config/homelab/notify.env`; the migration created a mode-0600
 `.pre-routing` backup.
