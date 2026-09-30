@@ -198,7 +198,13 @@ Section names in *italics* are headings below.
 
 ### 🤖 Claude can do next
 
-- Paperclip: after the recovery PR is merged, run `paperclip-fallback.sh --reconcile` and review the planned remaps; then use `--reconcile --apply` to repair saved skills, reporting links, open issues, and stale fallback state. Keep auto-switch off until a full rehire-and-approval workflow is implemented.
+- Paperclip: recovery and reference repairs were applied and verified
+  2026-09-29. Next engineering work is a supported provider switch/restore
+  round trip that preserves IDs, instructions, skills, assignments and each
+  role's original model. Host-login tests do not prove managed credentials
+  work; restoring a null binding currently retains OpenRouter. Keep
+  auto-switch off. The guarded manual switch requires an existing active
+  monthly hard-stop policy of $3 or less; `--switch --dry-run` previews it.
 
 - [x] ~~Rotate the **Radarr + Sonarr API keys**~~ — **done 2026-09-27**
   (Prowlarr, Jellyseerr, Bazarr updated + tested; see changelog).

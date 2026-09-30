@@ -6,7 +6,7 @@
 #   paperclip-fallback.sh            # cron mode (every 5 min): detect → act
 #   paperclip-fallback.sh --status   # show state + recent limit failures
 #   paperclip-fallback.sh --switch   # force fallback now
-#   paperclip-fallback.sh --restore  # probe subscription, restore agents
+#   paperclip-fallback.sh --restore  # probe subscription, report recovery needed
 #   paperclip-fallback.sh --reconcile # preview stale retired-ID remaps
 #   paperclip-fallback.sh --reconcile --apply # apply the verified remaps
 #   add --dry-run to any mutating mode to print actions without changing anything
@@ -18,9 +18,10 @@
 # Claude requires a new approved agent; the same-record PATCH is not reliable.
 #
 # ⚠️ Restore limitation (found 2026-09-29): switching an agent BACK to the
-# subscription runs Paperclip's Claude "hello probe", which currently reports
-# a false "login is required" (real runs work). The API then refuses the
-# change, and so does config-revision rollback. Until that is fixed, restore
+# subscription runs a managed-connection "hello probe" that has reported
+# "login is required" even while the separate host-login test passes. Those
+# tests use different credential paths; a company test does not prove the
+# managed login works. The API refuses the change. Until that is fixed, restore
 # fails and this script alerts on Discord instead. That's why AUTO_SWITCH is
 # off by default: in cron mode it only notifies. See services/paperclip/README.md
 # → "Usage-limit fallback".
@@ -175,6 +176,28 @@ def is_limit(run):
         return False
     return bool(re.search(r"you['’]ve hit your (?:\w+ )?limit|session limit (?:reached|exceeded)|out of extra usage|extra usage\b|claude usage limit reached|5[- ]?hour limit reached|weekly limit reached|usage limit reached|usage cap reached|servicequotaexceededexception", e))
 
+def has_fallback_budget(company_id, agent_id):
+    # The agent's budgetMonthlyCents field alone does not enforce a policy.
+    # Require the real monthly hard stop, without increasing an existing cap.
+    code, overview = api("GET", f"/api/companies/{company_id}/budgets/overview")
+    if code != 200 or not isinstance(overview, dict) or not isinstance(overview.get("policies"), list):
+        return False
+    policies = [p for p in overview["policies"] if isinstance(p, dict)
+        and p.get("scopeType") == "agent" and p.get("scopeId") == agent_id
+        and p.get("metric") == "billed_cents" and p.get("windowKind") == "calendar_month_utc"]
+    if len(policies) != 1:
+        return False
+    policy = policies[0]
+    amount, spent = policy.get("amount"), policy.get("observedAmount")
+    return (policy.get("isActive") is True and policy.get("hardStopEnabled") is True
+        and type(amount) is int and 0 < amount <= 300
+        and type(spent) in (int, float) and 0 <= spent < amount)
+
+def matches_fallback(agent, fallback):
+    return (isinstance(agent, dict) and agent.get("adapterType") == fallback["adapterType"]
+        and (agent.get("adapterConfig") or {}).get("model") == fallback["model"]
+        and (agent.get("runtimeConfig") or {}).get("aiConnection") == fallback["aiConnection"])
+
 code, _ = api("POST", "/api/auth/sign-in/email",
               {"email": "dziugas@peciulevicius.com", "password": os.environ.pop("PAPERCLIP_PW")})
 if code != 200:
@@ -219,6 +242,9 @@ try:
                 if full.get("adapterType") != "claude_local" or full.get("status") in ("running", "paused", "terminated", "pending_approval"):
                     skipped.append(f"{v['name']}/{a['name']} (configuration changed or agent is busy/paused)")
                     continue
+                if not has_fallback_budget(cid, a["id"]):
+                    skipped.append(f"{v['name']}/{a['name']} (requires an active monthly hard-stop policy of $3 or less, with remaining budget)")
+                    continue
                 orig = {"adapterType": full["adapterType"], "adapterConfig": full["adapterConfig"],
                         "runtimeConfig": full["runtimeConfig"]}
                 body = {"adapterType": "opencode_local",
@@ -229,21 +255,27 @@ try:
                 if DRY:
                     switched.append(f"{v['name']}/{a['name']}")
                     continue
+                # Journal intent before PATCH: a timeout, crash or failed disk
+                # write after the server changes harness must not lose originals.
+                st["agents"][a["id"]] = {"company": cid, "name": a["name"], "orig": orig,
+                    "switch_pending": True, "fallback": {"adapterType": "opencode_local",
+                    "model": MODEL, "aiConnection": body["runtimeConfig"]["aiConnection"]}}
+                st.update(active=True, since=st.get("since") or now, last_probe=now)
+                save(st)
                 code, res = api("PATCH", f"/api/agents/{a['id']}", body)
-                if code == 200 and (res or {}).get("adapterType") == "opencode_local":
-                    st["agents"][a["id"]] = {"company": cid, "name": a["name"], "orig": orig}
-                    st.update(active=True, since=st.get("since") or now, last_probe=now)
+                if code == 200 and matches_fallback(res, st["agents"][a["id"]]["fallback"]):
+                    st["agents"][a["id"]].pop("switch_pending")
                     save(st)  # Preserve each successful switch if a later call fails.
                     switched.append(f"{v['name']}/{a['name']}")
                 else:
-                    skipped.append(f"{v['name']}/{a['name']} (PATCH {code}: {(res or {}).get('error')})")
+                    skipped.append(f"{v['name']}/{a['name']} (PATCH {code}; originals retained, inspect with --reconcile)")
         # Re-wake work that a limit failure interrupted: @mention wakes the assignee.
         rewoken = []
         for cid, r in limit_runs:
             snap = r.get("contextSnapshot") or {}
             issue = snap.get("issueId") or r.get("issueId")
             name = next((a["name"] for a in comp[cid]["agents"] if a["id"] == r["agentId"]), None)
-            if issue and name and r["agentId"] in st["agents"] and issue not in rewoken:
+            if issue and name and r["agentId"] in st["agents"] and not st["agents"][r["agentId"]].get("switch_pending") and issue not in rewoken:
                 if not DRY:
                     api("POST", f"/api/issues/{issue}/comments",
                         {"body": f"@{name} continuing after the Claude usage-limit fallback (now on {MODEL})."})
@@ -270,6 +302,23 @@ try:
         retired_ids = set()
         terminal_issues = {"done", "cancelled", "canceled", "rejected"}
         for old_id, rec in list(st["agents"].items()):
+            if rec.get("switch_pending"):
+                code, current = api("GET", f"/api/agents/{old_id}")
+                if code != 200 or not isinstance(current, dict):
+                    failed.append(f"{rec['name']} (unconfirmed switch; originals preserved)")
+                    continue
+                orig, fallback = rec["orig"], rec["fallback"]
+                if all(current.get(key) == orig[key] for key in ("adapterType", "adapterConfig", "runtimeConfig")):
+                    del st["agents"][old_id]
+                    save(st)
+                    reconciled.append(rec["name"] + " (switch did not apply; original configuration verified)")
+                    continue
+                if matches_fallback(current, fallback):
+                    rec.pop("switch_pending")
+                    save(st)
+                else:
+                    failed.append(f"{rec['name']} (configuration differs; originals preserved for review)")
+                    continue
             cid = rec.get("company")
             company = comp.get(cid)
             if not company:
@@ -346,7 +395,8 @@ try:
 
     if MODE == "status":
         print(json.dumps({"active": st.get("active"), "since": st.get("since"),
-                          "switched_agents": {k: v["name"] for k, v in st["agents"].items()},
+                          "switched_agents": {k: v["name"] for k, v in st["agents"].items() if not v.get("switch_pending")},
+                          "unconfirmed_switches": {k: v["name"] for k, v in st["agents"].items() if v.get("switch_pending")},
                           "recent_limit_failures": [f"{comp[c]['name']}: run {r['id'][:8]} at {r['finishedAt']}" for c, r in limit_runs],
                           "companies_without_openrouter": [v["name"] for v in comp.values() if not v["openrouter"]],
                           "auto_switch": AUTO}, indent=1))
@@ -365,6 +415,9 @@ try:
             notify("⚡ Claude limit hit → agents on OpenRouter",
                    f"{len(sw)} agents moved to {MODEL}: {', '.join(sw)}." + (f" Skipped: {', '.join(sk)}." if sk else ""), "warn")
     elif MODE == "restore" or (MODE == "cron" and st.get("active") and now - st.get("last_probe", 0) >= PROBE_EVERY):
+        if any(rec.get("switch_pending") for rec in st["agents"].values()):
+            print("Unconfirmed provider switches; originals preserved. Run --reconcile before probing recovery.")
+            sys.exit(1)
         st["last_probe"] = now
         ok = True if DRY else subprocess.run(["bash", "-c", "probe_subscription"]).returncode == 0
         if not ok:
@@ -386,7 +439,8 @@ try:
         if now - st.get("notified_limit_at", 0) > 3 * 3600:
             notify("⚠️ Claude usage limit hit in Paperclip",
                    f"{len(limit_runs)} run(s) failed on the limit. Auto-switch is off; run "
-                   "`~/.dotfiles/scripts/utils/paperclip-fallback.sh --switch` to move agents to OpenRouter.", "warn")
+                   "`~/.dotfiles/scripts/utils/paperclip-fallback.sh --switch --dry-run` to preview the budget-guarded fallback. "
+                   "Same-agent restore remains unavailable; waiting for reset avoids another rehire.", "warn")
             st["notified_limit_at"] = now
             save(st)
 finally:
