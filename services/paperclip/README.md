@@ -835,8 +835,9 @@ failure and can notify or perform the separately guarded OpenRouter switch.
 
 Paperclip's own recovery service also handles **classified** `provider_quota`
 failures: it waits until the parsed reset/retry time, or a default backoff if
-the provider supplied no usable time, then retries the same task owner. This
-is a retry, not provider failover; it does not change a Claude agent to Codex
+the provider supplied no usable time, then retries the same task agent: the
+assignee, or the active agent reviewer when the failure occurred in review.
+This is a retry, not provider failover; it does not change a Claude agent to Codex
 or OpenRouter. A new human-only question, blocked issue, missing provider
 login, or an error not classified as `provider_quota` can still require owner
 action. In this installation `AUTO_SWITCH=0`; the watchdog does not switch
