@@ -796,12 +796,12 @@ use the deprecated legacy Landlock flag as a fix:
 the installed CLI rejects it for current permission profiles. Do not enable
 the full sandbox/approval bypass to hide this failure.
 
-STU-13 has a separate legacy execution-reconciliation hold. Its dependencies
-are done and existing human approval is accepted. It was requeued to Todo
-with a repair note, but the manual run was refused and no CEO task started.
-Use supported execution recovery after inspecting the saved run/outcomes;
-retain its history and approval. The repaired command sandbox does not clear
-that hold automatically.
+STU-13 also had a separate legacy execution-reconciliation hold. The supported
+recovery evidence API cleared it after inspection proved its held admission was
+cancelled by the review gate before execution. The original approval and history
+were preserved, and Paperclip started a continuation. This evidence concerns
+that admission only; it does not certify earlier outcomes or task completion.
+The repaired command sandbox did not clear the hold automatically.
 
 ## Usage-limit fallback (2026-09-29)
 
