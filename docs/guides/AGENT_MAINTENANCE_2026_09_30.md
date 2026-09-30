@@ -20,6 +20,13 @@ matches its repository source, has private permissions and exactly one cron
 entry. All nine open PRs had passing checks and no merge conflicts; none
 were merged. Automatic Claude/Codex code reviews still need activation.
 
+**Follow-up, 11:51 Vilnius:** Trading 212 holdings detail is completed in
+PR #50, stacked on #49, and included in the combined checkout/live widget.
+Seventy-one offline assertions and Kraken's 38 regression checks passed.
+Fresh account totals remain available if holdings retrieval fails, with an
+explicit warning and no mixed old positions. Real account reconciliation
+still requires credentials. Glance returned HTTP 200 after staging.
+
 ## What is live
 
 | Area | Verified result |
@@ -47,6 +54,7 @@ prevent an assignment or routine from starting another run later.
 | [47 — Combined draft](https://github.com/peciulevicius/.dotfiles/pull/47) | Checks the focused changes together. Review and merge the focused PRs individually; close this draft after they land. |
 | [48 — This handoff](https://github.com/peciulevicius/.dotfiles/pull/48) | Dated live status, source changes, checks and remaining owner steps. |
 | [49 — Kraken](https://github.com/peciulevicius/.dotfiles/pull/49) | Stacked on #41. Query Funds-only default-wallet collector, indicative EUR prices, private nonce/cache recovery, explicit coverage and hidden setup prompts. Widget/feed staged live; credentials remain an owner step. |
+| [50 — Trading 212 holdings](https://github.com/peciulevicius/.dotfiles/pull/50) | Stacked on #49. Broker-reported wallet amounts and total quantities include pie shares once. Missing detail warns without hiding a valid account summary. Source/widget staged; credentials and reconciliation remain owner steps. |
 
 The host's cron executes scripts directly from `~/.dotfiles`. Its checkout is
 left on `preview/overnight-fixes-2026-09-30` so the fixes coexist. Switching it
@@ -182,7 +190,8 @@ journal should empty only when real Claude probes and exact restores succeed.
    Flex, Trading 212 and Kraken read-only credentials with hidden prompts.
    Refresh and compare each account's quantities/value against its app before
    relying on the total. Kraken covers the default wallet and does not supply
-   cost basis or unrealised P&L. Trading 212 holdings detail is still a TODO.
+   cost basis or unrealised P&L. Trading 212 now includes per-instrument detail;
+   compare its reported wallet values and quantities against the app.
 6. **Other credentials/devices:** Odysseus's current admin
    password/2FA, hardware checks and destructive maintenance remain in the TODO.
 
