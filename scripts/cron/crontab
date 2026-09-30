@@ -43,9 +43,8 @@ PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin
 # downloads one random file per backup set and byte-compares it with the original
 0 6 1 * * ~/.dotfiles/scripts/utils/run-with-notify.sh "R2 restore check" ~/.dotfiles/scripts/backup/r2-verify.sh >> ~/logs/r2-verify.log 2>&1
 
-# Jellyfin + Audiobookshelf miss new files on SMB — restart them every 30 min.
-# Delete once the Jellyfin API key is wired into Radarr/Sonarr → Connect.
-# SMB library rescan cron removed 2026-09-28 — it woke the Sablier sleepers (see smb-watcher-rescan.sh header).
+# The Jellyfin/Audiobookshelf SMB rescan restart was removed 2026-09-28:
+# it woke Sablier sleepers and interrupted playback. Manual helper only.
 
 # Weekly homelab audit (Sunday 9am) — drift, containers, backups, disk, secrets
 0 9 * * 0 ~/.dotfiles/scripts/utils/run-with-notify.sh "Homelab audit" ~/.dotfiles/scripts/utils/homelab-audit.sh >> ~/logs/homelab-audit.log 2>&1

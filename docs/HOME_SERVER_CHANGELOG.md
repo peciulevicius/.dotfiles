@@ -8,6 +8,16 @@ Newest first-ish; dates are when the work was finished.
 
 ---
 
+## 2026-09-30 — refresh media indexing guidance
+
+- Removed stale claims that a 30-minute Jellyfin/Audiobookshelf restart is
+  scheduled. The job was removed on 2026-09-28 because it woke Sablier
+  sleepers and interrupted playback; the helper remains manual-only.
+- Confirmed LazyLibrarian supports a Notify on Download custom-script hook and
+  Audiobookshelf's API reference documents a library-scan endpoint. The local
+  integration is not configured or tested; the TODO now calls for live API,
+  script-path and Sablier-wake checks before setup. API keys stay private.
+
 ## 2026-09-29 — AUTO_SWITCH incident: 10 agents stuck, fixed by hand, feature reverted to notify-only
 
 A real Claude limit hit fired the usage-limit fallback the same day it was
