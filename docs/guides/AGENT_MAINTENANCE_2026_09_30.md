@@ -12,16 +12,24 @@ Opus/Sonnet configs are saved; a staged cron check starts guarded recovery
 after **Thursday, 1 October, 11:00 Vilnius**. Failed Claude probes retry hourly.
 This update supersedes the earlier Wallet and Claude runtime observations.
 
+**Follow-up, 11:30 Vilnius:** Kraken's read-only connector is in PR #49 and
+the combined preview. The live widget, feed and private summary now include
+IBKR, Trading 212 and Kraken, all unconfigured until owner credentials are
+added. Glance returned HTTP 200 after the targeted update. The recovery helper
+matches its repository source, has private permissions and exactly one cron
+entry. All nine open PRs had passing checks and no merge conflicts; none
+were merged. Automatic Claude/Codex code reviews still need activation.
+
 ## What is live
 
 | Area | Verified result |
 |---|---|
 | Paperclip | Approved binding-comparison patch is running; health is `ok`. Five reporting links, three open issue assignments and three routines now point to the replacements. |
-| Coach routine | The scheduled 06:30 run succeeded at 06:33 on the current Claude Sonnet agent. Studio standup remains paused. |
+| Coach routine | Before the Codex takeover, the scheduled 06:30 run succeeded at 06:33 on the recovered Claude Sonnet agent. Studio standup remains paused. |
 | Recovery state | Legacy OpenRouter watchdog is inactive. The separate subscription-switch helper tracks ten temporary Codex roles and their original settings. Automatic all-provider routing remains off. |
 | Shared memory | All 31 current Paperclip agents have the shared guidance; a fresh preview reports zero pending writes. Private originals were backed up before installation. |
 | Discord identities | The legacy jobs webhook is named **Homelab Jobs**. Kuma explicitly sends as **Uptime Kuma** and its repeat alerts are disabled. |
-| Finance | Wallet removed from live Glance, served data and today's private summary. IBKR/Trading 212 each show unconfigured; no broker balances have been reconciled yet. Historical Wallet summaries are excluded from new comparisons. |
+| Finance | Wallet removed from live Glance, served data and today's private summary. IBKR/Trading 212/Kraken each show unconfigured; account balances have not been reconciled. Kraken estimates EUR value from wallet quantities and spot midpoints. Historical Wallet summaries are excluded from new comparisons. |
 
 Paperclip had no active or queued runs at the morning check. This does not
 prevent an assignment or routine from starting another run later.
@@ -37,6 +45,8 @@ prevent an assignment or routine from starting another run later.
 | [45 — PR reviews](https://github.com/peciulevicius/.dotfiles/pull/45) | Guarded subscription-based Claude review workflow, shared review rules and Codex/Claude activation guide. Account setup remains required. |
 | [46 — TODO corrections](https://github.com/peciulevicius/.dotfiles/pull/46) | Removed stale media restart/advice, corrected completed Tailscale work and power-loss recovery documentation, updated the Claude audit skill. |
 | [47 — Combined draft](https://github.com/peciulevicius/.dotfiles/pull/47) | Checks the focused changes together. Review and merge the focused PRs individually; close this draft after they land. |
+| [48 — This handoff](https://github.com/peciulevicius/.dotfiles/pull/48) | Dated live status, source changes, checks and remaining owner steps. |
+| [49 — Kraken](https://github.com/peciulevicius/.dotfiles/pull/49) | Stacked on #41. Query Funds-only default-wallet collector, indicative EUR prices, private nonce/cache recovery, explicit coverage and hidden setup prompts. Widget/feed staged live; credentials remain an owner step. |
 
 The host's cron executes scripts directly from `~/.dotfiles`. Its checkout is
 left on `preview/overnight-fixes-2026-09-30` so the fixes coexist. Switching it
@@ -129,17 +139,23 @@ From the Mac mini repository root:
 
 ```bash
 bash scripts/utils/paperclip-fallback.sh --status
+python3 scripts/utils/paperclip-subscription-switch.py --status
 python3 scripts/utils/paperclip-memory-guidance.py
 python3 scripts/utils/configure-discord-notifications.py
 bash scripts/utils/finance-status.sh --health
 ```
 
-Expect an inactive fallback with empty switched/unconfirmed lists; 31 memory
-entries already configured and zero pending writes; a Discord plan that stops
-with exit 2 while permissions are missing; and healthy Wallet booleans with no
-amounts printed. In Glance, open **Finance** and confirm its update time. In
-Paperclip, inspect the current Coach's successful 06:30 run and the repaired
-organization chart. These previews start no agent runs.
+Expect an inactive legacy fallback with empty switched/unconfirmed lists;
+the separate subscription journal shows ten switched roles until Claude
+recovery succeeds; 31 memory entries already configured with zero pending
+writes; and a Discord plan that stops with exit 2 while permissions are
+missing. Finance health shows IBKR, Trading 212 and Kraken unconfigured,
+without errors or balances. This is expected until credentials are saved.
+In Glance, open **Finance** and confirm its update time and three provider
+rows. In Paperclip, inspect the current Coach's Codex adapter and repaired
+organization chart. A normal message to Coach can verify the next real run;
+the status previews themselves start no runs. After Thursday's reset, the
+journal should empty only when real Claude probes and exact restores succeed.
 
 ## Setup still needed
 
@@ -162,7 +178,12 @@ organization chart. These previews start no agent runs.
 4. **Sidebar:** Settings → Experimental → **Streamlined UI** off restores the
    fuller legacy navigation. This presentation setting affects the instance;
    it is currently on. No UI build change was applied.
-5. **Other credentials/devices:** IBKR Flex setup, Odysseus's current admin
+5. **Finance:** follow `services/glance/README.md` → Finance to save IBKR
+   Flex, Trading 212 and Kraken read-only credentials with hidden prompts.
+   Refresh and compare each account's quantities/value against its app before
+   relying on the total. Kraken covers the default wallet and does not supply
+   cost basis or unrealised P&L. Trading 212 holdings detail is still a TODO.
+6. **Other credentials/devices:** Odysseus's current admin
    password/2FA, hardware checks and destructive maintenance remain in the TODO.
 
 For remaining CLI command approval pop-ups, use `/permissions` → **Approve for
