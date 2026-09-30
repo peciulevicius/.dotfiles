@@ -39,3 +39,7 @@ The diagnostic makes no model calls, reads no secret values and sends no
 messages. It creates and removes only its own scratch directory inside the
 container. It does not establish that an agent's complete task or Discord
 delivery succeeded; those require a separate run after the repair.
+
+The diagnostic uses UID 1000, the pinned image's Paperclip server identity,
+instead of Docker exec's root default. A different image must set
+`PAPERCLIP_RUNTIME_USER` to its actual server UID when checking it.

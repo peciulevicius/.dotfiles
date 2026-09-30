@@ -760,8 +760,10 @@ Discord bridge's reply relay and the agents' own scheduled webhook posts use
 separate paths; a working bridge does not prove those bindings are present.
 
 Both live references and their saved Claude configurations were repaired and
-read back on 2026-09-30. Actual agent delivery remains to be verified after
-the separate command-runner repair below.
+read back on 2026-09-30. Runtime checks as the actual server user confirmed
+both variables were injected and their existing Discord endpoints returned
+HTTP 200 to read-only metadata requests. No test message was sent; the next
+normal agent post still needs delivery verification.
 
 For the current saved takeover, preview and repair with:
 
@@ -796,8 +798,12 @@ Docker's default seccomp policy blocks the namespace operations. The Compose
 file now includes a default-deny policy in `security/codex-seccomp.json`; see
 [the policy provenance and rollback procedure](security/README.md). A disposable
 container verified commands and filesystem boundaries with this policy.
-Live application requires staging the profile and approved container
-recreation, followed by:
+Applied live after approval on 2026-09-30 with private Compose/profile backups
+and automatic rollback on startup or command-check failure. HTTP health and
+both sandbox network profiles passed as server UID 1000. A real subscription
+model then executed its sandboxed command tool and received its output as
+that same user. The image, data/login mounts and capabilities were retained.
+The runner is repaired. Recheck without consuming model quota:
 
 ```bash
 bash scripts/utils/paperclip-sandbox-check.sh
@@ -805,9 +811,18 @@ bash scripts/utils/paperclip-sandbox-check.sh
 
 This check consumes no model quota and wakes no agents. A task must then
 verify actual tool output and its required environment without printing
-secret values. Do not use the deprecated legacy Landlock flag as a fix:
+secret values. Runtime injection and read-only endpoint verification passed
+for both coaching webhooks; no message was sent by the diagnostics. Do not
+use the deprecated legacy Landlock flag as a fix:
 the installed CLI rejects it for current permission profiles. Do not enable
 the full sandbox/approval bypass to hide this failure.
+
+STU-13 has a separate legacy execution-reconciliation hold. Its dependencies
+are done and existing human approval is accepted. It was requeued to Todo
+with a repair note, but the manual run was refused and no CEO task started.
+Use supported execution recovery after inspecting the saved run/outcomes;
+retain its history and approval. The repaired command sandbox does not clear
+that hold automatically.
 
 ## Usage-limit fallback (2026-09-29)
 

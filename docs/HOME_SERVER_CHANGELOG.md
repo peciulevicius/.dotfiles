@@ -20,13 +20,16 @@ Newest first-ish; dates are when the work was finished.
   and reconciled explicitly; no credentials or webhook values are emitted.
 - Applied live and read back both secret references, exact expected Codex
   configs and saved Claude env. Reconciled the SDK's default projection
-  metadata without discarding unknown fields. No notifications or tasks
-  were started; actual delivery awaits the separate command-runner repair.
+  metadata without discarding unknown fields. After runner repair, prospective
+  adapter checks confirmed injection into child processes as server UID 1000
+  and HTTP 200 from both Discord webhook metadata endpoints. No secret values
+  were printed and no test messages/model calls were made by those checks.
+  Actual post delivery remains a normal-run verification step.
 
-## 2026-09-30 — prepare Codex command-runner repair
+## 2026-09-30 — repair the live Codex command runner
 
 - Reproduced the bubblewrap namespace failure. Earlier hello/model probes
-  did not test command tools; the temporary takeover is not fully working.
+  did not test command tools; the takeover had not been verified end to end.
 - Prepared a pinned Moby default-deny seccomp policy with three added rules
   for private namespace/mount setup. No additional container capabilities,
   image upgrade, sandbox bypass or data-mount changes are proposed.
@@ -34,8 +37,19 @@ Newest first-ish; dates are when the work was finished.
   outside/symlink writes with both sandbox network profiles. Filtering stayed
   active and outer SYS_ADMIN was absent. No service data/credentials were
   mounted and no model calls, messages or purchases occurred.
-- Added a quota-free live runner diagnostic. Live security-policy application,
-  brief container recreation and actual agent task validation remain pending.
+- Applied the approved policy and briefly recreated Paperclip after verifying
+  zero queued/running runs, unchanged declared env and valid Compose. Private
+  live-file backups and automatic rollback were prepared before application.
+  Retained the existing image, ports, data/login mounts and capabilities.
+- HTTP health recovered; the quota-free diagnostic passed as the actual server
+  UID 1000, with both sandbox network profiles. A small real subscription
+  request as that user executed the sandboxed command tool and received output.
+  This verifies tool execution separately from a hello/model response.
+- STU-13's dependencies and existing human approval were confirmed. Requeued
+  it to Todo with the repair note; manual invocation was refused by a separate
+  `legacy_execution_requires_reconciliation` hold. No CEO task run started.
+  Its approval, recorded execution history and agent configuration are intact;
+  resolving that hold remains outstanding work.
 
 ## 2026-09-30 — isolate subscription recovery failures
 
