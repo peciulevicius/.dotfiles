@@ -103,6 +103,25 @@ paused pending explicit termination approval; no history was deleted.
 
 ---
 
+## 2026-09-30 — one homelab service skill for Claude and Codex
+
+- Moved `homelab-service` to `.agents/skills/` and added relative Claude
+  project/legacy-config aliases. Existing global links and setup consumers
+  reach the same canonical folder, without maintaining duplicate copies.
+- Revised staging guidance to preserve live configuration differences and
+  executing scripts, respect existing authorization, and verify the affected
+  integration. Source readiness and live application are reported separately.
+- Documented skill discovery and invocation; company-managed Paperclip and
+  Odysseus imports remain separate. No account settings, private memory,
+  company agent configuration or running service is changed by this move.
+- Checks: the installed Codex CLI's `skills/list` finds an enabled repo skill
+  from the root and Glance subfolder, with no model turn. Claude's project
+  alias and all 47 existing installer links resolve correctly after repeated
+  installs in an isolated fixture. Skill validation, shell syntax/lint and
+  strict documentation build passed; no private data was copied into Git.
+
+---
+
 ## 2026-09-29 — AUTO_SWITCH incident: 10 agents stuck, fixed by hand, feature reverted to notify-only
 
 A real Claude limit hit fired the usage-limit fallback the same day it was
