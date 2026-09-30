@@ -738,6 +738,10 @@ references even though the encrypted company secrets still existed. The
 Discord bridge's reply relay and the agents' own scheduled webhook posts use
 separate paths; a working bridge does not prove those bindings are present.
 
+Both live references and their saved Claude configurations were repaired and
+read back on 2026-09-30. Actual agent delivery remains to be verified after
+the separate command-runner repair below.
+
 For the current saved takeover, preview and repair with:
 
 ```bash
@@ -759,6 +763,30 @@ and [PR #14027](https://github.com/paperclipai/paperclip/pull/14027) for clearin
 bindings and avoiding unnecessary validation. Both were open when checked
 2026-09-30; we did not file a duplicate. That PR's explicit-null schema and
 route changes are separate from our deployed comparison-only patch.
+
+### Codex commands fail with a bubblewrap namespace error
+
+The hello/model probes above do not execute commands. On 2026-09-30 the
+temporary Codex agents could reach the model but their command tools failed
+with `bwrap: No permissions to create a new namespace`. This blocked tasks
+such as STU-13 and must not be reported as a working takeover.
+
+Docker's default seccomp policy blocks the namespace operations. The Compose
+file now includes a default-deny policy in `security/codex-seccomp.json`; see
+[the policy provenance and rollback procedure](security/README.md). A disposable
+container verified commands and filesystem boundaries with this policy.
+Live application requires staging the profile and approved container
+recreation, followed by:
+
+```bash
+bash scripts/utils/paperclip-sandbox-check.sh
+```
+
+This check consumes no model quota and wakes no agents. A task must then
+verify actual tool output and its required environment without printing
+secret values. Do not use the deprecated legacy Landlock flag as a fix:
+the installed CLI rejects it for current permission profiles. Do not enable
+the full sandbox/approval bypass to hide this failure.
 
 ## Usage-limit fallback (2026-09-29)
 

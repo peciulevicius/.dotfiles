@@ -18,8 +18,24 @@ Newest first-ish; dates are when the work was finished.
 - Update saved Claude env alongside confirmed Codex env so tomorrow's return
   preserves the authorized webhook fix. Pending/lost responses are retained
   and reconciled explicitly; no credentials or webhook values are emitted.
-- Source prepared; live binding verification and the separate Codex command
-  sandbox repair remain follow-ups. No notifications or tasks were started.
+- Applied live and read back both secret references, exact expected Codex
+  configs and saved Claude env. Reconciled the SDK's default projection
+  metadata without discarding unknown fields. No notifications or tasks
+  were started; actual delivery awaits the separate command-runner repair.
+
+## 2026-09-30 — prepare Codex command-runner repair
+
+- Reproduced the bubblewrap namespace failure. Earlier hello/model probes
+  did not test command tools; the temporary takeover is not fully working.
+- Prepared a pinned Moby default-deny seccomp policy with three added rules
+  for private namespace/mount setup. No additional container capabilities,
+  image upgrade, sandbox bypass or data-mount changes are proposed.
+- Disposable checks proved actual commands, workspace writes and denied
+  outside/symlink writes with both sandbox network profiles. Filtering stayed
+  active and outer SYS_ADMIN was absent. No service data/credentials were
+  mounted and no model calls, messages or purchases occurred.
+- Added a quota-free live runner diagnostic. Live security-policy application,
+  brief container recreation and actual agent task validation remain pending.
 
 ## 2026-09-30 — isolate subscription recovery failures
 
@@ -36,9 +52,9 @@ Newest first-ish; dates are when the work was finished.
   last 100 company runs. New queued work cannot hide behind unrelated history.
 - Updating the staged helper also saves a private copy of its previous source;
   the original configuration journal and recovery deadline are preserved.
-- Source prepared for a focused PR stacked on Paperclip recovery. Updating
-  the separately staged recovery helper is a live follow-up; this does not
-  enable automatic initial quota routing or change agent configurations.
+- Published in PR #52 and staged the updated recovery helper live, retaining
+  the prior helper backup, ten saved originals and the October 1 reset time.
+  This does not enable automatic initial quota routing.
 - Validation: 124 offline assertions covering batch isolation, explicit hello
   proof, complete probe configs, missing/changed identities, queued work,
   lost responses, exact restores, hourly deadlines and private staging

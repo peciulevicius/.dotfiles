@@ -215,6 +215,14 @@ Section names in *italics* are headings below.
 - Paperclip: recovery and reference repairs were applied and verified
   2026-09-29. A temporary unbound Claude → Codex takeover was applied on
   2026-09-30 with saved original models and a scheduled guarded return.
+  Command execution is currently blocked by Docker's bubblewrap namespace
+  restriction; model hello probes did not test tools. PR #53 prepares the
+  default-deny policy and quota-free runner diagnostic. Live application
+  needs an approved brief container restart, then actual STU-13/tool output
+  verification. Coach/Dietitian secret references are repaired live and
+  preserved in saved Claude configs; actual Discord delivery still needs
+  verification after runner repair. Channel migration separately needs the
+  bot's Manage Channels and Manage Webhooks permissions.
   Recovery now isolates busy/changed/unavailable roles and failed probes,
   requires a real hello result, and preserves unresolved originals. This
   subscription helper excludes selected execution environments; host-login
