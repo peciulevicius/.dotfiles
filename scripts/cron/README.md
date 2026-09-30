@@ -24,12 +24,23 @@ stdin (`crontab < file` or `cat file | crontab -`) and always verify with
 | Daily 05:00 | rclone → Cloudflare R2 (runs `~/services/rclone/rclone-backup.sh`) | `~/logs/rclone-backup.log` |
 | Monthly, 1st 06:00 | R2 restore spot-check + size history (`scripts/backup/r2-verify.sh`) | `~/logs/r2-verify.log` |
 | Hourly | Kindle Scribe → Obsidian vault | `~/logs/kindle-sync.log` |
-| Every 30 min | Restart Jellyfin + Audiobookshelf so they see new NAS files (`smb-watcher-rescan.sh`) | `~/logs/smb-rescan.log` |
 | Every 5 min | Heartbeat to Healthchecks.io (`heartbeat.sh`) — alerts from outside when pings stop, or when Docker is unresponsive | `~/logs/heartbeat.log` |
+| Every 5 min | Host health snapshot for Glance (`homelab-status.sh`) | `~/logs/homelab-status.log` |
+| Every 5 min | Calendar status snapshot for Glance (`calendar-status.sh`) | `~/logs/calendar-status.log` |
+| Daily 07:00 | Finance providers → Glance portfolio (`finance-status.sh`) | `~/logs/finance-status.log` |
+| Daily 07:05 | Private finance summary in `~/ai-memory` (`finance-memory-snapshot.sh`) | `~/logs/finance-memory-snapshot.log` |
+| Every 15 min | Commit shared `~/ai-memory` edits (`ai-memory-commit.sh`) | `~/logs/ai-memory.log` |
 | Sunday 09:00 | Homelab audit — drift, containers, backups, disk, secrets (`homelab-audit.sh`) | `~/logs/homelab-audit.log` |
 | Sunday 09:30 | Paperclip reports feed — read-only snapshot for the Homelab agents (`paperclip-reports.sh`) | `~/logs/paperclip-reports.log` |
 | Daily 06:30 | Image updates → Glance "Updates" widget (`update-report.sh`, reads WUD) | `~/logs/update-report.log` |
 | Monday 09:00 | Weekly image-update summary to Discord (`update-report.sh --discord`) — a report, not an auto-update; upgrade with `upgrade-service.sh` | `~/logs/update-report.log` |
+| Every 5 min | Paperclip usage-limit watchdog (notifications only; automatic switching is off) | `~/logs/paperclip-fallback.log` |
+| Every 5 min | Guarded temporary Claude subscription restore (acts only after its saved due time and successful probe) | `~/logs/paperclip-subscription-switch.log` |
+| Monthly, 1st 10:00 | Reminder to review prepaid AI credits | `~/logs/monthly-reminder.log` |
+
+The schedule was compared with the live crontab on 2026-09-30. The old
+30-minute Jellyfin/Audiobookshelf restart is removed; no SMB rescan or recurring
+media-service restart runs now.
 
 ⚠️ **Check before reinstalling.** Until 2026-09-24 this file had fallen
 behind the live schedule — it still pointed the backup at the repo copy and was
