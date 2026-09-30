@@ -1,6 +1,9 @@
 # Books & Audio Automation
 
-Automated ebook and audiobook acquisition: search in LazyLibrarian → click "Wanted" → downloads automatically → EPUBs land in Calibre, audiobooks land in Audiobookshelf.
+Automated ebook and audiobook acquisition: search in LazyLibrarian → click
+"Wanted" → downloads automatically → EPUBs land in Calibre and audiobooks
+land in the Audiobookshelf folder. Audiobookshelf may need a library scan before
+the new file appears in its app because SMB watcher events are unreliable.
 
 ## Stack
 
@@ -144,7 +147,9 @@ These map to:
 2. Search for author → Add → find books
 3. Click **Wanted** button next to any book or audiobook
 4. Wait ~15 min for download + processing
-5. Ebook appears in Calibre-Web / Audiobookshelf automatically
+5. The ebook appears in Calibre-Web. Audiobookshelf may show a new audiobook
+   after its next startup or library scan; there is no recurring restart job.
+   See [the media watcher status](../HOME_SERVER_REFERENCE.md#file-watchers-miss-new-files-on-smb).
 
 ## Reading sideloaded books on the Kindle
 
@@ -279,7 +284,10 @@ You already have the whole chain — worth restating since it's easy to lose tra
 
 So: **LazyLibrarian acquires, Audiobookshelf and Calibre-Web serve.** One tool
 handles both books and audiobooks — click "Wanted" and the PostProcessor routes
-EPUBs into Calibre and MP3/M4B into Audiobookshelf automatically.
+EPUBs into Calibre and MP3/M4B into the Audiobookshelf folder automatically.
+SMB may delay indexing in Audiobookshelf until its next startup or library
+scan; the old timed restart was removed to avoid waking sleepers and
+interrupting playback.
 
 > **Readarr was removed on 2026-09-19.** It had 0 authors, 0 books and 0 grab
 > history, and is archived upstream. LazyLibrarian is the pipeline.
