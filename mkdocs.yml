@@ -45,6 +45,7 @@ nav:
       - Mac mini Setup: HOME_SERVER.md
 
   - Homelab:
+      - Agent maintenance handoff (2026-09-30): guides/AGENT_MAINTENANCE_2026_09_30.md
       - TODO (outstanding work): HOME_SERVER_TODO.md
       - Changelog (done, and why): HOME_SERVER_CHANGELOG.md
       - Reference (RAM, drives, paths): HOME_SERVER_REFERENCE.md
