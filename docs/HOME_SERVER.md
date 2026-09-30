@@ -235,8 +235,8 @@ the newest `immich-*.sql` dump as above, and the photo/video originals:
 
 ### 3.9 Cron jobs
 
-The full schedule and current logs are listed in
-[`scripts/cron/README.md`](../scripts/cron/README.md). Most maintenance jobs use
+The full schedule and current logs are maintained in
+`scripts/cron/README.md`. Most maintenance jobs use
 `scripts/utils/run-with-notify.sh`, which posts to Discord when a job starts
 failing and when it recovers. The live crontab is the source of truth.
 

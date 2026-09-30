@@ -803,7 +803,7 @@ docker compose up -d
 4. Wait ~15 min — LazyLibrarian moves the files into the Calibre or
    Audiobookshelf folders. Ebooks appear in Calibre-Web; Audiobookshelf may not
    index a new audiobook until its next startup or library scan because SMB
-   file events are unreliable; see the [media watcher status](HOME_SERVER_REFERENCE.md#file-watchers-miss-new-files-on-smb).
+   file events are unreliable; see the [media watcher status](HOME_SERVER_REFERENCE.md#services-with-an-smb-mounted-library-dont-reliably-notice-new-files).
 
 **See:** `docs/guides/BOOKS.md` for full setup guide and gotchas.
 
