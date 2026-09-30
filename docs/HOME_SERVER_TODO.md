@@ -205,8 +205,8 @@ Section names in *italics* are headings below.
   a classified quota failure on the same task agent at reset/default backoff but
   does not change providers. The owner prefers Claude Max and asked
   for no further Codex-specific development.
-  Channel migration separately needs the
-  bot's Manage Channels and Manage Webhooks permissions.
+  Discord notification channels were migrated and API-verified on 2026-09-30;
+  the Kuma notification test remains an owner UI step.
   Recovery now isolates busy/changed/unavailable roles and failed probes,
   requires a real hello result, and preserves unresolved originals. This
   subscription helper excludes selected execution environments; host-login
