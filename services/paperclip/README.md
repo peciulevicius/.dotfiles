@@ -739,7 +739,7 @@ route changes are separate from our deployed comparison-only patch.
 
 ## Usage-limit fallback (2026-09-29)
 
-When the Claude Pro subscription hits its limit, `claude_local` can report
+When the Claude subscription hits its limit, `claude_local` can report
 *"ACP agent reported a terminal limit failure"* (`errorCode acpx_turn_failed`,
 with no reset time in that run's log or events). The local watchdog in
 `scripts/utils/paperclip-fallback.sh` (cron, every 5 min) detects that legacy
@@ -754,6 +754,18 @@ or OpenRouter. A new human-only question, blocked issue, missing provider
 login, or an error not classified as `provider_quota` can still require owner
 action. In this installation `AUTO_SWITCH=0`; the watchdog does not switch
 agents automatically:
+
+**Provider-failover status (checked 2026-09-30):** the upstream Paperclip
+project still has an open [proposal for opt-in Claude-to-Codex fallback](https://github.com/paperclipai/paperclip/issues/2014)
+and an open [provider circuit-breaker and outage-visibility issue](https://github.com/paperclipai/paperclip/issues/7891).
+Neither is an enabled feature in this installation. Multiple agent records
+using the same signed-in Claude account do not provide independent subscription
+capacity. A reliable fallback needs a separately authenticated provider or
+subscription, a quota-aware route, a tested return path, and a task-context
+handoff; this setup has no such automatic chain. The owner prefers Claude Max,
+so keep agents on their existing Claude models and let the scheduled restore
+return the temporary takeover after the subscription reset. Do not enable
+automatic switching based on the upstream proposals alone.
 
 - **Detects** failed runs whose error mentions a *limit* (not "access failure")
   in the last 15 min, across all companies.
