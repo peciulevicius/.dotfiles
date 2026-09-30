@@ -41,6 +41,12 @@ def has_auth_env(agent):
     return bool(AUTH_KEYS.intersection((agent.get("adapterConfig") or {}).get("env") or {}))
 
 
+def normalized_secret_reference(reference):
+    if not isinstance(reference, dict):
+        return reference
+    return {"projectionClass": "unclassified", "projectionAllowlistKey": None, **reference}
+
+
 def save(state):
     descriptor, temporary = tempfile.mkstemp(dir=STATE_DIR, prefix="state-", suffix=".tmp")
     try:
@@ -256,13 +262,15 @@ def main():
                         failures.append(name)
                         print("Skip role outside the saved takeover:", name)
                         continue
-                    reference = {"type": "secret_ref", "secretId": secret_matches[0]["id"], "version": "latest"}
+                    reference = normalized_secret_reference({
+                        "type": "secret_ref", "secretId": secret_matches[0]["id"], "version": "latest"})
                     pending = record.get("notification_repair_pending")
                     current = config(agent)
                     if pending:
-                        if pending["key"] != key or pending["reference"] != reference:
+                        if pending["key"] != key or normalized_secret_reference(pending["reference"]) != reference:
                             raise RuntimeError("Pending notification repair changed; preserve its journal.")
-                        target = pending["target"]
+                        target = copy.deepcopy(pending["target"])
+                        target["adapterConfig"]["env"][key] = normalized_secret_reference(target["adapterConfig"]["env"][key])
                         before = pending["before"]
                     else:
                         if current != record["expected"]:
@@ -272,7 +280,8 @@ def main():
                         target = copy.deepcopy(current)
                         env = target["adapterConfig"].setdefault("env", {})
                         original_env = record["original"]["adapterConfig"].get("env") or {}
-                        if env.get(key) not in (None, reference) or original_env.get(key) not in (None, reference):
+                        if (normalized_secret_reference(env.get(key)) not in (None, reference)
+                            or normalized_secret_reference(original_env.get(key)) not in (None, reference)):
                             failures.append(name)
                             print("Skip an existing different notification binding:", name)
                             continue
@@ -282,7 +291,7 @@ def main():
                         failures.append(name)
                         print("Skip changed pending notification configuration:", name)
                         continue
-                    if not pending and current == target and original_env.get(key) == reference:
+                    if not pending and current == target and normalized_secret_reference(original_env.get(key)) == reference:
                         print("Already bound:", name)
                         continue
                     print("Bind existing webhook secret:", name)
