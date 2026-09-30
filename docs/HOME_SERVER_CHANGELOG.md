@@ -2639,6 +2639,12 @@ or printing balances, positions, error text or credentials. Setup instructions
 now use it instead of printing credential files. Corrected the stale TODO
 claim that Wallet still needed a token. See `services/glance/README.md`.
 
+Live morning verification, 2026-09-30: the 07:00 scheduled refresh produced
+a healthy, configured, non-stale Wallet provider in the actual Glance feed.
+The private daily snapshot exists and was written at 07:05. IBKR remains
+unconfigured pending its credentials. Only health booleans and file metadata
+were inspected; no generated amounts were copied into the repository.
+
 - Extended `finance-status.sh` with BudgetBakers Wallet's read-only REST API
   (bearer token), account balances, current-month budget versus actual, and
   separate provider caches (IBKR 30m; Wallet 6h). Combined net worth and the
