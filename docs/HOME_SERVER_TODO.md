@@ -3,9 +3,11 @@
 Outstanding work only. Finished items live in
 [HOME_SERVER_CHANGELOG.md](HOME_SERVER_CHANGELOG.md).
 
-👤 = needs you (a UI, a device, a password or a decision). Unmarked = Claude
-can do it in a session. Last truth pass: **2026-09-26** — every open item was
-checked against the live system; done items moved to the changelog.
+👤 = needs owner input (a UI, device, credential, decision or approval).
+Unmarked = no owner-only step is recorded; every agent must still follow
+repository/service rules and get approval for consequential actions. Last
+truth pass: **2026-09-26** — every open item was checked against the live
+system; done items moved to the changelog.
 
 ---
 
@@ -208,15 +210,15 @@ Section names in *italics* are headings below.
 
 - 👤 Optional: Uptime Kuma **DNS** monitor for the resolver chain (Kuma has no monitor API — UI step): + Add New Monitor → DNS → hostname `example.com`, resolver `host.docker.internal` port 53 → alerts if Pi-hole *or* unbound stops answering.
 
-### 🤖 Claude can do next
+### 🤖 An AI agent can do next
 
 - [x] ~~Rotate the **Radarr + Sonarr API keys**~~ — **done 2026-09-27**
   (Prowlarr, Jellyseerr, Bazarr updated + tested; see changelog).
 
 - Optional: OpenCode + `qwen2.5-coder:7b` for offline snippets — *⚡ Batch 2026-09-24*
 - Odysseus: chat-export import, CalDAV after Nextcloud, RAG over Paperless + Linkwarden — *8. Odysseus*
-- Rotate Immich's DB password (restarts Immich — say go) — *9. Maintenance backlog*
-- `rm -rf ~/services/mealie ~/services/grafana` (say go) — *9. Maintenance backlog*
+- 👤 Rotate Immich's DB password (restarts Immich — say go) — *9. Maintenance backlog*
+- 👤 `rm -rf ~/services/mealie ~/services/grafana` (say go) — *9. Maintenance backlog*
 - Pi-hole local DNS records, only after a Caddy decision — *Pi-hole — finish the deployment*
 - Optional `scp` push to the Scribe — *Notes*
 - Major-version image upgrades, one per sitting, with `upgrade-service.sh` — *Pinned images*
@@ -544,7 +546,7 @@ whole-house outage now alerts.
       - [ ] 👤 **Audiobookshelf** — same idea (Settings → API Keys), but check
             whether LazyLibrarian even supports a "notify on import" hook for
             it first — unconfirmed as of 2026-09-22.
-- [ ] 🔴 **Rotate Immich's database password** (Claude, with a go-ahead — it
+- [ ] 👤 🔴 **Rotate Immich's database password** (with a go-ahead — it
       restarts Immich). Found 2026-09-22: `~/services/immich/.env`'s
       `DB_PASSWORD` is still the old, reused personal password. Internal-only
       (Postgres isn't exposed outside the Docker network), so not an active
@@ -561,7 +563,7 @@ whole-house outage now alerts.
       docker compose -f ~/services/immich/docker-compose.yml up -d
       # verify: docker logs immich_server --tail 20 (no auth errors), open the app
       ```
-- [ ] Clear the leftover data directories from the removals:
+- [ ] 👤 Clear the leftover data directories from the removals:
       `rm -rf ~/services/mealie ~/services/grafana` (both confirmed
       empty/unused before removal; both still present 2026-09-25).
       `rclone-backup.sh` already excludes both.
