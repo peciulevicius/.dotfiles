@@ -149,7 +149,7 @@ These map to:
 4. Wait ~15 min for download + processing
 5. The ebook appears in Calibre-Web. Audiobookshelf may show a new audiobook
    after its next startup or library scan; there is no recurring restart job.
-   See [the media watcher status](../HOME_SERVER_REFERENCE.md#file-watchers-miss-new-files-on-smb).
+   See [the media watcher status](../HOME_SERVER_REFERENCE.md#services-with-an-smb-mounted-library-dont-reliably-notice-new-files).
 
 ## Reading sideloaded books on the Kindle
 

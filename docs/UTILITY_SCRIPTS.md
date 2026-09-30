@@ -583,7 +583,7 @@ the 30-minute job woke Sablier-managed sleepers and interrupted playback, so it
 was removed 2026-09-28. LazyLibrarian has a Notify on Download custom-script
 hook and Audiobookshelf documents a library-scan API, but the integration is
 not configured or tested here. See
-[HOME_SERVER_REFERENCE.md](HOME_SERVER_REFERENCE.md#file-watchers-miss-new-files-on-smb).
+[HOME_SERVER_REFERENCE.md](HOME_SERVER_REFERENCE.md#services-with-an-smb-mounted-library-dont-reliably-notice-new-files).
 
 ---
 
