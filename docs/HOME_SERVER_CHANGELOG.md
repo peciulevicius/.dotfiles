@@ -18,6 +18,19 @@ Fresh agent configuration/status is checked before a switch; busy agents are
 skipped. Offline classifier/state checks and shell lint passed. This does not
 enable automatic switching or solve the separate authentication restore bug.
 
+Additional switch safeguards journal original configurations before the API
+PATCH and preserve unconfirmed requests for read-only inspection or explicit
+reconciliation. Unconfirmed switches cannot wake issues or trigger recovery
+probes. A fallback target must already have an active billed-cost monthly
+hard-stop policy of $3 or less, with remaining budget; missing, soft-only or
+exhausted policies are skipped. No budgets or models were changed live.
+The runbook now distinguishes host-login checks from managed credentials,
+records the PATCH route's inability to clear an existing binding with null,
+and documents the built-in Streamlined UI/legacy sidebar setting. Offline
+failure simulations verified budget gates, private pre-PATCH journals, dry
+runs, lost responses, refused requests and preservation of concurrent changes;
+shell lint passed. No live agents or provider requests were started.
+
 The fallback script no longer retries the known-broken same-agent PATCH when
 Claude usage returns. Added an explicit dry-run-first `--reconcile` flow for
 agents already replaced through Paperclip's board approval: it requires a

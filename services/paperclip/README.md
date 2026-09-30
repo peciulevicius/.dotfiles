@@ -30,7 +30,10 @@ on 2026.916.1 — the same version pinned here).
   install was rejected: agents run with `dangerouslySkipPermissions: true` by
   default (headless runs can't answer prompts), and natively that means an
   unattended agent with your whole home directory, Keychain and SSH keys. In
-  the container it can only touch `./data`.
+  the container its host filesystem access is limited to the configured
+  mounts: `./data`, read-only `/reports`, and read-write `/ai-memory`.
+  The shared memory mount is accessible across companies; instruction rules
+  provide ownership guidance, not filesystem isolation between companies.
 - **Embedded Postgres, not a `postgres:17` sidecar.** The host is swap-bound
   (≈10 of 11GB swap in use on 2026-09-26). One container instead of two, and
   it is upstream's own quickstart shape.
@@ -89,8 +92,10 @@ claude setup-token          # on the Mac mini host; prints a long-lived OAuth to
 ```
 
 Put it in `~/services/paperclip/.env` as `CLAUDE_CODE_OAUTH_TOKEN=…`, then
-`cd ~/services/paperclip && docker compose up -d`. Every `claude_local` agent
-picks it up. Usage counts against your Claude plan limits, not API billing.
+`cd ~/services/paperclip && docker compose up -d`. Unmanaged `claude_local`
+agents can inherit it. Agents bound to a managed AI connection instead use
+that connection's credential in an isolated runtime. Usage counts against
+the connected Claude plan limits, not API billing.
 
 **B. Log the container's CLI in interactively:**
 
@@ -106,6 +111,23 @@ connection* (subscription or API key, stored encrypted by Paperclip).
 
 With A or B the Runtime tab shows *"Existing authentication, not managed by
 Connections"* — that is correct.
+
+### Sidebar and agent list
+
+The pinned 2026.916.1 source includes a **Streamlined UI** setting under
+instance **Settings → Experimental**. Turning it off restores the legacy
+shell and navigation, including the fuller agent/organization sections; it
+does not change task or agent data. This is an instance-wide presentation
+setting, so check the result in each company. No UI fork or image upgrade is
+required for this option. Expand collapsed sidebar sections first.
+
+The retained agent list supports **Top / Alphabetical / Recent** sorting from
+the section's menu and starring agents from a row's menu. **See all agents**
+or **Browse agents** opens the complete list when the sidebar shows a subset.
+Paused records can still appear. Hiding or un-starring a row does not terminate
+it or repair references; use the incident cleanup procedure below for that.
+A GitHub screenshot can show another release or presentation setting, so use
+the installed controls before changing the build.
 
 ### Codex / Gemini / OpenCode
 
@@ -646,9 +668,12 @@ fallback, so `scripts/utils/paperclip-fallback.sh` (cron, every 5 min) does it:
 - **Detects** failed runs whose error mentions a *limit* (not "access failure")
   in the last 15 min, across all companies.
 - **Switches** (with `--switch`, or automatically when `AUTO_SWITCH=1`) every
-  non-paused `claude_local` agent to `opencode_local` +
+  eligible non-paused `claude_local` agent to `opencode_local` +
   `openrouter/deepseek/deepseek-v3.2` on the company's shared OpenRouter
-  connection, saving each agent's exact config in
+  connection. Each target must already have an active `billed_cents` monthly
+  policy with a hard stop, a cap of **$3 or less**, and remaining budget;
+  otherwise it is skipped. The switch does not create or raise budgets.
+  Original configurations are saved **before** the provider PATCH in
   `~/.config/homelab/paperclip-fallback/state.json` (chmod 600), then
   @mentions the agent on the interrupted issue so the work resumes. Discord gets
   a "⚡ Claude limit hit" post.
@@ -665,12 +690,14 @@ fallback, so `scripts/utils/paperclip-fallback.sh` (cron, every 5 min) does it:
   third-party references such as the Discord bridge separately.
 - `--status`, `--dry-run`.
 
-**Why OpenRouter, not Anthropic API credit:** Paperclip strips `ANTHROPIC_*` /
+**Why this fallback uses OpenRouter:** Paperclip strips `ANTHROPIC_*` /
 `CLAUDE_CODE_OAUTH_TOKEN` from an agent's env whenever a managed AI connection
-is bound (`stripAiAuthBindings`), and there is no Anthropic API-key connection,
-so "same Claude, pay per token" isn't available. OpenRouter is also cheaper: a
-typical run (~100k input / ~8k output tokens) is ≈ $0.40 on Sonnet via API vs
-≈ $0.03 on deepseek-v3.2 — roughly 13× less. Quality is lower; it's a stop-gap.
+is bound (`stripAiAuthBindings`). This installation has shared OpenRouter
+API-key connections, but no managed Anthropic API-key or OpenAI connection;
+the existing Codex agents use their local subscription login. Those are
+separate authentication paths. There is no implemented Claude ↔ Codex →
+OpenRouter chain. Model prices and quality vary; compare recorded costs and
+task results before changing the role/model split.
 The switch uses the connection's `grantId` (listed on
 `GET /api/companies/<id>/ai-connections`), which the PATCH requires.
 
@@ -680,18 +707,28 @@ to the subscription can fail on a specific agent: Paperclip validates the new
 binding and refuses the PATCH with *"The selected AI connection failed
 validation in this agent's environment"*, while
 `POST /api/companies/<id>/adapters/claude_local/test-environment`
-(company-wide) reports `"status": "pass"` at the very same time — so this
-is **not** the subscription or the login; it's specific to an agent that has
-run under a different harness. `config-revisions/…/rollback` doesn't help
-either: switching harness doesn't create a revision to roll back to, so it
-returns 200 and changes nothing.
+(company-wide) can report `"status": "pass"` at the same time. That test can
+use the host login; a managed binding uses a separately selected credential
+and isolated runtime. A passing company test therefore does **not** prove
+that the managed credential is healthy or that a subscription has reset.
+The incident's config-revision rollback returned 200 without restoring the
+harness; do not treat that response alone as proof of recovery.
+
+Source inspection also found that the PATCH route retains an existing
+`runtimeConfig.aiConnection` when a request omits it or sends a falsey value,
+including `null`. A saved original configuration with no binding therefore
+cannot clear the OpenRouter binding through that request. The supported
+`applyStoredClaudeLogin` flag only handles a user's stored OAuth environment
+reference; it does not clear this managed connection or skip its validation.
+These are additional restoration constraints. The binding-order patch below
+only repairs comparisons of an unchanged binding.
 
 **The actual fix, confirmed 2026-09-29: pause + rename the stuck agent, hire a
 fresh one with the same name, role, manager and `AGENTS.md`.** A PATCH back
-onto the *same* agent record is what fails; a brand-new agent record on
-`claude_local` from the start works immediately (that's exactly how Copywriter
-was fixed — see below). Re-testing or reconnecting the subscription in the UI
-does **not** fix this, since the connection was never the problem.
+onto the *same* agent record failed during this incident; new agents using
+the local Claude login were created successfully. That recovered the roles,
+but does not establish that the original managed binding can be restored.
+Do not disable authentication validation or edit the database to force it.
 
 **⚠️ Incident, same day: `AUTO_SWITCH=1` was turned on, a real limit hit fired
 it, and the restore bug hit *every* switched agent, not just one.** 10 agents
@@ -783,16 +820,22 @@ turn/budget cap, context-window failure or login error does not qualify.
 Only current, unpaused Claude agents contribute failures. Old retired run
 history cannot trigger a new fallback alert. A process lock prevents cron and
 manual repair racing; each successful switch/reference repair is saved
-immediately. Invalid saved state stops processing rather than resetting the
+immediately. Switch intent and originals are saved before the PATCH; an
+interrupted or refused request stays **unconfirmed** until `--reconcile`
+checks the current configuration. Reconciliation can discard an unapplied
+intent only when all three original config fields match exactly; it can
+confirm a fallback only when the adapter, model and AI binding match the
+planned target. Other changes require review. Unconfirmed switches do not
+wake issues or trigger subscription probes. Invalid saved state stops processing rather than resetting the
 original configurations. Auto-switch remains disabled; these safeguards do
 not fix the separate harness restoration defect.
 
 **So `AUTO_SWITCH` is off again**, same day it was turned on. Automatic
-switching must wait until restore does a real
-pause+rehire with the three remaps above instead of a bare PATCH — that's
-follow-up work, not done yet. Until then: a limit hit only **notifies**
+switching must wait until a supported same-agent round trip or a complete
+board-approved rehire workflow has been verified. Until then: a limit hit only **notifies**
 (`⚡ Claude limit hit`), and you either wait for the subscription to reset or
-run `--switch` by hand. When the subscription is back, use `--reconcile` to
+preview `--switch --dry-run` before a manual switch. A target without the
+required budget is skipped. When the subscription is back, use `--reconcile` to
 preview any already-hired replacements, then `--reconcile --apply` to repair
 their links. If no replacement exists, hire a fresh Claude agent through the
 board approval flow; `--restore` deliberately refuses the broken same-agent
@@ -826,9 +869,11 @@ back or create another duplicate.
    standup: paused until there's work to stand up about.
 5. **Backlog is a safe parking spot**: assigned-but-backlog never wakes
    anyone. Move to Todo to start.
-6. **Budgets** (`budgetMonthlyCents`) only cap API-key spend: Paperclip's
+6. **Budgets** (`budgetMonthlyCents`) apply to reported API-key spend: Paperclip's
    only budget metric is `billed_cents` (hard stop at 100% auto-pauses the
-   agent, soft alert at 80%, resets on the 1st, UTC). Every OpenRouter agent
+   agent, soft alert at 80%, resets on the 1st, UTC). A running request can
+   overshoot the cap before its cost is reported; this is not a provider-side
+   prepaid ceiling. Every existing OpenRouter agent
    has a **$3/month** policy (`PATCH /api/agents/<id>/budgets`
    `{"budgetMonthlyCents":300}` — setting the field on a PATCH of the agent
    itself did *not* create the policy). There is no run or token cap for
