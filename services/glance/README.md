@@ -151,8 +151,10 @@ status, native-currency value, source and date. **Connected investments** is
 only the sum of connected investment accounts, not total personal net worth.
 IBKR uses its reported end-of-day NAV. Trading 212 uses the reported live
 account total; its cash and investments are not added to that total again.
-Trading 212 currently supplies account totals and unrealised P&L; individual
-holdings on this card come from IBKR and Kraken. Kraken shows an indicative
+Trading 212 supplies account totals and per-instrument holdings, using each
+position's reported wallet value/P&L in the account currency. Pie shares are
+already in the total quantity. Holdings are never added to reported account
+totals. Kraken shows an indicative
 EUR value from wallet quantities and current spot bid/ask midpoints; it is
 not a broker-reported NAV. Each row shows the valuation source.
 
@@ -200,11 +202,24 @@ balances; retain Glance's existing access protection and never commit it.
 
 The official API supports **Invest and Stocks ISA**, not CFD accounts, and
 uses an **API Key + API Secret** pair with HTTP Basic authentication. Create
-an account-specific key with **account data read permission only**; do not
-enable orders or other write permissions. This collector only makes one GET
-request to `/api/v0/equity/account/summary` (limit: one request per five
-seconds). See [key creation](https://helpcentre.trading212.com/hc/en-us/articles/14584770928157-Trading-212-API-key)
-and the [account summary schema](https://docs.trading212.com/api/accounts/getaccountsummary).
+an account-specific key with **account and positions read permissions only**; do not
+enable orders or other write permissions. Include read access to account
+data and positions. This collector makes only two GET requests:
+`/api/v0/equity/account/summary` (limit: one per five seconds) and
+`/api/v0/equity/positions` (limit: one per second). See
+[key creation](https://helpcentre.trading212.com/hc/en-us/articles/14584770928157-Trading-212-API-key),
+[account summary](https://docs.trading212.com/api/accounts/getaccountsummary)
+and [positions](https://docs.trading212.com/api/positions).
+
+Holding values use `walletImpact.currentValue` and
+`walletImpact.unrealizedProfitLoss`; the wallet currency must match the
+account. Instrument prices are in their own currency and are not substituted
+for these broker-converted amounts. Account summary and positions are
+separate requests, so their values may differ briefly during trading.
+Failed or malformed position retrieval leaves the fresh account total
+available with an explicit **holdings unavailable** warning and no detail
+rows. Older holdings are not mixed into a fresh summary. A failed summary
+fetch still falls back to the labelled last valid provider cache.
 
 ```bash
 mkdir -p ~/.config/homelab

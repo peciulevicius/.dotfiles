@@ -23,6 +23,7 @@ import xml.etree.ElementTree as ET
 
 FLEX = "https://ndcdyn.interactivebrokers.com/AccountManagement/FlexWebService"
 T212 = "https://live.trading212.com/api/v0/equity/account/summary"
+T212_POSITIONS = "https://live.trading212.com/api/v0/equity/positions"
 NAMES = {"ibkr": "IBKR", "trading212": "Trading 212", "kraken": "Kraken"}
 KRAKEN = "https://api.kraken.com"
 SCHEMA = 2
@@ -147,13 +148,42 @@ def ibkr(env, source=None):
 
 def trading212(env):
     credentials = f"{env['TRADING212_API_KEY']}:{env['TRADING212_API_SECRET']}".encode()
-    summary = json.loads(request(T212, authorization="Basic " + base64.b64encode(credentials).decode()))
+    authorization = "Basic " + base64.b64encode(credentials).decode()
+    summary = json.loads(request(T212, authorization=authorization))
     cash = summary["cash"]
-    return {"nav": number(summary["totalValue"]), "currency": currency(summary["currency"]),
+    data = {"nav": number(summary["totalValue"]), "currency": currency(summary["currency"]),
             "cash": sum(number(cash[key]) for key in ("availableToTrade", "inPies", "reservedForOrders")),
             "unrealized_pnl": number(summary["investments"]["unrealizedProfitLoss"]),
             "as_of": datetime.now().strftime("%Y-%m-%d %H:%M"), "positions": [],
-            "basis": "Trading 212 live account summary; holdings detail not collected"}
+            "holdings_error": None, "basis": "Trading 212 live account summary and positions"}
+    try:
+        rows = json.loads(request(T212_POSITIONS, authorization=authorization))
+        if not isinstance(rows, list):
+            raise DataError("Trading 212 holdings response is not a complete positions list")
+        positions, tickers = [], set()
+        for row in rows:
+            if not isinstance(row, dict) or not isinstance(row.get("instrument"), dict) or not isinstance(row.get("walletImpact"), dict):
+                raise DataError("Trading 212 returned an incomplete holding")
+            instrument, impact = row["instrument"], row["walletImpact"]
+            ticker = instrument.get("ticker")
+            if not isinstance(ticker, str) or not ticker or ticker in tickers:
+                raise DataError("Trading 212 returned missing or duplicate instrument identifiers")
+            tickers.add(ticker)
+            if currency(impact.get("currency")) != data["currency"]:
+                raise DataError("Trading 212 holding wallet currency differs from the account; detail omitted")
+            # Broker wallet amounts already include its currency conversion.
+            # quantity includes pie shares; never add quantityInPies again.
+            positions.append({"symbol": ticker, "quantity": number(row.get("quantity")),
+                              "currency": currency(instrument.get("currency")),
+                              "value_base": number(impact.get("currentValue")),
+                              "pnl_base": number(impact.get("unrealizedProfitLoss"))})
+        data["positions"] = positions
+    except (DataError, OSError, ValueError, KeyError, TypeError) as error:
+        # Keep a freshly reported account total usable. Do not copy older
+        # holdings into a fresh report or publish a partly parsed list.
+        data["holdings_error"] = error_text(error)
+        data["basis"] = "Trading 212 live account summary; holdings unavailable"
+    return data
 
 
 def kraken_result(raw):
@@ -381,6 +411,8 @@ def collect(cache_dir, source=None):
         try:
             saved_at = cached.get("saved_at")
             cache_fresh = type(saved_at) in (int, float) and math.isfinite(saved_at) and saved_at <= time.time() < saved_at + ttl
+            if name == "trading212" and old is not None and "holdings_error" not in old:
+                cache_fresh = False  # Upgrade a valid summary-only cache on the next refresh.
             if old is not None and cache_fresh:
                 data = copy.deepcopy(old)
             else:
@@ -438,11 +470,15 @@ def render(providers, unit):
         status = "Not configured" if not provider["configured"] else "Unavailable" if not provider["ok"] else "Stale — last fetch failed" if provider["stale"] else "Connected"
         if provider["ok"] and name not in included:
             status = "Native value only — FX unavailable"
+        detail_error = provider.get("holdings_error")
+        if detail_error and status == "Connected":
+            status = "Connected — holdings unavailable"
+        warnings = [provider.get("error"), f"Holdings: {detail_error}" if detail_error else None]
         breakdown.append({"name": NAMES[name], "value": money(provider.get("nav"), provider.get("currency", unit)),
                           "cash": money(provider.get("cash"), provider.get("currency", unit)),
                           "unrealized_pnl": money(provider.get("unrealized_pnl"), provider.get("currency", unit), sign=True),
                           "status": status, "as_of": provider.get("as_of", ""), "basis": provider.get("basis", ""),
-                          "warning": bool(provider.get("error")), "error": provider.get("error") or ""})
+                          "warning": any(warnings), "error": "; ".join(warning for warning in warnings if warning)})
     positions = sorted((dict(position, provider=name) for name, provider in included.items()
                         for position in provider["positions"]), key=lambda position: -abs(position["value_base"]))
     return {"schema": SCHEMA, "updated": datetime.now().strftime("%Y-%m-%d %H:%M"),
@@ -475,7 +511,7 @@ def main():
         snapshot = load(output)
         try:
             health = {name: {"ok": bool(provider.get("ok")), "configured": bool(provider.get("configured") or provider.get("ok")),
-                           "stale": bool(provider.get("stale")), "error_present": bool(provider.get("error"))}
+                           "stale": bool(provider.get("stale")), "error_present": bool(provider.get("error") or provider.get("holdings_error"))}
                       for name, provider in snapshot["providers"].items()}
             print(json.dumps({"updated": snapshot.get("updated"), "ok": bool(snapshot.get("ok")), "providers": health}, indent=2))
         except (KeyError, TypeError, AttributeError):
