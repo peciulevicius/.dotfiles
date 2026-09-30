@@ -98,17 +98,32 @@ not change the active CLI permission mode.
 
 ## Skills and agent handoffs
 
-Claude Code skills are maintained in `config/claude/skills/` and installed by
-`scripts/setup/setup-claude.sh`. For skills shared by Claude Code and Codex,
-use `.agents/skills/<name>/SKILL.md` as the source and expose it to Claude
-through `.claude/skills/`. Both tools support the open Agent Skills format;
-Claude-specific frontmatter extensions and tool integrations may not work in
-Codex. The existing Claude skill tree is not automatically discovered by
-Codex, and this repo does not yet have a shared Codex skill installed. Paperclip
-may have separately installed company skills; see `services/paperclip/README.md`.
-Odysseus stores skills as `SKILL.md` directories, but still needs them imported
-into its own data store. See the official [Claude Code skills guide](https://code.claude.com/docs/en/skills)
-and [Codex skills guide](https://developers.openai.com/codex/skills/).
+The first shared skill is **`homelab-service`**. Its single source is
+`.agents/skills/homelab-service/SKILL.md`, discovered by Codex in this
+repository. `.claude/skills/homelab-service` is a relative directory symlink
+for Claude's project discovery; `config/claude/skills/homelab-service` points
+to the same directory for existing installers and consumers. The existing
+`~/.claude/skills/homelab-service` link follows that compatibility path, so
+it needs no replacement when the source moves. Claude deduplicates paths
+that reach the same skill folder.
+
+Use `$homelab-service` in Codex or `/homelab-service` in Claude when changing
+this homelab's services. New skills can use the same `.agents/skills/<name>/`
+source plus Claude aliases. Codex detects added skills; restart it if discovery
+is stale. Relative symlinks stay within the checkout, including worktrees.
+See the official [Claude discovery rules](https://code.claude.com/docs/en/skills#choose-where-skills-load)
+and [Codex skill discovery](https://learn.chatgpt.com/docs/build-skills).
+
+Other Claude skills remain in `config/claude/skills/`, installed by
+`scripts/setup/setup-claude.sh`; they are not all automatically available in
+Codex. Shared skills use ordinary Agent Skills frontmatter. Claude-specific
+extensions and tool integrations may not work in other tools.
+
+Paperclip company skills remain separately managed and injected into agent
+runs; a host discovery symlink does not attach a company skill. See
+`services/paperclip/README.md` for its import/sync workflow. Odysseus also needs
+the canonical folder imported into its own skill store. Filesystem sharing,
+skill discovery and private-memory guidance are separate setup steps.
 
 Use one reviewed source per portable skill and document any generated or
 installed copies instead of letting versions drift. Keep Claude-only hooks,

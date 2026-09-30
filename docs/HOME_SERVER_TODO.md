@@ -57,6 +57,7 @@ Section names in *italics* are headings below.
 
 - [x] ~~⚡ Paperclip usage-limit fallback~~ — done 2026-09-29: Coach company got an OpenRouter connection, Copywriter was fixed (pause + rehire, not a connection re-test — the subscription was never actually broken), `AUTO_SWITCH=1` is on. Details + the real fix if this happens again: `services/paperclip/README.md` → *Usage-limit fallback*.
 - **🧠 Shared AI memory (2026-09-29):**
+  - [x] ~~First portable Claude/Codex repository skill~~ — `homelab-service` now has one source under `.agents/skills/`, Claude project discovery and a compatibility link for the existing installer/global path. Skill guidance preserves staged live differences and separates source readiness from deployment. Paperclip/Odysseus skill imports remain separate from host discovery.
   - [x] ~~NAS: create the `backups` share and mount it at `/Volumes/backups`~~ — done 2026-09-29; first `~/ai-memory` copy verified on the NAS. See `docs/HOME_SERVER_CHANGELOG.md`.
   - [x] ~~Consistent memory instructions across Paperclip agents~~ — appended and verified on all 31 current agents (including paused departments), 2026-09-29. Claude/Codex repository guidance points to the same private tree. New hires: `paperclip-memory-guidance.py` preview then `--apply`; role instructions preserved, private originals backed up.
   - [ ] 👤 Odysseus: save the current admin password to Vaultwarden and put it in `~/services/odysseus/.env` (`ODYSSEUS_ADMIN_PASSWORD`) — the `.env` one no longer matches, so API automation can't log in.
