@@ -481,7 +481,7 @@ pages:
       - size: small
         widgets:
           # ── Portfolio — real holdings from scripts/utils/finance-status.sh
-          # (IBKR + BudgetBakers Wallet, daily 07:00) → ./assets/finance.json.
+          # (IBKR + Trading 212, daily 07:00) → ./assets/finance.json.
           # All numbers are preformatted; holdings never touch the
           # repo. Setup: README → Finance.
           - type: custom-api
@@ -489,34 +489,32 @@ pages:
             cache: 5m
             url: http://localhost:8080/assets/finance.json
             template: |
+              {{ range .JSON.Array "provider_breakdown" }}
+              <div style="margin-bottom:10px">
+                <div class="flex justify-between"><span>{{ .String "name" }}</span><span>{{ .String "value" }}</span></div>
+                <div class="size-h6 color-subdue">{{ .String "status" }}{{ if .String "as_of" }} · {{ .String "as_of" }}{{ end }}</div>
+                {{ if .Bool "warning" }}<div class="size-h6 lvl-warn">{{ .String "error" }}</div>{{ end }}
+              </div>
+              {{ end }}
               {{ if .JSON.Bool "ok" }}
               <div class="flex justify-between items-center">
-                <span class="size-h6 color-subdue">Combined net worth</span>
+                <span class="size-h6 color-subdue">Connected investments ({{ .JSON.String "total.currency" }})</span>
                 <span class="size-h3 color-highlight">{{ .JSON.String "total.value" }}</span>
               </div>
-              <ul class="list list-gap-4" style="margin-top:6px">
-                {{ range .JSON.Array "provider_breakdown" }}<li class="flex justify-between size-h6"><span class="color-subdue">{{ .String "name" }}</span><span>{{ .String "value" }}</span></li>{{ end }}
-              </ul>
+              {{ if .JSON.Bool "total.partial" }}<p class="size-h6 lvl-warn">A configured provider is excluded. See its status above.</p>{{ end }}
               <ul class="list list-gap-10" style="margin-top:10px">
-                <li class="flex justify-between"><span>Last day</span><span class="lvl-{{ .JSON.String "total.day_level" }}">{{ .JSON.String "total.day_pnl" }}</span></li>
-                <li class="flex justify-between"><span>Unrealised</span><span class="lvl-{{ .JSON.String "total.unrealized_level" }}">{{ .JSON.String "total.unrealized_pnl" }} <span class="color-subdue">{{ .JSON.String "total.unrealized_pct" }}</span></span></li>
+                <li class="flex justify-between"><span>Unrealised</span><span class="lvl-{{ .JSON.String "total.unrealized_level" }}">{{ .JSON.String "total.unrealized_pnl" }}</span></li>
                 <li class="flex justify-between"><span>Cash</span><span>{{ .JSON.String "total.cash" }}</span></li>
               </ul>
-              <div class="size-h6 color-subdue" style="margin-top:12px">Top holdings / accounts</div>
+              <div class="size-h6 color-subdue" style="margin-top:12px">IBKR holdings (Trading 212 summary only)</div>
               <ul class="list list-gap-4" style="margin-top:4px">
                 {{ range .JSON.Array "positions" }}<li class="flex justify-between size-h6"><span>{{ .String "symbol" }} <span class="color-subdue">{{ .String "pct" }}</span></span><span class="nowrap">{{ .String "value" }} <span class="lvl-{{ .String "pnl_level" }}">{{ .String "pnl" }}</span></span></li>{{ end }}
               </ul>
-              {{ if .JSON.Array "budget_categories" }}
-              <div class="size-h6 color-subdue" style="margin-top:12px">This month's budgets (spent / limit)</div>
-              <ul class="list list-gap-4" style="margin-top:4px">
-                {{ range .JSON.Array "budget_categories" }}<li class="flex justify-between size-h6"><span>{{ .String "name" }}</span><span class="nowrap">{{ .String "spent" }} / {{ .String "limit" }}</span></li>{{ end }}
-              </ul>
-              {{ end }}
               <div class="size-h6 color-subdue" style="margin-top:8px">as of {{ .JSON.String "total.as_of" }}{{ if .JSON.Bool "total.stale" }} · <span class="lvl-warn">stale — last fetch failed</span>{{ end }} · updated {{ .JSON.String "updated" }}</div>
               {{ else if .JSON.Bool "configured" }}
               <p class="lvl-warn">Finance data could not be refreshed: {{ range .JSON.Array "errors" }}{{ .String "" }} {{ end }}</p>
               {{ else }}
-              <p class="color-subdue">No finance providers configured yet. Connect Wallet or IBKR using <b>services/glance/README.md → Finance</b>.</p>
+              <p class="color-subdue">No broker accounts connected yet.</p>
               {{ end }}
 
           - type: markets

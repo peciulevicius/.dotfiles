@@ -38,10 +38,11 @@ Companion: [DEGOOGLE.md](DEGOOGLE.md). This is Gap 4 from that guide.
 
 ### Finance context is read-only
 
-Glance combines read-only account data from IBKR Flex and BudgetBakers Wallet
-and shows Wallet's current-month budget versus actual spending. A daily
+Glance reads IBKR Flex and Trading 212 account summaries directly, with
+separate provider status and dates. Its total covers connected investments;
+Wallet balances and budgets are no longer used. A daily
 summary is generated in `~/ai-memory/finance/`, which Paperclip agents and
-Odysseus may read to advise on budgets and net worth. **Agents may never place
+Odysseus may read to advise on the connected portfolio. **Agents may never place
 a trade, transfer, or payment; the human reviews advice and executes every
 financial action.** Credentials stay in `~/.config/homelab/` and account data
 is kept out of this public repository.

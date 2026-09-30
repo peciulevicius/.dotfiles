@@ -2748,3 +2748,30 @@ were inspected; no generated amounts were copied into the repository.
   finance refresh. Credentials and generated amounts stay outside this repo.
 - Added setup docs and a TODO for the user's Wallet token and remaining IBKR
   setup. No credentials were added.
+
+
+## 2026-09-30 — replace Wallet aggregation with direct broker reports
+
+- Removed BudgetBakers Wallet requests, balances and budgets from the finance
+  collector, Glance card and new private summaries at the user's request. The
+  earlier HTTP 400 fix succeeded at transport level; it did not reconcile
+  Wallet's amounts against the user's accounts.
+- Added Trading 212's read-only account-summary API beside IBKR Flex. Values,
+  dates and status are separate per broker. The EUR total covers connected
+  investments, not full personal net worth. Neither broker has credentials
+  configured yet; setup and numerical reconciliation remain user tasks.
+- IBKR now rejects missing NAV, missing currency, non-finite values and
+  multi-account reports. Removed misleading daily P&L/unrealised percentages.
+  Trading 212's reported total is used once, without adding cash/holdings again.
+- Native caches are private and credential-specific, stale fetches remain
+  labelled, and controlled errors cannot echo request tokens. Snapshot
+  comparisons require matching source coverage/schema/currency and fresh,
+  complete data; legacy Wallet records are not treated as portfolio history.
+- Live follow-up: replaced only the staged Glance Portfolio widget, recreated
+  Glance with its existing image, regenerated the served JSON and today's
+  private summary, and archived obsolete served caches outside the assets
+  directory. Private originals are backed up. The refreshed feed contains
+  IBKR/Trading 212 only, both honestly unconfigured; no Wallet values remain.
+- Validation: Python/Bash syntax, ShellCheck, cached-health privacy checks,
+  offline account-total/FX/cache/rotation/report/snapshot checks. Live broker
+  balances are not verified until their credentials are connected.
