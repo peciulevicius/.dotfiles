@@ -4,7 +4,7 @@ Morning status checked on the Mac mini after the 07:00 finance refresh and
 07:05 private snapshot. Source changes are in focused PRs; none were merged.
 Read the service runbooks for current procedures, since this is a dated record.
 
-**Latest verified status, 2026-09-30:** PR #53's command sandbox policy is
+**Morning check, 2026-09-30:** PR #53's command sandbox policy is
 applied live after approval, with private backups and automatic rollback
 prepared. Paperclip regained HTTP health. The command/write-boundary checks
 passed as server UID 1000, and a real Codex subscription request as that user
@@ -15,9 +15,9 @@ Coach and Dietitian's missing webhook secret references **are repaired live**,
 read back against the active encrypted secrets, and retained in their saved
 Claude configurations. Runtime adapter checks confirmed both variables were
 injected and their Discord metadata endpoints returned HTTP 200. No test
-message was sent; actual normal post delivery remains to be checked.
-This repair is separate from the channel migration,
-which still needs Manage Channels and Manage Webhooks for the bridge bot.
+message was sent; actual normal post delivery remains to be checked. This
+repair is separate from the channel migration; at the morning check, that
+migration still awaited Manage Channels and Manage Webhooks for the bridge bot.
 PR #52's stronger recovery helper is also staged live with its private backup;
 ten originals and the October 1 reset time are preserved.
 
@@ -62,6 +62,27 @@ future quota exhaustion does not yet initiate another automatic takeover.
 Discord's fresh preview still stops because the bot lacks Manage Channels
 and Manage Webhooks. The channel migration has not been applied.
 
+**Follow-up, 22:17 Vilnius:** the owner enabled Manage Channels and Manage
+Webhooks. Discord migration is now applied and API-verified: Kuma's existing
+webhook targets `#uptime-alerts`; jobs, agents and reminders each have their
+own webhook; Coach and Dietitian remain in their channels under AI, with
+Dietitian's typo fixed. Messages, threads, channel IDs and existing channel
+overrides were preserved. A first apply returned HTTP 403 while resending
+unchanged overrides; the helper now omits those fields on moves, and retry
+succeeded. No test messages were sent. The private webhook file and its
+mode-0600 backup remain outside Git. The live monthly reminder now uses the
+reminders route, and the live finance cron label matches IBKR, Trading 212 and
+Kraken; its prior crontab is backed up privately.
+
+PR #44 and the combined draft PR #47 have refreshed docs/secrets/shell and
+GitGuardian checks passing. The Claude review check on #47 is skipped because
+review activation still needs owner setup. PR #54's latest docs update records
+that Paperclip retries classified quota failures on the same agent; upstream
+failover proposals remain open. The legacy watchdog reports inactive with
+`AUTO_SWITCH=false`. Ten subscription roles remain switched until the guarded
+Claude probe and scheduled restore after **Thursday, 1 October, 11:00 Vilnius**.
+STU-13 remains In review with a human-only vendor-access question pending.
+
 ## What is live
 
 | Area | Verified result |
@@ -72,7 +93,7 @@ and Manage Webhooks. The channel migration has not been applied.
 | Coach routine | Before the Codex takeover, the scheduled 06:30 run succeeded at 06:33 on the recovered Claude Sonnet agent. Studio standup remains paused. |
 | Recovery state | Legacy OpenRouter watchdog is inactive. The separate subscription-switch helper tracks ten temporary Codex roles and their original settings. Automatic all-provider routing remains off. |
 | Shared memory | All 31 current Paperclip agents have the shared guidance; a fresh preview reports zero pending writes. Private originals were backed up before installation. |
-| Discord identities | The legacy jobs webhook is named **Homelab Jobs**. Kuma explicitly sends as **Uptime Kuma** and its repeat alerts are disabled. |
+| Discord routing | `#uptime-alerts` receives Kuma's existing webhook; jobs, Paperclip and reminders use separate channels/webhooks. The two coaching channels are under AI. Channel layout and webhook metadata were API-verified; an actual message test remains pending. |
 | Finance | Wallet removed from live Glance, served data and today's private summary. IBKR/Trading 212/Kraken each show unconfigured; account balances have not been reconciled. Kraken estimates EUR value from wallet quantities and spot midpoints. Historical Wallet summaries are excluded from new comparisons. |
 
 Paperclip had no active or queued runs at the morning check. This does not
@@ -85,7 +106,7 @@ prevent an assignment or routine from starting another run later.
 | [41 — Direct finance feeds](https://github.com/peciulevicius/.dotfiles/pull/41) | Replaces Wallet with direct IBKR/Trading 212 summaries, separate source/status/date, private native caches and coverage-aware daily memory. Live widget/feed migrated; credentials and account reconciliation remain user steps. |
 | [42 — Paperclip recovery](https://github.com/peciulevicius/.dotfiles/pull/42) | Rehire/reference repairs and guarded binding comparison, plus the reversible same-ID Codex takeover and staged scheduled recovery. Originals are saved before writes; concurrent edits and failed probes retain them. |
 | [43 — Shared AI guidance](https://github.com/peciulevicius/.dotfiles/pull/43) | `AGENTS.md`/`CLAUDE.md` entry points, documentation and memory rules, reusable instruction rollout, CLI approval guidance. Fixed the failed strict documentation build on the original branch. |
-| [44 — Discord](https://github.com/peciulevicius/.dotfiles/pull/44) | Separate routes/senders, idempotent channel/category migration, preserved permissions/history, Dietitian typo correction, bridge lookup of current hires, notification runbooks. |
+| [44 — Discord](https://github.com/peciulevicius/.dotfiles/pull/44) | Separate routes/senders; live migration applied and verified, with channel history/access rules preserved, Dietitian typo corrected, and docs updated. Kuma message test remains. |
 | [45 — PR reviews](https://github.com/peciulevicius/.dotfiles/pull/45) | Guarded subscription-based Claude review workflow, shared review rules and Codex/Claude activation guide. Account setup remains required. |
 | [46 — TODO corrections](https://github.com/peciulevicius/.dotfiles/pull/46) | Removed stale media restart/advice, corrected completed Tailscale work and power-loss recovery documentation, updated the Claude audit skill. |
 | [47 — Combined draft](https://github.com/peciulevicius/.dotfiles/pull/47) | Checks the focused changes together. Review and merge the focused PRs individually; close this draft after they land. |
@@ -95,6 +116,8 @@ prevent an assignment or routine from starting another run later.
 | [51 — Shared repository skill](https://github.com/peciulevicius/.dotfiles/pull/51) | Stacked on #43. One canonical `homelab-service` skill with Claude project/installer aliases, verified native Codex discovery and guidance that preserves separately staged live changes. Other skills and company imports remain separate. |
 | [52 — Recovery isolation](https://github.com/peciulevicius/.dotfiles/pull/52) | Stacked on #42. Explicit hello proof, complete config probe caching, independent role deferral, full per-agent queued-run checks and backups of replaced staged helpers. Updated helper staged live; original journal/deadline preserved. |
 | [53 — Runner and coaching bindings](https://github.com/peciulevicius/.dotfiles/pull/53) | Stacked on #52. Missing webhook refs repaired live and retained for Claude return. Policy applied after approval; actual commands/model tool output and runtime injection pass. Normal Discord posting remains unverified; STU-13 hold cleared through supported evidence reconciliation; follow-up runs hit provider quota and a vendor-access question awaits owner input. |
+| [54 — Paperclip quota recovery](https://github.com/peciulevicius/.dotfiles/pull/54) | Documents same-agent quota retries, lack of built-in cross-provider failover and open upstream requests. Latest checks pass. |
+| [55 — TODO owner markers](https://github.com/peciulevicius/.dotfiles/pull/55) | Clarifies which items need owner input and which an agent can continue. Latest checks pass. |
 
 The host's cron executes scripts directly from `~/.dotfiles`. Its checkout is
 left on `preview/overnight-fixes-2026-09-30` so the fixes coexist. Switching it
@@ -188,8 +211,8 @@ Simple system orchestration remains in shell.
 ## Checks and how to verify
 
 CI checked documentation, shell lint and secrets on the focused PRs and combined
-tree. The original `e8c2c5c` documentation failure in PR 43 is fixed. The Claude
-review job is intentionally skipped while activation is disabled.
+tree. The original `e8c2c5c` documentation failure in PR 43 is fixed. Claude
+review checks are skipped until the owner enables the required review setup.
 
 Offline simulations covered Discord's permission guard, retained channel IDs
 and permissions, private config modes, idempotent migration and no messages;
@@ -212,8 +235,8 @@ bash scripts/utils/finance-status.sh --health
 Expect an inactive legacy fallback with empty switched/unconfirmed lists;
 the separate subscription journal shows ten switched roles until Claude
 recovery succeeds; 31 memory entries already configured with zero pending
-writes; and a Discord plan that stops with exit 2 while permissions are
-missing. Finance health shows IBKR, Trading 212 and Kraken unconfigured,
+writes; and a Discord preview that reports the configured channel/webhook
+layout. Finance health shows IBKR, Trading 212 and Kraken unconfigured,
 without errors or balances. This is expected until credentials are saved.
 In Glance, open **Finance** and confirm its update time and three provider
 rows. In Paperclip, inspect the current Coach's Codex adapter and repaired
@@ -232,15 +255,10 @@ to clear its execution hold; changing subscriptions did not clear it.
 
 ## Setup still needed
 
-1. **Discord (owner step):** Server Settings → Roles → the role assigned to
-   **COACH_BOT** → enable **Manage Channels** and **Manage Webhooks**, then save.
-   Administrator is not needed. Tell the agent the permissions are enabled;
-   it can run `python3 scripts/utils/configure-discord-notifications.py` for
-   the preview, followed by the same command with `--apply`. It creates **Homelab** and **AI**
-   categories; separates uptime/jobs/agent/reminder channels; moves existing
-   coaching channels and fixes the Dietitian typo while retaining IDs/history.
-   The installed monthly reminder cron line also needs its prepared route
-   argument when the reviewed crontab is installed.
+1. **Discord delivery check (owner step):** Uptime Kuma → Notifications →
+   **Uptime Kuma** → **Test**. Confirm only `#uptime-alerts` receives it.
+   This is the only unverified step for the routing migration; the test was not
+   sent automatically.
 2. **Retired agents:** all 11 obsolete Coach/Studio records pass current
    reference checks. They remain paused because termination is irreversible
    and the specific approval is still pending. The old Homelab Lead is excluded
