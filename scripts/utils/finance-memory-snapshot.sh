@@ -22,7 +22,7 @@ import os
 import re
 import sys
 import tempfile
-from datetime import date
+from datetime import date, timedelta
 
 source, dest, snapshots, today = sys.argv[1:]
 with open(source, encoding="utf-8") as f:
@@ -36,13 +36,14 @@ marker = f"schema:2; providers:{coverage}; currency:{currency}"
 
 previous = None
 this_date = date.fromisoformat(today)
+prior_month = this_date.replace(day=1) - timedelta(days=1)
 for path in sorted(glob.glob(os.path.join(snapshots, "????-??-??.md")), reverse=True):
     stamp = os.path.basename(path)[:10]
     try:
         old_date = date.fromisoformat(stamp)
     except ValueError:
         continue
-    if old_date >= this_date or old_date.month == this_date.month and old_date.year == this_date.year:
+    if (old_date.year, old_date.month) != (prior_month.year, prior_month.month):
         continue
     with open(path, encoding="utf-8") as f:
         match = re.search(r"<!-- finance-value:([-+0-9.eE]+); (schema:2; providers:[a-z0-9_,]+; currency:[A-Z]+) -->", f.read())
