@@ -219,7 +219,7 @@ Section names in *italics* are headings below.
   requires a real hello result, and preserves unresolved originals. This
   subscription helper excludes selected execution environments; host-login
   proof is insufficient for their separate credentials. Paperclip's built-in
-  recovery can retry a classified quota failure on the same task owner at the
+  recovery can retry a classified quota failure on the same task agent at the
   parsed reset time or default backoff; it does not change providers. Automatic
   cross-provider routing is deferred per the owner's Claude Max preference.
   Host-login tests do not prove managed credentials work; restoring a null

@@ -9,8 +9,9 @@ Newest first-ish; dates are when the work was finished.
 ## 2026-09-30 — clarify Paperclip quota retry versus provider failover
 
 - Verified the installed Paperclip recovery service schedules a retry for a
-  classified `provider_quota` failure against the same task owner, at the
-  parsed retry/reset time or a default backoff. It does not choose another
+  classified `provider_quota` failure against the same task agent (assignee or
+  active agent reviewer), at the parsed retry/reset time or default backoff.
+  It does not choose another
   adapter or provider. Other execution holds and human-only questions can
   still require owner action.
 - Clarified that the local Claude usage watchdog is separate: it detects the
