@@ -19,12 +19,17 @@ Newest first-ish; dates are when the work was finished.
   credentials cannot reuse another account's cached values.
 - Updated Glance and its runbook with provider valuation sources, native
   cash/P&L where available, and hidden credential prompts. The source is
-  prepared in a focused PR; Kraken credentials and quantity reconciliation
+  prepared in PR #49, stacked on direct-finance PR #41; credentials and quantity reconciliation
   remain owner steps. No live Kraken account has been queried.
 - Checks: official offline signature vector, nonce/timeout/permission/cache
   recovery, direct/two-market/inverse EUR prices, reward suffixes, unavailable
   asset handling, nullable P&L, unconfigured no-network collection, Python
   syntax, Bash/ShellCheck and strict documentation build.
+- Live follow-up (11:29 Vilnius): replaced only the staged Portfolio widget,
+  recreated Glance with its existing image and verified HTTP 200. Refreshed
+  the served feed and private daily summary after saving private originals.
+  IBKR, Trading 212 and Kraken all report unconfigured, with no fetch errors.
+  Account credentials and balance reconciliation remain owner steps.
 
 ---
 
