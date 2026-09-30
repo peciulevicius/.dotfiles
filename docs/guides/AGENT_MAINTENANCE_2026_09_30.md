@@ -21,12 +21,11 @@ which still needs Manage Channels and Manage Webhooks for the bridge bot.
 PR #52's stronger recovery helper is also staged live with its private backup;
 ten originals and the October 1 reset time are preserved.
 
-**STU-13 remains unresolved:** dependencies are done and its original human
-approval is accepted. The issue was requeued to Todo with the repair note,
-but Paperclip refused the manual run because of a saved legacy execution
-reconciliation hold. No CEO task run started. The study has not resumed;
-its history and approval are preserved. This is a separate task-recovery
-problem from the repaired command runner.
+**STU-13 update:** its legacy hold was cleared through supported recovery
+after proving the held admission was cancelled before provider execution. Its
+approval and history are preserved; earlier outcomes were not certified. Two
+resumed runs failed with `provider_quota`, and the issue is In review with a
+human-only vendor-access question pending in Paperclip. The task is incomplete.
 
 **Follow-up, 10:50 Vilnius:** Wallet was removed at the user's request. Glance
 now has direct IBKR/Trading 212 feeds; both need read-only credentials. A fresh
@@ -65,7 +64,7 @@ and Manage Webhooks. The channel migration has not been applied.
 | Area | Verified result |
 |---|---|
 | Paperclip | Approved binding-comparison patch is running; health is `ok`. Five reporting links, three open issue assignments and three routines now point to the replacements. |
-| Codex command tools | Live policy applied; command boundaries and a real model command/output passed as server UID 1000. STU-13 still has a separate saved execution hold; no task run started. |
+| Codex command tools | Live policy applied; command boundaries and a real model command/output passed as server UID 1000. STU-13's hold was cleared; resumed runs hit provider quota and a human-only vendor-access question is pending. |
 | Coaching push configuration | Live Codex and saved Claude refs repaired; actual child-process injection and Discord GET metadata checks passed. No test post sent; normal delivery remains unverified. |
 | Coach routine | Before the Codex takeover, the scheduled 06:30 run succeeded at 06:33 on the recovered Claude Sonnet agent. Studio standup remains paused. |
 | Recovery state | Legacy OpenRouter watchdog is inactive. The separate subscription-switch helper tracks ten temporary Codex roles and their original settings. Automatic all-provider routing remains off. |
@@ -92,7 +91,7 @@ prevent an assignment or routine from starting another run later.
 | [50 — Trading 212 holdings](https://github.com/peciulevicius/.dotfiles/pull/50) | Stacked on #49. Broker-reported wallet amounts and total quantities include pie shares once. Missing detail warns without hiding a valid account summary. Source/widget staged; credentials and reconciliation remain owner steps. |
 | [51 — Shared repository skill](https://github.com/peciulevicius/.dotfiles/pull/51) | Stacked on #43. One canonical `homelab-service` skill with Claude project/installer aliases, verified native Codex discovery and guidance that preserves separately staged live changes. Other skills and company imports remain separate. |
 | [52 — Recovery isolation](https://github.com/peciulevicius/.dotfiles/pull/52) | Stacked on #42. Explicit hello proof, complete config probe caching, independent role deferral, full per-agent queued-run checks and backups of replaced staged helpers. Updated helper staged live; original journal/deadline preserved. |
-| [53 — Runner and coaching bindings](https://github.com/peciulevicius/.dotfiles/pull/53) | Stacked on #52. Missing webhook refs repaired live and retained for Claude return. Policy applied after approval; actual commands/model tool output and runtime injection pass. Normal Discord post and STU-13 recovery remain unverified. |
+| [53 — Runner and coaching bindings](https://github.com/peciulevicius/.dotfiles/pull/53) | Stacked on #52. Missing webhook refs repaired live and retained for Claude return. Policy applied after approval; actual commands/model tool output and runtime injection pass. Normal Discord posting is unverified; STU-13's hold is cleared, but resumed runs hit provider quota and await a pending owner response. |
 
 The host's cron executes scripts directly from `~/.dotfiles`. Its checkout is
 left on `preview/overnight-fixes-2026-09-30` so the fixes coexist. Switching it
@@ -225,8 +224,9 @@ journal should empty only when real Claude probes and exact restores succeed.
 The owner prefers Claude Max for Paperclip and requested no further Codex-specific
 development. The ten temporary replacements retain their scheduled guarded
 return to Claude. Reference repairs, coaching webhook bindings and shared-memory
-guidance remain useful with Claude. The existing execution hold on STU-13 is
-unresolved; changing subscriptions does not prove that hold is cleared.
+guidance remain useful with Claude. STU-13 needed separate evidence reconciliation
+to clear its hold; changing subscriptions did not clear it. Automatic routing
+is disabled, and a human-only vendor-access question remains pending.
 
 ## Setup still needed
 

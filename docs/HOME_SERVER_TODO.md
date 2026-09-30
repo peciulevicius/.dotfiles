@@ -201,18 +201,21 @@ Section names in *italics* are headings below.
   model tool call. Coach/Dietitian secret references are repaired live and
   preserved in saved Claude configs. Runtime injection and Discord endpoint
   GET checks pass; actual normal post delivery still needs verification.
-  STU-13 was requeued to Todo under its existing accepted approval, but a
-  saved `legacy_execution_requires_reconciliation` hold refuses its run.
-  Resolve that execution hold through supported recovery controls and verify
-  an actual task run; do not report the study as resumed or repeat its approval.
+  STU-13's hold was cleared through supported recovery after proving its
+  held admission was cancelled before provider execution. The issue is now In
+  review after two resumed runs failed with `provider_quota`; a human-only
+  vendor-access question is pending. Open STU-13 in Paperclip and answer it.
+  No earlier outcomes were certified and no repeat approval was requested.
+  Automatic quota routing is disabled; the owner prefers Claude Max and asked
+  for no further Codex-specific development.
   Channel migration separately needs the
   bot's Manage Channels and Manage Webhooks permissions.
   Recovery now isolates busy/changed/unavailable roles and failed probes,
   requires a real hello result, and preserves unresolved originals. This
   subscription helper excludes selected execution environments; host-login
-  proof is insufficient for their separate credentials. Next
-  engineering work is automatic routing across subscriptions and managed
-  connections, preserving IDs, instructions, skills and assignments. Host-login tests do not prove managed credentials
+  proof is insufficient for their separate credentials. Automatic routing
+  across subscriptions and managed connections is deferred per the owner's
+  Claude Max preference. Host-login tests do not prove managed credentials
   work; restoring a null binding currently retains OpenRouter. Keep
   auto-switch off. The guarded manual switch requires an existing active
   monthly hard-stop policy of $3 or less; `--switch --dry-run` previews it.

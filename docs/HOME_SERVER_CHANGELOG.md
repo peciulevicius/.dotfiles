@@ -45,11 +45,12 @@ Newest first-ish; dates are when the work was finished.
   UID 1000, with both sandbox network profiles. A small real subscription
   request as that user executed the sandboxed command tool and received output.
   This verifies tool execution separately from a hello/model response.
-- STU-13's dependencies and existing human approval were confirmed. Requeued
-  it to Todo with the repair note; manual invocation was refused by a separate
-  `legacy_execution_requires_reconciliation` hold. No CEO task run started.
-  Its approval, recorded execution history and agent configuration are intact;
-  resolving that hold remains outstanding work.
+- Cleared STU-13's legacy hold through the supported recovery evidence API.
+  Its held admission was cancelled by the review gate before provider execution;
+  recorded not-performed evidence for that admission only. Earlier outcomes were
+  not certified. The original approval/history are preserved. Resumed runs then
+  failed with `provider_quota`; the issue is In review with a human-only vendor-
+  access question pending. Task completion remains unverified.
 
 ## 2026-09-30 — isolate subscription recovery failures
 
