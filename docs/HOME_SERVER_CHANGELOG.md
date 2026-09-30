@@ -50,8 +50,8 @@ Newest first-ish; dates are when the work was finished.
   execution: no start, process/session, output or usage evidence; only lifecycle
   events and the stale-queue cancellation receipt. Recorded not-performed
   evidence for that admission only, without certifying prior run outcomes.
-  The original approval/history are preserved. Paperclip started a continuation
-  and started a continuation. That run and its follow-up then failed with
+  The original approval/history are preserved. Paperclip started a continuation.
+  That run and its follow-up then failed with
   `provider_quota`. STU-13 is now In review with a separate human-only
   vendor-access question pending. Task completion remains unverified.
 
