@@ -72,11 +72,12 @@ def main():
     mode.add_argument("--status", action="store_true", help="show saved migration status")
     mode.add_argument("--restore-due", action="store_true", help="cron: restore after the saved reset time")
     mode.add_argument("--install-recovery", action="store_true", help="preview a staged recovery script and cron entry")
+    mode.add_argument("--repair-notifications", action="store_true", help="preview missing Coach/Dietitian webhook bindings")
     parser.add_argument("--apply", action="store_true", help="apply switch/restore after a login probe")
     parser.add_argument("--restore-after", help="ISO timestamp with timezone; do not restore earlier")
     args = parser.parse_args()
-    if args.apply and not (args.switch or args.restore or args.restore_due or args.install_recovery):
-        parser.error("--apply requires --switch or --restore")
+    if args.apply and not (args.switch or args.restore or args.restore_due or args.install_recovery or args.repair_notifications):
+        parser.error("--apply requires a switch, restore, recovery installation or notification repair")
     if args.restore_after and not (args.switch and args.apply):
         parser.error("--restore-after requires --switch --apply")
     reset_time = None
@@ -228,6 +229,108 @@ def main():
             for company in companies:
                 for agent in api("GET", f"/api/companies/{company['id']}/agents"):
                     agents[agent["id"]] = agent
+            if args.repair_notifications:
+                coach_companies = [company for company in companies if company["name"] == "Coach"]
+                if len(coach_companies) != 1:
+                    raise RuntimeError("Coach company is missing or ambiguous; no repairs.")
+                cid = coach_companies[0]["id"]
+                secrets = api("GET", f"/api/companies/{cid}/secrets/catalog")
+                backed_up = False
+                failures = []
+                for name, key in (("Coach", "COACH_DISCORD_WEBHOOK"),
+                                  ("Dietitian", "DIETITIAN_DISCORD_WEBHOOK")):
+                    matches = [agent for agent in agents.values() if agent["companyId"] == cid
+                               and agent["name"] == name and agent["status"] not in
+                               ("paused", "terminated", "pending_approval")]
+                    secret_matches = [secret for secret in secrets if secret.get("status") == "active"
+                        and any(str(secret.get(field) or "").replace("-", "_").upper() == key
+                                for field in ("name", "key"))]
+                    if len(matches) != 1 or len(secret_matches) != 1:
+                        failures.append(name)
+                        print("Skip missing/ambiguous role or secret:", name)
+                        continue
+                    agent = matches[0]
+                    aid = agent["id"]
+                    record = state["agents"].get(aid)
+                    if not record or identity(agent) != record["identity"] or agent["adapterType"] != "codex_local":
+                        failures.append(name)
+                        print("Skip role outside the saved takeover:", name)
+                        continue
+                    reference = {"type": "secret_ref", "secretId": secret_matches[0]["id"], "version": "latest"}
+                    pending = record.get("notification_repair_pending")
+                    current = config(agent)
+                    if pending:
+                        if pending["key"] != key or pending["reference"] != reference:
+                            raise RuntimeError("Pending notification repair changed; preserve its journal.")
+                        target = pending["target"]
+                        before = pending["before"]
+                    else:
+                        if current != record["expected"]:
+                            failures.append(name)
+                            print("Skip changed notification configuration:", name)
+                            continue
+                        target = copy.deepcopy(current)
+                        env = target["adapterConfig"].setdefault("env", {})
+                        original_env = record["original"]["adapterConfig"].get("env") or {}
+                        if env.get(key) not in (None, reference) or original_env.get(key) not in (None, reference):
+                            failures.append(name)
+                            print("Skip an existing different notification binding:", name)
+                            continue
+                        env[key] = reference
+                        before = current
+                    if current not in (before, target):
+                        failures.append(name)
+                        print("Skip changed pending notification configuration:", name)
+                        continue
+                    if not pending and current == target and original_env.get(key) == reference:
+                        print("Already bound:", name)
+                        continue
+                    print("Bind existing webhook secret:", name)
+                    if not args.apply:
+                        continue
+                    if agent["status"] == "running" or has_live_run(cid, aid):
+                        failures.append(name)
+                        print("Skip active notification role:", name)
+                        continue
+                    fresh = api("GET", f"/api/agents/{aid}")
+                    if config(fresh) != current or identity(fresh) != identity(agent) or fresh["status"] != agent["status"]:
+                        failures.append(name)
+                        print("Skip notification role changed during preview:", name)
+                        continue
+                    if has_live_run(cid, aid):
+                        failures.append(name)
+                        print("Skip notification role queued during preview:", name)
+                        continue
+                    if not backed_up:
+                        descriptor, backup = tempfile.mkstemp(dir=STATE_DIR, prefix="notification-journal-", suffix=".bak")
+                        with os.fdopen(descriptor, "wb") as output:
+                            output.write(STATE_FILE.read_bytes())
+                            output.flush()
+                            os.fsync(output.fileno())
+                        backed_up = True
+                    if not pending:
+                        record["notification_repair_pending"] = {
+                            "key": key, "reference": reference, "before": before, "target": target}
+                        save(state)
+                    actual = current
+                    if current != target:
+                        updated = api("PATCH", f"/api/agents/{aid}", {**target, "replaceAdapterConfig": True})
+                        if identity(updated) != identity(agent) or updated["status"] != agent["status"]:
+                            raise RuntimeError("Notification role identity/status changed; preserve the journal.")
+                        actual = config(updated)
+                    if actual != target:
+                        raise RuntimeError("Notification PATCH differs from intent; preserve the journal.")
+                    record["original"]["adapterConfig"].setdefault("env", {})[key] = reference
+                    record["target"] = target
+                    record["expected"] = actual
+                    del record["notification_repair_pending"]
+                    save(state)
+                    print("Verified webhook binding and saved Claude configuration:", name)
+                if failures:
+                    raise RuntimeError(f"{len(failures)} notification roles deferred; saved configs preserved.")
+                if not args.apply:
+                    print("Preview only. No agent writes or model probes.")
+                return
             if args.probe:
                 probe(companies[0]["id"], "codex_local",
                       {"dangerouslyBypassApprovalsAndSandbox": False})
@@ -243,6 +346,10 @@ def main():
             for agent in agents.values():
                 aid = agent["id"]
                 record = state["agents"].get(aid)
+                if record and record.get("notification_repair_pending"):
+                    failures.append(agent["name"])
+                    print("Skip unconfirmed notification repair:", agent["name"])
+                    continue
                 if record and identity(agent) != record["identity"]:
                     failures.append(agent["name"])
                     print("Skip changed saved identity:", agent["name"])

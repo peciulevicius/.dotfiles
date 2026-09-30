@@ -731,6 +731,29 @@ This is an explicit, reversible subscription takeover, with a scheduled
 return. Automatic Claude ↔ Codex → capped OpenRouter selection and recovery
 for managed bindings remain outstanding work. No paid fallback was enabled.
 
+### Restore missing Coach notification bindings
+
+The replacement Coach and Dietitian were missing their webhook environment
+references even though the encrypted company secrets still existed. The
+Discord bridge's reply relay and the agents' own scheduled webhook posts use
+separate paths; a working bridge does not prove those bindings are present.
+
+For the current saved takeover, preview and repair with:
+
+```bash
+python3 scripts/utils/paperclip-subscription-switch.py --repair-notifications
+python3 scripts/utils/paperclip-subscription-switch.py --repair-notifications --apply
+```
+
+The helper requires unique active secrets and current roles, checks saved
+configuration/identity and queued runs, and backs up the private recovery
+journal. It binds only secret references; no webhook value is read or printed.
+It updates both the temporary Codex configuration and saved Claude env, so
+the authorized binding survives the scheduled return. Original models and
+other fields remain intact. A lost PATCH response leaves a pending intent;
+rerun the repair to reconcile it. Recovery defers pending repairs instead of
+discarding them. The commands send no Discord messages or model probes.
+
 Upstream already has [issue #14023](https://github.com/paperclipai/paperclip/issues/14023)
 and [PR #14027](https://github.com/paperclipai/paperclip/pull/14027) for clearing
 bindings and avoiding unnecessary validation. Both were open when checked

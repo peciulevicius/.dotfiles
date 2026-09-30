@@ -6,6 +6,21 @@ is often what you need when something similar breaks again.
 
 Newest first-ish; dates are when the work was finished.
 
+## 2026-09-30 — restore notification references during the takeover
+
+- Found that Coach and Dietitian lacked their webhook env bindings. The
+  encrypted `coach-discord-webhook` and `dietitian-discord-webhook` secrets
+  were still active; bridge routing and channel permissions do not install
+  agent env references.
+- Added a guarded preview/apply repair for the current saved takeover. It
+  checks unique current roles/secrets, idle status, exact saved configs and
+  identity, preserves a private journal backup, and saves intent before PATCH.
+- Update saved Claude env alongside confirmed Codex env so tomorrow's return
+  preserves the authorized webhook fix. Pending/lost responses are retained
+  and reconciled explicitly; no credentials or webhook values are emitted.
+- Source prepared; live binding verification and the separate Codex command
+  sandbox repair remain follow-ups. No notifications or tasks were started.
+
 ## 2026-09-30 — isolate subscription recovery failures
 
 - A busy/queued role, concurrent edit or failed login probe no longer stops
