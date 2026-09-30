@@ -222,9 +222,12 @@ Section names in *italics* are headings below.
   GET checks pass; actual normal post delivery still needs verification.
   STU-13 resumed under its existing accepted approval after supported recovery
   reconciliation proved the held admission was cancelled before execution.
-  The hold is cleared and a continuation is running; verify its terminal
-  result before reporting the setup task complete. No earlier outcomes were
-  certified and no repeat approval was requested.
+  The hold is cleared. Two resumed runs then failed with `provider_quota`;
+  the issue is now In review with a new human-only vendor-access question
+  pending. Open STU-13 in Paperclip and answer that question to continue.
+  No earlier outcomes were certified and no repeat approval was requested.
+  Automatic cross-provider quota routing remains disabled; the owner prefers
+  Claude Max and requested no further Codex-specific development.
   Channel migration separately needs the
   bot's Manage Channels and Manage Webhooks permissions.
   Recovery now isolates busy/changed/unavailable roles and failed probes,

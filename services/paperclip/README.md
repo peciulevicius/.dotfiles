@@ -801,7 +801,10 @@ recovery evidence API cleared it after inspection proved its held admission was
 cancelled by the review gate before execution. The original approval and history
 were preserved, and Paperclip started a continuation. This evidence concerns
 that admission only; it does not certify earlier outcomes or task completion.
-The repaired command sandbox did not clear the hold automatically.
+The first continuation and its follow-up failed with `provider_quota`; STU-13
+is In review with a human-only vendor-access question pending. Answer it in
+Paperclip before continuing. Automatic cross-provider quota routing is not
+enabled. The repaired command sandbox did not clear the hold automatically.
 
 ## Usage-limit fallback (2026-09-29)
 

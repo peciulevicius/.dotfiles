@@ -51,7 +51,9 @@ Newest first-ish; dates are when the work was finished.
   events and the stale-queue cancellation receipt. Recorded not-performed
   evidence for that admission only, without certifying prior run outcomes.
   The original approval/history are preserved. Paperclip started a continuation
-  and moved the issue to In progress; task completion remains unverified.
+  and started a continuation. That run and its follow-up then failed with
+  `provider_quota`. STU-13 is now In review with a separate human-only
+  vendor-access question pending. Task completion remains unverified.
 
 ## 2026-09-30 — isolate subscription recovery failures
 
