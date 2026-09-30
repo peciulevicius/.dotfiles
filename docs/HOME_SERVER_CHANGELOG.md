@@ -70,6 +70,11 @@ paused pending explicit termination approval; no history was deleted.
   amounts, pie quantities, malformed/missing/duplicate detail, currency
   mismatch, private errors, cache upgrades, stale recovery, cached health and
   IBKR-only source mode; Python syntax, ShellCheck and strict docs passed.
+- Live follow-up (11:51 Vilnius): the combined checkout and staged Portfolio
+  widget include holdings support. Private originals were backed up, Glance
+  recreated using its existing image and HTTP 200 verified. The refreshed
+  feed/private summary still show three unconfigured accounts, as expected;
+  real Trading 212 quantities and totals remain unverified until connection.
 
 ## 2026-09-30 — direct Kraken balance connector
 
