@@ -23,10 +23,11 @@ Kuma sends monitor **down** and **recovery** events. Cron job failures, image
 update reports, agent quota/restore events, and reminders use separate
 webhooks; their sender is not Kuma.
 
-The live audit on 2026-09-29 found `resend_interval = 0` on every monitor,
-so repeat down notifications are disabled. Most HTTP monitors have three
-retries before declaring a failure. Keep **Resend Notification** at zero in
-each monitor to retain transition-only alerts.
+The read-only audit on 2026-09-30 found 24 monitors and
+`resend_interval = 0` on all of them, so repeat down notifications are
+disabled. Most HTTP monitors have three retries before declaring a failure.
+Keep **Resend Notification** at zero in each monitor to retain transition-only
+alerts.
 
 Discord routing was applied live on 2026-09-30 using
 [`configure-discord-notifications.py`](../../scripts/utils/configure-discord-notifications.py).
