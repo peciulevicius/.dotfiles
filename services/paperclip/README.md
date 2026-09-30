@@ -739,10 +739,20 @@ route changes are separate from our deployed comparison-only patch.
 
 ## Usage-limit fallback (2026-09-29)
 
-When the Claude Pro subscription hits its limit, `claude_local` runs fail with
+When the Claude Pro subscription hits its limit, `claude_local` can report
 *"ACP agent reported a terminal limit failure"* (`errorCode acpx_turn_failed`,
-no reset time anywhere in the run, log or events). Paperclip has no built-in
-fallback, so `scripts/utils/paperclip-fallback.sh` (cron, every 5 min) does it:
+with no reset time in that run's log or events). The local watchdog in
+`scripts/utils/paperclip-fallback.sh` (cron, every 5 min) detects that legacy
+failure and can notify or perform the separately guarded OpenRouter switch.
+
+Paperclip's own recovery service also handles **classified** `provider_quota`
+failures: it waits until the parsed reset/retry time, or a default backoff if
+the provider supplied no usable time, then retries the same task owner. This
+is a retry, not provider failover; it does not change a Claude agent to Codex
+or OpenRouter. A new human-only question, blocked issue, missing provider
+login, or an error not classified as `provider_quota` can still require owner
+action. In this installation `AUTO_SWITCH=0`; the watchdog does not switch
+agents automatically:
 
 - **Detects** failed runs whose error mentions a *limit* (not "access failure")
   in the last 15 min, across all companies.
@@ -911,9 +921,10 @@ not fix the separate harness restoration defect.
 
 **So `AUTO_SWITCH` is off again**, same day it was turned on. Automatic
 switching must wait until a supported same-agent round trip or a complete
-board-approved rehire workflow has been verified. Until then: a limit hit only **notifies**
-(`⚡ Claude limit hit`), and you either wait for the subscription to reset or
-preview `--switch --dry-run` before a manual switch. A target without the
+board-approved rehire workflow has been verified. Until then, the watchdog
+only **notifies** (`⚡ Claude limit hit`); Paperclip may separately schedule
+the same-owner quota retry described above. You can wait for the subscription
+to reset or preview `--switch --dry-run` before a manual switch. A target without the
 required budget is skipped. When the subscription is back, use `--reconcile` to
 preview any already-hired replacements, then `--reconcile --apply` to repair
 their links. If no replacement exists, hire a fresh Claude agent through the

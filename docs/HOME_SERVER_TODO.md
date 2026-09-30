@@ -218,11 +218,13 @@ Section names in *italics* are headings below.
   Recovery now isolates busy/changed/unavailable roles and failed probes,
   requires a real hello result, and preserves unresolved originals. This
   subscription helper excludes selected execution environments; host-login
-  proof is insufficient for their separate credentials. Next
-  engineering work is automatic routing across subscriptions and managed
-  connections, preserving IDs, instructions, skills and assignments. Host-login tests do not prove managed credentials
-  work; restoring a null binding currently retains OpenRouter. Keep
-  auto-switch off. The guarded manual switch requires an existing active
+  proof is insufficient for their separate credentials. Paperclip's built-in
+  recovery can retry a classified quota failure on the same task owner at the
+  parsed reset time or default backoff; it does not change providers. Automatic
+  cross-provider routing is deferred per the owner's Claude Max preference.
+  Host-login tests do not prove managed credentials work; restoring a null
+  binding currently retains OpenRouter. Keep auto-switch off. The guarded
+  manual switch requires an existing active
   monthly hard-stop policy of $3 or less; `--switch --dry-run` previews it.
 
 - [x] ~~Rotate the **Radarr + Sonarr API keys**~~ — **done 2026-09-27**

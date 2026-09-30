@@ -6,6 +6,18 @@ is often what you need when something similar breaks again.
 
 Newest first-ish; dates are when the work was finished.
 
+## 2026-09-30 — clarify Paperclip quota retry versus provider failover
+
+- Verified the installed Paperclip recovery service schedules a retry for a
+  classified `provider_quota` failure against the same task owner, at the
+  parsed retry/reset time or a default backoff. It does not choose another
+  adapter or provider. Other execution holds and human-only questions can
+  still require owner action.
+- Clarified that the local Claude usage watchdog is separate: it detects the
+  legacy Claude CLI terminal-limit error and only changes providers when its
+  guarded manual/automatic switch path is explicitly enabled. `AUTO_SWITCH`
+  remains off; no provider configuration was changed.
+
 ## 2026-09-30 — isolate subscription recovery failures
 
 - A busy/queued role, concurrent edit or failed login probe no longer stops
