@@ -27,6 +27,15 @@ Fresh account totals remain available if holdings retrieval fails, with an
 explicit warning and no mixed old positions. Real account reconciliation
 still requires credentials. Glance returned HTTP 200 after staging.
 
+**Follow-up, 13:50 Vilnius:** PR #51 shares the first repository skill,
+`homelab-service`, between Claude and Codex through one canonical folder.
+Native Codex discovery and the existing Claude installer links were checked.
+The subscription journal still contains ten switched roles with their
+original Claude settings saved. Their return is scheduled automatically;
+future quota exhaustion does not yet initiate another automatic takeover.
+Discord's fresh preview still stops because the bot lacks Manage Channels
+and Manage Webhooks. The channel migration has not been applied.
+
 ## What is live
 
 | Area | Verified result |
@@ -55,6 +64,7 @@ prevent an assignment or routine from starting another run later.
 | [48 — This handoff](https://github.com/peciulevicius/.dotfiles/pull/48) | Dated live status, source changes, checks and remaining owner steps. |
 | [49 — Kraken](https://github.com/peciulevicius/.dotfiles/pull/49) | Stacked on #41. Query Funds-only default-wallet collector, indicative EUR prices, private nonce/cache recovery, explicit coverage and hidden setup prompts. Widget/feed staged live; credentials remain an owner step. |
 | [50 — Trading 212 holdings](https://github.com/peciulevicius/.dotfiles/pull/50) | Stacked on #49. Broker-reported wallet amounts and total quantities include pie shares once. Missing detail warns without hiding a valid account summary. Source/widget staged; credentials and reconciliation remain owner steps. |
+| [51 — Shared repository skill](https://github.com/peciulevicius/.dotfiles/pull/51) | Stacked on #43. One canonical `homelab-service` skill with Claude project/installer aliases, verified native Codex discovery and guidance that preserves separately staged live changes. Other skills and company imports remain separate. |
 
 The host's cron executes scripts directly from `~/.dotfiles`. Its checkout is
 left on `preview/overnight-fixes-2026-09-30` so the fixes coexist. Switching it
@@ -124,11 +134,26 @@ The folder provides durable handoffs, not shared live chat state. All current
 Paperclip agents now receive instructions to use it. Cross-company access is
 possible; the ownership/privacy rules are instructions, not filesystem ACLs.
 
-Portable `SKILL.md` content can be reused across tools. Existing Claude skill
-folders are not automatically discovered by host Codex. Paperclip injects its
-assigned company skills at run time. See
+The first portable skill, `homelab-service`, is now shared through
+`.agents/skills/homelab-service/SKILL.md`. Codex discovers that source;
+Claude's project and existing installer paths link to the same folder. Other
+Claude skill folders are not automatically discovered by host Codex.
+Paperclip injects its assigned company skills at run time; host links do not
+attach company skills or import them into Odysseus. See
 [AI collaboration guide in PR 43](https://github.com/peciulevicius/.dotfiles/pull/43)
+and [shared skill PR 51](https://github.com/peciulevicius/.dotfiles/pull/51)
 for the paths and boundaries.
+
+## Why some helpers use Python
+
+Shell remains the entry point for cron, service commands and the finance
+collector (`finance-status.sh`). Shell could also implement the new API
+helpers with `curl` and `jq`; Python was chosen for nested JSON validation,
+exact configuration journals, file locks, atomic writes, partial recovery,
+and Kraken's signed requests. These helpers use only Python's standard
+library, with no pip packages or virtual environment. Python 3 is already
+installed on this Mac mini; another host needs it before running them.
+Simple system orchestration remains in shell.
 
 ## Checks and how to verify
 
