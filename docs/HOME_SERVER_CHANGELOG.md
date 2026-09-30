@@ -2683,3 +2683,29 @@ fire, flood or theft. Moving T5 offsite is what makes this genuinely 3-2-1.
   finance refresh. Credentials and generated amounts stay outside this repo.
 - Added setup docs and a TODO for the user's Wallet token and remaining IBKR
   setup. No credentials were added.
+
+
+## 2026-09-30 — temporary Paperclip subscription takeover
+
+- A real Codex request exposed a revoked container refresh token despite the
+  CLI's logged-in status. The account owner completed a new device login;
+  real subscription probes then passed in all three companies.
+- Temporarily switched all ten active unbound Claude roles to the existing
+  Codex subscription on their same agent IDs. Paused roles and OpenRouter
+  roles were preserved. No tasks were triggered. All 31 current agents still
+  pass the shared-memory guidance check.
+- Original Opus/Sonnet models and complete configs are saved before each
+  PATCH in private atomic state. The helper refuses paid-key/managed routes,
+  busy targets and concurrent config changes, and retains recovery intent on
+  partial failures. Codex uses the workspace sandbox and CLI engine.
+- Installed a staged recovery helper and a five-minute cron check without
+  changing any existing jobs. It survives repo branch changes and makes no
+  probes until Thursday, 1 October, 11:00 Vilnius. Claude must answer a real
+  probe before any original is restored; failures retry hourly. No automatic
+  paid fallback or all-provider routing was enabled.
+- Upstream issue #14023 and PR #14027 already cover binding removal and
+  unchanged-binding validation; both remain open. No duplicate was filed.
+- Validation: Python syntax; offline exact switch/restore, saved-state,
+  deadline, quota failure, concurrent-edit and timeout scenarios; live Codex
+  probes, ten verified PATCH responses, recovery preview and installed cron
+  verification. The real return to Claude waits for tomorrow's reset.
