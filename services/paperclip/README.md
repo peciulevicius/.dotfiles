@@ -843,6 +843,15 @@ login, or an error not classified as `provider_quota` can still require owner
 action. In this installation `AUTO_SWITCH=0`; the watchdog does not switch
 agents automatically:
 
+Do not treat same-run retry as a provider-wide circuit breaker. The open
+upstream [issue #11597](https://github.com/paperclipai/paperclip/issues/11597)
+reports that a parsed reset time may be stored without gating creation of new
+heartbeat runs on that provider. The related [PR #10616](https://github.com/paperclipai/paperclip/pull/10616)
+is still open and addresses quota classification/deferred retry, not provider-
+wide admission control. This homelab runs
+`paperclip-homelab:2026.916.1-binding-order`; its behavior should not be assumed
+to stop unrelated agents or new work from attempting an exhausted provider.
+
 **Provider-failover status (checked 2026-09-30):** the upstream Paperclip
 project still has an open [proposal for opt-in Claude-to-Codex fallback](https://github.com/paperclipai/paperclip/issues/2014)
 and an open [provider circuit-breaker and outage-visibility issue](https://github.com/paperclipai/paperclip/issues/7891).

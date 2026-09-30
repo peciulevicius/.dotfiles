@@ -203,8 +203,10 @@ Section names in *italics* are headings below.
   No earlier outcomes were certified and no repeat approval was requested.
   Automatic quota routing is disabled; Paperclip's built-in monitor can retry
   a classified quota failure on the same task agent at reset/default backoff but
-  does not change providers. The owner prefers Claude Max and asked
-  for no further Codex-specific development.
+  does not change providers. This is not a provider-wide circuit breaker:
+  upstream issue #11597 remains open for stored reset times not gating new
+  heartbeat runs. The owner prefers Claude Max and asked for no further
+  Codex-specific development.
   Discord notification channels were migrated and API-verified on 2026-09-30;
   the Kuma notification test remains an owner UI step.
   Recovery now isolates busy/changed/unavailable roles and failed probes,
