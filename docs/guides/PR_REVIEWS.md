@@ -4,7 +4,7 @@ CI checks syntax, docs and secret leaks. AI reviews are separate and need
 their own provider connection. This repository has a Claude review workflow;
 Codex's hosted GitHub reviewer is configured in the user's Codex settings.
 
-## Current setup (2026-09-29)
+## Current setup (checked 2026-09-30)
 
 | Reviewer | Prepared | Required to activate |
 |---|---|---|
@@ -13,8 +13,10 @@ Codex's hosted GitHub reviewer is configured in the user's Codex settings.
 
 The Codex bot replied that its GitHub connection needs setup. The GitHub
 connector used by a local Codex session does not automatically activate
-hosted code reviews. The Claude secret and enable variable were absent when
-checked. Neither reviewer is claimed to be running automatically yet.
+hosted code reviews. As checked on 2026-09-30, this repository has neither the
+`CLAUDE_CODE_OAUTH_TOKEN` secret nor the `CLAUDE_PR_REVIEW_ENABLED` variable;
+the Claude workflow therefore skips its review job. Neither reviewer is
+running automatically yet.
 
 ## Codex
 
