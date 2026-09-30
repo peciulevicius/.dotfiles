@@ -220,8 +220,10 @@ Section names in *italics* are headings below.
   subscription helper excludes selected execution environments; host-login
   proof is insufficient for their separate credentials. Paperclip's built-in
   recovery can retry a classified quota failure on the same task agent at the
-  parsed reset time or default backoff; it does not change providers. Automatic
-  cross-provider routing is deferred per the owner's Claude Max preference.
+  parsed reset time or default backoff; it does not change providers. This is
+  not a provider-wide circuit breaker: upstream issue #11597 remains open for
+  stored reset times not gating new heartbeat runs. Automatic cross-provider
+  routing is deferred per the owner's Claude Max preference.
   Host-login tests do not prove managed credentials work; restoring a null
   binding currently retains OpenRouter. Keep auto-switch off. The guarded
   manual switch requires an existing active
