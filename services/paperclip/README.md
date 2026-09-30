@@ -694,6 +694,8 @@ active Claude roles were temporarily moved to `codex_local` with the CLI
 engine and its configured default model. Paused roles, current Codex roles,
 OpenRouter roles, agent IDs, reporting links, instructions, skills and routine
 assignments were preserved. No tasks were triggered by this switch.
+Paperclip starts fresh runtime conversations when the adapter changes;
+durable issue history, instructions and shared memory remain available.
 
 `scripts/utils/paperclip-subscription-switch.py` previews by default:
 
