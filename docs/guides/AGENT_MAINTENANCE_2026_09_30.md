@@ -4,22 +4,29 @@ Morning status checked on the Mac mini after the 07:00 finance refresh and
 07:05 private snapshot. Source changes are in focused PRs; none were merged.
 Read the service runbooks for current procedures, since this is a dated record.
 
-**Critical follow-up, 16:06 Vilnius:** the temporary Codex roles are selected
-and authenticated, but their command tools are **still blocked** by Docker's
-bubblewrap namespace restriction. The earlier hello probes did not test
-commands. PR #53 contains a tested default-deny syscall policy and guarded
-restart/rollback plan; live application awaits the requested major-operation
-approval. Disposable tests proved commands and workspace write boundaries.
-Do not treat the takeover as fully working until the live diagnostic and an
-actual agent tool run pass.
+**Latest verified status, 2026-09-30:** PR #53's command sandbox policy is
+applied live after approval, with private backups and automatic rollback
+prepared. Paperclip regained HTTP health. The command/write-boundary checks
+passed as server UID 1000, and a real Codex subscription request as that user
+executed its command tool and received the output. Earlier hello probes had
+missed the command failure; actual command execution is now verified.
 
 Coach and Dietitian's missing webhook secret references **are repaired live**,
 read back against the active encrypted secrets, and retained in their saved
-Claude configurations. Actual agent Discord delivery remains unverified
-while commands are blocked. This repair is separate from the channel migration,
+Claude configurations. Runtime adapter checks confirmed both variables were
+injected and their Discord metadata endpoints returned HTTP 200. No test
+message was sent; actual normal post delivery remains to be checked.
+This repair is separate from the channel migration,
 which still needs Manage Channels and Manage Webhooks for the bridge bot.
 PR #52's stronger recovery helper is also staged live with its private backup;
 ten originals and the October 1 reset time are preserved.
+
+**STU-13 remains unresolved:** dependencies are done and its original human
+approval is accepted. The issue was requeued to Todo with the repair note,
+but Paperclip refused the manual run because of a saved legacy execution
+reconciliation hold. No CEO task run started. The study has not resumed;
+its history and approval are preserved. This is a separate task-recovery
+problem from the repaired command runner.
 
 **Follow-up, 10:50 Vilnius:** Wallet was removed at the user's request. Glance
 now has direct IBKR/Trading 212 feeds; both need read-only credentials. A fresh
@@ -58,8 +65,8 @@ and Manage Webhooks. The channel migration has not been applied.
 | Area | Verified result |
 |---|---|
 | Paperclip | Approved binding-comparison patch is running; health is `ok`. Five reporting links, three open issue assignments and three routines now point to the replacements. |
-| Codex command tools | Broken in the temporary sandboxed roles. PR #53's policy passed isolated checks; live restart and actual task validation are pending. HTTP health and model hello success did not detect this failure. |
-| Coaching push configuration | Coach/Dietitian encrypted secret references restored in live Codex env and saved Claude env. Actual delivery remains unverified. |
+| Codex command tools | Live policy applied; command boundaries and a real model command/output passed as server UID 1000. STU-13 still has a separate saved execution hold; no task run started. |
+| Coaching push configuration | Live Codex and saved Claude refs repaired; actual child-process injection and Discord GET metadata checks passed. No test post sent; normal delivery remains unverified. |
 | Coach routine | Before the Codex takeover, the scheduled 06:30 run succeeded at 06:33 on the recovered Claude Sonnet agent. Studio standup remains paused. |
 | Recovery state | Legacy OpenRouter watchdog is inactive. The separate subscription-switch helper tracks ten temporary Codex roles and their original settings. Automatic all-provider routing remains off. |
 | Shared memory | All 31 current Paperclip agents have the shared guidance; a fresh preview reports zero pending writes. Private originals were backed up before installation. |
@@ -85,7 +92,7 @@ prevent an assignment or routine from starting another run later.
 | [50 — Trading 212 holdings](https://github.com/peciulevicius/.dotfiles/pull/50) | Stacked on #49. Broker-reported wallet amounts and total quantities include pie shares once. Missing detail warns without hiding a valid account summary. Source/widget staged; credentials and reconciliation remain owner steps. |
 | [51 — Shared repository skill](https://github.com/peciulevicius/.dotfiles/pull/51) | Stacked on #43. One canonical `homelab-service` skill with Claude project/installer aliases, verified native Codex discovery and guidance that preserves separately staged live changes. Other skills and company imports remain separate. |
 | [52 — Recovery isolation](https://github.com/peciulevicius/.dotfiles/pull/52) | Stacked on #42. Explicit hello proof, complete config probe caching, independent role deferral, full per-agent queued-run checks and backups of replaced staged helpers. Updated helper staged live; original journal/deadline preserved. |
-| [53 — Runner and coaching bindings](https://github.com/peciulevicius/.dotfiles/pull/53) | Stacked on #52. Missing webhook refs repaired live and retained for Claude return. Default-deny container policy and quota-free command diagnostic tested in isolation; live runner application and actual delivery remain pending. |
+| [53 — Runner and coaching bindings](https://github.com/peciulevicius/.dotfiles/pull/53) | Stacked on #52. Missing webhook refs repaired live and retained for Claude return. Policy applied after approval; actual commands/model tool output and runtime injection pass. Normal Discord post and STU-13 recovery remain unverified. |
 
 The host's cron executes scripts directly from `~/.dotfiles`. Its checkout is
 left on `preview/overnight-fixes-2026-09-30` so the fixes coexist. Switching it
@@ -208,17 +215,26 @@ missing. Finance health shows IBKR, Trading 212 and Kraken unconfigured,
 without errors or balances. This is expected until credentials are saved.
 In Glance, open **Finance** and confirm its update time and three provider
 rows. In Paperclip, inspect the current Coach's Codex adapter and repaired
-organization chart. The sandbox diagnostic currently fails until the reviewed
-policy is applied. Afterwards, a normal message to Coach can verify a real
-tool run and runtime webhook presence without printing the value;
+organization chart. The sandbox diagnostic now passes. A normal message to
+Coach can verify the next agent workflow and actual Discord post;
 the status previews themselves start no runs. After Thursday's reset, the
 journal should empty only when real Claude probes and exact restores succeed.
 
+## Provider preference
+
+The owner prefers Claude Max for Paperclip and requested no further Codex-specific
+development. The ten temporary replacements retain their scheduled guarded
+return to Claude. Reference repairs, coaching webhook bindings and shared-memory
+guidance remain useful with Claude. The existing execution hold on STU-13 is
+unresolved; changing subscriptions does not prove that hold is cleared.
+
 ## Setup still needed
 
-1. **Discord:** Server Settings → Roles → **COACH_BOT** → enable **Manage
-   Channels** and **Manage Webhooks**. Administrator is not needed. Then run
-   the migration preview and `--apply`. It creates **Homelab** and **AI**
+1. **Discord (owner step):** Server Settings → Roles → the role assigned to
+   **COACH_BOT** → enable **Manage Channels** and **Manage Webhooks**, then save.
+   Administrator is not needed. Tell the agent the permissions are enabled;
+   it can run `python3 scripts/utils/configure-discord-notifications.py` for
+   the preview, followed by the same command with `--apply`. It creates **Homelab** and **AI**
    categories; separates uptime/jobs/agent/reminder channels; moves existing
    coaching channels and fixes the Dietitian typo while retaining IDs/history.
    The installed monthly reminder cron line also needs its prepared route
