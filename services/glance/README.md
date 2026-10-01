@@ -297,7 +297,13 @@ test vectors); the key is never sent anywhere. Only the derived addresses are
 looked up on mempool.space, 0.5 s apart, scanning receive and change chains
 until 20 unused addresses in a row (the standard gap limit). A wallet with
 many used addresses takes minutes, because mempool.space rate-limits bursts (429,
-retried with backoff), so the Ledger result is cached 30 minutes. Privacy cost,
+retried with backoff), so the Ledger result is cached 30 minutes. The scan
+alternates mempool.space and blockstream.info on a 429, and remembers which
+address indices were used (`btc-xpub-*.json` in the finance cache, indices
+only): later runs re-query those plus the next 20, with a full rescan every 7
+days. A run stops after 150 s, saves how far it got and reports the Ledger
+card as stale; the next refresh resumes, so a throttled scan converges instead
+of restarting. Blockstream also sees the derived addresses. Privacy cost,
 stated plainly: mempool.space sees those addresses queried from your IP in one
 burst, so it can link them as one wallet — the same exposure as listing the
 addresses by hand, just including future ones. The key shows every address and

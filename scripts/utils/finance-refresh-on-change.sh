@@ -13,6 +13,15 @@ if [[ -e "$OUTPUT" && ! "$BALANCES" -nt "$OUTPUT" ]]; then
   exit 0
 fi
 
+# One run at a time: a failed/slow rebuild leaves finance.json older than
+# balances.json, which would otherwise start a new overlapping run every 2 minutes.
+LOCK="${TMPDIR:-/tmp}/finance-refresh.lock"
+if ! mkdir "$LOCK" 2>/dev/null; then
+  if [[ -n "$(find "$LOCK" -maxdepth 0 -mmin +20 2>/dev/null)" ]]; then rmdir "$LOCK" 2>/dev/null; fi
+  exit 0
+fi
+trap 'rmdir "$LOCK"' EXIT
+
 if "$SCRIPT_DIR/finance-status.sh"; then
   # shellcheck source=../lib/notify.sh
   source "$SCRIPT_DIR/../lib/notify.sh"

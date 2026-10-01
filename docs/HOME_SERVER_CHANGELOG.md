@@ -6,6 +6,19 @@ is often what you need when something similar breaks again.
 
 Newest first-ish; dates are when the work was finished.
 
+## 2026-10-01 — xpub scan loop fixed
+
+Symptom: Glance's finance card stopped updating; a rebuild hit a 15-minute
+timeout. Cause: when a rebuild failed, `finance.json` stayed older than
+`balances.json`, so the 2-minute watcher started a new full BTC scan every 2
+minutes. They overlapped and kept triggering mempool.space 429s. Fixes: the
+watcher takes a lock (`mkdir`, stale after 20 min); the scan falls back to
+blockstream.info on 429 and remembers used address indices (full rescan weekly).
+The scan also has a 150 s budget per run and saves its high-water mark, so a
+throttled run resumes (provider shows stale) rather than timing out the rebuild.
+Lesson: a "run if output is older than input" trigger needs a lock and a
+failure back-off, or one slow dependency turns it into a self-inflicted DoS.
+
 ## 2026-10-01 — Finance tab: editable balances, Accounts first
 
 - New `services/balances-ui/` (port 8095, localhost + Tailscale only): a one-page
