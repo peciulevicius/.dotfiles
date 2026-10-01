@@ -489,30 +489,83 @@ def xpub_addresses(xpub, branch, count):
         yield _xpub_address(kind, _child(point, chain, index)[0])
 
 
+MEMPOOL_HOSTS = (MEMPOOL, "https://blockstream.info/api/address/")
+XPUB_FULL_RESCAN_DAYS = 7
+XPUB_BUDGET_SECONDS = 150
+
+
 def _mempool_get(address):
-    for wait in (2, 5, 15, 40, None):
+    # Alternate between two Esplora hosts: a 429 on one switches to the other
+    # before any sleeping, which keeps a full scan to seconds, not minutes.
+    attempt = 0
+    for wait in (1, 2, 5, 15, 30, None):
+        host = MEMPOOL_HOSTS[attempt % len(MEMPOOL_HOSTS)]
+        attempt += 1
         try:
-            return request(MEMPOOL + address)
+            return request(host + address)
         except urllib.error.HTTPError as error:
             if error.code != 429 or wait is None:
                 raise
-            time.sleep(wait)
+        time.sleep(wait)
+
+
+def _xpub_state_path(xpub):
+    digest = hashlib.sha256(xpub.encode()).hexdigest()[:16]
+    directory = Path(os.environ.get("FINANCE_CACHE_DIR", str(Path.home() / ".config/homelab/finance-cache")))
+    return directory / f"btc-xpub-{digest}.json"
 
 
 def btc_xpub_balance(xpub):
-    total = 0
-    for branch in (0, 1):
-        gap = index = 0
-        for address in xpub_addresses(xpub, branch, 1000):
-            stats = json.loads(_mempool_get(address))
-            used = stats["chain_stats"]["tx_count"] + stats["mempool_stats"]["tx_count"] > 0
-            total += number(stats["chain_stats"]["funded_txo_sum"] + stats["mempool_stats"]["funded_txo_sum"]
-                            - stats["chain_stats"]["spent_txo_sum"] - stats["mempool_stats"]["spent_txo_sum"])
-            gap = 0 if used else gap + 1
-            index += 1
-            if gap >= XPUB_GAP:
-                break
-            time.sleep(0.5)
+    # Used addresses are remembered (indices only, no balances) so a refresh
+    # re-queries those plus the gap window after the last one, instead of every
+    # address from 0. A full rescan runs every XPUB_FULL_RESCAN_DAYS days. A run
+    # stops after XPUB_BUDGET_SECONDS (public APIs throttle with 429), saves what
+    # it found and raises, so the next run resumes and the scan converges.
+    path = _xpub_state_path(xpub)
+    try:
+        state = json.loads(path.read_text())
+    except (FileNotFoundError, json.JSONDecodeError):
+        state = {}
+    resuming = bool(state.get("partial"))
+    full = not resuming and time.time() - state.get("full_scan_at", 0) > XPUB_FULL_RESCAN_DAYS * 86400
+    known = {} if full else {int(b): set(v) for b, v in state.get("used", {}).items()}
+    reached = {} if full else {int(b): n for b, n in state.get("scanned", {}).items()}
+    deadline = time.time() + XPUB_BUDGET_SECONDS
+    total, used_now, reached_now = 0, {0: set(), 1: set()}, dict(reached)
+
+    def save(partial):
+        merged = {str(b): sorted(used_now[b] | known.get(b, set())) for b in (0, 1)}
+        scanned = time.time() if (full or resuming) and not partial else state.get("full_scan_at", 0)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        atomic_json(path, {"full_scan_at": scanned, "partial": partial, "used": merged,
+                           "scanned": {str(b): n for b, n in reached_now.items()}})
+
+    try:
+        for branch in (0, 1):
+            remembered = known.get(branch, set())
+            top = max(remembered, default=-1)
+            done = max(reached.get(branch, -1), top)
+            gap = max(0, done - top)
+            for index, address in enumerate(xpub_addresses(xpub, branch, 1000)):
+                if index <= done and index not in remembered:
+                    continue
+                if time.time() > deadline:
+                    raise DataError("Bitcoin xpub scan hit its time budget; progress saved, next refresh resumes")
+                stats = json.loads(_mempool_get(address))
+                used = stats["chain_stats"]["tx_count"] + stats["mempool_stats"]["tx_count"] > 0
+                total += number(stats["chain_stats"]["funded_txo_sum"] + stats["mempool_stats"]["funded_txo_sum"]
+                                - stats["chain_stats"]["spent_txo_sum"] - stats["mempool_stats"]["spent_txo_sum"])
+                reached_now[branch] = max(reached_now.get(branch, -1), index)
+                if used:
+                    used_now[branch].add(index)
+                gap = 0 if used else (gap + 1 if index > top else 0)
+                if index > top and gap >= XPUB_GAP:
+                    break
+                time.sleep(0.7)
+    except (DataError, urllib.error.URLError, TimeoutError):
+        save(True)
+        raise
+    save(False)
     return total
 
 
