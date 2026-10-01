@@ -6,6 +6,15 @@ is often what you need when something similar breaks again.
 
 Newest first-ish; dates are when the work was finished.
 
+## 2026-10-01 — one skills directory
+
+`homelab-service` moved from `.agents/skills/` (with symlinks from
+`config/claude/skills/` and `.claude/skills/`) into `config/claude/skills/`,
+and `.agents/` and `.claude/skills/` were deleted. Why: skills were split
+across three paths and it was unclear which was authoritative; the Codex
+discovery path was the only reason for it. `~/.claude/skills/homelab-service`
+still resolves through the existing global link.
+
 ## 2026-10-01 — Glance finance refresh on change, BTC xpub, #ai-travel mapped
 
 - **Why the Accounts card stayed empty:** the Finance Manager edits
