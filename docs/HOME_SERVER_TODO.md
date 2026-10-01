@@ -464,12 +464,10 @@ coding.
 
 ### 8a. 🔐 Public-repo hygiene — added 2026-09-23
 
-- [ ] 👤 **Automatic PR reviews:** connect `.dotfiles` in Codex's hosted code
-  review settings and enable automatic review. Generate a Claude Code
-  subscription token locally, save it as the repository secret
-  `CLAUDE_CODE_OAUTH_TOKEN`, set `CLAUDE_PR_REVIEW_ENABLED=true`, and merge the
-  review workflow PR. Both providers need account setup; no paid API key is
-  configured. See [PR reviews](guides/PR_REVIEWS.md).
+- [ ] 👤 **Automatic PR reviews:** connect `.dotfiles` to Codex's hosted GitHub
+  reviews and enable automatic review. Claude subscription-backed reviews are
+  intentionally deferred to avoid spending that plan allowance. See
+  [PR reviews](guides/PR_REVIEWS.md).
 
 Full secret audit done (gitleaks over all 492 commits): only one leak ever —
 the Uptime Kuma backup push token, public since **2026-05-09**. Rotated
