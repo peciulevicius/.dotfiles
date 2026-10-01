@@ -35,6 +35,7 @@ still resolves through the existing global link.
   is in `services/glance/README.md`. mempool.space returns 429 on bursts, so
   lookups are paced and retried.
 - `#ai-travel` created by the owner and mapped to Travel Planner.
+- **Follow-up:** Ledger Live exports an `xpub6…` for native-segwit accounts (path `84'/0'/0'`), which would derive legacy `1…` addresses. `LEDGER_BTC_XPUBS` therefore takes an `@p2wpkh|@p2sh|@p2pkh` suffix. Live result: BTC and ETH read on Glance (Ledger ≈ €5.2k). Ledger cache raised to 30 min because the scan is slow under 429s.
 
 ## 2026-10-01 — Travel company + Travel Planner agent
 
