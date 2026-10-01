@@ -42,7 +42,6 @@ Section names in *italics* are headings below.
 
 - [x] ~~⚡ Paperclip usage-limit watchdog~~ — detects and notifies about Claude limits; OpenRouter connections are provisioned in all three companies. `AUTO_SWITCH` is **off** after the restore incident. Recovery applied 2026-09-29: skills and three open issue assignments restored, three reporting links repaired.
 - [x] ~~Paperclip unchanged-binding validation defect~~ — deployed the guarded local patch from the recovery PR after approval; Web Engineer and Homelab Security Engineer's reporting updates now succeed. All five reporting links, three issue assignments and three routine assignments are repaired; fallback state is cleared.
-- [ ] **Paperclip retired-record cleanup:** the 11 obsolete Coach/Studio records pass reference checks; termination still awaits explicit approval. The old Homelab Lead is unreferenced but excluded from that plan. Separately, the ten active unbound Claude roles temporarily used Codex on their existing IDs from 2026-09-30 until the scheduled return on 2026-10-01. All ten original Claude configurations were restored and read back after real Claude hello probes passed; the private recovery journal is empty. The five-minute recovery cron remains installed and is now a no-op. Automatic cross-provider routing and safe managed-binding recovery are not enabled; keep `AUTO_SWITCH=0`. See `services/paperclip/README.md` → *Usage-limit fallback*.
 - **🧠 Shared AI memory (2026-09-29):**
   - [x] ~~First portable Claude/Codex repository skill~~ — `homelab-service` now has one source under `.agents/skills/`, Claude project discovery and a compatibility link for the existing installer/global path. Skill guidance preserves staged live differences and separates source readiness from deployment. Paperclip/Odysseus skill imports remain separate from host discovery.
   - [x] ~~NAS: create the `backups` share and mount it at `/Volumes/backups`~~ — done 2026-09-29; first `~/ai-memory` copy verified on the NAS. See `docs/HOME_SERVER_CHANGELOG.md`.
@@ -180,8 +179,8 @@ Section names in *italics* are headings below.
   - [x] ~~Trading 212 holdings detail~~ — implemented 2026-09-30. Read-only positions use broker wallet amounts in account currency, include pie shares once and retain reported account totals. Missing/malformed detail is explicit without hiding a valid summary. Credentials and comparison against the app remain the owner step above.
   - [x] ~~Kraken read-only collector~~ — implemented 2026-09-30. Default-wallet quantities and indicative EUR midpoint valuation; unsupported/unpriced balances fail the account rather than disappear. Private persisted nonces, credential-specific caches and stale recovery are implemented. No orders or withdrawals.
   - [ ] 👤 **Kraken:** connect a dedicated key with Query Funds only using the runbook's hidden prompts, then compare quantities against the app. No trading, transfers or withdrawal permissions. Other wallets/Futures and cost basis are outside current coverage.
-  - [ ] **Capital.com / Ledger:** confirm which accounts to include; Ledger uses public addresses/xpubs only, never seeds or private keys.
-  - [ ] **Swedbank / Revolut:** choose a personal open-banking connection or CSV import.
+  - [ ] **Ledger:** add public addresses/xpubs (never seeds or private keys) — no credentials needed; next collector to build.
+  - [ ] **Swedbank / Revolut / Finbee → emergency fund:** Wallet is not used and was dropped. Pick one: personal open-banking connection (Enable Banking — verify it still offers free own-account access), monthly CSV import, or a hand-edited balances file. Finbee has no API, so it stays manual either way. Then define the emergency fund as designated-account balance ÷ monthly spend.
   - [ ] Decide whether to grow this into **Monifo as a personal self-hosted app** (P&L calendar, trade journal, dividends). Glance keeps a summary and link.
 
 - 👤 Optional: Uptime Kuma **DNS** monitor for the resolver chain (Kuma has no monitor API — UI step): + Add New Monitor → DNS → hostname `example.com`, resolver `host.docker.internal` port 53 → alerts if Pi-hole *or* unbound stops answering.
@@ -196,8 +195,9 @@ Section names in *italics* are headings below.
   prefers Claude Max — do not build a router.
   Open: paused managed-bound roles need a safe recovery path; normal agent
   Discord delivery is unverified (no test message sent); STU-13 is In review
-  with a human-only vendor-access question for the owner; the 11 obsolete
-  records stay paused until termination is approved.
+  with a human-only vendor-access question for the owner (answered 2026-10-01;
+  the CEO resumed) — nothing is bought or sent until the Porkbun/Migadu steps
+  that need your own account/payment are done.
 
 - [x] ~~Rotate the **Radarr + Sonarr API keys**~~ — **done 2026-09-27**
   (Prowlarr, Jellyseerr, Bazarr updated + tested; see changelog).
@@ -448,9 +448,9 @@ coding.
 
 ### 8a. 🔐 Public-repo hygiene — added 2026-09-23
 
-- [ ] 👤 **Automatic PR reviews:** run `gh auth refresh -h github.com -s workflow`
-  then `/install-github-app` in Claude Code (needs the Claude Max plan decision).
-  See [PR reviews](guides/PR_REVIEWS.md).
+- **PR reviews:** decided 2026-10-01 not to install a hosted GitHub reviewer
+  (per-review cost or plan usage). Review locally with `/code-review` or a
+  Paperclip agent. See [PR reviews](guides/PR_REVIEWS.md).
 
 Full secret audit done (gitleaks over all 492 commits): only one leak ever —
 the Uptime Kuma backup push token, public since **2026-05-09**. Rotated

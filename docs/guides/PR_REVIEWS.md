@@ -1,31 +1,24 @@
 # Pull request reviews
 
-CI checks syntax, docs and secret leaks. An AI reviewer is a second pair of
-eyes for the things CI cannot see: partial-failure recovery, stale references,
-accidental agent wakes, secrets in logs, staged-copy drift.
+CI checks syntax, docs and secret leaks. A reviewer is a second pair of eyes
+for what CI cannot see: partial-failure recovery, stale references, accidental
+agent wakes, secrets in logs, staged-copy drift.
 
 Shared review rules live in `.github/AI_REVIEW_RULES.md` and are tool-neutral;
 `AGENTS.md` and `CLAUDE.md` both point at them.
 
-## Claude (preferred)
+## Decision (2026-10-01): no hosted reviewer
 
-Automatic reviews are **not enabled yet**. To enable:
+Hosted GitHub reviewers either bill per review (Anthropic's managed Code
+Review is priced per review, in the tens of dollars) or draw on plan usage
+(the Claude GitHub App with a subscription token, Codex's hosted review). For a
+one-person repo that is not worth it. Instead:
 
-```bash
-gh auth refresh -h github.com -s workflow   # the app installs a workflow file
-claude                                      # then run: /install-github-app
-```
+- Run `/code-review` in a Claude Code session on the branch before merging.
+- Or assign the review to a Paperclip agent with `.github/AI_REVIEW_RULES.md`.
 
-Pick `peciulevicius/.dotfiles`, and keep the generated workflow read-only for
-contents (reviews comment, they never push). Reviews spend Claude plan
-allowance, so this is worth turning on once the Max plan is settled. On an
-existing PR, comment `@claude review`.
-
-## Codex (optional)
-
-Codex's hosted GitHub reviewer is a separate integration with its own usage
-allowance; connect the repo in Codex settings and comment `@codex review`.
-It reads the same rules via `AGENTS.md`. Not used here by default.
+If that changes: `gh auth refresh -h github.com -s workflow`, then
+`/install-github-app`, and keep the workflow's contents permission read-only.
 
 ## Rules for any reviewer
 

@@ -931,21 +931,12 @@ removing that override and recreating on the pinned upstream image; the patch
 has no database migrations. Re-run `--reconcile --apply` after the patched
 server is healthy. Do not carry this patch blindly into an upstream upgrade.
 
-**Scheduled routines also need remapping.** The live weekly Homelab report,
-daily Coach check-in and paused Studio standup still referenced old IDs. All
-three were moved to their exact replacements on 2026-09-29, preserving active
-or paused status. Use the incident cleanup utility to inspect any leftovers:
-
-```bash
-python3 scripts/utils/paperclip-retired-agents.py
-python3 scripts/utils/paperclip-retired-agents.py --repair-routines --apply
-```
-
-After explicit termination approval, `--retire --apply` only accepts the 11
-paused obsolete Coach/Studio records from this incident, requires unique live
-replacements and no open issues, live reports, routine references or Discord
-mapping references, and rechecks status before each termination. It preserves
-history and excludes the old Homelab Lead. Do not delete historical records.
+**Scheduled routines also needed remapping.** The weekly Homelab report, daily
+Coach check-in and paused Studio standup still referenced old IDs; all three
+were moved to their exact replacements on 2026-09-29, preserving status. The
+11 obsolete Coach/Studio records from the incident no longer exist (verified
+2026-10-01), so the one-off cleanup script was removed. Check for stale
+`assigneeAgentId` references in routines after any future rehire.
 
 Reassigning an issue may wake its replacement agent, including for blocked
 issues. Inspect current runs after applying; avoid repeating assignments that
