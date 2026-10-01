@@ -6,6 +6,16 @@ is often what you need when something similar breaks again.
 
 Newest first-ish; dates are when the work was finished.
 
+## 2026-10-01 — Travel company + Travel Planner agent
+
+Created the **Travel** Paperclip company (prefix TRA) with one agent, Travel
+Planner (Sonnet, wake on demand, no routine). Research and planning only: it
+never books or pays, and records the date and source of every price. Includes
+a race-weekend template (bike transport, stay, timeline, gear). Instructions in
+`services/paperclip/travel-agents-addendum.md`; notebook `~/ai-memory/travel/`.
+Why: the owner wanted trip and race planning handled by an agent, but booking
+needs payment details an agent shouldn't hold.
+
 ## 2026-10-01 — Finance company + Finance Manager agent
 
 Created the **Finance** Paperclip company (prefix FIN) with one agent, Finance
