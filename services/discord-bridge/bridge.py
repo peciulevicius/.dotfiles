@@ -283,7 +283,9 @@ async def build_interaction(item: dict) -> tuple[str, discord.ui.View] | None:
     else:
         text += f"\n_{kind.replace('_', ' ')} — open in Paperclip._"
 
-    view.add_item(link("Open in Paperclip", item["subject"]["href"]))
+    href = (item.get("subject") or {}).get("href")
+    if href:
+        view.add_item(link("Open in Paperclip", href))
     state["actions"][iid] = ctx
     return text, view
 
@@ -296,7 +298,8 @@ async def build_approval(item: dict) -> tuple[str, discord.ui.View] | None:
     view = discord.ui.View(timeout=None)
     view.add_item(button("Approve", f"pc:apv:{aid}", discord.ButtonStyle.success))
     view.add_item(button("Reject", f"pc:apr:{aid}", discord.ButtonStyle.danger))
-    view.add_item(link("Open in Paperclip", item["subject"]["href"]))
+    if (item.get("subject") or {}).get("href"):
+        view.add_item(link("Open in Paperclip", item["subject"]["href"]))
     state["actions"][aid] = {"kind": "approval", "title": item["subject"]["title"]}
     return text, view
 
@@ -309,7 +312,8 @@ async def notify(item: dict) -> None:
         built = await build_approval(item)
     else:
         view = discord.ui.View(timeout=None)
-        view.add_item(link("Open in Paperclip", item["subject"]["href"]))
+        if (item.get("subject") or {}).get("href"):
+            view.add_item(link("Open in Paperclip", item["subject"]["href"]))
         built = (describe(item), view)
     if built is None:
         return

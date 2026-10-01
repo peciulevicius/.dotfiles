@@ -139,3 +139,9 @@ cd ~/services/discord-bridge && docker compose up -d --build   # after editing b
 - **Thread gets no reply:** the agent is paused, or its run failed. Check the
   issue in Paperclip. The bridge only relays comments; it never retries
   runs.
+
+## Failure mode: item without a link (fixed 2026-10-01)
+
+An attention item whose `subject.href` is null used to raise `TypeError` in
+`link()` and abort that poll cycle, so no later items were posted. The
+"Open in Paperclip" button is now added only when an href exists.
