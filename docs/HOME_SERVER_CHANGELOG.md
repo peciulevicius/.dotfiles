@@ -19,6 +19,12 @@ agents with bank access are a risk not worth the convenience. Instructions in
 BTC test address returned 0 on-chain history, so the Ledger BTC row is empty
 until an address that has received coins is supplied.
 
+The Claude.ai export was then copied to `~/ai-memory/finance/imports/` and mined
+for a draft `plan.md` (goals, decided rules, tax dates, open questions; no
+account numbers). Of the export's projects only Finance - Tax and Real estate
+became Finance Manager input; Business went to the Studio founder brief; Travel,
+Books, YPP, Food and Tech-IT stay as Claude.ai projects (no data feed, no schedule).
+
 ## 2026-10-01 — strict review of the Codex PRs (#41–#55), consolidated
 
 Codex's fifteen PRs (finance feeds, Discord routing, Paperclip rehire/binding
