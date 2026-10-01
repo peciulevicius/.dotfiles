@@ -19,13 +19,11 @@ config/claude/
 
 All files are symlinked to `~/.claude/` by `scripts/setup/setup-claude.sh`.
 
-`homelab-service` is shared with Codex: its maintained source is
-`.agents/skills/homelab-service/` at the repository root. Both
-`config/claude/skills/homelab-service` and `.claude/skills/homelab-service`
-are directory symlinks to it. The first preserves the existing setup/global
-links; the second provides project discovery after cloning, with no global
-setup required. Edit the canonical file once; neither alias holds a copy.
-Other Claude skills stay in this tree. See `docs/AI_COLLABORATION.md`.
+All skills, including `homelab-service`, live in `config/claude/skills/` and
+nowhere else (there is no `.agents/` or `.claude/skills/` in the repo; both
+were removed 2026-10-01 so there is a single place to edit). They reach
+Claude through the `~/.claude/skills/` links that `setup-claude.sh` creates.
+See `docs/AI_COLLABORATION.md`.
 
 ## Quick Setup
 

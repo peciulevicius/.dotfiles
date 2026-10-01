@@ -117,26 +117,16 @@ organization policy, or a separate tool runner's approval settings.
 
 ## Skills and agent handoffs
 
-The first shared skill is **`homelab-service`**. Its single source is
-`.agents/skills/homelab-service/SKILL.md`, discovered by Codex in this
-repository. `.claude/skills/homelab-service` is a relative directory symlink
-for Claude's project discovery; `config/claude/skills/homelab-service` points
-to the same directory for existing installers and consumers. The existing
-`~/.claude/skills/homelab-service` link follows that compatibility path, so
-it needs no replacement when the source moves. Claude deduplicates paths
-that reach the same skill folder.
-
-Use `$homelab-service` in Codex or `/homelab-service` in Claude when changing
-this homelab's services. New skills can use the same `.agents/skills/<name>/`
-source plus Claude aliases. Codex detects added skills; restart it if discovery
-is stale. Relative symlinks stay within the checkout, including worktrees.
-See the official [Claude discovery rules](https://code.claude.com/docs/en/skills#choose-where-skills-load)
-and [Codex skill discovery](https://learn.chatgpt.com/docs/build-skills).
-
-Other Claude skills remain in `config/claude/skills/`, installed by
-`scripts/setup/setup-claude.sh`; they are not all automatically available in
-Codex. Shared skills use ordinary Agent Skills frontmatter. Claude-specific
-extensions and tool integrations may not work in other tools.
+All skills live in **`config/claude/skills/<name>/`**, including
+`homelab-service` (use `/homelab-service` in Claude when changing this
+homelab's services). `scripts/setup/setup-claude.sh` links each folder into
+`~/.claude/skills/`. There is deliberately no second location: a short-lived
+`.agents/skills/` source plus `.claude/skills/` aliases (for Codex discovery)
+was removed on 2026-10-01 because two paths for one skill meant two places to
+look. Codex does not read this tree; if it is ever needed there, link the
+folder from outside the repo instead of adding a copy. Skills use ordinary
+Agent Skills frontmatter, but Claude-specific extensions may not work in
+other tools.
 
 Paperclip company skills remain separately managed and injected into agent
 runs; a host discovery symlink does not attach a company skill. See
@@ -144,8 +134,8 @@ runs; a host discovery symlink does not attach a company skill. See
 the canonical folder imported into its own skill store. Filesystem sharing,
 skill discovery and private-memory guidance are separate setup steps.
 
-Use one reviewed source per portable skill and document any generated or
-installed copies instead of letting versions drift. Keep Claude-only hooks,
+Use one reviewed source per skill and document any generated or installed
+copies instead of letting versions drift. Keep Claude-only hooks,
 agents, settings, and slash command behavior under `config/claude/`.
 
 Agents can exchange durable notes through `~/ai-memory` only when both have
