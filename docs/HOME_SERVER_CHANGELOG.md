@@ -16,6 +16,10 @@ watcher takes a lock (`mkdir`, stale after 20 min); the scan falls back to
 blockstream.info on 429 and remembers used address indices (full rescan weekly).
 The scan also has a 150 s budget per run and saves its high-water mark, so a
 throttled run resumes (provider shows stale) rather than timing out the rebuild.
+Follow-up: the remaining stalls were not 429s but mempool.space hanging ~60 s on
+some requests (blockstream.info answers in <1 s). The scan now tries
+blockstream first, with a 15 s per-request timeout and mempool.space as the
+fallback; a full 20+13-address scan completes in about a minute.
 Lesson: a "run if output is older than input" trigger needs a lock and a
 failure back-off, or one slow dependency turns it into a self-inflicted DoS.
 
