@@ -171,7 +171,7 @@ Section names in *italics* are headings below.
 
 - 👤 **~2026-10-03:** `rm ~/services/uptime-kuma/data/kuma.db.bak-2026-09-26-*` (and other pre-change backups) — the weekly audit now flags any `*.bak-*` / `*.pre-*` file under `~/services` older than 7 days, so this reminds itself via Discord
 
-- **💰 Finance dashboard — direct accounts** (read-only credentials, local hidden prompts; setup in `services/glance/README.md` → Finance). Pipeline: `finance-status.sh` (07:00) → `finance-memory-snapshot.sh` (07:05) → Glance. IBKR, Trading 212 and Kraken collectors are implemented; account credentials and reconciliation remain owner steps.
+- **💰 Finance dashboard — direct accounts** (read-only credentials, local hidden prompts; setup in `services/glance/README.md` → Finance). Pipeline: `finance-status.sh` (07:00) → `finance-memory-snapshot.sh` (07:05) → Glance. IBKR, Trading 212, Kraken and Ledger collectors plus the hand-entered Accounts card are implemented; account credentials, addresses and balances remain owner steps.
   - [x] ~~BudgetBakers Wallet HTTP 400~~ — transport repair completed 2026-09-29. The 2026-09-30 successful fetch did not establish balance accuracy. Wallet was removed from the collector, card and future private summaries at the user's request; old historical records are excluded from new portfolio comparisons.
   - [x] ~~Direct IBKR / Trading 212 account collection~~ — implemented 2026-09-30. Each provider exposes native value, date and connection status. The EUR total covers connected investments only; stale/partial data is labelled. Trading 212 uses its reported account total without adding investments or pie cash again.
   - [ ] 👤 **IBKR:** create a one-account Activity Flex query (Account Information, Open Positions Summary, Cash Report, NAV / Change in NAV; XML, Last Business Day, `yyyyMMdd`) and a Flex Web Service token. Save with the hidden prompts in the Glance runbook. Compare the native NAV against the broker's same-date statement.
@@ -179,8 +179,10 @@ Section names in *italics* are headings below.
   - [x] ~~Trading 212 holdings detail~~ — implemented 2026-09-30. Read-only positions use broker wallet amounts in account currency, include pie shares once and retain reported account totals. Missing/malformed detail is explicit without hiding a valid summary. Credentials and comparison against the app remain the owner step above.
   - [x] ~~Kraken read-only collector~~ — implemented 2026-09-30. Default-wallet quantities and indicative EUR midpoint valuation; unsupported/unpriced balances fail the account rather than disappear. Private persisted nonces, credential-specific caches and stale recovery are implemented. No orders or withdrawals.
   - [ ] 👤 **Kraken:** connect a dedicated key with Query Funds only using the runbook's hidden prompts, then compare quantities against the app. No trading, transfers or withdrawal permissions. Other wallets/Futures and cost basis are outside current coverage.
-  - [ ] **Ledger:** add public addresses/xpubs (never seeds or private keys) — no credentials needed; next collector to build.
-  - [ ] **Swedbank / Revolut / Finbee → emergency fund:** Wallet is not used and was dropped. Pick one: personal open-banking connection (Enable Banking — verify it still offers free own-account access), monthly CSV import, or a hand-edited balances file. Finbee has no API, so it stays manual either way. Then define the emergency fund as designated-account balance ÷ monthly spend.
+  - [x] ~~Ledger collector~~ — implemented 2026-10-01. Reads public BTC/ETH/SOL addresses on-chain (mempool.space, publicnode, Solana RPC; the address is the only thing sent) and prices them with Kraken spot midpoints. No keys, no xpubs, no ERC-20/SPL tokens yet.
+  - [ ] 👤 **Ledger:** list the coins you hold on the Ledger and put the public addresses in `~/.config/homelab/ledger.env` (`LEDGER_BTC_ADDRESSES=a,b`, `LEDGER_ETH_ADDRESSES=…`, `LEDGER_SOL_ADDRESSES=…`; mode 600; format in the Glance README). Ledger Live shows them under each account → Receive. For BTC list every address that holds coins (Ledger Live rotates them); xpub support is deliberately not built (it would hand every address you will ever use to a third party). Tell the agent which other coins/tokens you hold if they are missing.
+  - [x] ~~Swedbank / Revolut / Finbee accounts + emergency fund~~ — implemented 2026-10-01 as a hand-entered balances file: `~/.config/homelab/balances.json` (private, mode 600) holds the nine Swedbank accounts, `finance-data.py --set 'Emergency=3200'` updates one and refreshes Glance, and the **Accounts** widget shows the emergency fund as months of spending plus net cash and tracked net worth. Banks have no free unattended feed: open banking (Enable Banking) needs a browser re-consent every 90 days and an RSA-signed JWT.
+  - [ ] 👤 **Accounts:** enter today's Swedbank balances (`finance-data.py --set 'Main=…'`, repeat per account; for the credit card enter the amount owed) and set `"monthly_spend"` in `balances.json`. A balance older than 35 days is flagged *old* on the card. Add Revolut/Finbee as further entries in the same file if wanted.
   - [ ] Decide whether to grow this into **Monifo as a personal self-hosted app** (P&L calendar, trade journal, dividends). Glance keeps a summary and link.
 
 - 👤 Optional: Uptime Kuma **DNS** monitor for the resolver chain (Kuma has no monitor API — UI step): + Add New Monitor → DNS → hostname `example.com`, resolver `host.docker.internal` port 53 → alerts if Pi-hole *or* unbound stops answering.
@@ -194,10 +196,12 @@ Section names in *italics* are headings below.
   has no provider failover (upstream #2014, #7891, #11597 are open). The owner
   prefers Claude Max — do not build a router.
   Open: paused managed-bound roles need a safe recovery path; normal agent
-  Discord delivery is unverified (no test message sent); STU-13 is In review
-  with a human-only vendor-access question for the owner (answered 2026-10-01;
-  the CEO resumed) — nothing is bought or sent until the Porkbun/Migadu steps
-  that need your own account/payment are done.
+  Discord delivery is unverified (no test message sent); STU-13 is on
+  **hold** (backlog, board comment 2026-10-01): no domain, Migadu inbox or
+  outreach until the owner has seen designs/a working A11yWatch. The studio's
+  own go/no-go (STU-9) was "no build until the paid-pilot interviews", so the
+  owner's "build first" call reverses that — next step is a decision on a
+  scoped prototype, not the $30/yr identity.
 
 - [x] ~~Rotate the **Radarr + Sonarr API keys**~~ — **done 2026-09-27**
   (Prowlarr, Jellyseerr, Bazarr updated + tested; see changelog).

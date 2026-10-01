@@ -27,6 +27,22 @@ TODO/CHANGELOG sections and would have conflicted.
   Claude; it now documents the Claude GitHub App route.
 - Removed the idle live cron line for the staged recovery helper.
 
+## 2026-10-01 — Ledger feed, hand-entered accounts + emergency fund; A11yWatch outreach on hold
+
+- **Ledger** is a fourth Glance finance provider (`finance-data.py`): public
+  BTC/ETH/SOL addresses read on-chain, valued at Kraken spot midpoints, no
+  keys and no xpubs. Tested live against well-known public addresses and
+  against a malformed address (rejected).
+- **Accounts card** for the nine Swedbank accounts from a private
+  `balances.json`, `--set 'Name=amount'` to update, emergency fund as months of
+  spending, net cash, tracked net worth, 35-day staleness flag. Chosen over open
+  banking because that needs a browser re-consent every 90 days. Glance widget
+  and the daily memory snapshot both show it.
+- **STU-13 put on hold** by board comment: the owner has seen no designs or
+  working A11yWatch and does not want the $30/yr domain/inbox or any outreach
+  before there is a tested product. Studio's own STU-9 verdict was already
+  "no build until paid-pilot interviews" — see TODO for the open decision.
+
 ## 2026-10-01 — R2 restore check false alarm, now retried once
 
 The 06:00 monthly `r2-verify.sh` run alerted that one Immich file DIFFERED from

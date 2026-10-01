@@ -38,7 +38,7 @@ listed in [scripts/cron/README.md](https://github.com/peciulevicius/.dotfiles/bl
 | `scripts/backup/backup-external.sh` | rsync NAS data and dumps to an external drive | Manually, when a drive is connected |
 | `scripts/utils/homelab-audit.sh` | Audit drift, containers, backups, disk, recent commits and cron | Weekly (cron) |
 | `scripts/utils/homelab-status.sh` | Write the Glance status snapshot for *Training*, *Coach team*, *Homelab health* and *Sleeping apps* (`~/services/glance/assets/status.json`) | Every 5 minutes (cron) |
-| `scripts/utils/finance-status.sh` | Write the Glance *Portfolio* snapshot (direct IBKR, Trading 212 and Kraken account data) to `~/services/glance/assets/finance.json` | Daily 07:00 (cron) |
+| `scripts/utils/finance-status.sh` | Write the Glance *Portfolio* snapshot (direct IBKR, Trading 212, Kraken and Ledger data plus hand-entered account balances) to `~/services/glance/assets/finance.json` | Daily 07:00 (cron) |
 | `scripts/utils/update-report.sh` | Read WUD's "update available" list, bucket it (safe / major / held), write `~/services/glance/assets/updates.json`; `--discord` weekly summary, `--markdown` table | Daily 06:30, Mon 09:00 (cron) |
 | `scripts/utils/upgrade-service.sh` | Upgrade one pinned image: pull, back up, bump tag in repo, stage, recreate, health-check, **auto-rollback** | By hand, one service at a time |
 | `scripts/utils/run-with-notify.sh` | Wrap a cron job and notify Discord on failure and recovery | Used by every cron job |
@@ -539,12 +539,13 @@ Pie shares are not added twice, and holdings are never added to reported NAV.
 ```bash
 bash scripts/utils/finance-status.sh            # refresh; no balances printed
 bash scripts/utils/finance-status.sh --health   # cached booleans, no API calls
+python3 scripts/utils/finance-data.py --set 'Emergency=3200.50'  # update one hand-entered account, then refresh
 ```
 
 `--print` includes private financial data. `--from-file` parses one local IBKR
 report without calling other brokers; use isolated output/cache directories
-as described in `services/glance/README.md` → Finance. Capital.com,
-Ledger and bank import connectors remain planned. The private daily memory
+as described in `services/glance/README.md` → Finance. Capital.com
+and bank import connectors remain planned. The private daily memory
 snapshot records coverage and avoids comparisons against legacy Wallet data.
 Kraken uses a dedicated Query Funds key and persists private nonces before
 signed balance reads. Its EUR value is an indicative spot midpoint estimate;
