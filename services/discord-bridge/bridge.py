@@ -42,6 +42,12 @@ CHANNELS = {
 NOTIFY_CHANNELS = {
     c: int(ch) for c, ch in (i.split(":") for i in os.environ.get("NOTIFY_CHANNELS", "").split(",") if i)
 }
+# Optional "channelId,..." — attachments the owner posts there are saved into
+# Paperless's consume folder (CONSUME_DIR) instead of going to the agent.
+CONSUME_CHANNELS = {int(c) for c in os.environ.get("CONSUME_CHANNELS", "").split(",") if c}
+CONSUME_DIR = Path(os.environ.get("CONSUME_DIR", "/consume"))
+CONSUME_EXTS = {".pdf", ".png", ".jpg", ".jpeg"}
+CONSUME_MAX_BYTES = 20 * 1024 * 1024
 POLL_SECONDS = int(os.environ.get("POLL_SECONDS", "30"))
 STATE_FILE = Path(os.environ.get("STATE_FILE", "/data/state.json"))
 DISCORD_LIMIT = 1900
@@ -153,10 +159,39 @@ async def on_ready() -> None:
     client.loop.create_task(attention_loop())
 
 
+async def save_attachments(msg: discord.Message) -> list[str]:
+    saved = []
+    for a in msg.attachments:
+        ext = Path(a.filename).suffix.lower()
+        if ext not in CONSUME_EXTS or a.size > CONSUME_MAX_BYTES:
+            continue
+        stem = "".join(ch if ch.isalnum() or ch in "-_" else "_" for ch in Path(a.filename).stem)[:60]
+        name = f"discord-{msg.created_at:%Y%m%d-%H%M%S}-{a.id % 10000}-{stem}{ext}"
+        tmp = CONSUME_DIR / (name + ".part")  # unsupported extension, so Paperless skips it until renamed
+        await a.save(tmp)
+        tmp.chmod(0o644)
+        tmp.rename(CONSUME_DIR / name)
+        saved.append(name)
+    return saved
+
+
 @client.event
 async def on_message(msg: discord.Message) -> None:
     if msg.author.bot or msg.author.id != OWNER_ID:
         return
+    if msg.attachments and msg.channel.id in CONSUME_CHANNELS:
+        try:
+            saved = await save_attachments(msg)
+        except Exception:
+            log.exception("saving attachments failed")
+            await msg.add_reaction("⚠️")
+        else:
+            if saved:
+                log.info("saved %d attachment(s) to Paperless consume", len(saved))
+                await msg.add_reaction("📄")
+            else:
+                await msg.reply(f"Not saved: only {', '.join(sorted(CONSUME_EXTS))} up to 20 MB are accepted.",
+                                mention_author=False)
     text = msg.content.strip()
     if not text:
         return

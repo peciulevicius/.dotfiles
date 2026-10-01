@@ -6,6 +6,16 @@ is often what you need when something similar breaks again.
 
 Newest first-ish; dates are when the work was finished.
 
+## 2026-10-01 — payslip PDFs from Discord into Paperless
+
+Attaching a PDF/image in `#ai-finance` now saves it to Paperless's consume
+folder (bridge `CONSUME_CHANNELS`, `/consume` mount). Why: the Finance Manager
+only sees text, and a payslip is a document to keep, not data to hand an agent.
+The typed `payslip <amount>` still goes to the agent. Written as `.part` then
+renamed to avoid half-read files. Gotcha: Paperless sleeps (Sablier), but the
+folder write is independent of it. Mac-side `docker compose` mount uses
+`${HOME}` so it follows the staged layout.
+
 ## 2026-10-01 — one skills directory
 
 `homelab-service` moved from `.agents/skills/` (with symlinks from

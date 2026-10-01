@@ -52,6 +52,16 @@ you: reply in the thread ──► bridge ──► issue comment "@Coach …" (
   assignee on any human comment unless the issue is `done`/`cancelled`, and a
   human comment on a done/cancelled/blocked issue reopens it first
   (`issues.ts` implicit reopen) — so no follow-up ticket is needed from here.
+- **Documents to Paperless:** in a channel listed in `CONSUME_CHANNELS`
+  (`#ai-finance`), a `.pdf`/`.png`/`.jpg` (up to 20 MB) the owner attaches is
+  written to `~/services/paperless-ngx/data/consume` (mounted at `/consume`) and
+  Paperless ingests it; the bridge reacts 📄. It is written as `*.part` then
+  renamed so Paperless never reads a half-written file. Paperless is
+  scale-to-zero, but a plain folder write works while it sleeps and it ingests
+  on next start. **The file never reaches the agent** (agents only see text and
+  `/ai-memory`): type the figure, e.g. `payslip 2203.37`, in the message or a
+  follow-up, and that text becomes the issue as usual. Only the owner's files
+  are saved; other types get a reply instead.
 - The agents' scheduled posts (daily check-in, plans) go out through their own
   webhooks, not the bridge: Coach → `#ai-training-coach`
   (`COACH_DISCORD_WEBHOOK`), Dietitian → `#ai-training-dietitian`

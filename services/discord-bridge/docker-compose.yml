@@ -18,6 +18,8 @@ services:
       STATE_FILE: /data/state.json
     volumes:
       - ./data:/data
+      # Paperless's consume folder: attachments from CONSUME_CHANNELS land here.
+      - ${HOME}/services/paperless-ngx/data/consume:/consume
     networks:
       - paperclip
     mem_limit: 128m
