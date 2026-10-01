@@ -60,12 +60,29 @@ Training and finance folders are only read for relevant assigned work.
 
 The user's preference is to authorize routine implementation, commits and
 PR creation as part of the task, with confirmation for destructive or major
-changes. Repository instructions cannot remove client sandbox prompts.
-In the desktop app, enable **Auto-review** under **Settings → General →
-Permissions**, then select **Approve for me** beneath the composer. Eligible
-escalations go to an automatic reviewer; major actions still need explicit
-authorization when they have not already been approved. Full access removes
-the sandbox boundary. See the official
+changes. Repository instructions cannot change the active client or host
+permission policy.
+
+In the ChatGPT desktop app, open **Settings → General → Permissions** and
+enable **Auto-review** so it is available. Enabling it does not switch the
+current chat: use the permission control below the composer to select
+**Approve for me** in that chat. Keep the normal **workspace-write** sandbox;
+do not select **Full access** to avoid routine prompts. Auto-review sends
+eligible requests that cross the sandbox boundary to a reviewer while leaving
+the same filesystem and network limits in place. Commands already permitted
+inside the workspace should run without review. High-risk actions can still be
+denied or require the owner's decision, and organization/client policy can
+limit which modes are available.
+
+If a routine command still prompts, inspect the specific command and boundary
+in its prompt. In an interactive Codex CLI session, approving a narrowly
+scoped command prefix for future runs adds a persistent user-level rule; do
+not allow a broad interpreter or shell prefix. Chained commands are checked
+piece by piece when safely parseable, so a single safe part cannot authorize a
+destructive part. These rules are user-level settings, not repository
+instructions.
+
+See the official
 [permission modes](https://learn.chatgpt.com/docs/permission-modes) and
 [automatic review guide](https://learn.chatgpt.com/docs/sandboxing/auto-review).
 
@@ -75,10 +92,12 @@ For **Codex CLI 0.159.0** on this Mac mini, the installed CLI help confirms:
 codex --approve-for-me resume --last
 ```
 
-The current CLI's `/permissions` picker can also select **Approve for me**.
-This uses automatic approval review with the workspace sandbox. Routine saved
-command approvals are also reusable. Changing repository guidance alone does
-not change the active CLI permission mode.
+For a new interactive session use `codex --approve-for-me`; the current
+CLI's `/permissions` picker can also select **Approve for me** for an
+interactive session. This uses automatic approval review with the
+workspace-write sandbox. The flag applies to that CLI invocation. Changing
+repository guidance alone does not change the active desktop chat, CLI session,
+organization policy, or a separate tool runner's approval settings.
 
 ## Adding documentation
 
