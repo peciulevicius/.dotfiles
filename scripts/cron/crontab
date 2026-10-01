@@ -23,6 +23,9 @@ PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin
 # → ~/services/glance/assets/finance.json. Provider-specific caches keep API
 # use low. The next job writes a private daily summary to ~/ai-memory/finance.
 0 7 * * * ~/.dotfiles/scripts/utils/finance-status.sh >> ~/logs/finance-status.log 2>&1
+# Rebuild the Glance finance card as soon as the Finance Manager edits
+# balances.json (no-op unless the file is newer than finance.json).
+*/2 * * * * ~/.dotfiles/scripts/utils/finance-refresh-on-change.sh >> ~/logs/finance-refresh.log 2>&1
 5 7 * * * ~/.dotfiles/scripts/utils/finance-memory-snapshot.sh >> ~/logs/finance-memory-snapshot.log 2>&1
 
 # Weekly database dumps (Sunday 4am)

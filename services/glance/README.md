@@ -261,14 +261,15 @@ Cost basis and unrealised P&L are not available from the balance endpoint.
 
 #### Ledger setup
 
-Ledger is read **on-chain from public addresses only** — never a seed, a
-private key or an xpub. Addresses go in `~/.config/homelab/ledger.env`
+Ledger is read **on-chain from public addresses only** — never a seed or a
+private key. Addresses (or, for BTC, an extended public key) go in `~/.config/homelab/ledger.env`
 (mode 600, outside the repo, comma-separated per coin):
 
 ```bash
 umask 077
 cat > ~/.config/homelab/ledger.env <<'EOF'
-LEDGER_BTC_ADDRESSES=bc1q...,bc1q...
+LEDGER_BTC_XPUBS=zpub...         # preferred for BTC: tracks every rotating address
+LEDGER_BTC_ADDRESSES=bc1q...,bc1q...   # or single addresses (does not follow rotation)
 LEDGER_ETH_ADDRESSES=0x...
 LEDGER_SOL_ADDRESSES=...
 LEDGER_ADA_ADDRESSES=stake1...   # or addr1...; stake1 covers the whole wallet
@@ -277,8 +278,22 @@ LEDGER_BNB_ADDRESSES=0x...       # BNB Smart Chain, native BNB only
 EOF
 ```
 
-Ledger Live shows an account's addresses under **Receive**. List every BTC
-address that holds coins, since Ledger Live rotates them. Balances come from
+**Why BTC needs an xpub.** Ledger (like every BIP84 wallet) hands out a fresh
+receive address each time and sends change to a new one, so a single address
+goes stale. The account's extended public key (`zpub…` for Ledger Live's
+native-segwit Bitcoin account; `xpub…`/`ypub…` for legacy/wrapped) is read-only
+and lets the collector derive the whole address family itself. In Ledger Live:
+the Bitcoin account → ⋯ / Edit → **Advanced → Extended public key**. Derivation
+happens locally in `finance-data.py` (stdlib only, checked against the BIP84
+test vectors); the key is never sent anywhere. Only the derived addresses are
+looked up on mempool.space, 0.5 s apart, scanning receive and change chains
+until 20 unused addresses in a row (the standard gap limit). Privacy cost,
+stated plainly: mempool.space sees those addresses queried from your IP in one
+burst, so it can link them as one wallet — the same exposure as listing the
+addresses by hand, just including future ones. The key shows every address and
+balance of the account, so treat it as private: `ledger.env` only, never the repo.
+
+Ledger Live shows an account's addresses under **Receive**. Balances come from
 mempool.space (BTC), ethereum-rpc.publicnode.com (ETH), the public Solana RPC,
 bsc-rpc.publicnode.com (BNB), api.koios.rest (ADA) and xrplcluster.com (XRP);
 only the address is sent. For Cardano use the **stake address** (`stake1…`,
@@ -287,12 +302,16 @@ single `addr1…` is resolved to its stake account and also covers the whole
 wallet. Value is quantity × the Kraken spot midpoint in EUR (BNB: Binance
 `BNBEUR` midpoint, Kraken does not list it), labelled indicative. An address
 that has never received funds reads 0 (not an error). Ledger counts in the connected-investments total.
-Not covered, on purpose: **xpubs** (they would hand every address you will
-ever use to a third party — list addresses instead), **ERC-20/BEP-20/SPL tokens**
+Not covered, on purpose: **ERC-20/BEP-20/SPL tokens**
 (need a token list; add if you hold any), NFTs, and other chains. A malformed
 address makes the whole Ledger row unavailable rather than silently dropping it.
 
 #### Accounts and emergency fund (hand-entered)
+
+**Refresh.** The card reads `finance.json`, not `balances.json` directly.
+`finance-refresh-on-change.sh` (cron, every 2 min) rebuilds it whenever
+`balances.json` is newer, so a change by the Finance Manager or `--set` shows
+within ~2 minutes instead of at 07:00, and a note goes to `#ai-agents`.
 
 Banks offer no free unattended balance feed: open banking (e.g. Enable
 Banking) needs a browser re-consent every 90 days and an RSA-signed JWT, and

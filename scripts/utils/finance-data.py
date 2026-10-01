@@ -35,6 +35,7 @@ BINANCE_BOOK = "https://api.binance.com/api/v3/ticker/bookTicker"
 # env key -> (symbol, price source, address pattern, units per coin); source is a Kraken pair or "binance:<pair>"
 LEDGER_COINS = {
     "LEDGER_BTC_ADDRESSES": ("BTC", "XBTEUR", r"(bc1[a-z0-9]{20,87}|[13][a-km-zA-HJ-NP-Z1-9]{25,34})", 10**8),
+    "LEDGER_BTC_XPUBS": ("BTC", "XBTEUR", r"[xyz]pub[1-9A-HJ-NP-Za-km-z]{100,112}", 10**8),
     "LEDGER_ETH_ADDRESSES": ("ETH", "ETHEUR", r"0x[0-9a-fA-F]{40}", 10**18),
     "LEDGER_SOL_ADDRESSES": ("SOL", "SOLEUR", r"[1-9A-HJ-NP-Za-km-z]{32,44}", 10**9),
     "LEDGER_ADA_ADDRESSES": ("ADA", "ADAEUR", r"(stake1|addr1)[a-z0-9]{50,110}", 10**6),
@@ -367,8 +368,157 @@ def cardano_balance(address):
     return number(info[0]["total_balance"]) if info else 0
 
 
+# --- Bitcoin extended public keys (xpub/ypub/zpub): derived locally, never sent anywhere ---
+_P = 2**256 - 2**32 - 977
+_N = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141
+_G = (0x79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798,
+      0x483ADA7726A3C4655DA4FBFC0E1108A8FD17B448A68554199C47D08FFB10D4B8)
+_B58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz"
+_BECH = "qpzry9x8gf2tvdw0s3jn54khce6mua7l"
+_XPUB_KINDS = {bytes.fromhex("0488b21e"): "p2pkh", bytes.fromhex("049d7cb2"): "p2sh", bytes.fromhex("04b24746"): "p2wpkh"}
+XPUB_GAP = 20
+
+
+def _b58encode(raw):
+    value = int.from_bytes(raw, "big")
+    out = ""
+    while value:
+        value, rem = divmod(value, 58)
+        out = _B58[rem] + out
+    return "1" * (len(raw) - len(raw.lstrip(b"\0"))) + out
+
+
+def _b58check_decode(text):
+    value = 0
+    for char in text:
+        value = value * 58 + _B58.index(char)
+    raw = value.to_bytes((value.bit_length() + 7) // 8, "big")
+    raw = b"\0" * (len(text) - len(text.lstrip("1"))) + raw
+    if hashlib.sha256(hashlib.sha256(raw[:-4]).digest()).digest()[:4] != raw[-4:]:
+        raise DataError("A Ledger BTC extended public key in ledger.env has a bad checksum; check it")
+    return raw[:-4]
+
+
+def _point_add(a, b):
+    if a is None:
+        return b
+    if b is None:
+        return a
+    if a[0] == b[0] and (a[1] + b[1]) % _P == 0:
+        return None
+    slope = (3 * a[0] * a[0] * pow(2 * a[1], -1, _P) if a == b else (b[1] - a[1]) * pow(b[0] - a[0], -1, _P)) % _P
+    x = (slope * slope - a[0] - b[0]) % _P
+    return (x, (slope * (a[0] - x) - a[1]) % _P)
+
+
+def _point_mul(k, point):
+    result = None
+    while k:
+        if k & 1:
+            result = _point_add(result, point)
+        point = _point_add(point, point)
+        k >>= 1
+    return result
+
+
+def _compress(point):
+    return bytes([2 + (point[1] & 1)]) + point[0].to_bytes(32, "big")
+
+
+def _child(point, chain, index):
+    digest = hmac.new(chain, _compress(point) + index.to_bytes(4, "big"), hashlib.sha512).digest()
+    tweak = int.from_bytes(digest[:32], "big")
+    child = _point_add(_point_mul(tweak, _G), point)
+    if tweak >= _N or child is None:
+        raise DataError("A Ledger BTC extended public key produced an invalid child; check it")
+    return child, digest[32:]
+
+
+def _hash160(data):
+    return hashlib.new("ripemd160", hashlib.sha256(data).digest()).digest()
+
+
+def _bech32_p2wpkh(program):
+    def polymod(values):
+        gens = (0x3B6A57B2, 0x26508E6D, 0x1EA119FA, 0x3D4233DD, 0x2A1462B3)
+        chk = 1
+        for value in values:
+            top = chk >> 25
+            chk = (chk & 0x1FFFFFF) << 5 ^ value
+            for i in range(5):
+                chk ^= gens[i] if (top >> i) & 1 else 0
+        return chk
+    bits = acc = 0
+    data = [0]
+    for byte in program:
+        acc = (acc << 8) | byte
+        bits += 8
+        while bits >= 5:
+            bits -= 5
+            data.append((acc >> bits) & 31)
+    if bits:
+        data.append((acc << (5 - bits)) & 31)
+    hrp = [ord(c) >> 5 for c in "bc"] + [0] + [ord(c) & 31 for c in "bc"]
+    mod = polymod(hrp + data + [0] * 6) ^ 1
+    data += [(mod >> 5 * (5 - i)) & 31 for i in range(6)]
+    return "bc1" + "".join(_BECH[d] for d in data)
+
+
+def _xpub_address(kind, point):
+    key = _compress(point)
+    if kind == "p2wpkh":
+        return _bech32_p2wpkh(_hash160(key))
+    if kind == "p2pkh":
+        payload = b"\x00" + _hash160(key)
+    else:
+        payload = b"\x05" + _hash160(b"\x00\x14" + _hash160(key))
+    return _b58encode(payload + hashlib.sha256(hashlib.sha256(payload).digest()).digest()[:4])
+
+
+def xpub_addresses(xpub, branch, count):
+    raw = _b58check_decode(xpub)
+    kind = _XPUB_KINDS.get(raw[:4])
+    if len(raw) != 78 or kind is None:
+        raise DataError("A Ledger BTC extended public key in ledger.env is not an xpub/ypub/zpub; check it")
+    chain, key = raw[13:45], raw[45:78]
+    x = int.from_bytes(key[1:], "big")
+    y = pow((x ** 3 + 7) % _P, (_P + 1) // 4, _P)
+    point, chain = _child((x, y if y & 1 == key[0] & 1 else _P - y), chain, branch)
+    for index in range(count):
+        yield _xpub_address(kind, _child(point, chain, index)[0])
+
+
+def _mempool_get(address):
+    for wait in (2, 5, 15, 40, None):
+        try:
+            return request(MEMPOOL + address)
+        except urllib.error.HTTPError as error:
+            if error.code != 429 or wait is None:
+                raise
+            time.sleep(wait)
+
+
+def btc_xpub_balance(xpub):
+    total = 0
+    for branch in (0, 1):
+        gap = index = 0
+        for address in xpub_addresses(xpub, branch, 1000):
+            stats = json.loads(_mempool_get(address))
+            used = stats["chain_stats"]["tx_count"] + stats["mempool_stats"]["tx_count"] > 0
+            total += number(stats["chain_stats"]["funded_txo_sum"] + stats["mempool_stats"]["funded_txo_sum"]
+                            - stats["chain_stats"]["spent_txo_sum"] - stats["mempool_stats"]["spent_txo_sum"])
+            gap = 0 if used else gap + 1
+            index += 1
+            if gap >= XPUB_GAP:
+                break
+            time.sleep(0.5)
+    return total
+
+
 def ledger_balance(symbol, address):
     # Only the address is sent to the public endpoint; it never leaves this function in an error.
+    if symbol == "BTC" and address[1:4] == "pub":
+        return btc_xpub_balance(address)
     if symbol == "BTC":
         stats = json.loads(request(MEMPOOL + address))
         funded = stats["chain_stats"]["funded_txo_sum"] + stats["mempool_stats"]["funded_txo_sum"]
