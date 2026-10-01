@@ -254,7 +254,7 @@ raising again. Check the container's own pressure with
 ## Companies (configured 2026-09-26)
 
 Companies ("organizations" in the UI): Homelab, Studio, Coach and — since
-2026-10-01 — **Finance**; see each section below. All have **Require board approval for new
+2026-10-01 — **Finance** and **Travel**; see each section below. All have **Require board approval for new
 hires** on, and **every agent has timer heartbeats off**
 (`runtimeConfig.heartbeat.enabled: false`, `wakeOnDemand: true`), so an agent
 wakes only when a task is assigned to it, it is @mentioned, or a routine
@@ -670,6 +670,34 @@ thing to do this week.
 describes goals; the agent asks one compact question instead of inventing a
 split rule. Nothing here reads a bank: Swedbank is hand-entered until the
 Enable Banking collector exists (see `HOME_SERVER_TODO.md`).
+
+### Travel — trip and race-weekend planner (live, 2026-10-01)
+
+One agent, **Travel Planner** (`claude_local`, `claude-sonnet-5`, heartbeat off,
+wake on demand, board approval on). Company prefix `TRA`. It researches
+destinations, flights and hotels with web search, writes itineraries, and builds
+full race-weekend plans (bike transport, stay near transition, expo and
+check-in timeline, gear list from the Coach's checklist).
+
+**Why research-only.** Booking means card details and irreversible spend. The
+agent produces a shortlist with links and the date each price was seen; the
+owner clicks "book". Flight prices and availability are not stable, so every
+price carries its date and source and the agent must say when it could not
+verify something — it must never invent a fare.
+
+**Instructions** are `travel-agents-addendum.md` in this directory (the agent's
+AGENTS.md). **Notebook** `~/ai-memory/travel/` (private): `profile.md`,
+`trips/<yyyy-mm>-<slug>.md`, `ideas.md`. It reads (never edits)
+`/ai-memory/training/race_calendar.md` and `/ai-memory/finance/plan.md`.
+
+**Using it.** Create a task for Travel Planner ("plan the weekend for IRONMAN
+70.3 Luxembourg, 11 Jul 2027", "winter month in Las Palmas, under €1,500") or
+chat in `#ai-travel` once that channel is mapped in the bridge. No routine: it
+only runs when asked.
+
+**Failure modes.** Flight/hotel sites that block scraping return nothing —
+expect gaps and a "could not verify" note rather than a guess. Long searches use
+tokens; keep requests specific.
 
 ## Skills (Studio, 2026-09-29)
 
