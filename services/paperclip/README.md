@@ -253,9 +253,8 @@ raising again. Check the container's own pressure with
 
 ## Companies (configured 2026-09-26)
 
-Two companies configured ("organizations" in the UI), a third (**Coach**)
-drafted but not yet created — see its section below, it needs an interactive
-board login this setup didn't have. All have **Require board approval for new
+Companies ("organizations" in the UI): Homelab, Studio, Coach and — since
+2026-10-01 — **Finance**; see each section below. All have **Require board approval for new
 hires** on, and **every agent has timer heartbeats off**
 (`runtimeConfig.heartbeat.enabled: false`, `wakeOnDemand: true`), so an agent
 wakes only when a task is assigned to it, it is @mentioned, or a routine
@@ -629,6 +628,48 @@ Thursday's run to Friday", "away 2–5 Oct") — task assignment wakes it even
 though its heartbeat is off. Approve or reject the decision it raises under
 **Approvals**/the issue's connection cards; it only touches TrainingPeaks
 after that.
+
+### Finance — personal money adviser (live, 2026-10-01)
+
+One agent, **Finance Manager** (`claude_local`, `claude-sonnet-5`, heartbeat
+off, wake on demand, board approval on). Company prefix `FIN`. Its job: split
+each paycheck, keep `balances.json` current, hold the wants / property /
+emergency-fund plan, and run a Sunday review.
+
+**Why an adviser and not an operator.** It can read and write only the shared
+notebook `/ai-memory/finance/` (the same files the Glance *Accounts* card
+reads). It has no bank, broker or exchange credentials and its instructions
+forbid trades, transfers and payments: it proposes, the owner transfers, and
+it records the result after he confirms. Mistakes in a notebook are cheap;
+mistakes in a bank are not.
+
+**Instructions** are `finance-agents-addendum.md` in this directory (the
+whole AGENTS.md of the agent). Update with
+`PUT /api/agents/<id>/instructions-bundle/file` (see *Adding or changing
+agents*), keeping the repo copy in step.
+
+**Notebook files** (`~/ai-memory/finance/`, private, never in this repo):
+`balances.json` (live balances), `plan.md` (goals, split rule, wants,
+property), `income-log.md` (append-only paychecks), `snapshots/` (host-written
+daily summaries, read-only for the agent).
+
+**Telling it about a paycheck.** In Discord (once `#ai-finance` is mapped in
+the bridge) or in Paperclip, create a task for Finance Manager: "payslip
+2203.37". It proposes the split as a *confirmation* decision (Accept / Reject
+buttons in Discord). You make the transfers, accept, and only then does it
+update `balances.json` and append to the income log. Credit-card `balance` is
+the amount owed.
+
+**Routine "Weekly money review"**, Sunday 10:00 Europe/Vilnius, project
+"Finance", `skip_if_active` / `skip_missed`. Under ~12 lines: stale balances
+(35+ days), emergency fund vs target, card balance, slipping goals, and the one
+thing to do this week.
+
+**Failure modes.** Balances all `null` until the owner enters them
+(`finance-data.py --set`, or tell the agent). No `plan.md` until the owner
+describes goals; the agent asks one compact question instead of inventing a
+split rule. Nothing here reads a bank: Swedbank is hand-entered until the
+Enable Banking collector exists (see `HOME_SERVER_TODO.md`).
 
 ## Skills (Studio, 2026-09-29)
 
