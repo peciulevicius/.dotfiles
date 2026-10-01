@@ -35,7 +35,6 @@ stdin (`crontab < file` or `cat file | crontab -`) and always verify with
 | Daily 06:30 | Image updates → Glance "Updates" widget (`update-report.sh`, reads WUD) | `~/logs/update-report.log` |
 | Monday 09:00 | Weekly image-update summary to Discord (`update-report.sh --discord`) — a report, not an auto-update; upgrade with `upgrade-service.sh` | `~/logs/update-report.log` |
 | Every 5 min | Paperclip usage-limit watchdog (notifications only; automatic switching is off) | `~/logs/paperclip-fallback.log` |
-| Every 5 min | Guarded temporary Claude subscription restore (acts only after its saved due time and successful probe) | `~/logs/paperclip-subscription-switch.log` |
 | Monthly, 1st 10:00 | Reminder to review prepaid AI credits | `~/logs/monthly-reminder.log` |
 
 The schedule was compared with the live crontab on 2026-09-30. The old

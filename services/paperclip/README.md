@@ -679,84 +679,29 @@ keeps version history: `GET …/skills/<skillId>/versions`).
 - OpenCode agents share the container's `~/.claude/skills` (Paperclip warns
   about this); the Claude and Codex agents get an ephemeral per-run copy.
 
-## Temporary Claude → Codex takeover (2026-09-30; returned 2026-10-01)
+## Claude → Codex takeover incident (2026-09-30 → 2026-10-01, closed)
 
-The ten recovered active Claude roles now use **unbound local subscription
-credentials**, so they can switch on the same agent IDs. Paused managed
-Claude roles still have the upstream binding limitation described below.
-Extra copies of agents do not create an automatic provider router.
+When the Claude Pro limit was hit, the ten active Claude roles were moved to
+`codex_local` for about a day with a one-shot helper, then returned to their
+original Opus/Sonnet configs after the subscription reset. Every role passed a
+real Claude hello probe before return and was read back exactly; no tasks were
+triggered by the switch or the return.
 
-A real Codex CLI request initially failed because the container's refresh
-token had been revoked, although `codex login status` reported a login.
-After the account owner completed `docker exec -it paperclip codex login
---device-auth`, real model probes passed in all three companies. All ten
-active Claude roles were temporarily moved to `codex_local` with the CLI
-engine and its configured default model. Paused roles, current Codex roles,
-OpenRouter roles, agent IDs, reporting links, instructions, skills and routine
-assignments were preserved. No tasks were triggered by this switch.
-Paperclip starts fresh runtime conversations when the adapter changes;
-durable issue history, instructions and shared memory remain available.
+Kept from it:
 
-`scripts/utils/paperclip-subscription-switch.py` previews by default:
-
-```bash
-python3 scripts/utils/paperclip-subscription-switch.py --status
-python3 scripts/utils/paperclip-subscription-switch.py --switch
-python3 scripts/utils/paperclip-subscription-switch.py --restore
-```
-
-Apply a temporary switch only after a tiny real Codex request passes:
-
-```bash
-python3 scripts/utils/paperclip-subscription-switch.py --switch --apply --restore-after 2026-10-01T11:00:00+03:00
-python3 scripts/utils/paperclip-subscription-switch.py --install-recovery --apply
-```
-
-The date above is this incident's **Thursday, 1 October, 11:00 Vilnius** reset
-estimate. Set a current timezone-aware timestamp for a future incident.
-Original Opus/Sonnet models and complete adapter/runtime configurations are
-journalled **before** each PATCH in a private directory (700, state 600).
-`--restore --apply` requires a real Claude request before restoring originals;
-failed probes leave Codex selected. The helper excludes managed bindings,
-explicit API-key environments, paused/retired roles and busy targets. It uses
-the workspace sandbox, not Codex's new-agent bypass default. CLI flags let it
-run in Paperclip workspaces without requiring a Git repository.
-
-The probe must include the adapter's explicit `hello_probe_passed` check;
-a general pass with a skipped custom-command probe does not authorize a
-switch or return. Probe results are reused only for identical complete
-adapter configs within one company. Selected execution environments are
-excluded because their credentials can differ from the local host login.
-The current ten-role takeover uses the local host, without such a selection.
-
-Busy roles, failed subscription probes and concurrent edits defer their own
-targets while other eligible roles continue. Queued/running checks use the
-target agent's full summary history before and after the model probe, so
-another agent's newer runs cannot hide a queued target. Missing or changed
-saved identities retain their originals and report a deferral. A partial
-batch exits nonzero with the remaining journal intact.
-
-The recovery installer backs up the existing crontab and appends a single
-five-minute check, preserving every existing job. It stages the helper under
-`~/.config/homelab/paperclip-subscription-switch/restore.py`, so Git branch
-changes do not remove tomorrow's recovery. Before the requested reset time,
-`--restore-due --apply` makes no model/API calls. After that, a failed probe
-retries at most hourly. Concurrently edited configurations are skipped;
-saved originals are retained. The check starts no tasks. Once all originals
-are restored the installed check becomes an inexpensive no-op. To update the
-staged helper while a takeover is active, rerun `--install-recovery --apply`.
-The installer saves a private `restore-*.bak` copy before replacing an existing
-helper, alongside its crontab backup. Recovery state is not replaced.
-
-This is an explicit, reversible subscription takeover, with a scheduled
-return. **The scheduled return completed on 2026-10-01 at 11:00 Vilnius.** A
-real Claude hello response passed for every one of the ten saved roles; each
-original Opus/Sonnet configuration was restored and read back, and the private
-journal now reports no saved agents. No task was triggered by the return. The
-recovery cron remains installed as a no-op after successful restoration.
-
-Automatic Claude ↔ Codex → capped OpenRouter selection and recovery for
-managed bindings remain outstanding work. No paid fallback was enabled.
+- **Codex is not a transparent fallback.** `codex login status` can report a
+  login while the refresh token is revoked; only a real model request proves it.
+  Paperclip starts fresh runtime conversations on an adapter change.
+- **Same-record harness changes are fragile.** Switching an agent back from
+  `opencode_local` to Claude is refused by the hello probe (see *Usage-limit
+  fallback*), and managed AI-connection bindings block it entirely — hence the
+  `paperclip-homelab` binding-order image.
+- **The helper was not kept.** It was a ~490-line single-use migration script
+  with its own self-installing cron (PR #52 in git history if ever needed).
+  Write any future one against the then-current API. Its staged recovery cron
+  was removed once the journal emptied.
+- **Decision:** the owner prefers Claude Max, so agents stay on Claude. Existing
+  Codex roles (Studio) remain, but no automatic Claude ↔ Codex routing is built.
 
 ### Restore missing Coach notification bindings
 
@@ -770,22 +715,6 @@ read back on 2026-09-30. Runtime checks as the actual server user confirmed
 both variables were injected and their existing Discord endpoints returned
 HTTP 200 to read-only metadata requests. No test message was sent; the next
 normal agent post still needs delivery verification.
-
-For the current saved takeover, preview and repair with:
-
-```bash
-python3 scripts/utils/paperclip-subscription-switch.py --repair-notifications
-python3 scripts/utils/paperclip-subscription-switch.py --repair-notifications --apply
-```
-
-The helper requires unique active secrets and current roles, checks saved
-configuration/identity and queued runs, and backs up the private recovery
-journal. It binds only secret references; no webhook value is read or printed.
-It updates both the temporary Codex configuration and saved Claude env, so
-the authorized binding survives the scheduled return. Original models and
-other fields remain intact. A lost PATCH response leaves a pending intent;
-rerun the repair to reconcile it. Recovery defers pending repairs instead of
-discarding them. The commands send no Discord messages or model probes.
 
 Upstream already has [issue #14023](https://github.com/paperclipai/paperclip/issues/14023)
 and [PR #14027](https://github.com/paperclipai/paperclip/pull/14027) for clearing
@@ -870,9 +799,8 @@ using the same signed-in Claude account do not provide independent subscription
 capacity. A reliable fallback needs a separately authenticated provider or
 subscription, a quota-aware route, a tested return path, and a task-context
 handoff; this setup has no such automatic chain. The owner prefers Claude Max,
-so keep agents on their existing Claude models and let the scheduled restore
-return the temporary takeover after the subscription reset. Do not enable
-automatic switching based on the upstream proposals alone.
+so keep agents on their existing Claude models. Do not enable automatic
+switching based on the upstream proposals alone.
 
 - **Detects** failed runs whose error mentions a *limit* (not "access failure")
   in the last 15 min, across all companies.

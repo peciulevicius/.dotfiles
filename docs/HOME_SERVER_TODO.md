@@ -188,30 +188,16 @@ Section names in *italics* are headings below.
 
 ### 🤖 An AI agent can do next
 
-- Paperclip recovery, runner, webhook-binding and shared-memory guidance repairs
-  are applied and verified. The 31 current agents have the shared-memory note.
-  The temporary unbound Claude → Codex takeover ran from 2026-09-30 until its
-  guarded 2026-10-01 11:00 Vilnius return. All ten original configurations
-  passed real Claude hello probes, were restored and read back; the private
-  journal is empty. Keep `AUTO_SWITCH=0`.
-  Paperclip's quota recovery schedules the same task owner at the reset or
-  default backoff; it does not select another provider. The installed
-  2026.916.1 image has no verified provider-wide circuit breaker. Upstream
-  Claude-to-Codex retry fallback issue #2014, circuit-breaker issue #7891 and
-  provider-quota admission issue #11597 remain open. The owner prefers Claude
-  Max and asked for no further Codex-specific development; do not enable an
-  automatic router based on those proposals.
-  Host-login tests do not validate managed-connection credentials. Agent
-  routing remains pinned to its selected compatible connection, and safe
-  recovery for the paused managed-bound roles remains separate work. The
-  guarded recovery helper now isolates busy/changed/unavailable roles, requires
-  a real hello result, and preserves unresolved originals.
-  Discord channels/webhooks were migrated and API-verified; the owner confirmed
-  bot permissions. No test message was sent, so normal agent delivery remains
-  unverified. STU-13 is In review after two resumed runs failed with
-  `provider_quota`; its human-only vendor-access question still needs an owner
-  answer. The 11 obsolete records remain paused pending approval for
-  irreversible termination.
+- Paperclip: recovery, runner, webhook-binding and shared-memory repairs are
+  applied and verified; the Claude → Codex takeover is closed and all ten roles
+  are back on their original Claude configs (see `services/paperclip/README.md`).
+  Keep `AUTO_SWITCH=0`: Paperclip retries a quota failure on the same agent and
+  has no provider failover (upstream #2014, #7891, #11597 are open). The owner
+  prefers Claude Max — do not build a router.
+  Open: paused managed-bound roles need a safe recovery path; normal agent
+  Discord delivery is unverified (no test message sent); STU-13 is In review
+  with a human-only vendor-access question for the owner; the 11 obsolete
+  records stay paused until termination is approved.
 
 - [x] ~~Rotate the **Radarr + Sonarr API keys**~~ — **done 2026-09-27**
   (Prowlarr, Jellyseerr, Bazarr updated + tested; see changelog).
@@ -462,10 +448,9 @@ coding.
 
 ### 8a. 🔐 Public-repo hygiene — added 2026-09-23
 
-- [ ] 👤 **Automatic PR reviews:** connect `.dotfiles` to Codex's hosted GitHub
-  reviews and enable automatic review. Claude subscription-backed reviews are
-  intentionally deferred to avoid spending that plan allowance. See
-  [PR reviews](guides/PR_REVIEWS.md).
+- [ ] 👤 **Automatic PR reviews:** run `gh auth refresh -h github.com -s workflow`
+  then `/install-github-app` in Claude Code (needs the Claude Max plan decision).
+  See [PR reviews](guides/PR_REVIEWS.md).
 
 Full secret audit done (gitleaks over all 492 commits): only one leak ever —
 the Uptime Kuma backup push token, public since **2026-05-09**. Rotated

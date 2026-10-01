@@ -6,6 +6,27 @@ is often what you need when something similar breaks again.
 
 Newest first-ish; dates are when the work was finished.
 
+## 2026-10-01 — strict review of the Codex PRs (#41–#55), consolidated
+
+Codex's fifteen PRs (finance feeds, Discord routing, Paperclip rehire/binding
+fixes, TODO truth passes, AI guidance) were reviewed line by line on the
+combined branch rather than merged one by one — most of them edit the same
+TODO/CHANGELOG sections and would have conflicted.
+
+- **Kept:** direct IBKR / Trading 212 / Kraken feeds (read-only, redirects off,
+  sanitized errors, 0600 caches); Discord channel routing; the binding-order
+  Paperclip image patch; rehire reconciliation and the hardened fallback
+  watchdog (still `AUTO_SWITCH=0`); shared-memory guidance; the Codex seccomp
+  profile (five Studio roles are still `codex_local` and need it); AGENTS.md and
+  the tool-neutral `.github/AI_REVIEW_RULES.md`; TODO/CHANGELOG corrections.
+- **Dropped:** `paperclip-subscription-switch.py` (single-use ~490-line
+  migration with a self-installing cron; the takeover it ran is closed) and
+  the dated `AGENT_MAINTENANCE_2026_09_30.md` handoff narrative (its facts live
+  in the changelog and the Paperclip README).
+- **Reworked:** `guides/PR_REVIEWS.md` was Codex-only and explicitly deferred
+  Claude; it now documents the Claude GitHub App route.
+- Removed the idle live cron line for the staged recovery helper.
+
 ## 2026-10-01 — complete the scheduled Paperclip return to Claude
 
 - The staged five-minute recovery job ran after the saved reset deadline.
