@@ -57,7 +57,7 @@ Section names in *italics* are headings below.
 
 - [x] ~~⚡ Paperclip usage-limit watchdog~~ — detects and notifies about Claude limits; OpenRouter connections are provisioned in all three companies. `AUTO_SWITCH` is **off** after the restore incident. Recovery applied 2026-09-29: skills and three open issue assignments restored, three reporting links repaired.
 - [x] ~~Paperclip unchanged-binding validation defect~~ — deployed the guarded local patch from the recovery PR after approval; Web Engineer and Homelab Security Engineer's reporting updates now succeed. All five reporting links, three issue assignments and three routine assignments are repaired; fallback state is cleared.
-- [ ] **Paperclip retired-record cleanup:** the 11 obsolete Coach/Studio records pass reference checks; termination awaits explicit approval. The old Homelab Lead is now unreferenced but excluded from that 11-record plan. The ten active unbound Claude roles were temporarily switched on their existing IDs to Codex on 2026-09-30 after a fresh container login. Their originals are saved; a staged cron check starts recovery after 2026-10-01 11:00 Vilnius and requires a real Claude probe. Automatic routing and managed-binding recovery remain pending. Keep `AUTO_SWITCH=0`. Details: `services/paperclip/README.md` → *Usage-limit fallback*.
+- [ ] **Paperclip retired-record cleanup:** the 11 obsolete Coach/Studio records pass reference checks; termination still awaits explicit approval. The old Homelab Lead is unreferenced but excluded from that plan. Separately, the ten active unbound Claude roles temporarily used Codex on their existing IDs from 2026-09-30 until the scheduled return on 2026-10-01. All ten original Claude configurations were restored and read back after real Claude hello probes passed; the private recovery journal is empty. The five-minute recovery cron remains installed and is now a no-op. Automatic cross-provider routing and safe managed-binding recovery are not enabled; keep `AUTO_SWITCH=0`. See `services/paperclip/README.md` → *Usage-limit fallback*.
 - **🧠 Shared AI memory (2026-09-29):**
   - [ ] 👤 NAS: create a shared folder **`backups`** (UGREEN → Control Panel → Shared Folder → Create; give `macmini` R/W). Then Claude adds it to `SHARES` in `scripts/utils/mount-nas.sh` — the nightly backup starts copying `~/ai-memory` there automatically.
   - [ ] 👤 Odysseus: save the current admin password to Vaultwarden and put it in `~/services/odysseus/.env` (`ODYSSEUS_ADMIN_PASSWORD`) — the `.env` one no longer matches, so API automation can't log in.
@@ -212,14 +212,17 @@ Section names in *italics* are headings below.
 
 ### 🤖 Claude can do next
 
-- Paperclip: recovery and reference repairs were applied and verified
-  2026-09-29. A temporary unbound Claude → Codex takeover was applied on
-  2026-09-30 with saved original models and a scheduled guarded return. Next
-  engineering work is automatic routing across subscriptions and managed
-  connections, preserving IDs, instructions, skills and assignments. Host-login tests do not prove managed credentials
-  work; restoring a null binding currently retains OpenRouter. Keep
-  auto-switch off. The guarded manual switch requires an existing active
-  monthly hard-stop policy of $3 or less; `--switch --dry-run` previews it.
+- Paperclip recovery and reference repairs were applied and verified on
+  2026-09-29. The temporary unbound Claude → Codex takeover from 2026-09-30
+  was returned to the saved Claude configurations on 2026-10-01 at 11:00
+  Vilnius; all ten real hello probes and exact configuration readbacks passed.
+  No takeover remains pending. Keep `AUTO_SWITCH=0`: current Paperclip quota
+  recovery can retry the same task owner but does not choose another provider.
+  The upstream adapter-fallback proposal remains open, and provider-wide quota
+  admission/circuit breaking is not verified in this installation. Managed
+  AI connections also need a separately authenticated account and explicit
+  compatible binding; host-login probes do not verify managed credentials.
+  See the Paperclip runbook before any future manual subscription switch.
 
 - [x] ~~Rotate the **Radarr + Sonarr API keys**~~ — **done 2026-09-27**
   (Prowlarr, Jellyseerr, Bazarr updated + tested; see changelog).
