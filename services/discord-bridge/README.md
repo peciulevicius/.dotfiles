@@ -51,7 +51,10 @@ scripts in `services/paperclip/README.md` do.
 2. **Create `#ai-training-dietitian`** next to `#ai-training-coach` (plus a
    webhook in it for the Dietitian's scheduled posts — Channel settings →
    Integrations → Webhooks).
-3. **No IDs to copy.** `configure.sh` reads each channel's ID from its webhook
+3. **No IDs to copy.** `configure.sh` signs in to Paperclip with the private
+   board credentials and resolves the current Coach and Dietitian in the
+   Coach company. It fails before writing when a name is missing or ambiguous,
+   so rerunning setup cannot reinstall retired agent IDs. It reads each channel's ID from its webhook
    (a GET on a webhook URL returns `channel_id`), and the bridge treats the
    bot application's owner as the only allowed user.
 4. **Stage and configure:**
@@ -78,6 +81,14 @@ cd ~/services/discord-bridge && docker compose up -d --build   # after editing b
   `CHANNEL_MAP` in `.env`, then `docker compose up -d`.
 - **Rotate the bot token:** Developer Portal → *Reset Token*, then re-run
   `configure.sh`.
+- **Separate operational notifications:** see
+  [the cron notification runbook](../../scripts/cron/README.md#notifications).
+  Creating notification channels/webhooks requires *Manage Channels* and
+  *Manage Webhooks* on the bot's server role; ordinary two-way chat needs
+  neither. The bot already had those permissions when routing was applied on
+  2026-09-30; the first channel move failed because the request resent
+  unchanged permission overrides. The migration was corrected and completed;
+  the separate Kuma message test is still pending.
 - **Paperclip password changed:** update `PAPERCLIP_PASSWORD` in `.env` too
   (the `credential-rotation` skill lists this copy).
 

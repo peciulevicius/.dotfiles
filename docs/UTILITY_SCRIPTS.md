@@ -38,14 +38,14 @@ listed in [scripts/cron/README.md](https://github.com/peciulevicius/.dotfiles/bl
 | `scripts/backup/backup-external.sh` | rsync NAS data and dumps to an external drive | Manually, when a drive is connected |
 | `scripts/utils/homelab-audit.sh` | Audit drift, containers, backups, disk, recent commits and cron | Weekly (cron) |
 | `scripts/utils/homelab-status.sh` | Write the Glance status snapshot for *Training*, *Coach team*, *Homelab health* and *Sleeping apps* (`~/services/glance/assets/status.json`) | Every 5 minutes (cron) |
-| `scripts/utils/finance-status.sh` | Write the Glance *Portfolio* snapshot (IBKR holdings via Flex Web Service) to `~/services/glance/assets/finance.json` | Daily 07:00 (cron) |
+| `scripts/utils/finance-status.sh` | Write the Glance *Portfolio* snapshot (direct IBKR, Trading 212 and Kraken account data) to `~/services/glance/assets/finance.json` | Daily 07:00 (cron) |
 | `scripts/utils/update-report.sh` | Read WUD's "update available" list, bucket it (safe / major / held), write `~/services/glance/assets/updates.json`; `--discord` weekly summary, `--markdown` table | Daily 06:30, Mon 09:00 (cron) |
 | `scripts/utils/upgrade-service.sh` | Upgrade one pinned image: pull, back up, bump tag in repo, stage, recreate, health-check, **auto-rollback** | By hand, one service at a time |
 | `scripts/utils/run-with-notify.sh` | Wrap a cron job and notify Discord on failure and recovery | Used by every cron job |
 | `scripts/utils/mount-nas.sh` | Mount the NAS SMB shares | At login (launchd) |
 | `scripts/utils/nas-watchdog.sh` | Remount shares and restart NAS-backed containers | Every 5 minutes (launchd) |
 | `scripts/utils/docker-watchdog.sh` | Restart Docker Desktop or its engine when down or hung | Every 5 minutes (launchd) |
-| `scripts/utils/smb-watcher-rescan.sh` | Restart Jellyfin and Audiobookshelf so new NAS files are indexed | Every 30 minutes (cron) |
+| `scripts/utils/smb-watcher-rescan.sh` | Manually restart only already-running Jellyfin/Audiobookshelf containers to force a library scan | Manual only; not scheduled |
 
 ---
 
@@ -344,10 +344,12 @@ Usage-limit watchdog for Paperclip (cron every 5 min, `~/logs/paperclip-fallback
 Detects Claude-subscription limit failures and, with `--switch` or
 `AUTO_SWITCH=1`, moves non-paused `claude_local` agents to OpenRouter
 (deepseek-v3.2), saving their configs in `~/.config/homelab/paperclip-fallback/`;
-`--restore` probes the subscription and moves them back; `--status`,
-`--dry-run`. Auto-switch is off for now because Paperclip refuses the switch
-back (false "login required" hello probe) — details and fix steps in
-`services/paperclip/README.md` → *Usage-limit fallback*.
+`--restore` probes the subscription but does not PATCH a stuck agent back to
+Claude. `--reconcile` previews remaps for already-rehired, retired agents;
+`--reconcile --apply` adds their saved skills, updates reporting links and open
+issues, and clears matching stale state. Auto-switch remains off until a full
+rehire-and-approval workflow is safe. Details: `services/paperclip/README.md`
+→ *Usage-limit fallback*.
 
 ### setup-services.sh
 
@@ -524,22 +526,29 @@ with the error instead of showing stale data.
 
 ### finance-status.sh
 
-Holdings snapshot for the Glance **Finance** page's *Portfolio* widget. It
-fetches your IBKR positions, cash and NAV through the Flex Web Service
-(read-only token in `~/.config/homelab/ibkr-flex.env`) and writes
-preformatted totals, last-day and unrealised P&L, and the top 8 positions
-with allocation % to `~/services/glance/assets/finance.json`, outside the
-repo. A failed fetch keeps the last good data and marks it stale. Built for
-more providers later (Trading 212, Kraken, Capital.com, Ledger addresses, a
-manual CSV for Swedbank/Revolut): each one is a `fetch_<name>()` returning
-the same dict, and totals are summed across providers.
+Direct IBKR Flex, Trading 212 account summaries and Kraken default-wallet balances for the Glance Finance
+page. `finance-status.sh` calls `finance-data.py`, which writes the private
+served snapshot and keeps credential-specific native caches outside Glance's
+assets. Each provider has its own status and date; the combined EUR figure
+covers connected investments only. Failed fetches mark cached data stale.
+Wallet balances and budgets are no longer collected.
+Trading 212 also reads positions; per-instrument wallet values use its account
+currency, and a detail failure keeps the fresh account total with a warning.
+Pie shares are not added twice, and holdings are never added to reported NAV.
 
 ```bash
-~/.dotfiles/scripts/utils/finance-status.sh --print          # fetch + show
-~/.dotfiles/scripts/utils/finance-status.sh --from-file x.xml  # parse a saved statement
+bash scripts/utils/finance-status.sh            # refresh; no balances printed
+bash scripts/utils/finance-status.sh --health   # cached booleans, no API calls
 ```
 
-Setup: `services/glance/README.md` → *Finance*.
+`--print` includes private financial data. `--from-file` parses one local IBKR
+report without calling other brokers; use isolated output/cache directories
+as described in `services/glance/README.md` → Finance. Capital.com,
+Ledger and bank import connectors remain planned. The private daily memory
+snapshot records coverage and avoids comparisons against legacy Wallet data.
+Kraken uses a dedicated Query Funds key and persists private nonces before
+signed balance reads. Its EUR value is an indicative spot midpoint estimate;
+unknown assets/prices fail the account instead of producing a partial value.
 
 ### run-with-notify.sh
 
@@ -568,10 +577,13 @@ Details: [NAS.md](NAS.md).
 
 ### smb-watcher-rescan.sh
 
-Restarts Jellyfin and Audiobookshelf every 30 minutes because their file
-watchers miss new files on SMB. This is a stopgap until import notifications
-are configured; see
-[HOME_SERVER_REFERENCE.md](HOME_SERVER_REFERENCE.md#file-watchers-miss-new-files-on-smb).
+Manually restarts Jellyfin and Audiobookshelf only when already running,
+because their file watchers can miss new files on SMB. It has no cron entry:
+the 30-minute job woke Sablier-managed sleepers and interrupted playback, so it
+was removed 2026-09-28. LazyLibrarian has a Notify on Download custom-script
+hook and Audiobookshelf documents a library-scan API, but the integration is
+not configured or tested here. See
+[HOME_SERVER_REFERENCE.md](HOME_SERVER_REFERENCE.md#services-with-an-smb-mounted-library-dont-reliably-notice-new-files).
 
 ---
 

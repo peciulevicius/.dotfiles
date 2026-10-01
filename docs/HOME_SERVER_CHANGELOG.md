@@ -6,6 +6,259 @@ is often what you need when something similar breaks again.
 
 Newest first-ish; dates are when the work was finished.
 
+## 2026-10-01 — strict review of the Codex PRs (#41–#55), consolidated
+
+Codex's fifteen PRs (finance feeds, Discord routing, Paperclip rehire/binding
+fixes, TODO truth passes, AI guidance) were reviewed line by line on the
+combined branch rather than merged one by one — most of them edit the same
+TODO/CHANGELOG sections and would have conflicted.
+
+- **Kept:** direct IBKR / Trading 212 / Kraken feeds (read-only, redirects off,
+  sanitized errors, 0600 caches); Discord channel routing; the binding-order
+  Paperclip image patch; rehire reconciliation and the hardened fallback
+  watchdog (still `AUTO_SWITCH=0`); shared-memory guidance; the Codex seccomp
+  profile (five Studio roles are still `codex_local` and need it); AGENTS.md and
+  the tool-neutral `.github/AI_REVIEW_RULES.md`; TODO/CHANGELOG corrections.
+- **Dropped:** `paperclip-subscription-switch.py` (single-use ~490-line
+  migration with a self-installing cron; the takeover it ran is closed) and
+  the dated `AGENT_MAINTENANCE_2026_09_30.md` handoff narrative (its facts live
+  in the changelog and the Paperclip README).
+- **Reworked:** `guides/PR_REVIEWS.md` was Codex-only and explicitly deferred
+  Claude; it now documents the Claude GitHub App route.
+- Removed the idle live cron line for the staged recovery helper.
+
+## 2026-10-01 — R2 restore check false alarm, now retried once
+
+The 06:00 monthly `r2-verify.sh` run alerted that one Immich file DIFFERED from
+its R2 copy. Re-checked the same day: that file was byte-identical (md5 and
+`cmp`), 40/40 further random files matched, and a full
+`rclone check` of the whole Immich backup found 6707 matching files and 0
+differences. Conclusion: a transient SMB/NAS read or download glitch, not
+corruption. `r2-verify.sh` now re-downloads and re-compares a mismatched file
+once (after 30s) before it alerts, so a single glitch no longer pages. A
+repeat mismatch still alerts.
+
+## 2026-10-01 — complete the scheduled Paperclip return to Claude
+
+- The staged five-minute recovery job ran after the saved reset deadline.
+  A real Claude hello probe passed for each of the ten temporarily switched
+  active roles; every untouched original adapter/runtime/model configuration
+  was restored and read back exactly.
+- The private takeover journal now has zero saved agents. No Paperclip tasks
+  were triggered by the restoration. The scheduled cron remains installed and
+  safely exits without a probe or API call when there is no pending journal.
+- Verified `restore.py --status` after completion and checked the recovery log
+  for all ten successful probes/readbacks. Separately, a temporary one-minute
+  cron canary ran successfully and removed its scheduled command; existing
+  jobs remained intact.
+- Automatic cross-provider failover remains disabled. Paperclip retries
+  classified quota failures against the same task owner; it does not select a
+  different provider. See `services/paperclip/README.md` → *Usage-limit
+  fallback* for current upstream status and limitations.
+
+## 2026-09-30 — refresh media indexing guidance
+
+- Removed stale claims that a 30-minute Jellyfin/Audiobookshelf restart is
+  scheduled. The job was removed on 2026-09-28 because it woke Sablier
+  sleepers and interrupted playback; the helper remains manual-only.
+- Confirmed LazyLibrarian supports a Notify on Download custom-script hook and
+  Audiobookshelf's API reference documents a library-scan endpoint. The local
+  integration is not configured or tested; the TODO now calls for live API,
+  script-path and Sablier-wake checks before setup. API keys stay private.
+
+## 2026-09-30 — restore notification references during the takeover
+
+- Found that Coach and Dietitian lacked their webhook env bindings. The
+  encrypted `coach-discord-webhook` and `dietitian-discord-webhook` secrets
+  were still active; bridge routing and channel permissions do not install
+  agent env references.
+- Added a guarded preview/apply repair for the current saved takeover. It
+  checks unique current roles/secrets, idle status, exact saved configs and
+  identity, preserves a private journal backup, and saves intent before PATCH.
+- Update saved Claude env alongside confirmed Codex env so tomorrow's return
+  preserves the authorized webhook fix. Pending/lost responses are retained
+  and reconciled explicitly; no credentials or webhook values are emitted.
+- Applied live and read back both secret references, exact expected Codex
+  configs and saved Claude env. Reconciled the SDK's default projection
+  metadata without discarding unknown fields. After runner repair, prospective
+  adapter checks confirmed injection into child processes as server UID 1000
+  and HTTP 200 from both Discord webhook metadata endpoints. No secret values
+  were printed and no test messages/model calls were made by those checks.
+  Actual post delivery remains a normal-run verification step.
+
+## 2026-09-30 — repair the live Codex command runner
+
+- Reproduced the bubblewrap namespace failure. Earlier hello/model probes
+  did not test command tools; the takeover had not been verified end to end.
+- Prepared a pinned Moby default-deny seccomp policy with three added rules
+  for private namespace/mount setup. No additional container capabilities,
+  image upgrade, sandbox bypass or data-mount changes are proposed.
+- Disposable checks proved actual commands, workspace writes and denied
+  outside/symlink writes with both sandbox network profiles. Filtering stayed
+  active and outer SYS_ADMIN was absent. No service data/credentials were
+  mounted and no model calls, messages or purchases occurred.
+- Applied the approved policy and briefly recreated Paperclip after verifying
+  zero queued/running runs, unchanged declared env and valid Compose. Private
+  live-file backups and automatic rollback were prepared before application.
+  Retained the existing image, ports, data/login mounts and capabilities.
+- HTTP health recovered; the quota-free diagnostic passed as the actual server
+  UID 1000, with both sandbox network profiles. A small real subscription
+  request as that user executed the sandboxed command tool and received output.
+  This verifies tool execution separately from a hello/model response.
+- Cleared STU-13's legacy hold through the supported recovery evidence API.
+  Its held admission was cancelled by the review gate before provider execution;
+  recorded not-performed evidence for that admission only. Earlier outcomes were
+  not certified. The original approval/history are preserved. Resumed runs then
+  failed with `provider_quota`; the issue is In review with a human-only vendor-
+  access question pending. Task completion remains unverified.
+
+## 2026-09-30 — distinguish quota retry from provider failover
+
+- Paperclip schedules retries for classified `provider_quota` failures against
+  the same task agent (assignee or active agent reviewer) at a parsed reset/
+  retry time or default backoff. It does not select another adapter or
+  provider. Human-only questions and other holds
+  can still require owner action.
+- The local Claude usage watchdog is separate; its provider switch is guarded
+  and `AUTO_SWITCH` remains off. No provider configuration changed.
+
+## 2026-09-30 — isolate subscription recovery failures
+
+- A busy/queued role, concurrent edit or failed login probe no longer stops
+  other eligible roles in the batch. Missing saved agents and changed saved
+  identities are reported without clearing their original configurations.
+- Require the provider's explicit successful hello-response check. A general
+  adapter pass can mean its custom-command model probe was skipped, so that
+  result cannot authorize switching or recovery.
+- Probe reuse requires the same complete adapter config and company. Selected
+  execution environments are excluded from this local-login helper; their
+  credentials and paid routes need separate validation in the future router.
+- Check full per-agent run summaries before and after probes instead of the
+  last 100 company runs. New queued work cannot hide behind unrelated history.
+- Updating the staged helper also saves a private copy of its previous source;
+  the original configuration journal and recovery deadline are preserved.
+- Published in PR #52 and staged the updated recovery helper live, retaining
+  the prior helper backup, ten saved originals and the October 1 reset time.
+  This does not enable automatic initial quota routing.
+- Validation: 124 offline assertions covering batch isolation, explicit hello
+  proof, complete probe configs, missing/changed identities, queued work,
+  lost responses, exact restores, hourly deadlines and private staging
+  backups. Python syntax, whitespace checks and strict documentation passed.
+
+## 2026-09-29 — Paperclip fallback reconciliation guard
+
+Follow-up safeguards (2026-09-30): quota detection no longer treats every
+failure containing "limit" as subscription exhaustion. It uses the upstream
+provider-quota code or recognized Claude quota messages, excludes generic
+429/auth/turn/context/budget errors, and ignores retired or paused agents'
+history. Added a process lock, private atomic state writes, immediate saves
+after each successful operation, and refusal to discard corrupted state.
+Fresh agent configuration/status is checked before a switch; busy agents are
+skipped. Offline classifier/state checks and shell lint passed. This does not
+enable automatic switching or solve the separate authentication restore bug.
+
+Additional switch safeguards journal original configurations before the API
+PATCH and preserve unconfirmed requests for read-only inspection or explicit
+reconciliation. Unconfirmed switches cannot wake issues or trigger recovery
+probes. A fallback target must already have an active billed-cost monthly
+hard-stop policy of $3 or less, with remaining budget; missing, soft-only or
+exhausted policies are skipped. No budgets or models were changed live.
+The runbook now distinguishes host-login checks from managed credentials,
+records the PATCH route's inability to clear an existing binding with null,
+and documents the built-in Streamlined UI/legacy sidebar setting. Offline
+failure simulations verified budget gates, private pre-PATCH journals, dry
+runs, lost responses, refused requests and preservation of concurrent changes;
+shell lint passed. No live agents or provider requests were started.
+
+The fallback script no longer retries the known-broken same-agent PATCH when
+Claude usage returns. Added an explicit dry-run-first `--reconcile` flow for
+agents already replaced through Paperclip's board approval: it requires a
+paused/terminated retired record and one exact live name/adapter/model match,
+then can restore saved skills and remap reporting links and open issues before
+clearing that stale state entry. It never terminates agents; auto-switch stays
+off pending a complete rehire-and-approval flow. A read-only live audit found
+five Homelab agents still linked to the retired Homelab Lead and ten stale
+fallback records. Applied on the live instance: restored saved skills, moved
+three open issue assignments, and repaired three reporting links. Two paused
+Claude reports reject `reportsTo`-only updates with 422 because the server
+compares an unchanged login binding by JSON property order and probes it again.
+Built a guarded local image that compares both bindings after schema parsing.
+After approval, deployed it with no active runs, backed up the live files and
+verified server health. Both remaining reporting updates then succeeded. All
+five reporting links are repaired and fallback state is cleared. Restore
+notices are deduplicated and partial reconciliation exits nonzero. Remapped
+the weekly Homelab report, daily Coach check-in and paused Studio standup to
+their replacements, preserving routine states. All retired records remain
+paused pending explicit termination approval; no history was deleted.
+
+---
+
+## 2026-09-30 — Trading 212 holdings detail
+
+- Added the read-only positions endpoint beside the account summary. Holdings
+  use reported wallet value and unrealised P&L in account currency, preserving
+  the instrument identifier and total quantity including pie shares.
+- Reported account totals remain authoritative; holdings/cash are not added
+  again. Missing, duplicate or mismatched-currency detail is omitted in full
+  with a warning, while a valid fresh summary remains available.
+- No older holdings are mixed into a fresh summary. Summary-only caches are
+  upgraded on refresh; failed summary reads retain labelled stale data.
+- Updated the dashboard, read-only permissions/runbook and TODO. No live
+  Trading 212 credentials are configured and no account has been queried.
+- Checks: 71 offline assertions covering Basic authentication, reported wallet
+  amounts, pie quantities, malformed/missing/duplicate detail, currency
+  mismatch, private errors, cache upgrades, stale recovery, cached health and
+  IBKR-only source mode; Python syntax, ShellCheck and strict docs passed.
+- Live follow-up (11:51 Vilnius): the combined checkout and staged Portfolio
+  widget include holdings support. Private originals were backed up, Glance
+  recreated using its existing image and HTTP 200 verified. The refreshed
+  feed/private summary still show three unconfigured accounts, as expected;
+  real Trading 212 quantities and totals remain unverified until connection.
+
+## 2026-09-30 — direct Kraken balance connector
+
+- Added a Query Funds-only default-wallet collector. Its sole private request
+  reads balances; public spot markets supply an indicative EUR midpoint
+  estimate. No orders, transfers, withdrawals or raw API errors are emitted.
+- Quantities, provider source and unknown cash/P&L are explicit. Unpriced,
+  ambiguous and tokenized assets fail the account instead of disappearing
+  from its total. Valid private caches survive failed fetches with stale labels.
+- Signed reads use a private per-key monotonic nonce, persisted before the
+  request and locked until its response, including timeout recovery. Rotated
+  credentials cannot reuse another account's cached values.
+- Updated Glance and its runbook with provider valuation sources, native
+  cash/P&L where available, and hidden credential prompts. The source is
+  prepared in PR #49, stacked on direct-finance PR #41; credentials and quantity reconciliation
+  remain owner steps. No live Kraken account has been queried.
+- Checks: official offline signature vector, nonce/timeout/permission/cache
+  recovery, direct/two-market/inverse EUR prices, reward suffixes, unavailable
+  asset handling, nullable P&L, unconfigured no-network collection, Python
+  syntax, Bash/ShellCheck and strict documentation build.
+- Live follow-up (11:29 Vilnius): replaced only the staged Portfolio widget,
+  recreated Glance with its existing image and verified HTTP 200. Refreshed
+  the served feed and private daily summary after saving private originals.
+  IBKR, Trading 212 and Kraken all report unconfigured, with no fetch errors.
+  Account credentials and balance reconciliation remain owner steps.
+
+---
+
+## 2026-09-30 — one homelab service skill for Claude and Codex
+
+- Moved `homelab-service` to `.agents/skills/` and added relative Claude
+  project/legacy-config aliases. Existing global links and setup consumers
+  reach the same canonical folder, without maintaining duplicate copies.
+- Revised staging guidance to preserve live configuration differences and
+  executing scripts, respect existing authorization, and verify the affected
+  integration. Source readiness and live application are reported separately.
+- Documented skill discovery and invocation; company-managed Paperclip and
+  Odysseus imports remain separate. No account settings, private memory,
+  company agent configuration or running service is changed by this move.
+- Checks: the installed Codex CLI's `skills/list` finds an enabled repo skill
+  from the root and Glance subfolder, with no model turn. Claude's project
+  alias and all 47 existing installer links resolve correctly after repeated
+  installs in an isolated fixture. Skill validation, shell syntax/lint and
+  strict documentation build passed; no private data was copied into Git.
+
 ---
 
 ## 2026-09-29 — AUTO_SWITCH incident: 10 agents stuck, fixed by hand, feature reverted to notify-only
@@ -27,8 +280,47 @@ the Coach's TrainingPeaks writes. Generated and added to
 
 ---
 
+## 2026-09-29 — Separate operational notification identities
+
+The notification helper sets sender names for jobs, Paperclip, reminders and
+updates, with route-specific private webhook config. Renamed the original
+shared webhook live to **Homelab Jobs**; verified Kuma sets **Uptime Kuma** on
+each of its messages. Jobs therefore stop impersonating Kuma immediately.
+Kuma's monitors already have repeat alerts disabled.
+
+Prepared an idempotent, preview-first migration with **Homelab** and **AI**
+categories, four notification destinations, and separate webhooks. Existing
+Coach/Dietitian channels move to AI, retaining their IDs and threads; the
+Dietitian spelling typo is corrected. Existing channel permission overrides
+are preserved. Updated the mail/monitor and notification runbooks with setup
+and testing steps. Bridge configuration resolves current hires by name/company
+instead of reinstalling retired IDs. Monthly reminders select their own route.
+
+Applied live on 2026-09-30; the bot already had the required permissions. The
+first channel move returned HTTP 403 because the request resent unchanged
+permission overrides. The migration was corrected to leave existing overrides
+untouched, then retried successfully. The existing Kuma webhook now targets
+`#uptime-alerts`; `#homelab-jobs`,
+`#ai-agents` and `#homelab-reminders` each have a dedicated bot webhook.
+Coach and Dietitian channels are under AI with their messages/threads retained,
+and the Dietitian channel spelling is corrected. Read-only API checks confirmed
+the channel layout, webhook names and Kuma
+destination. No test messages were sent. Private webhook URLs remain in
+`~/.config/homelab/notify.env`; the migration created a mode-0600
+`.pre-routing` backup.
+The live Kuma database was also queried read-only on 2026-09-30: all 24
+monitors have repeat notifications disabled (`resend_interval = 0`).
+
 ## 2026-09-29 — Claude/Codex handoff protocol for Studio engineering
 
+- Consistent shared-memory guidance subsequently appended and verified on all
+  **31 current Paperclip agents**, including paused departments, across all
+  three companies. No role text removed; no models, assignments, or statuses
+  edited. Retired and duplicate hires excluded. Originals saved privately in
+  `~/.config/homelab/paperclip-instruction-backups/`; preview/apply utility is
+  `scripts/utils/paperclip-memory-guidance.py`. Rerun verified 31 configured,
+  zero pending, zero writes. Sensitive training/finance context stays in its
+  domain folders; the general inbox is for non-sensitive durable facts.
 - Studio's engineering line already splits by harness (CTO + Backend Developer
   on Claude; Engineering Manager + Frontend/Mobile/DevOps on Codex) — added an
   explicit protocol instead of leaving the split implicit: CTO designs
@@ -212,6 +504,22 @@ the Coach's TrainingPeaks writes. Generated and added to
   (`~/backups/wud-store-2026-09-28/`), WUD re-bootstrapped with the current
   `.env`, scripts' copy (`~/.config/homelab/wud.env`) synced; the report runs
   again. Gotcha documented in `services/wud/README.md`.
+
+## 2026-09-29 — Corrected stale maintenance and power-recovery guidance
+
+- Verified the live crontab has no 30-minute media restart; updated the TODO
+  to describe optional awake-session API refresh, rather than reinstating a
+  job that woke Sablier sleepers. Removed obsolete ntfy installation advice
+  and duplicate Transmission key-expiry instructions. MacBook re-auth was
+  already recorded done; only key-expiry verification remains. Calibre's
+  KOReader check is explicitly a device step.
+- `pmset -g custom` reports `autorestart 1`. The installed Apple `pmset` manual
+  defines it as automatic restart on power loss. Corrected the rebuild guide,
+  TODO and audit skill's old kernel-panic-only claim and extra-flag advice.
+  No power settings changed; no power cut/reboot attempted. UPS purchase and
+  supervised physical recovery testing remain user steps.
+- Updated the audit skill to use the already-installed WUD daily report,
+  rather than claiming the retired quarterly registry job still runs.
 
 ## 2026-09-28 — SMB rescan cron removed (it kept sleepers awake)
 
@@ -1754,6 +2062,11 @@ rewriting history.
 
 ## 2026-09-22 (power outage) — Auto-restart gap found, monitoring gap found, two research questions settled
 
+**2026-09-29 correction:** the setting interpretation below was wrong.
+Apple's installed `pmset` manual defines `autorestart` as restart on power
+loss, and it is already enabled. Use the corrected rebuild guide and TODO;
+do not run the extra-flag command from this historical entry.
+
 **Power outage — Mac mini never came back on its own.** `pmset -g` showed
 `autorestart 1` (restart-after-kernel-panic) but **`autorestartatconnect` was
 never set at all** — the actual "power on when AC returns" setting is a
@@ -2627,6 +2940,24 @@ fire, flood or theft. Moving T5 offsite is what makes this genuinely 3-2-1.
 ---
 ## 2026-09-29 — BudgetBakers finance view + private AI summaries
 
+### Wallet page-size fix and private health checks
+
+The Wallet API accepts up to 200 items per page for accounts and categories,
+but rejects a 200-item request for budgets with HTTP 400 (`limit must be at
+most 20`). `finance-status.sh` uses a 20-item page for budgets and retains
+200-item pages for the other collections. Confirmed against the saved token:
+the provider returns `ok: true`; token and account values were not printed.
+The follow-up `--health` mode reads cached provider booleans without fetching
+or printing balances, positions, error text or credentials. Setup instructions
+now use it instead of printing credential files. Corrected the stale TODO
+claim that Wallet still needed a token. See `services/glance/README.md`.
+
+Live morning verification, 2026-09-30: the 07:00 scheduled refresh produced
+a healthy, configured, non-stale Wallet provider in the actual Glance feed.
+The private daily snapshot exists and was written at 07:05. IBKR remains
+unconfigured pending its credentials. Only health booleans and file metadata
+were inspected; no generated amounts were copied into the repository.
+
 - Extended `finance-status.sh` with BudgetBakers Wallet's read-only REST API
   (bearer token), account balances, current-month budget versus actual, and
   separate provider caches (IBKR 30m; Wallet 6h). Combined net worth and the
@@ -2638,3 +2969,55 @@ fire, flood or theft. Moving T5 offsite is what makes this genuinely 3-2-1.
 - Added setup docs and a TODO for the user's Wallet token and remaining IBKR
   setup. No credentials were added.
 
+
+## 2026-09-30 — replace Wallet aggregation with direct broker reports
+
+- Removed BudgetBakers Wallet requests, balances and budgets from the finance
+  collector, Glance card and new private summaries at the user's request. The
+  earlier HTTP 400 fix succeeded at transport level; it did not reconcile
+  Wallet's amounts against the user's accounts.
+- Added Trading 212's read-only account-summary API beside IBKR Flex. Values,
+  dates and status are separate per broker. The EUR total covers connected
+  investments, not full personal net worth. Neither broker has credentials
+  configured yet; setup and numerical reconciliation remain user tasks.
+- IBKR now rejects missing NAV, missing currency, non-finite values and
+  multi-account reports. Removed misleading daily P&L/unrealised percentages.
+  Trading 212's reported total is used once, without adding cash/holdings again.
+- Native caches are private and credential-specific, stale fetches remain
+  labelled, and controlled errors cannot echo request tokens. Snapshot
+  comparisons require matching source coverage/schema/currency and fresh,
+  complete data; legacy Wallet records are not treated as portfolio history.
+- Live follow-up: replaced only the staged Glance Portfolio widget, recreated
+  Glance with its existing image, regenerated the served JSON and today's
+  private summary, and archived obsolete served caches outside the assets
+  directory. Private originals are backed up. The refreshed feed contains
+  IBKR/Trading 212 only, both honestly unconfigured; no Wallet values remain.
+- Validation: Python/Bash syntax, ShellCheck, cached-health privacy checks,
+  offline account-total/FX/cache/rotation/report/snapshot checks. Live broker
+  balances are not verified until their credentials are connected.
+
+
+## 2026-09-30 — temporary Paperclip subscription takeover
+
+- A real Codex request exposed a revoked container refresh token despite the
+  CLI's logged-in status. The account owner completed a new device login;
+  real subscription probes then passed in all three companies.
+- Temporarily switched all ten active unbound Claude roles to the existing
+  Codex subscription on their same agent IDs. Paused roles and OpenRouter
+  roles were preserved. No tasks were triggered. All 31 current agents still
+  pass the shared-memory guidance check.
+- Original Opus/Sonnet models and complete configs are saved before each
+  PATCH in private atomic state. The helper refuses paid-key/managed routes,
+  busy targets and concurrent config changes, and retains recovery intent on
+  partial failures. Codex uses the workspace sandbox and CLI engine.
+- Installed a staged recovery helper and a five-minute cron check without
+  changing any existing jobs. It survives repo branch changes and makes no
+  probes until Thursday, 1 October, 11:00 Vilnius. Claude must answer a real
+  probe before any original is restored; failures retry hourly. No automatic
+  paid fallback or all-provider routing was enabled.
+- Upstream issue #14023 and PR #14027 already cover binding removal and
+  unchanged-binding validation; both remain open. No duplicate was filed.
+- Validation: Python syntax; offline exact switch/restore, saved-state,
+  deadline, quota failure, concurrent-edit and timeout scenarios; live Codex
+  probes, ten verified PATCH responses, recovery preview and installed cron
+  verification. The real return to Claude waits for tomorrow's reset.

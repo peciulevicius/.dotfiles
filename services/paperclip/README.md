@@ -30,7 +30,10 @@ on 2026.916.1 — the same version pinned here).
   install was rejected: agents run with `dangerouslySkipPermissions: true` by
   default (headless runs can't answer prompts), and natively that means an
   unattended agent with your whole home directory, Keychain and SSH keys. In
-  the container it can only touch `./data`.
+  the container its host filesystem access is limited to the configured
+  mounts: `./data`, read-only `/reports`, and read-write `/ai-memory`.
+  The shared memory mount is accessible across companies; instruction rules
+  provide ownership guidance, not filesystem isolation between companies.
 - **Embedded Postgres, not a `postgres:17` sidecar.** The host is swap-bound
   (≈10 of 11GB swap in use on 2026-09-26). One container instead of two, and
   it is upstream's own quickstart shape.
@@ -89,8 +92,10 @@ claude setup-token          # on the Mac mini host; prints a long-lived OAuth to
 ```
 
 Put it in `~/services/paperclip/.env` as `CLAUDE_CODE_OAUTH_TOKEN=…`, then
-`cd ~/services/paperclip && docker compose up -d`. Every `claude_local` agent
-picks it up. Usage counts against your Claude plan limits, not API billing.
+`cd ~/services/paperclip && docker compose up -d`. Unmanaged `claude_local`
+agents can inherit it. Agents bound to a managed AI connection instead use
+that connection's credential in an isolated runtime. Usage counts against
+the connected Claude plan limits, not API billing.
 
 **B. Log the container's CLI in interactively:**
 
@@ -106,6 +111,23 @@ connection* (subscription or API key, stored encrypted by Paperclip).
 
 With A or B the Runtime tab shows *"Existing authentication, not managed by
 Connections"* — that is correct.
+
+### Sidebar and agent list
+
+The pinned 2026.916.1 source includes a **Streamlined UI** setting under
+instance **Settings → Experimental**. Turning it off restores the legacy
+shell and navigation, including the fuller agent/organization sections; it
+does not change task or agent data. This is an instance-wide presentation
+setting, so check the result in each company. No UI fork or image upgrade is
+required for this option. Expand collapsed sidebar sections first.
+
+The retained agent list supports **Top / Alphabetical / Recent** sorting from
+the section's menu and starring agents from a row's menu. **See all agents**
+or **Browse agents** opens the complete list when the sidebar shows a subset.
+Paused records can still appear. Hiding or un-starring a row does not terminate
+it or repair references; use the incident cleanup procedure below for that.
+A GitHub screenshot can show another release or presentation setting, so use
+the installed controls before changing the build.
 
 ### Codex / Gemini / OpenCode
 
@@ -573,6 +595,27 @@ first; write durable facts to `inbox/<date>-<agent>.md`; never delete others'
 notes; no secrets). Odysseus sees the same folder. Details:
 `docs/HOME_SERVER_REFERENCE.md` → *Shared AI memory*.
 
+**Memory guidance across all companies.** Verified on all 31 current agents
+on 2026-09-29, including paused departments. The same
+`shared-ai-memory-addendum.md` is appended to each instruction entry file;
+role text stays intact. Retired/duplicate hires are excluded. New hires can
+be brought into line with:
+
+```bash
+python3 ~/.dotfiles/scripts/utils/paperclip-memory-guidance.py          # preview
+python3 ~/.dotfiles/scripts/utils/paperclip-memory-guidance.py --apply  # append + verify
+```
+
+Apply saves private originals under
+`~/.config/homelab/paperclip-instruction-backups/<timestamp>/` (directory 700,
+files 600), checks for concurrent edits, and refuses running targets. It uses
+Paperclip's instruction bundle API; it does not edit models or pause/resume
+agents. A partial failure is retryable: preview first. Changed versioned
+guidance requires review rather than silently replacing existing text. To
+undo a particular update, open that agent's instructions in Paperclip and
+restore the saved JSON file's `content` into the recorded `path`; review any
+newer role edits before restoring. Keep these backups private.
+
 **Claude.ai memory import.** The athlete's triathlon and food Claude.ai
 projects (memory, docs, chats) were copied from the account export into
 `~/ai-memory/training/imports/claude-ai-2026-09-27/` (path moved 2026-09-29
@@ -636,32 +679,162 @@ keeps version history: `GET …/skills/<skillId>/versions`).
 - OpenCode agents share the container's `~/.claude/skills` (Paperclip warns
   about this); the Claude and Codex agents get an ephemeral per-run copy.
 
+## Claude → Codex takeover incident (2026-09-30 → 2026-10-01, closed)
+
+When the Claude Pro limit was hit, the ten active Claude roles were moved to
+`codex_local` for about a day with a one-shot helper, then returned to their
+original Opus/Sonnet configs after the subscription reset. Every role passed a
+real Claude hello probe before return and was read back exactly; no tasks were
+triggered by the switch or the return.
+
+Kept from it:
+
+- **Codex is not a transparent fallback.** `codex login status` can report a
+  login while the refresh token is revoked; only a real model request proves it.
+  Paperclip starts fresh runtime conversations on an adapter change.
+- **Same-record harness changes are fragile.** Switching an agent back from
+  `opencode_local` to Claude is refused by the hello probe (see *Usage-limit
+  fallback*), and managed AI-connection bindings block it entirely — hence the
+  `paperclip-homelab` binding-order image.
+- **The helper was not kept.** It was a ~490-line single-use migration script
+  with its own self-installing cron (PR #52 in git history if ever needed).
+  Write any future one against the then-current API. Its staged recovery cron
+  was removed once the journal emptied.
+- **Decision:** the owner prefers Claude Max, so agents stay on Claude. Existing
+  Codex roles (Studio) remain, but no automatic Claude ↔ Codex routing is built.
+
+### Restore missing Coach notification bindings
+
+The replacement Coach and Dietitian were missing their webhook environment
+references even though the encrypted company secrets still existed. The
+Discord bridge's reply relay and the agents' own scheduled webhook posts use
+separate paths; a working bridge does not prove those bindings are present.
+
+Both live references and their saved Claude configurations were repaired and
+read back on 2026-09-30. Runtime checks as the actual server user confirmed
+both variables were injected and their existing Discord endpoints returned
+HTTP 200 to read-only metadata requests. No test message was sent; the next
+normal agent post still needs delivery verification.
+
+Upstream already has [issue #14023](https://github.com/paperclipai/paperclip/issues/14023)
+and [PR #14027](https://github.com/paperclipai/paperclip/pull/14027) for clearing
+bindings and avoiding unnecessary validation. Both were open when checked
+2026-09-30; we did not file a duplicate. That PR's explicit-null schema and
+route changes are separate from our deployed comparison-only patch.
+
+### Codex commands fail with a bubblewrap namespace error
+
+The hello/model probes above do not execute commands. On 2026-09-30 the
+temporary Codex agents could reach the model but their command tools failed
+with `bwrap: No permissions to create a new namespace`. This blocked tasks
+such as STU-13 and must not be reported as a working takeover.
+
+Docker's default seccomp policy blocks the namespace operations. The Compose
+file now includes a default-deny policy in `security/codex-seccomp.json`; see
+[the policy provenance and rollback procedure](security/README.md). A disposable
+container verified commands and filesystem boundaries with this policy.
+Applied live after approval on 2026-09-30 with private Compose/profile backups
+and automatic rollback on startup or command-check failure. HTTP health and
+both sandbox network profiles passed as server UID 1000. A real subscription
+model then executed its sandboxed command tool and received its output as
+that same user. The image, data/login mounts and capabilities were retained.
+The runner is repaired. Recheck without consuming model quota:
+
+```bash
+bash scripts/utils/paperclip-sandbox-check.sh
+```
+
+This check consumes no model quota and wakes no agents. A task must then
+verify actual tool output and its required environment without printing
+secret values. Runtime injection and read-only endpoint verification passed
+for both coaching webhooks; no message was sent by the diagnostics. Do not
+use the deprecated legacy Landlock flag as a fix:
+the installed CLI rejects it for current permission profiles. Do not enable
+the full sandbox/approval bypass to hide this failure.
+
+STU-13 also had a separate legacy execution-reconciliation hold. The supported
+recovery evidence API cleared it after inspection proved the held admission was
+cancelled by the review gate before execution. Earlier outcomes were not
+certified; the original approval and history were preserved. Two resumed runs
+failed with `provider_quota`; the issue is In review with a human-only vendor-
+access question pending. Automatic cross-provider quota routing is disabled.
+The repaired command sandbox did not clear the hold automatically.
+
 ## Usage-limit fallback (2026-09-29)
 
-When the Claude Pro subscription hits its limit, `claude_local` runs fail with
+When the Claude subscription hits its limit, `claude_local` can report
 *"ACP agent reported a terminal limit failure"* (`errorCode acpx_turn_failed`,
-no reset time anywhere in the run, log or events). Paperclip has no built-in
-fallback, so `scripts/utils/paperclip-fallback.sh` (cron, every 5 min) does it:
+with no reset time in that run's log or events). The local watchdog in
+`scripts/utils/paperclip-fallback.sh` (cron, every 5 min) detects that legacy
+failure and can notify or perform the separately guarded OpenRouter switch.
+
+Paperclip's own recovery service also handles **classified** `provider_quota`
+failures: it waits until the parsed reset/retry time, or a default backoff if
+the provider supplied no usable time, then retries the same task agent: the
+assignee, or the active agent reviewer when the failure occurred in review.
+This is a retry, not provider failover; it does not change a Claude agent to Codex
+or OpenRouter. A new human-only question, blocked issue, missing provider
+login, or an error not classified as `provider_quota` can still require owner
+action. In this installation `AUTO_SWITCH=0`; the watchdog does not switch
+agents automatically:
+
+Do not treat same-run retry as a provider-wide circuit breaker. The open
+upstream [issue #11597](https://github.com/paperclipai/paperclip/issues/11597)
+reports that a parsed reset time may be stored without gating creation of new
+heartbeat runs on that provider. The related [PR #10616](https://github.com/paperclipai/paperclip/pull/10616)
+is still open and addresses quota classification/deferred retry, not provider-
+wide admission control. This homelab runs
+`paperclip-homelab:2026.916.1-binding-order`; its behavior should not be assumed
+to stop unrelated agents or new work from attempting an exhausted provider.
+
+**Provider-failover status (checked 2026-10-01):** upstream still has an open
+[proposal for opt-in Claude-to-Codex fallback](https://github.com/paperclipai/paperclip/issues/2014).
+It proposes fallback on an explicit retry after a quota failure, with the
+Claude retry suppressed until reset; it does not describe same-heartbeat
+failover. The proposal is not an implemented feature in this installation.
+The related [provider circuit-breaker and outage-visibility issue](https://github.com/paperclipai/paperclip/issues/7891)
+and [provider-wide admission-control issue](https://github.com/paperclipai/paperclip/issues/11597)
+also remain open. Multiple agent records
+using the same signed-in Claude account do not provide independent subscription
+capacity. A reliable fallback needs a separately authenticated provider or
+subscription, a quota-aware route, a tested return path, and a task-context
+handoff; this setup has no such automatic chain. The owner prefers Claude Max,
+so keep agents on their existing Claude models. Do not enable automatic
+switching based on the upstream proposals alone.
 
 - **Detects** failed runs whose error mentions a *limit* (not "access failure")
   in the last 15 min, across all companies.
 - **Switches** (with `--switch`, or automatically when `AUTO_SWITCH=1`) every
-  non-paused `claude_local` agent to `opencode_local` +
+  eligible non-paused `claude_local` agent to `opencode_local` +
   `openrouter/deepseek/deepseek-v3.2` on the company's shared OpenRouter
-  connection, saving each agent's exact config in
+  connection. Each target must already have an active `billed_cents` monthly
+  policy with a hard stop, a cap of **$3 or less**, and remaining budget;
+  otherwise it is skipped. The switch does not create or raise budgets.
+  Original configurations are saved **before** the provider PATCH in
   `~/.config/homelab/paperclip-fallback/state.json` (chmod 600), then
   @mentions the agent on the interrupted issue so the work resumes. Discord gets
   a "⚡ Claude limit hit" post.
-- **Restores** (hourly probe, or `--restore`): a tiny `claude -p` Haiku request
-  inside the container; when it answers `OK`, each saved agent is PATCHed back.
+- **Checks recovery** (hourly probe, or `--restore`): a tiny `claude -p` Haiku
+  request inside the container. The script no longer PATCHes the same agent
+  back to Claude because that path is known to fail; it reports that a fresh
+  hire is needed.
+- **Reconciles manual rehires:** `--reconcile` is a dry-run by default. When a
+  saved old ID is paused/terminated and explicitly named retired, it requires
+  exactly one live agent with the saved name, adapter and model. `--reconcile
+  --apply` then adds the saved skills, remaps active agents' `reportsTo` links
+  and open issue assignments, and clears that state record only if every API
+  write succeeds. It never renames or terminates the retired agent. Check
+  third-party references such as the Discord bridge separately.
 - `--status`, `--dry-run`.
 
-**Why OpenRouter, not Anthropic API credit:** Paperclip strips `ANTHROPIC_*` /
+**Why this fallback uses OpenRouter:** Paperclip strips `ANTHROPIC_*` /
 `CLAUDE_CODE_OAUTH_TOKEN` from an agent's env whenever a managed AI connection
-is bound (`stripAiAuthBindings`), and there is no Anthropic API-key connection,
-so "same Claude, pay per token" isn't available. OpenRouter is also cheaper: a
-typical run (~100k input / ~8k output tokens) is ≈ $0.40 on Sonnet via API vs
-≈ $0.03 on deepseek-v3.2 — roughly 13× less. Quality is lower; it's a stop-gap.
+is bound (`stripAiAuthBindings`). This installation has shared OpenRouter
+API-key connections, but no managed Anthropic API-key or OpenAI connection;
+the existing Codex agents use their local subscription login. Those are
+separate authentication paths. There is no implemented Claude ↔ Codex →
+OpenRouter chain. Model prices and quality vary; compare recorded costs and
+task results before changing the role/model split.
 The switch uses the connection's `grantId` (listed on
 `GET /api/companies/<id>/ai-connections`), which the PATCH requires.
 
@@ -671,26 +844,37 @@ to the subscription can fail on a specific agent: Paperclip validates the new
 binding and refuses the PATCH with *"The selected AI connection failed
 validation in this agent's environment"*, while
 `POST /api/companies/<id>/adapters/claude_local/test-environment`
-(company-wide) reports `"status": "pass"` at the very same time — so this
-is **not** the subscription or the login; it's specific to an agent that has
-run under a different harness. `config-revisions/…/rollback` doesn't help
-either: switching harness doesn't create a revision to roll back to, so it
-returns 200 and changes nothing.
+(company-wide) can report `"status": "pass"` at the same time. That test can
+use the host login; a managed binding uses a separately selected credential
+and isolated runtime. A passing company test therefore does **not** prove
+that the managed credential is healthy or that a subscription has reset.
+The incident's config-revision rollback returned 200 without restoring the
+harness; do not treat that response alone as proof of recovery.
+
+Source inspection also found that the PATCH route retains an existing
+`runtimeConfig.aiConnection` when a request omits it or sends a falsey value,
+including `null`. A saved original configuration with no binding therefore
+cannot clear the OpenRouter binding through that request. The supported
+`applyStoredClaudeLogin` flag only handles a user's stored OAuth environment
+reference; it does not clear this managed connection or skip its validation.
+These are additional restoration constraints. The binding-order patch below
+only repairs comparisons of an unchanged binding.
 
 **The actual fix, confirmed 2026-09-29: pause + rename the stuck agent, hire a
 fresh one with the same name, role, manager and `AGENTS.md`.** A PATCH back
-onto the *same* agent record is what fails; a brand-new agent record on
-`claude_local` from the start works immediately (that's exactly how Copywriter
-was fixed — see below). Re-testing or reconnecting the subscription in the UI
-does **not** fix this, since the connection was never the problem.
+onto the *same* agent record failed during this incident; new agents using
+the local Claude login were created successfully. That recovered the roles,
+but does not establish that the original managed binding can be restored.
+Do not disable authentication validation or edit the database to force it.
 
 **⚠️ Incident, same day: `AUTO_SWITCH=1` was turned on, a real limit hit fired
 it, and the restore bug hit *every* switched agent, not just one.** 10 agents
 across all 3 companies (Homelab Lead; Coach, Dietitian; CEO, CTO, Head of
 Marketing, Security Engineer, Backend Developer, Copywriter, UI/UX Designer)
 got switched and none restored automatically. Fixing it by hand surfaced
-three knock-on problems the script doesn't handle, beyond the PATCH failure
-itself:
+three knock-on problems beyond the PATCH failure itself. The old script did
+not handle these; `--reconcile` now repairs them for already-hired exact
+replacements:
 1. **Manager references break.** CEO, CTO and Coach are managers — giving
    them a new agent ID orphans every direct report's `reportsTo` (and
    *their* reports, transitively). Fix order matters: rehire root-first
@@ -699,23 +883,93 @@ itself:
    were *not* switched themselves (e.g. Engineering Manager, DevOps, the
    whole marketing team all pointed at the old CEO/CTO/Head of Marketing).
 2. **Company skills are lost.** `adapterConfig.paperclipSkillSync` lives on
-   the agent record; a rehire starts with none. Re-attach per the table
-   above (`PATCH` the new agent with `adapterConfig.paperclipSkillSync.desiredSkills`,
-   each key as `company/<companyId>/<skill-slug>` — list a company's
-   available keys with `GET /api/companies/<id>/skills`).
+   the agent record; a rehire starts with none. `--reconcile` restores the
+   saved keys with `POST /api/agents/<id>/skills/sync` in `add` mode, so other
+   assignments are preserved.
 3. **Anything hardcoding the old agent ID goes stale.** The Discord bridge's
    `CHANNEL_MAP` (`~/services/discord-bridge/.env`) pins Coach/Dietitian by
-   ID — update and `docker compose up -d` there. Any open Paperclip issue
-   assigned to the old ID needs reassigning to the new one, or the new agent
-   never sees it (check with `GET /api/companies/<id>/issues`, filter
-   `assigneeAgentId`).
+   ID — update and `docker compose up -d` there. `--reconcile` reassigns open
+   Paperclip issues from the old ID to the matching replacement; external
+   references such as the Discord map still need a separate update.
 
-**So `AUTO_SWITCH` is off again**, same day it was turned on. Switching
-*away* is safe to automate; restore is not, until it does a real
-pause+rehire with the three remaps above instead of a bare PATCH — that's
-follow-up work, not done yet. Until then: a limit hit only **notifies**
-(`⚡ Claude limit hit`), and you either wait for the subscription to reset or
-run `--switch` by hand, knowing restore will need the manual recipe above.
+The replacements were hired manually. A live audit later found five Homelab
+agents still reporting to the retired Homelab Lead ID, and the local fallback
+state still listed all ten old IDs. `--reconcile` now repairs saved skills,
+reporting links, and open issue assignments for already-hired exact
+replacements. It leaves unrelated agents and retired records alone.
+
+**Recovery applied 2026-09-29:** saved skills were restored and all three open
+issues were reassigned. Initial recovery repaired three of the five Homelab
+reporting links. Web Engineer and Security Engineer returned 422 even for a
+`reportsTo`-only PATCH. In the upstream server,
+`aiConnectionBindingSchema` reorders binding fields before a `JSON.stringify`
+comparison with the stored object. Identical bindings can therefore be treated
+as changed and trigger a provider login probe. This is a server defect, separate
+from actual subscription exhaustion; do not bypass validation or edit the DB.
+The guarded local image below was built and deployed after approval, with no
+active runs and backups of the live compose/env. Paperclip came back healthy;
+both remaining reporting updates then succeeded without login probes. All five
+links are now repaired, saved fallback agents are empty, `active` is false and
+`reconciliation_pending` is empty. Retired records remain paused pending
+termination approval. Reconciliation failures return nonzero and preserve state.
+
+**Guarded local image patch:** `Dockerfile.binding-order` normalizes both
+bindings with the same schema before comparing them. It patches the source
+and compiled server, refuses an unexpected code shape, and keeps all existing
+validation for actual binding changes. It does not fix same-agent harness
+restoration; automatic failover remains disabled. Build from this service
+directory:
+
+```bash
+docker build -f Dockerfile.binding-order -t paperclip-homelab:2026.916.1-binding-order .
+```
+
+Stage the reviewed compose file, set
+`PAPERCLIP_IMAGE=paperclip-homelab:2026.916.1-binding-order` in the private
+live `.env`, and recreate Paperclip only when no runs are active. Rollback is
+removing that override and recreating on the pinned upstream image; the patch
+has no database migrations. Re-run `--reconcile --apply` after the patched
+server is healthy. Do not carry this patch blindly into an upstream upgrade.
+
+**Scheduled routines also needed remapping.** The weekly Homelab report, daily
+Coach check-in and paused Studio standup still referenced old IDs; all three
+were moved to their exact replacements on 2026-09-29, preserving status. The
+11 obsolete Coach/Studio records from the incident no longer exist (verified
+2026-10-01), so the one-off cleanup script was removed. Check for stale
+`assigneeAgentId` references in routines after any future rehire.
+
+Reassigning an issue may wake its replacement agent, including for blocked
+issues. Inspect current runs after applying; avoid repeating assignments that
+already point at the replacement.
+
+**Watchdog safeguards.** Limit detection uses Paperclip's provider-quota code
+or recognized Claude subscription messages; a generic rate-limit/429,
+turn/budget cap, context-window failure or login error does not qualify.
+Only current, unpaused Claude agents contribute failures. Old retired run
+history cannot trigger a new fallback alert. A process lock prevents cron and
+manual repair racing; each successful switch/reference repair is saved
+immediately. Switch intent and originals are saved before the PATCH; an
+interrupted or refused request stays **unconfirmed** until `--reconcile`
+checks the current configuration. Reconciliation can discard an unapplied
+intent only when all three original config fields match exactly; it can
+confirm a fallback only when the adapter, model and AI binding match the
+planned target. Other changes require review. Unconfirmed switches do not
+wake issues or trigger subscription probes. Invalid saved state stops processing rather than resetting the
+original configurations. Auto-switch remains disabled; these safeguards do
+not fix the separate harness restoration defect.
+
+**So `AUTO_SWITCH` is off again**, same day it was turned on. Automatic
+switching must wait until a supported same-agent round trip or a complete
+board-approved rehire workflow has been verified. Until then, the watchdog
+only **notifies** (`⚡ Claude limit hit`); Paperclip may separately schedule
+the same-owner quota retry described above. You can wait for the subscription
+to reset or preview `--switch --dry-run` before a manual switch. A target without the
+required budget is skipped. When the subscription is back, use `--reconcile` to
+preview any already-hired replacements, then `--reconcile --apply` to repair
+their links. If no replacement exists, hire a fresh Claude agent through the
+board approval flow; `--restore` deliberately refuses the broken same-agent
+PATCH. Auto-switch remains off until a complete rehire-and-approval workflow
+can safely handle future incidents.
 
 **Coach company:** an `OpenRouter (shared)` connection was added 2026-09-29
 (`POST /api/companies/<id>/ai-connections`, same key), so Coach/Dietitian are
@@ -729,8 +983,8 @@ restore bug. Fixed the same day: the stuck one is paused and renamed
 was hired (`claude_local`, `claude-sonnet-5`, same manager, same `AGENTS.md`)
 and approved. Confirmed idle, no `aiConnection` override needed (falls back to
 the company default, same as every other Sonnet agent in Studio).
-It's idle with no tasks. Restore it in the UI (agent → Configuration → Claude,
-*My Claude subscription*, model `claude-sonnet-5`) once the validation passes.
+The current Copywriter is the replacement. Do not switch the retired record
+back or create another duplicate.
 
 ## Keeping usage down (the rules this setup follows)
 
@@ -744,9 +998,11 @@ It's idle with no tasks. Restore it in the UI (agent → Configuration → Claud
    standup: paused until there's work to stand up about.
 5. **Backlog is a safe parking spot**: assigned-but-backlog never wakes
    anyone. Move to Todo to start.
-6. **Budgets** (`budgetMonthlyCents`) only cap API-key spend: Paperclip's
+6. **Budgets** (`budgetMonthlyCents`) apply to reported API-key spend: Paperclip's
    only budget metric is `billed_cents` (hard stop at 100% auto-pauses the
-   agent, soft alert at 80%, resets on the 1st, UTC). Every OpenRouter agent
+   agent, soft alert at 80%, resets on the 1st, UTC). A running request can
+   overshoot the cap before its cost is reported; this is not a provider-side
+   prepaid ceiling. Every existing OpenRouter agent
    has a **$3/month** policy (`PATCH /api/agents/<id>/budgets`
    `{"budgetMonthlyCents":300}` — setting the field on a PATCH of the agent
    itself did *not* create the policy). There is no run or token cap for

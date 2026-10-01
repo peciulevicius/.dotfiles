@@ -53,5 +53,12 @@ Vetted and pinned in `~/.dotfiles/config/claude/skills/` (sources in each `SOURC
 @rules/performance.md
 @rules/env.md
 
+## Shared AI memory (Mac mini)
+
+For cross-project or homelab work, read `~/ai-memory/README.md`,
+`people-and-preferences.md`, and the relevant project note when the shared
+memory directory is available. Follow its inbox and ownership rules. Never
+copy secrets, private chat exports, or personal memory into a repository.
+
 ## Project Setup
 Run `/new-project` at the start of any new project to scaffold `.claude/` config.

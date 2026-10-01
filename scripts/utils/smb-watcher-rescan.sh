@@ -14,13 +14,12 @@
 # SMB-mounted pattern. No confirmed failure yet — added preventively, not
 # reactively, since the root cause is architectural, not Jellyfin-specific.
 #
-# This is the blunt fix: restart on a schedule, not the surgical one. The
-# surgical fix is an API key from each service wired into Radarr/Sonarr's
-# (Jellyfin) and LazyLibrarian's (Audiobookshelf, if it supports it) own
-# "notify on import" integration — refreshes just the new item, no restart,
-# no brief interruption for anyone using it. Needs one thing only a person
-# can do per service: generate the key in that service's own dashboard. Once
-# both exist, this script (and its cron line) can be deleted.
+# This manual restart is the blunt fix. Jellyfin's targeted fix is a key in
+# Radarr/Sonarr's native Connect integration. For Audiobookshelf, LazyLibrarian
+# documents a Notify on Download custom-script hook and Audiobookshelf has a
+# library-scan API; that bridge has not been configured or tested here. Any
+# token must stay private, and the integration must not unexpectedly wake a
+# Sablier-managed service. See HOME_SERVER_TODO.md for the remaining checks.
 
 # 2026-09-28: removed from cron. Both apps now scale to zero (Sablier), and
 # every Sablier start is a fresh container start = a full library scan, so a

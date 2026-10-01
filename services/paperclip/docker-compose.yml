@@ -26,10 +26,15 @@ services:
     # container ID, which changes on every recreate, so the Gemini login broke
     # ("Corrupted credentials file") after each `docker compose up -d`.
     hostname: paperclip
-    image: ghcr.io/paperclipai/paperclip:2026.916.1
+    image: "${PAPERCLIP_IMAGE:-ghcr.io/paperclipai/paperclip:2026.916.1}"
     restart: unless-stopped
     # Upstream's backstop against leaked agent subprocesses (tini is PID 1).
     pids_limit: 2048
+    # Codex uses bubblewrap for workspace command execution. Docker's default
+    # syscall policy blocks its private namespaces. This default-deny profile
+    # permits the namespace/mount operations without granting SYS_ADMIN.
+    security_opt:
+      - seccomp=./security/codex-seccomp.json
     # 1536m -> 2g on 2026-09-26: idle anon RSS had grown to ~1.2GiB with two
     # companies, memory.events showed the cap hit 1500+ times, and each agent
     # run adds a 300-500MB CLI process. Raised only because host free memory

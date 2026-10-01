@@ -1,5 +1,8 @@
 # .dotfiles
 
+> Agents: start with [AGENTS.md](AGENTS.md) and
+> [docs/AI_COLLABORATION.md](docs/AI_COLLABORATION.md).
+
 > Modern, cross-platform dotfiles with comprehensive tooling for macOS, Linux (Arch, Debian/Ubuntu, Kali), and Windows/WSL.
 
 ## ✨ Features
@@ -234,6 +237,7 @@ All documentation is in the `docs/` folder:
 - **[START_HERE.md](docs/START_HERE.md)** — Where to begin (all platforms)
 - **[HOW_TO_INSTALL.md](docs/HOW_TO_INSTALL.md)** — Complete installation guide
 - **[CLAUDE_CODE_GUIDE.md](docs/CLAUDE_CODE_GUIDE.md)** — Claude Code agents, skills, rules setup
+- **[PR reviews](docs/guides/PR_REVIEWS.md)** — How PRs are reviewed (no hosted reviewer)
 - **[MODERN_CLI_TOOLS.md](docs/MODERN_CLI_TOOLS.md)** — bat, eza, fzf, zoxide, and more
 - **[CONFIG_GUIDE.md](docs/CONFIG_GUIDE.md)** — Configuration details
 - **[UTILITY_SCRIPTS.md](docs/UTILITY_SCRIPTS.md)** — Scripts documentation

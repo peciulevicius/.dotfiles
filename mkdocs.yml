@@ -1,5 +1,5 @@
 site_name: Džiugas' Dotfiles
-site_description: Cross-platform dotfiles — macOS, Linux, and Windows. Claude Code setup, modern CLI tools, and development environment.
+site_description: Cross-platform dotfiles — macOS, Linux, and Windows. AI agent guidance, Claude Code setup, modern CLI tools, and development environment.
 site_url: https://docs.peciulevicius.com
 
 repo_name: peciulevicius/.dotfiles
@@ -38,6 +38,7 @@ markdown_extensions:
 
 nav:
   - Start Here: START_HERE.md
+  - AI collaboration: AI_COLLABORATION.md
 
   - Setup:
       - How to Install: HOW_TO_INSTALL.md
@@ -58,6 +59,7 @@ nav:
       - Modern CLI Tools: MODERN_CLI_TOOLS.md
       - Utility Scripts: UTILITY_SCRIPTS.md
       - Tutorials: tutorials/TOOL_TUTORIALS.md
+      - AI pull request reviews: guides/PR_REVIEWS.md
 
   - Self-Hosted:
       - Services Overview: SERVICES.md

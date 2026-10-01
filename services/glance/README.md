@@ -139,89 +139,173 @@ calendar) were tried the same day and removed. They frame fine (no
 `X-Frame-Options`/`frame-ancestors`), but they render as light boxes that
 clash with the dark theme.
 
-### Portfolio: combined IBKR + BudgetBakers Wallet
+### Portfolio: direct IBKR, Trading 212 and Kraken feeds
 
-`scripts/utils/finance-status.sh` (cron, daily 07:00) combines IBKR NAV and
-BudgetBakers Wallet account balances, and shows Wallet's current-month budget
-limits versus actual spending. It writes preformatted numbers to
-`~/services/glance/assets/finance.json`, so holdings never enter the repo.
-Each provider has its own cache: IBKR 30 minutes (Flex data is end-of-day),
-Wallet six hours (well below its documented 300 requests/hour/client limit).
-When providers use different currencies, the script converts to the first
-connected provider's currency using Frankfurter's daily reference rates.
-Account balances within Wallet must share one currency for a meaningful sum.
+Wallet was removed on 2026-09-30 at the user's request: a successful Wallet
+API request did not establish that its manually maintained balances were
+accurate. The collector no longer reads its token, account balances or budgets.
 
-**BudgetBakers API findings (checked 2026-09-29):** Premium-only REST API,
-currently described by BudgetBakers as beta. Base URL is
-`https://rest.budgetbakers.com/wallet`; authentication is a personal bearer
-token generated in the Wallet web app under profile → Settings. The script
-uses `GET /v1/api/accounts` (computed `balance.currentBalance`, currency) and
-`GET /v1/api/budgets` (current period `spending.current.effectiveLimit` and
-`spent`), plus `GET /v1/api/categories` to label budget categories. Calls are
-paginated, max 200 items/page. BudgetBakers documents 300 requests/hour/client,
-HTTP 429 with `Retry-After`, and rate-limit headers. We make three requests
-per refresh in the normal case. See the [REST API page](https://budgetbakers.com/en/products/wallet/integrations/rest-api/)
-and [support article](https://support.budgetbakers.com/hc/en-us/articles/10761479741586-Rest-API-MCP).
+`scripts/utils/finance-status.sh` calls `finance-data.py` daily at 07:00 and
+writes `~/services/glance/assets/finance.json`. Each provider has a separate
+status, native-currency value, source and date. **Connected investments** is
+only the sum of connected investment accounts, not total personal net worth.
+IBKR uses its reported end-of-day NAV. Trading 212 uses the reported live
+account total; its cash and investments are not added to that total again.
+Trading 212 supplies account totals and per-instrument holdings, using each
+position's reported wallet value/P&L in the account currency. Pie shares are
+already in the total quantity. Holdings are never added to reported account
+totals. Kraken shows an indicative
+EUR value from wallet quantities and current spot bid/ask midpoints; it is
+not a broker-reported NAV. Each row shows the valuation source.
 
-**One-time setup (you, ~5 min):**
-1. In the Wallet web app, open your profile (top right) → **Settings** →
-   generate a personal **API token**. The first token triggers an initial
-   sync; API calls can return HTTP 409 until it finishes.
-2. On the Mac mini, in Terminal (token is not echoed). ⚠️ `read -p` means
-   something different in zsh (reads from a coprocess, not "show a prompt") —
-   the default shell here is zsh, so use `printf` for the prompt, not `-p`:
+The combined total defaults to EUR (`FINANCE_REPORT_CURRENCY` can override
+it). Cross-currency totals use Frankfurter daily reference rates, whose date
+is retained in the snapshot. Native balances remain visible if FX fails; that
+provider is excluded from the combined total with a warning. Missing amounts
+are not silently treated as zero. A malformed/multi-account IBKR report is
+rejected rather than partly counted. Daily P&L and unrealised percentages
+were removed: the old cash-adjusted NAV change was not pure trading P&L, and
+the percentage used cash in its denominator.
+
+Caches are private (`~/.config/homelab/finance-cache/`, directory 700/files
+600), keyed to the current credentials, and contain native amounts. IBKR's
+cache lasts 30 minutes; Trading 212's and Kraken's last two minutes. Fetch failures retain
+that account's last valid cache and mark it stale. Rotating credentials does
+not reuse the previous account's cache. The served snapshot contains private
+balances; retain Glance's existing access protection and never commit it.
+
+#### IBKR setup
+
+1. Client Portal → **Reporting → Flex Queries** → create an Activity Flex
+   Query named `glance`. Choose **one account**, **Last Business Day**, XML,
+   date format `yyyyMMdd`. Include **Account Information** (base currency),
+   **Open Positions** (Summary; symbol, position value, currency,
+   FX rate to base, FIFO unrealised P&L), **Cash Report**, and **NAV in Base /
+   Change in NAV** (ending value and currency). Save the Query ID.
+2. On the Flex Queries page, open **Flex Web Service Configuration**, enable
+   it and create a token. Its maximum validity is one year; renew before
+   expiry. See the official [token setup](https://www.interactivebrokers.com/docs/web-api/flex-web-service/client-portal-configuration/enable-and-create-access-token).
+3. Save locally with hidden prompts (works in zsh). Do not paste credentials
+   into chat or print the environment file:
+
    ```bash
-   printf "Wallet API token: "; read -rs T; echo
    mkdir -p ~/.config/homelab
-   umask 077; printf 'BUDGETBAKERS_API_TOKEN=%s\n' "$T" > ~/.config/homelab/budgetbakers.env; unset T
-   ~/.dotfiles/scripts/utils/finance-status.sh --print | grep -A2 '"budgetbakers"'
+   printf 'Flex token: '; read -rs FINANCE_IBKR_TOKEN; printf '\n'
+   printf 'Query ID: '; read -r FINANCE_IBKR_QUERY
+   umask 077
+   printf 'IBKR_FLEX_TOKEN=%s\nIBKR_FLEX_QUERY_ID=%s\n' "$FINANCE_IBKR_TOKEN" "$FINANCE_IBKR_QUERY" > ~/.config/homelab/ibkr-flex.env
+   chmod 600 ~/.config/homelab/ibkr-flex.env
+   unset FINANCE_IBKR_TOKEN FINANCE_IBKR_QUERY
    ```
-   Check the output: `"ok": true` means it worked; `"not configured"` means
-   the token didn't save (the file is probably empty — `cat
-   ~/.config/homelab/budgetbakers.env` to check) — `&& echo ok` alone does
-   **not** prove it worked, the script exits 0 either way.
-3. If the Wallet contains accounts in more than one currency, consolidate the
-   reporting balances to one currency before relying on its net-worth total.
-   The cross-provider display currency follows the first connected provider.
-4. Refresh the Finance page.
 
-**IBKR setup (you, ~10 min):**
+#### Trading 212 setup
 
-**One-time setup (you, ~10 min):**
-1. IBKR **Client Portal** → *Performance & Reports* → **Flex Queries** →
-   *Activity Flex Query* → **+** (create):
-   - Name: `glance`
-   - Sections: **Open Positions** (options: Summary), **Cash Report**,
-     **Net Asset Value (NAV) in Base** / *Change in NAV*
-   - Format **XML**, Period **Last Business Day**, Date format `yyyyMMdd`
-   - Save, and note the **Query ID** shown in the list.
-2. Client Portal → *Settings* → **Flex Web Service** (under Reporting) →
-   enable, then **Generate token** (pick the longest validity; it expires,
-   and the widget will show the error when it does).
-3. On the Mac mini, in Terminal (token not echoed). ⚠️ Use `printf` for the
-   prompts, not `read -p` — in zsh (the default shell here) `-p` means
-   "read from a coprocess", not "show a prompt", and fails or silently
-   reads nothing:
-   ```bash
-   printf "Flex token: "; read -rs T; echo
-   printf "Query ID: "; read -r Q
-   umask 077; printf 'IBKR_FLEX_TOKEN=%s\nIBKR_FLEX_QUERY_ID=%s\n' "$T" "$Q" > ~/.config/homelab/ibkr-flex.env; unset T
-   ~/.dotfiles/scripts/utils/finance-status.sh --print | grep -A2 '"ibkr"'
-   ```
-   Check the output: `"ok": true` means it worked. If it still says
-   `"not configured"`, check `cat ~/.config/homelab/ibkr-flex.env` — both
-   values must be non-empty.
-4. Refresh the Finance page.
+The official API supports **Invest and Stocks ISA**, not CFD accounts, and
+uses an **API Key + API Secret** pair with HTTP Basic authentication. Create
+an account-specific key with **account and positions read permissions only**; do not
+enable orders or other write permissions. Include read access to account
+data and positions. This collector makes only two GET requests:
+`/api/v0/equity/account/summary` (limit: one per five seconds) and
+`/api/v0/equity/positions` (limit: one per second). See
+[key creation](https://helpcentre.trading212.com/hc/en-us/articles/14584770928157-Trading-212-API-key),
+[account summary](https://docs.trading212.com/api/accounts/getaccountsummary)
+and [positions](https://docs.trading212.com/api/positions).
 
-**Adding another account later.** Each provider is a `fetch_<name>()` in the
-script, returning the same dict (`nav`, `cash`, `day_pnl`, `unrealized_pnl`,
-`positions` in the base currency), and the totals sum across providers.
-Realistic sources:
-- **Trading 212**: API key
-- **Kraken**: read-only API key
-- **Capital.com**: API key
-- **Ledger**: public addresses plus a price lookup (no device access)
-- **Swedbank / Revolut**: no personal API, so a monthly CSV export
+Holding values use `walletImpact.currentValue` and
+`walletImpact.unrealizedProfitLoss`; the wallet currency must match the
+account. Instrument prices are in their own currency and are not substituted
+for these broker-converted amounts. Account summary and positions are
+separate requests, so their values may differ briefly during trading.
+Failed or malformed position retrieval leaves the fresh account total
+available with an explicit **holdings unavailable** warning and no detail
+rows. Older holdings are not mixed into a fresh summary. A failed summary
+fetch still falls back to the labelled last valid provider cache.
+
+```bash
+mkdir -p ~/.config/homelab
+printf 'Trading 212 API key: '; read -rs FINANCE_T212_KEY; printf '\n'
+printf 'Trading 212 API secret: '; read -rs FINANCE_T212_SECRET; printf '\n'
+umask 077
+printf 'TRADING212_API_KEY=%s\nTRADING212_API_SECRET=%s\n' "$FINANCE_T212_KEY" "$FINANCE_T212_SECRET" > ~/.config/homelab/trading212.env
+chmod 600 ~/.config/homelab/trading212.env
+unset FINANCE_T212_KEY FINANCE_T212_SECRET
+```
+
+#### Kraken setup
+
+Create a **dedicated key with Query Funds only**. No order, transfer,
+withdrawal or ledger-history permissions are needed. The only authenticated
+request is `POST /0/private/Balance`, which reads the default wallet's
+balances net of pending withdrawals. Other wallets and Futures accounts are
+outside this connector's coverage. API-key 2FA requiring an interactive OTP
+is not supported by this unattended collector. See the official
+[balance API](https://docs.kraken.com/api-reference/account-data/get-account-balance)
+and [authentication guide](https://docs.kraken.com/exchange/guides/rest/authentication).
+
+```bash
+mkdir -p ~/.config/homelab
+printf 'Kraken API key: '; read -rs FINANCE_KRAKEN_KEY; printf '\n'
+printf 'Kraken API secret: '; read -rs FINANCE_KRAKEN_SECRET; printf '\n'
+umask 077
+printf 'KRAKEN_API_KEY=%s\nKRAKEN_API_SECRET=%s\n' "$FINANCE_KRAKEN_KEY" "$FINANCE_KRAKEN_SECRET" > ~/.config/homelab/kraken.env
+chmod 600 ~/.config/homelab/kraken.env
+unset FINANCE_KRAKEN_KEY FINANCE_KRAKEN_SECRET
+```
+
+Public Assets, AssetPairs and Ticker requests supply the EUR valuation,
+using a direct spot market or at most two markets. Documented reward/staking
+suffixes use their base asset only when the mapping is unique. Tokenized
+`.T` assets, ambiguous assets and balances without a supported price route
+make the entire account unavailable; no balance is silently omitted.
+Cost basis and unrealised P&L are not available from the balance endpoint.
+Kraken cash and P&L therefore stay unknown, as do combined cash/P&L when
+Kraken is included; available broker amounts remain visible on their rows.
+
+The collector saves a monotonically increasing nonce privately before each
+signed request and locks it through the response. Do not share this key with
+another application or delete its `kraken-nonce-*.json` files. If nonce state
+is damaged, preserve it and create a new dedicated key rather than retrying
+with a lower nonce. Neither credentials nor raw API errors are printed.
+
+#### Check and reconcile
+
+```bash
+bash scripts/utils/finance-status.sh
+bash scripts/utils/finance-status.sh --health
+```
+
+`--health` makes no API calls and prints no balances, tokens or account IDs.
+`ok` means parsed data is available, possibly from the last valid cache; check
+`stale` too. It does **not** confirm numerical accuracy. In Glance, compare
+each native account total with its broker app, using the same account and
+date (IBKR is end-of-day; Trading 212 and Kraken are live). For Kraken,
+compare quantities first; its midpoint estimate can differ from the app's
+valuation. Check the combined total only
+after each provider reconciles. `--print` includes private financial data and
+is for local use only.
+
+For a saved IBKR report, isolate the output and cache locations; other broker
+calls and live provider cache data writes are disabled in this mode:
+
+```bash
+OUT_DIR=/private/tmp/finance-preview FINANCE_CACHE_DIR=/private/tmp/finance-preview-cache bash scripts/utils/finance-status.sh --from-file /path/to/report.xml
+```
+
+At 07:05, `finance-memory-snapshot.sh` writes a private summary under
+`~/ai-memory/finance/`. It records source coverage and freshness, excludes
+Wallet budgets, and compares prior-month values only with the same schema,
+providers and currency. Legacy Wallet summaries remain historical records
+and are not used for the new portfolio's change calculation.
+
+#### Further accounts
+
+- **Capital.com**: planned account integration; not implemented.
+- **Ledger**: public addresses and price lookup; no seed or private keys.
+- **Swedbank / Revolut**: choose a personal open-banking connection or CSV import.
+
+Credentials and initial broker reconciliation still require the account
+owner. New connectors should report their own coverage and account types,
+not silently expand this number into total personal net worth.
 
 ## Why no `check-url` for Sablier-managed (💤) services
 

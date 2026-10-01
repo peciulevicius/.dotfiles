@@ -1,0 +1,4 @@
+# Optional local fix for the pinned release; no database/schema changes.
+FROM ghcr.io/paperclipai/paperclip:2026.916.1
+COPY patches/normalize-ai-binding.mjs /app/homelab-patches/normalize-ai-binding.mjs
+RUN node /app/homelab-patches/normalize-ai-binding.mjs

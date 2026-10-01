@@ -3,28 +3,13 @@
 Outstanding work only. Finished items live in
 [HOME_SERVER_CHANGELOG.md](HOME_SERVER_CHANGELOG.md).
 
-👤 = needs you (a UI, a device, a password or a decision). Unmarked = Claude
-can do it in a session. Last truth pass: **2026-09-26** — every open item was
-checked against the live system; done items moved to the changelog.
-
----
-
-## 🤖 Assigned to Codex — BudgetBakers 400 error (2026-09-29)
-
-Real token saved to `~/.config/homelab/budgetbakers.env` and confirmed
-non-empty; `scripts/utils/finance-status.sh --print` returns:
-```
-"budgetbakers": {"ok": false, "error": "HTTPError: HTTP Error 400: Bad Request"}
-```
-The `fetch_budgetbakers()` code (added 2026-09-29 by Codex, see
-`docs/HOME_SERVER_CHANGELOG.md`) was written from BudgetBakers' published
-docs without a real token to test against — something in the request shape
-is wrong now that a real token exists (wrong auth header format, wrong
-endpoint path, a required param the docs didn't make obvious, or the
-"beta" API needing something extra). The 400 means the request reached
-BudgetBakers and was rejected, so this is fixable with the real token
-already in place, no new credential needed. Prompt to give Codex is in
-chat/below — assign this before anything else, it's the freshest bug.
+👤 = needs owner input (a UI, device, credential, decision or approval).
+Unmarked = no owner-only step is recorded; every agent must still follow
+repository/service rules and get approval for consequential actions. Last
+truth pass: **2026-09-26** — every open item was checked against the live
+system; done items moved to the changelog. Partial
+truth pass **2026-09-29** corrected power settings, the removed rescan schedule,
+obsolete ntfy advice, and duplicate VPN/device steps; it was not a full audit.
 
 ---
 
@@ -55,9 +40,12 @@ Section names in *italics* are headings below.
 
 ### 👤 Needs you (UI / device / credentials / decision)
 
-- [x] ~~⚡ Paperclip usage-limit fallback~~ — done 2026-09-29: Coach company got an OpenRouter connection, Copywriter was fixed (pause + rehire, not a connection re-test — the subscription was never actually broken), `AUTO_SWITCH=1` is on. Details + the real fix if this happens again: `services/paperclip/README.md` → *Usage-limit fallback*.
+- [x] ~~⚡ Paperclip usage-limit watchdog~~ — detects and notifies about Claude limits; OpenRouter connections are provisioned in all three companies. `AUTO_SWITCH` is **off** after the restore incident. Recovery applied 2026-09-29: skills and three open issue assignments restored, three reporting links repaired.
+- [x] ~~Paperclip unchanged-binding validation defect~~ — deployed the guarded local patch from the recovery PR after approval; Web Engineer and Homelab Security Engineer's reporting updates now succeed. All five reporting links, three issue assignments and three routine assignments are repaired; fallback state is cleared.
 - **🧠 Shared AI memory (2026-09-29):**
-  - [ ] 👤 NAS: create a shared folder **`backups`** (UGREEN → Control Panel → Shared Folder → Create; give `macmini` R/W). Then Claude adds it to `SHARES` in `scripts/utils/mount-nas.sh` — the nightly backup starts copying `~/ai-memory` there automatically.
+  - [x] ~~First portable Claude/Codex repository skill~~ — `homelab-service` now has one source under `.agents/skills/`, Claude project discovery and a compatibility link for the existing installer/global path. Skill guidance preserves staged live differences and separates source readiness from deployment. Paperclip/Odysseus skill imports remain separate from host discovery.
+  - [x] ~~NAS: create the `backups` share and mount it at `/Volumes/backups`~~ — done 2026-09-29; first `~/ai-memory` copy verified on the NAS. See `docs/HOME_SERVER_CHANGELOG.md`.
+  - [x] ~~Consistent memory instructions across Paperclip agents~~ — appended and verified on all 31 current agents (including paused departments), 2026-09-29. Claude/Codex repository guidance points to the same private tree. New hires: `paperclip-memory-guidance.py` preview then `--apply`; role instructions preserved, private originals backed up.
   - [ ] 👤 Odysseus: save the current admin password to Vaultwarden and put it in `~/services/odysseus/.env` (`ODYSSEUS_ADMIN_PASSWORD`) — the `.env` one no longer matches, so API automation can't log in.
   - [ ] 👤 When the Anthropic API credit is used up: Odysseus → Admin → Models → disable the "Anthropic" endpoint and set task/utility models to an OpenRouter one.
 
@@ -168,7 +156,8 @@ Section names in *italics* are headings below.
   step-by-step table in `SERVICES.md` → *Connecting each app*. Nextcloud app
   waits for the keep-or-remove decision (Nextcloud is on-demand for now); Finamp/Amperfy not used (self-hosted
   music dropped 2026-09-26, Spotify kept). Also install: Bitwarden, Ente Auth,
-  Obsidian + LiveSync, ntfy, Swiftfin/Infuse, Odysseus home-screen web app.
+  Obsidian + LiveSync, Swiftfin/Infuse, Odysseus home-screen web app. Standalone
+  ntfy was removed 2026-09-28; agent chat/notifications use Discord.
 
 - 👤 Ad blocking: Brave iOS / AdGuard for YouTube (Tailscale → Pi-hole done 2026-09-26) — *Pi-hole → Ad blocking everywhere*
 
@@ -182,41 +171,41 @@ Section names in *italics* are headings below.
 
 - 👤 **~2026-10-03:** `rm ~/services/uptime-kuma/data/kuma.db.bak-2026-09-26-*` (and other pre-change backups) — the weekly audit now flags any `*.bak-*` / `*.pre-*` file under `~/services` older than 7 days, so this reminds itself via Discord
 
-- **💰 Finance dashboard — connect each account** (read-only keys only, saved via `read -rs` into `~/.config/homelab/*.env`, never in chat). Pipeline: `scripts/utils/finance-status.sh` (7:00 daily) → `finance-memory-snapshot.sh` (7:05, writes `~/ai-memory/finance/`) → Glance **Finance** page (and later Monifo, see below). Both providers built + tested 2026-09-29, waiting on real credentials.
-  - [ ] 👤 **BudgetBakers Wallet** (lifetime Premium already owned) — generate a personal REST API token: Wallet app → profile → **Settings** → the REST API section. The first token triggers an initial sync; API calls can 409 until that finishes. Then, **on the Mac mini, in Terminal:**
-    ```bash
-    printf "Wallet API token: "; read -rs T; echo
-    mkdir -p ~/.config/homelab
-    umask 077; printf 'BUDGETBAKERS_API_TOKEN=%s\n' "$T" > ~/.config/homelab/budgetbakers.env; unset T
-    ~/.dotfiles/scripts/utils/finance-status.sh --print | grep -A2 '"budgetbakers"'
-    ```
-    ⚠️ **Do not use `read -rsp "prompt" VAR`** — in zsh (the default shell here) `-p` means "read from a coprocess", not "show a prompt"; it fails or silently reads nothing (hit 2026-09-29 — the token never saved, and `&& echo ok` looked like success because the script exits 0 either way, configured or not). Use the `printf` + `read -rs` form above instead. **Verify** the grep shows `"ok": true` — if it still says `"not configured"`, run `cat ~/.config/homelab/budgetbakers.env` and check the value after `=` isn't empty. Steps also in `services/glance/README.md` → Finance.
-  - [ ] 👤 **IBKR** — in Client Portal: **Performance & Reports → Flex Queries** → new Activity Flex Query named `glance` → tick **Open Positions**, **Cash Report**, **Net Asset Value (NAV) in Base / Change in NAV** → Format **XML**, Period **Last Business Day**, Date format `yyyyMMdd` → Save, note the **Query ID**. Then **Settings → Flex Web Service** (under Reporting) → enable → **Generate token** (pick the longest validity — it expires, and the widget shows the error when it does). Then, **on the Mac mini, in Terminal:**
-    ```bash
-    printf "Flex token: "; read -rs T; echo
-    printf "Query ID: "; read -r Q
-    umask 077; printf 'IBKR_FLEX_TOKEN=%s\nIBKR_FLEX_QUERY_ID=%s\n' "$T" "$Q" > ~/.config/homelab/ibkr-flex.env; unset T
-    ~/.dotfiles/scripts/utils/finance-status.sh --print | grep -A2 '"ibkr"'
-    ```
-    Same `read -p` warning as above applies — use `printf` for both prompts. **Verify** the same way: grep shows `"ok": true`, or check `cat ~/.config/homelab/ibkr-flex.env` for an empty value. Claude: script side already wired.
-  - [ ] 👤 Decide whether/when to connect **Trading 212** — existing placeholder only; settings API offers read-only portfolio/account scopes (Invest + ISA; CFD account has no API).
-  - [ ] 👤 Decide whether/when to connect **Kraken** — existing placeholder only; use *Query Funds* (+ *Query Closed Orders & Trades* for P&L).
-  - [ ] 👤 Decide whether/when to connect **Capital.com** — existing placeholder only; API integrations key + custom password.
-  - [ ] 👤 Decide whether/when to connect **Ledger** — existing placeholder only; public addresses/xpubs (no keys or seed).
-  - [ ] Swedbank / Revolut — no personal API: decide between open-banking aggregator (90-day re-consent) or monthly CSV import.
-  - [ ] Decide: grow this into **Monifo as a personal self-hosted app** (P&L calendar, trade journal, dividends — the screenshots) instead of more Glance widgets. Glance keeps a one-card summary + link.
+- **💰 Finance dashboard — direct accounts** (read-only credentials, local hidden prompts; setup in `services/glance/README.md` → Finance). Pipeline: `finance-status.sh` (07:00) → `finance-memory-snapshot.sh` (07:05) → Glance. IBKR, Trading 212 and Kraken collectors are implemented; account credentials and reconciliation remain owner steps.
+  - [x] ~~BudgetBakers Wallet HTTP 400~~ — transport repair completed 2026-09-29. The 2026-09-30 successful fetch did not establish balance accuracy. Wallet was removed from the collector, card and future private summaries at the user's request; old historical records are excluded from new portfolio comparisons.
+  - [x] ~~Direct IBKR / Trading 212 account collection~~ — implemented 2026-09-30. Each provider exposes native value, date and connection status. The EUR total covers connected investments only; stale/partial data is labelled. Trading 212 uses its reported account total without adding investments or pie cash again.
+  - [ ] 👤 **IBKR:** create a one-account Activity Flex query (Account Information, Open Positions Summary, Cash Report, NAV / Change in NAV; XML, Last Business Day, `yyyyMMdd`) and a Flex Web Service token. Save with the hidden prompts in the Glance runbook. Compare the native NAV against the broker's same-date statement.
+  - [ ] 👤 **Trading 212:** create an Invest/Stocks ISA key + secret with account-data read permission only. Save with the runbook's hidden prompts, refresh, and compare its native total with the app. No order permission is needed.
+  - [x] ~~Trading 212 holdings detail~~ — implemented 2026-09-30. Read-only positions use broker wallet amounts in account currency, include pie shares once and retain reported account totals. Missing/malformed detail is explicit without hiding a valid summary. Credentials and comparison against the app remain the owner step above.
+  - [x] ~~Kraken read-only collector~~ — implemented 2026-09-30. Default-wallet quantities and indicative EUR midpoint valuation; unsupported/unpriced balances fail the account rather than disappear. Private persisted nonces, credential-specific caches and stale recovery are implemented. No orders or withdrawals.
+  - [ ] 👤 **Kraken:** connect a dedicated key with Query Funds only using the runbook's hidden prompts, then compare quantities against the app. No trading, transfers or withdrawal permissions. Other wallets/Futures and cost basis are outside current coverage.
+  - [ ] **Ledger:** add public addresses/xpubs (never seeds or private keys) — no credentials needed; next collector to build.
+  - [ ] **Swedbank / Revolut / Finbee → emergency fund:** Wallet is not used and was dropped. Pick one: personal open-banking connection (Enable Banking — verify it still offers free own-account access), monthly CSV import, or a hand-edited balances file. Finbee has no API, so it stays manual either way. Then define the emergency fund as designated-account balance ÷ monthly spend.
+  - [ ] Decide whether to grow this into **Monifo as a personal self-hosted app** (P&L calendar, trade journal, dividends). Glance keeps a summary and link.
 
 - 👤 Optional: Uptime Kuma **DNS** monitor for the resolver chain (Kuma has no monitor API — UI step): + Add New Monitor → DNS → hostname `example.com`, resolver `host.docker.internal` port 53 → alerts if Pi-hole *or* unbound stops answering.
 
-### 🤖 Claude can do next
+### 🤖 An AI agent can do next
+
+- Paperclip: recovery, runner, webhook-binding and shared-memory repairs are
+  applied and verified; the Claude → Codex takeover is closed and all ten roles
+  are back on their original Claude configs (see `services/paperclip/README.md`).
+  Keep `AUTO_SWITCH=0`: Paperclip retries a quota failure on the same agent and
+  has no provider failover (upstream #2014, #7891, #11597 are open). The owner
+  prefers Claude Max — do not build a router.
+  Open: paused managed-bound roles need a safe recovery path; normal agent
+  Discord delivery is unverified (no test message sent); STU-13 is In review
+  with a human-only vendor-access question for the owner (answered 2026-10-01;
+  the CEO resumed) — nothing is bought or sent until the Porkbun/Migadu steps
+  that need your own account/payment are done.
 
 - [x] ~~Rotate the **Radarr + Sonarr API keys**~~ — **done 2026-09-27**
   (Prowlarr, Jellyseerr, Bazarr updated + tested; see changelog).
 
 - Optional: OpenCode + `qwen2.5-coder:7b` for offline snippets — *⚡ Batch 2026-09-24*
 - Odysseus: chat-export import, CalDAV after Nextcloud, RAG over Paperless + Linkwarden — *8. Odysseus*
-- Rotate Immich's DB password (restarts Immich — say go) — *9. Maintenance backlog*
-- `rm -rf ~/services/mealie ~/services/grafana` (say go) — *9. Maintenance backlog*
+- 👤 Rotate Immich's DB password (restarts Immich — say go) — *9. Maintenance backlog*
+- 👤 `rm -rf ~/services/mealie ~/services/grafana` (say go) — *9. Maintenance backlog*
 - Pi-hole local DNS records, only after a Caddy decision — *Pi-hole — finish the deployment*
 - Optional `scp` push to the Scribe — *Notes*
 - Major-version image upgrades, one per sitting, with `upgrade-service.sh` — *Pinned images*
@@ -429,8 +418,12 @@ endpoint; native Ollama kept for short, tool-free chats. Why cloud:
       2026-09-24 (131, 12 pinned); chat *history* was not.
       - [ ] 👤 Export both (ChatGPT: Data Controls → Export; Claude: Privacy → Export)
       - [ ] 👤 Copy ChatGPT *memories* by hand — they are **not** in the export
-      - [ ] Check whether Odysseus already ships a ChatGPT importer before
-            writing `scripts/ai/import-chat-history.py`
+      - [x] ~~Check whether Odysseus already ships a ChatGPT importer~~ —
+            checked 2026-10-01: `~/services/odysseus/scripts/agent_migration_manifest.py`
+            accepts ChatGPT `conversations.json` and emits a neutral preview
+            manifest; it does not apply/import conversations into Odysseus.
+            Do not write a second parser. A reviewed manifest apply path remains
+            future work; keep the private source export out of this repo.
       - [ ] Keep raw exports at `/Volumes/unsorted/ai-exports/`, add to
             `rclone-backup.sh`, point RAG at the archive
 - [ ] 👤 Anthropic console: confirm a **low balance and auto-top-up off**, so a
@@ -455,6 +448,10 @@ coding.
 
 ### 8a. 🔐 Public-repo hygiene — added 2026-09-23
 
+- **PR reviews:** decided 2026-10-01 not to install a hosted GitHub reviewer
+  (per-review cost or plan usage). Review locally with `/code-review` or a
+  Paperclip agent. See [PR reviews](guides/PR_REVIEWS.md).
+
 Full secret audit done (gitleaks over all 492 commits): only one leak ever —
 the Uptime Kuma backup push token, public since **2026-05-09**. Rotated
 2026-09-25; the pre-commit hook, CI and the weekly audit guard against a
@@ -464,11 +461,10 @@ repeat.
       `~/.dotfiles/scripts/sync.sh` there once (it sets `core.hooksPath`), then
       `brew install gitleaks`. (The statusline commit on 2026-09-23 came from a
       clone without it.) Can't be checked from the Mac mini.
-- [ ] 👤 **MacBook Air's Tailscale key expired 2026-09-02** (`tailscale status`,
-      2026-09-25). Log in again and **Disable key expiry** for it in the admin
-      console. The node named `localhost` (expires 2027-03-04) is the iPhone
-      (`iphone13mini` — iOS reports its hostname as `localhost`); disable its
-      expiry too.
+- [ ] 👤 **Verify key-expiry policy for the MacBook and iPhone** in the
+      Tailscale admin console. MacBook re-auth was recorded as complete on
+      2026-09-28; do not ask to log in again based only on the older expired-key
+      snapshot. The iPhone may appear as `localhost` (`iphone13mini`).
 
 ### 8b. 🔒 Cloudflare/R2 security check — added 2026-09-21
 
@@ -491,11 +487,15 @@ services' `.env` files stay encrypted at rest). That also rules out Mac mini
 auto-login. The external dead-man's switch is live since 2026-09-25, so a
 whole-house outage now alerts.
 
-- [ ] 👤 `sudo pmset -a autorestartatconnect 1` — needs an interactive
-      password. Still not set on 2026-09-25 (`pmset -g custom` shows only
-      `autorestart 1`, which is restart-after-panic, not power-on-at-AC).
-- [ ] 👤 Decide on a **UPS** for the Mac mini + NAS (~€100–150) — brief
-      outages then never cut power at all, and FileVault stays.
+- [ ] 👤 **Verify physical power-loss recovery when you are present**, after
+      choosing a maintenance window. `pmset -g custom` shows `autorestart 1`
+      (checked 2026-09-29); Apple's installed `man pmset` defines it as restart
+      on power loss. The earlier claim that it only handles kernel panics was
+      wrong. Do not change an undocumented extra flag based on that claim.
+      FileVault still requires a person to unlock the disk on cold boot.
+- [ ] 👤 **Buy the UPS** already decided on 2026-09-28 — brief outages then
+      never cut power at all, and FileVault stays. USB/HID required for the
+      planned clean-shutdown setup; see the index above.
 - [ ] 👤 Confirm the NAS's own **"Auto power-on when power is supplied"** (+
       WOL) is enabled (NAS UI → Hardware & Power). A self-recovering Mac mini
       is useless if the NAS stays off.
@@ -534,17 +534,24 @@ whole-house outage now alerts.
 - [ ] 👤 **Delete the old staged dirs** `rm -rf ~/services/beets ~/services/lidarr`
       (containers and images already removed 2026-09-26), and after a week of
       Uptime Kuma running fine, `rm ~/services/uptime-kuma/data/kuma.db.bak-2026-09-26-music`.
-- [ ] **SMB library-rescan stopgap** (2026-09-22, still cron'd every 30 min):
-      `scripts/utils/smb-watcher-rescan.sh` restarts Jellyfin + Audiobookshelf
-      because neither's file watcher reliably sees new files over SMB. Each
-      real fix needs one 30-second thing only you can do:
-      - [ ] 👤 **Jellyfin** — dashboard → Admin → **API Keys → +** → send me the
-            key, I'll wire it into Radarr's and Sonarr's Settings → Connect.
-            Instant refresh, no restart, no playback interruption.
-      - [ ] 👤 **Audiobookshelf** — same idea (Settings → API Keys), but check
-            whether LazyLibrarian even supports a "notify on import" hook for
-            it first — unconfirmed as of 2026-09-22.
-- [ ] 🔴 **Rotate Immich's database password** (Claude, with a go-ahead — it
+- [ ] 👤 **Optional immediate library refresh while a media server is awake.**
+      The 30-minute restart cron was removed 2026-09-28 (verified absent in
+      the installed crontab 2026-09-29); it woke Sablier sleepers and interrupted
+      playback. Sleeping apps scan when they next start. The remaining API
+      integrations could refresh new items during a long-running session:
+      - [ ] 👤 **Jellyfin** — dashboard → Admin → **API Keys → +**; then enter
+            the key directly in Radarr and Sonarr → Settings → Connect. Do not
+            paste the key into chat. Instant refresh, no restart, no playback
+            interruption.
+      - [x] Research the integration (2026-09-30): LazyLibrarian supports
+            **Notify on Download → Custom Script**, and Audiobookshelf's API
+            reference documents `POST /api/libraries/{id}/scan` (the reference
+            warns it is outdated).
+      - [ ] 👤 **Audiobookshelf setup:** verify the installed API and custom
+            script path, and ensure a request will not wake a sleeping Sablier
+            service. Create a dedicated Admin API token and keep it out of chat
+            and Git; configure only after those checks.
+- [ ] 👤 🔴 **Rotate Immich's database password** (with a go-ahead — it
       restarts Immich). Found 2026-09-22: `~/services/immich/.env`'s
       `DB_PASSWORD` is still the old, reused personal password. Internal-only
       (Postgres isn't exposed outside the Docker network), so not an active
@@ -561,7 +568,7 @@ whole-house outage now alerts.
       docker compose -f ~/services/immich/docker-compose.yml up -d
       # verify: docker logs immich_server --tail 20 (no auth errors), open the app
       ```
-- [ ] Clear the leftover data directories from the removals:
+- [ ] 👤 Clear the leftover data directories from the removals:
       `rm -rf ~/services/mealie ~/services/grafana` (both confirmed
       empty/unused before removal; both still present 2026-09-25).
       `rclone-backup.sh` already excludes both.
@@ -869,7 +876,7 @@ done
 
 Follow-ups left:
 
-- [ ] Verify OPDS still serves to KOReader afterwards, and that Calibre-Web
+- [ ] 👤 Verify OPDS still serves to KOReader afterwards, and that Calibre-Web
       opens a shelf (the old `disk I/O error` path) — server side checked
       2026-09-25 (login 200, OPDS answers 401 Basic, no DB errors); the
       logged-in KOReader + shelf check needs you
@@ -1039,8 +1046,8 @@ replaces the old Gluetun plan. Details and the switch-on steps:
 `services/transmission/README.md` → *Tailscale sidecar*.
 
 - [x] ~~👤 Buy the Tailscale Mullvad add-on and allow `transmission-ts` + the phone~~ — 2026-09-28
-- [ ] 👤 Disable key expiry on `transmission-ts` (Machines → … → Disable key
-      expiry) — otherwise it drops off the tailnet on 2027-03-25.
+- [x] ~~Disable key expiry on `transmission-ts`~~ — recorded complete
+      2026-09-28 in the VPN index above; no repeat action needed.
 - [x] ~~Claude: exit node~~ — `se-sto-wg-201` (Stockholm), web UI + Sonarr/Radarr tests pass (2026-09-28)
 - [x] ~~Claude: leak test~~ — Transmission's user egresses as a Mullvad IP (2026-09-28)
 - [x] ~~Claude: kill-switch test~~ — it **did** leak on restart; fixed with
