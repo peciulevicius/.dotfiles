@@ -6,6 +6,24 @@ is often what you need when something similar breaks again.
 
 Newest first-ish; dates are when the work was finished.
 
+## 2026-10-01 — complete the scheduled Paperclip return to Claude
+
+- The staged five-minute recovery job ran after the saved reset deadline.
+  A real Claude hello probe passed for each of the ten temporarily switched
+  active roles; every untouched original adapter/runtime/model configuration
+  was restored and read back exactly.
+- The private takeover journal now has zero saved agents. No Paperclip tasks
+  were triggered by the restoration. The scheduled cron remains installed and
+  safely exits without a probe or API call when there is no pending journal.
+- Verified `restore.py --status` after completion and checked the recovery log
+  for all ten successful probes/readbacks. Separately, a temporary one-minute
+  cron canary ran successfully and removed its scheduled command; existing
+  jobs remained intact.
+- Automatic cross-provider failover remains disabled. Paperclip retries
+  classified quota failures against the same task owner; it does not select a
+  different provider. See `services/paperclip/README.md` → *Usage-limit
+  fallback* for current upstream status and limitations.
+
 ## 2026-09-30 — refresh media indexing guidance
 
 - Removed stale claims that a 30-minute Jellyfin/Audiobookshelf restart is

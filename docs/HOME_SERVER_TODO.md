@@ -188,36 +188,30 @@ Section names in *italics* are headings below.
 
 ### 🤖 An AI agent can do next
 
-- Paperclip: recovery and reference repairs were applied and verified
-  2026-09-29. A temporary unbound Claude → Codex takeover was applied on
-  2026-09-30 with saved original models and a scheduled guarded return.
-  PR #53's default-deny syscall policy is applied live; actual command tools
-  and filesystem restrictions passed as server UID 1000, including a real
-  model tool call. Coach/Dietitian secret references are repaired live and
-  preserved in saved Claude configs. Runtime injection and Discord endpoint
-  GET checks pass; actual normal post delivery still needs verification.
-  STU-13's hold was cleared through supported recovery after proving its
-  held admission was cancelled before provider execution. The issue is now In
-  review after two resumed runs failed with `provider_quota`; a human-only
-  vendor-access question is pending. Open STU-13 in Paperclip and answer it.
-  No earlier outcomes were certified and no repeat approval was requested.
-  Automatic quota routing is disabled; Paperclip's built-in monitor can retry
-  a classified quota failure on the same task agent at reset/default backoff but
-  does not change providers. This is not a provider-wide circuit breaker:
-  upstream issue #11597 remains open for stored reset times not gating new
-  heartbeat runs. The owner prefers Claude Max and asked for no further
-  Codex-specific development.
-  Discord notification channels were migrated and API-verified on 2026-09-30;
-  the Kuma notification test remains an owner UI step.
-  Recovery now isolates busy/changed/unavailable roles and failed probes,
-  requires a real hello result, and preserves unresolved originals. This
-  subscription helper excludes selected execution environments; host-login
-  proof is insufficient for their separate credentials. Automatic routing
-  across subscriptions and managed connections is deferred per the owner's
-  Claude Max preference. Host-login tests do not prove managed credentials
-  work; restoring a null binding currently retains OpenRouter. Keep
-  auto-switch off. The guarded manual switch requires an existing active
-  monthly hard-stop policy of $3 or less; `--switch --dry-run` previews it.
+- Paperclip recovery, runner, webhook-binding and shared-memory guidance repairs
+  are applied and verified. The 31 current agents have the shared-memory note.
+  The temporary unbound Claude → Codex takeover ran from 2026-09-30 until its
+  guarded 2026-10-01 11:00 Vilnius return. All ten original configurations
+  passed real Claude hello probes, were restored and read back; the private
+  journal is empty. Keep `AUTO_SWITCH=0`.
+  Paperclip's quota recovery schedules the same task owner at the reset or
+  default backoff; it does not select another provider. The installed
+  2026.916.1 image has no verified provider-wide circuit breaker. Upstream
+  Claude-to-Codex retry fallback issue #2014, circuit-breaker issue #7891 and
+  provider-quota admission issue #11597 remain open. The owner prefers Claude
+  Max and asked for no further Codex-specific development; do not enable an
+  automatic router based on those proposals.
+  Host-login tests do not validate managed-connection credentials. Agent
+  routing remains pinned to its selected compatible connection, and safe
+  recovery for the paused managed-bound roles remains separate work. The
+  guarded recovery helper now isolates busy/changed/unavailable roles, requires
+  a real hello result, and preserves unresolved originals.
+  Discord channels/webhooks were migrated and API-verified; the owner confirmed
+  bot permissions. No test message was sent, so normal agent delivery remains
+  unverified. STU-13 is In review after two resumed runs failed with
+  `provider_quota`; its human-only vendor-access question still needs an owner
+  answer. The 11 obsolete records remain paused pending approval for
+  irreversible termination.
 
 - [x] ~~Rotate the **Radarr + Sonarr API keys**~~ — **done 2026-09-27**
   (Prowlarr, Jellyseerr, Bazarr updated + tested; see changelog).
