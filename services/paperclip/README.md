@@ -679,7 +679,7 @@ keeps version history: `GET …/skills/<skillId>/versions`).
 - OpenCode agents share the container's `~/.claude/skills` (Paperclip warns
   about this); the Claude and Codex agents get an ephemeral per-run copy.
 
-## Temporary Claude → Codex takeover (2026-09-30)
+## Temporary Claude → Codex takeover (2026-09-30; returned 2026-10-01)
 
 The ten recovered active Claude roles now use **unbound local subscription
 credentials**, so they can switch on the same agent IDs. Paused managed
@@ -749,8 +749,14 @@ The installer saves a private `restore-*.bak` copy before replacing an existing
 helper, alongside its crontab backup. Recovery state is not replaced.
 
 This is an explicit, reversible subscription takeover, with a scheduled
-return. Automatic Claude ↔ Codex → capped OpenRouter selection and recovery
-for managed bindings remain outstanding work. No paid fallback was enabled.
+return. **The scheduled return completed on 2026-10-01 at 11:00 Vilnius.** A
+real Claude hello response passed for every one of the ten saved roles; each
+original Opus/Sonnet configuration was restored and read back, and the private
+journal now reports no saved agents. No task was triggered by the return. The
+recovery cron remains installed as a no-op after successful restoration.
+
+Automatic Claude ↔ Codex → capped OpenRouter selection and recovery for
+managed bindings remain outstanding work. No paid fallback was enabled.
 
 ### Restore missing Coach notification bindings
 
