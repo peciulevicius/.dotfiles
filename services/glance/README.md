@@ -139,7 +139,7 @@ calendar) were tried the same day and removed. They frame fine (no
 `X-Frame-Options`/`frame-ancestors`), but they render as light boxes that
 clash with the dark theme.
 
-### Portfolio: direct IBKR, Trading 212 and Kraken feeds
+### Portfolio: direct IBKR, Trading 212, Kraken and Ledger feeds
 
 Wallet was removed on 2026-09-30 at the user's request: a successful Wallet
 API request did not establish that its manually maintained balances were
@@ -258,6 +258,63 @@ suffixes use their base asset only when the mapping is unique. Tokenized
 `.T` assets, ambiguous assets and balances without a supported price route
 make the entire account unavailable; no balance is silently omitted.
 Cost basis and unrealised P&L are not available from the balance endpoint.
+
+#### Ledger setup
+
+Ledger is read **on-chain from public addresses only** — never a seed, a
+private key or an xpub. Addresses go in `~/.config/homelab/ledger.env`
+(mode 600, outside the repo, comma-separated per coin):
+
+```bash
+umask 077
+cat > ~/.config/homelab/ledger.env <<'EOF'
+LEDGER_BTC_ADDRESSES=bc1q...,bc1q...
+LEDGER_ETH_ADDRESSES=0x...
+LEDGER_SOL_ADDRESSES=...
+EOF
+```
+
+Ledger Live shows an account's addresses under **Receive**. List every BTC
+address that holds coins, since Ledger Live rotates them. Balances come from
+mempool.space (BTC), ethereum-rpc.publicnode.com (ETH) and the public Solana
+RPC; only the address is sent. Value is quantity × the Kraken spot midpoint in
+EUR, labelled indicative. Ledger counts in the connected-investments total.
+Not covered, on purpose: **xpubs** (they would hand every address you will
+ever use to a third party — list addresses instead), **ERC-20/SPL tokens**
+(need a token list; add if you hold any), NFTs, and other chains. A malformed
+address makes the whole Ledger row unavailable rather than silently dropping it.
+
+#### Accounts and emergency fund (hand-entered)
+
+Banks offer no free unattended balance feed: open banking (e.g. Enable
+Banking) needs a browser re-consent every 90 days and an RSA-signed JWT, and
+Finbee has no API at all. So the nine Swedbank accounts (Main, Investments,
+Crypto, Credit card, Bike, Wants, Travel, Business, Emergency) live in a
+private file, `~/.config/homelab/balances.json` (mode 600, never committed):
+
+```json
+{ "currency": "EUR", "monthly_spend": 1500, "emergency": ["Emergency"],
+  "accounts": [ {"name": "Main", "balance": 2000, "updated": "2026-10-01"},
+                {"name": "Credit card", "type": "credit", "balance": 120, "updated": "2026-10-01"} ] }
+```
+
+Update one balance in a few seconds, which also refreshes the page:
+
+```bash
+python3 ~/.dotfiles/scripts/utils/finance-data.py --set 'Emergency=3200.50'
+```
+
+- A `credit` account holds the amount **owed** (positive) and is subtracted.
+- **Emergency fund** = sum of the accounts named in `"emergency"` ÷
+  `monthly_spend`, shown as months (red under 3, amber under 6).
+- **Net cash** = cash accounts − credit owed. **Tracked net worth** adds the
+  connected investments when available; it is only what is tracked here, not
+  total net worth.
+- A balance not updated for 35 days is flagged *old* on the card, so a number
+  nobody refreshed cannot pass as current. `--set` accepts only an existing
+  account name and a non-negative number.
+- `finance-memory-snapshot.sh` copies the emergency fund and balances into the
+  private daily snapshot in `~/ai-memory/finance`.
 Kraken cash and P&L therefore stay unknown, as do combined cash/P&L when
 Kraken is included; available broker amounts remain visible on their rows.
 

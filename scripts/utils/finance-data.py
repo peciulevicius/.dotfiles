@@ -24,7 +24,16 @@ import xml.etree.ElementTree as ET
 FLEX = "https://ndcdyn.interactivebrokers.com/AccountManagement/FlexWebService"
 T212 = "https://live.trading212.com/api/v0/equity/account/summary"
 T212_POSITIONS = "https://live.trading212.com/api/v0/equity/positions"
-NAMES = {"ibkr": "IBKR", "trading212": "Trading 212", "kraken": "Kraken"}
+NAMES = {"ibkr": "IBKR", "trading212": "Trading 212", "kraken": "Kraken", "ledger": "Ledger"}
+MEMPOOL = "https://mempool.space/api/address/"
+ETH_RPC = "https://ethereum-rpc.publicnode.com"
+SOL_RPC = "https://api.mainnet-beta.solana.com"
+LEDGER_COINS = {  # env key -> (symbol, Kraken EUR pair, address pattern, units per coin)
+    "LEDGER_BTC_ADDRESSES": ("BTC", "XBTEUR", r"(bc1[a-z0-9]{20,87}|[13][a-km-zA-HJ-NP-Z1-9]{25,34})", 10**8),
+    "LEDGER_ETH_ADDRESSES": ("ETH", "ETHEUR", r"0x[0-9a-fA-F]{40}", 10**18),
+    "LEDGER_SOL_ADDRESSES": ("SOL", "SOLEUR", r"[1-9A-HJ-NP-Za-km-z]{32,44}", 10**9),
+}
+STALE_DAYS = 35
 KRAKEN = "https://api.kraken.com"
 SCHEMA = 2
 
@@ -38,13 +47,17 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
         raise DataError("Unexpected API redirect; credentials were not forwarded")
 
 
-def request(url, params=None, authorization=None):
+def request(url, params=None, authorization=None, body=None):
     headers = {"User-Agent": "homelab-finance/2", "Accept": "application/json, application/xml"}
     if authorization:
         headers["Authorization"] = authorization
     if params:
         url += "?" + urllib.parse.urlencode(params)
-    with urllib.request.build_opener(NoRedirect()).open(urllib.request.Request(url, headers=headers), timeout=60) as response:
+    data = None
+    if body is not None:
+        data = json.dumps(body).encode()
+        headers["Content-Type"] = "application/json"
+    with urllib.request.build_opener(NoRedirect()).open(urllib.request.Request(url, data=data, headers=headers), timeout=60) as response:
         return response.read()
 
 
@@ -329,6 +342,48 @@ def kraken(env, cache_dir):
             "basis": "Kraken default wallet balances × spot midpoints (indicative EUR value)"}
 
 
+def ledger_balance(symbol, address):
+    # Only the address is sent to the public endpoint; it never leaves this function in an error.
+    if symbol == "BTC":
+        stats = json.loads(request(MEMPOOL + address))
+        funded = stats["chain_stats"]["funded_txo_sum"] + stats["mempool_stats"]["funded_txo_sum"]
+        spent = stats["chain_stats"]["spent_txo_sum"] + stats["mempool_stats"]["spent_txo_sum"]
+        return number(funded - spent)
+    if symbol == "ETH":
+        reply = json.loads(request(ETH_RPC, body={"jsonrpc": "2.0", "id": 1, "method": "eth_getBalance", "params": [address, "latest"]}))
+        return number(int(reply["result"], 16))
+    reply = json.loads(request(SOL_RPC, body={"jsonrpc": "2.0", "id": 1, "method": "getBalance", "params": [address]}))
+    return number(reply["result"]["value"])
+
+
+def ledger(env):
+    positions = []
+    for key, (symbol, pair, pattern, units) in LEDGER_COINS.items():
+        addresses = [item.strip() for item in env.get(key, "").split(",") if item.strip()]
+        if not addresses:
+            continue
+        if any(not re.fullmatch(pattern, address) for address in addresses):
+            raise DataError(f"A Ledger {symbol} address in ledger.env is malformed; check it")
+        quantity = sum(ledger_balance(symbol, address) for address in set(addresses)) / units
+        if quantity == 0:
+            continue
+        ticker = kraken_result(request(KRAKEN + "/0/public/Ticker", {"pair": pair}))
+        if len(ticker) != 1:
+            raise DataError("Kraken did not return exactly one price; total is unavailable")
+        quote = next(iter(ticker.values()))
+        if not isinstance(quote, dict) or any(not isinstance(quote.get(side), list) or not quote[side] for side in ("a", "b")):
+            raise DataError("Kraken returned an incomplete bid/ask price; total is unavailable")
+        ask, bid = number(quote["a"][0]), number(quote["b"][0])
+        if bid <= 0 or ask < bid:
+            raise DataError("A Kraken market has no valid bid/ask price; total is unavailable")
+        positions.append({"symbol": symbol, "quantity": quantity, "currency": "EUR",
+                          "value_base": quantity * (bid + ask) / 2, "pnl_base": None})
+    return {"nav": sum(position["value_base"] for position in positions), "cash": None,
+            "currency": "EUR", "unrealized_pnl": None, "positions": positions,
+            "as_of": datetime.now().strftime("%Y-%m-%d %H:%M"),
+            "basis": "Ledger public addresses (on-chain, read-only) × Kraken spot midpoints"}
+
+
 def load(path):
     try:
         result = json.loads(Path(path).read_text())
@@ -391,11 +446,13 @@ def collect(cache_dir, source=None):
             "KRAKEN_API_KEY",
             "KRAKEN_API_SECRET",
         ), 120),
+        "ledger": (ledger, "ledger.env", tuple(LEDGER_COINS), 300),
     }
     providers = {}
     for name, (fetch, filename, keys, ttl) in definitions.items():
         env = read_env(Path.home() / ".config/homelab" / filename) if not source else {}
-        configured = bool(source and name == "ibkr") or all(env.get(key) for key in keys)
+        present = any if name == "ledger" else all
+        configured = bool(source and name == "ibkr") or present(env.get(key) for key in keys)
         if not configured:
             providers[name] = {"ok": False, "configured": False, "stale": False, "error": None}
             continue
@@ -426,6 +483,90 @@ def collect(cache_dir, source=None):
             providers[name] = {**(copy.deepcopy(old) or {}), "ok": old is not None,
                               "configured": True, "stale": old is not None, "error": error_text(error)}
     return providers
+
+
+def balances_path():
+    return Path(os.environ.get("FINANCE_BALANCES_FILE", str(Path.home() / ".config/homelab/balances.json")))
+
+
+def read_balances(path):
+    try:
+        data = json.loads(path.read_text())
+    except FileNotFoundError:
+        return None
+    except (OSError, ValueError):
+        raise DataError("balances.json is unreadable; fix or restore it") from None
+    if not isinstance(data, dict) or not isinstance(data.get("accounts"), list):
+        raise DataError("balances.json needs an 'accounts' list")
+    return data
+
+
+def set_balance(assignment):
+    name, _, amount = assignment.partition("=")
+    path = balances_path()
+    data = read_balances(path)
+    if data is None:
+        raise DataError("No balances.json yet; create it first (services/glance/README.md → Accounts)")
+    matches = [account for account in data["accounts"] if str(account.get("name", "")).lower() == name.strip().lower()]
+    if len(matches) != 1:
+        raise DataError("No single account has that name; names: " + ", ".join(str(a.get("name")) for a in data["accounts"]))
+    try:
+        value = float(amount.replace(",", "."))
+    except ValueError:
+        raise DataError("Amount must be a number, e.g. --set 'Emergency=3200.50'") from None
+    if not math.isfinite(value) or value < 0:
+        raise DataError("Amount must be a non-negative number (credit cards: the amount owed)")
+    matches[0]["balance"] = value
+    matches[0]["updated"] = datetime.now().strftime("%Y-%m-%d")
+    atomic_json(path, data)
+
+
+def accounts_report(unit, investments):
+    data = read_balances(balances_path())
+    if data is None:
+        return {"configured": False}
+    if data.get("currency", unit) != unit:
+        raise DataError(f"balances.json currency must be {unit}")
+    today = datetime.now().date()
+    rows, owned, owed = [], 0.0, 0.0
+    emergency_names = {str(item).lower() for item in data.get("emergency", [])}
+    emergency, emergency_set = 0.0, False
+    for account in data["accounts"]:
+        name, balance = str(account.get("name", "?")), account.get("balance")
+        credit = account.get("type") == "credit"
+        updated = account.get("updated")
+        age = None
+        try:
+            age = (today - datetime.strptime(updated, "%Y-%m-%d").date()).days
+        except (TypeError, ValueError):
+            pass
+        stale = balance is not None and (age is None or age > STALE_DAYS)
+        if balance is not None:
+            number(balance)
+            if credit:
+                owed += balance
+            else:
+                owned += balance
+            if name.lower() in emergency_names:
+                emergency += balance
+                emergency_set = True
+        rows.append({"name": name + (" (owed)" if credit else ""),
+                     "value": "not set" if balance is None else f"{unit} {-balance if credit else balance:,.2f}",
+                     "updated": updated or "", "stale": stale,
+                     "level": "neutral" if balance is None else "bad" if credit and balance else "ok"})
+    spend = data.get("monthly_spend")
+    months = emergency / spend if emergency_set and isinstance(spend, (int, float)) and spend > 0 else None
+    any_set = any(account.get("balance") is not None for account in data["accounts"])
+    net_cash = owned - owed
+    worth = net_cash + (investments or 0.0)
+    return {"configured": True, "rows": rows, "any_set": any_set,
+            "net_cash": f"{unit} {net_cash:,.2f}",
+            "emergency": {"set": emergency_set, "value": f"{unit} {emergency:,.2f}",
+                          "months": "–" if months is None else f"{months:.1f}",
+                          "level": "neutral" if months is None else "ok" if months >= 6 else "warn" if months >= 3 else "bad",
+                          "spend": "not set" if not spend else f"{unit} {spend:,.0f}/month"},
+            "net_worth": {"value": f"{unit} {worth:,.2f}", "investments_included": investments is not None},
+            "stale": any(row["stale"] for row in rows)}
 
 
 def render(providers, unit):
@@ -481,7 +622,11 @@ def render(providers, unit):
                           "warning": any(warnings), "error": "; ".join(warning for warning in warnings if warning)})
     positions = sorted((dict(position, provider=name) for name, provider in included.items()
                         for position in provider["positions"]), key=lambda position: -abs(position["value_base"]))
-    return {"schema": SCHEMA, "updated": datetime.now().strftime("%Y-%m-%d %H:%M"),
+    try:
+        accounts = accounts_report(unit, value)
+    except DataError as error:
+        accounts = {"configured": True, "error": str(error), "rows": [], "any_set": False}
+    return {"schema": SCHEMA, "updated": datetime.now().strftime("%Y-%m-%d %H:%M"), "accounts": accounts,
             "configured": any(provider["configured"] for provider in providers.values()), "ok": bool(included),
             "coverage": sorted(included), "providers": providers, "provider_breakdown": breakdown,
             "total": {"value": money(value), "value_numeric": value, "currency": unit,
@@ -502,7 +647,10 @@ def main():
     parser.add_argument("--health", action="store_true", help="cached booleans only; no balances or API calls")
     parser.add_argument("--print", action="store_true", help="print private snapshot including balances")
     parser.add_argument("--from-file", metavar="XML", help="IBKR-only local report; no broker calls or live cache data writes")
+    parser.add_argument("--set", metavar="NAME=AMOUNT", help="update one Swedbank/manual account balance, then refresh the snapshot")
     args = parser.parse_args()
+    if args.set:
+        set_balance(args.set)
     if args.health and (args.print or args.from_file):
         parser.error("--health reads cached status; use it alone")
     output_dir = Path(os.environ.get("OUT_DIR", str(Path.home() / "services/glance/assets")))
@@ -535,6 +683,9 @@ def main():
 if __name__ == "__main__":
     try:
         sys.exit(main())
-    except (OSError, ValueError, DataError):
+    except DataError as error:
+        print(f"Finance snapshot generation failed: {error}", file=sys.stderr)
+        sys.exit(1)
+    except (OSError, ValueError):
         print("Finance snapshot generation failed; previous output was preserved.", file=sys.stderr)
         sys.exit(1)

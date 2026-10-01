@@ -481,7 +481,7 @@ pages:
       - size: small
         widgets:
           # ── Portfolio — real holdings from scripts/utils/finance-status.sh
-          # (IBKR + Trading 212 + Kraken, daily 07:00) → ./assets/finance.json.
+          # (IBKR + Trading 212 + Kraken + Ledger, daily 07:00) → ./assets/finance.json.
           # All numbers are preformatted; holdings never touch the
           # repo. Setup: README → Finance.
           - type: custom-api
@@ -508,7 +508,7 @@ pages:
                 <li class="flex justify-between"><span>Unrealised</span><span class="lvl-{{ .JSON.String "total.unrealized_level" }}">{{ .JSON.String "total.unrealized_pnl" }}</span></li>
                 <li class="flex justify-between"><span>Cash</span><span>{{ .JSON.String "total.cash" }}</span></li>
               </ul>
-              <div class="size-h6 color-subdue" style="margin-top:12px">Largest reported holdings · IBKR / Trading 212 / Kraken</div>
+              <div class="size-h6 color-subdue" style="margin-top:12px">Largest reported holdings · IBKR / Trading 212 / Kraken / Ledger</div>
               <ul class="list list-gap-4" style="margin-top:4px">
                 {{ range .JSON.Array "positions" }}<li class="flex justify-between size-h6"><span>{{ .String "symbol" }} <span class="color-subdue">{{ .String "provider" }} · {{ .String "pct" }}</span></span><span class="nowrap">{{ .String "value" }} <span class="lvl-{{ .String "pnl_level" }}">{{ .String "pnl" }}</span></span></li>{{ end }}
               </ul>
@@ -517,6 +517,33 @@ pages:
               <p class="lvl-warn">Finance data could not be refreshed: {{ range .JSON.Array "errors" }}{{ .String "" }} {{ end }}</p>
               {{ else }}
               <p class="color-subdue">No investment accounts connected yet.</p>
+              {{ end }}
+
+          # ── Accounts + emergency fund — hand-entered Swedbank/Revolut balances
+          # from ~/.config/homelab/balances.json (update: finance-data.py --set).
+          - type: custom-api
+            title: Accounts
+            cache: 5m
+            url: http://localhost:8080/assets/finance.json
+            template: |
+              {{ if .JSON.Bool "accounts.configured" }}
+              {{ if .JSON.String "accounts.error" }}<p class="lvl-warn">{{ .JSON.String "accounts.error" }}</p>{{ end }}
+              {{ if .JSON.Bool "accounts.any_set" }}
+              <div class="flex justify-between items-center">
+                <span class="size-h6 color-subdue">Emergency fund</span>
+                <span class="size-h3 color-highlight">{{ .JSON.String "accounts.emergency.value" }}</span>
+              </div>
+              <div class="size-h6 lvl-{{ .JSON.String "accounts.emergency.level" }}">{{ .JSON.String "accounts.emergency.months" }} months of spending · {{ .JSON.String "accounts.emergency.spend" }}</div>
+              <ul class="list list-gap-4" style="margin-top:10px">
+                {{ range .JSON.Array "accounts.rows" }}<li class="flex justify-between size-h6"><span>{{ .String "name" }}{{ if .Bool "stale" }} <span class="lvl-warn">· old, updated {{ .String "updated" }}</span>{{ end }}</span><span class="lvl-{{ .String "level" }}">{{ .String "value" }}</span></li>{{ end }}
+              </ul>
+              <div class="flex justify-between" style="margin-top:10px"><span class="size-h6 color-subdue">Net cash</span><span>{{ .JSON.String "accounts.net_cash" }}</span></div>
+              <div class="flex justify-between"><span class="size-h6 color-subdue">Tracked net worth{{ if not (.JSON.Bool "accounts.net_worth.investments_included") }} (no investments){{ end }}</span><span class="color-highlight">{{ .JSON.String "accounts.net_worth.value" }}</span></div>
+              {{ else }}
+              <p class="color-subdue">No balances entered yet. Run: <code>finance-data.py --set 'Emergency=1234'</code></p>
+              {{ end }}
+              {{ else }}
+              <p class="color-subdue">No balances file yet (README → Accounts).</p>
               {{ end }}
 
           - type: markets

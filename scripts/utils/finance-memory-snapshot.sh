@@ -64,6 +64,13 @@ lines = [f"# Finance snapshot — {today}", "", f"- Connected investments: {port
          f"- Freshness: {'stale or partial — check each provider' if not comparable else 'fresh fetched data'}",
          "", "## Providers"]
 lines.extend([f"- {p.get('name', 'Provider')}: {p.get('value', 'unavailable')} — {p.get('status', 'unknown')}; {p.get('as_of', '')}" for p in providers] or ["- No connected provider data."])
+accounts = data.get("accounts") or {}
+if accounts.get("any_set"):
+    emergency = accounts.get("emergency", {})
+    lines.extend(["", "## Accounts (hand-entered)",
+                  f"- Emergency fund: {emergency.get('value', 'unavailable')} ({emergency.get('months', '–')} months of spending)",
+                  f"- Net cash: {accounts.get('net_cash', 'unavailable')}"])
+    lines.extend(f"- {row['name']}: {row['value']}{' (old)' if row.get('stale') else ''}" for row in accounts.get("rows", []))
 if value is not None and comparable:
     lines.extend(["", f"<!-- finance-value:{value}; {marker} -->"])
 descriptor, temporary = tempfile.mkstemp(dir=snapshots, prefix=".finance-", suffix=".tmp")
