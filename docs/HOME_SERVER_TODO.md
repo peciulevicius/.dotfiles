@@ -432,8 +432,12 @@ endpoint; native Ollama kept for short, tool-free chats. Why cloud:
       2026-09-24 (131, 12 pinned); chat *history* was not.
       - [ ] 👤 Export both (ChatGPT: Data Controls → Export; Claude: Privacy → Export)
       - [ ] 👤 Copy ChatGPT *memories* by hand — they are **not** in the export
-      - [ ] Check whether Odysseus already ships a ChatGPT importer before
-            writing `scripts/ai/import-chat-history.py`
+      - [x] ~~Check whether Odysseus already ships a ChatGPT importer~~ —
+            checked 2026-10-01: `~/services/odysseus/scripts/agent_migration_manifest.py`
+            accepts ChatGPT `conversations.json` and emits a neutral preview
+            manifest; it does not apply/import conversations into Odysseus.
+            Do not write a second parser. A reviewed manifest apply path remains
+            future work; keep the private source export out of this repo.
       - [ ] Keep raw exports at `/Volumes/unsorted/ai-exports/`, add to
             `rclone-backup.sh`, point RAG at the archive
 - [ ] 👤 Anthropic console: confirm a **low balance and auto-top-up off**, so a
