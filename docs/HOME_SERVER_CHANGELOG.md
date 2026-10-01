@@ -6,6 +6,27 @@ is often what you need when something similar breaks again.
 
 Newest first-ish; dates are when the work was finished.
 
+## 2026-10-01 — Glance finance refresh on change, BTC xpub, #ai-travel mapped
+
+- **Why the Accounts card stayed empty:** the Finance Manager edits
+  `~/ai-memory/finance/balances.json`, but Glance reads `finance.json`, which
+  only `finance-status.sh` rebuilds (07:00). New
+  `scripts/utils/finance-refresh-on-change.sh` (cron, every 2 min) rebuilds it
+  when `balances.json` is newer and posts a note to `#ai-agents`. A no-op the
+  rest of the time. Install by appending the line from `scripts/cron/crontab`
+  (a full `crontab <` reinstall would drop one-shot lines).
+- **No Discord reply earlier:** the balances were set from an issue created in
+  the Paperclip UI. The bridge only relays replies for messages sent in a
+  mapped channel; issue comments made elsewhere stay in Paperclip. Use
+  `#ai-finance` to get the answer in Discord.
+- **Ledger BTC:** `LEDGER_BTC_XPUBS` accepts an xpub/ypub/zpub, derived locally
+  (stdlib; BIP84 vectors pass) with a 20-address gap limit, because Ledger
+  rotates receive and change addresses. Reverses the earlier "no xpub" call:
+  derivation is local and only single addresses leave the host; the trade-off
+  is in `services/glance/README.md`. mempool.space returns 429 on bursts, so
+  lookups are paced and retried.
+- `#ai-travel` created by the owner and mapped to Travel Planner.
+
 ## 2026-10-01 — Travel company + Travel Planner agent
 
 Created the **Travel** Paperclip company (prefix TRA) with one agent, Travel
