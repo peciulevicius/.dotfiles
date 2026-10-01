@@ -27,6 +27,17 @@ TODO/CHANGELOG sections and would have conflicted.
   Claude; it now documents the Claude GitHub App route.
 - Removed the idle live cron line for the staged recovery helper.
 
+## 2026-10-01 — R2 restore check false alarm, now retried once
+
+The 06:00 monthly `r2-verify.sh` run alerted that one Immich file DIFFERED from
+its R2 copy. Re-checked the same day: that file was byte-identical (md5 and
+`cmp`), 40/40 further random files matched, and a full
+`rclone check` of the whole Immich backup found 6707 matching files and 0
+differences. Conclusion: a transient SMB/NAS read or download glitch, not
+corruption. `r2-verify.sh` now re-downloads and re-compares a mismatched file
+once (after 30s) before it alerts, so a single glitch no longer pages. A
+repeat mismatch still alerts.
+
 ## 2026-10-01 — complete the scheduled Paperclip return to Claude
 
 - The staged five-minute recovery job ran after the saved reset deadline.

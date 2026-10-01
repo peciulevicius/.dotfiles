@@ -97,6 +97,13 @@ spot_check() {
     return
   fi
 
+  # A single transient SMB/NAS read or download glitch (seen 2026-10-01) must not
+  # raise an alert: re-download and re-compare once before declaring a mismatch.
+  if ! cmp -s "$TMP/$label.restore" "$src/$file"; then
+    sleep 30
+    rclone copyto "$dest/$file" "$TMP/$label.restore" 2>/dev/null || true
+  fi
+
   if cmp -s "$TMP/$label.restore" "$src/$file"; then
     ok "$label: restored '$file' ($(human "$(wc -c < "$TMP/$label.restore")")) — byte-identical"
   else
