@@ -520,7 +520,7 @@ pages:
               {{ end }}
 
           # ── Accounts + emergency fund — hand-entered Swedbank/Revolut balances
-          # from ~/.config/homelab/balances.json (update: finance-data.py --set).
+          # from ~/ai-memory/finance/balances.json (update: finance-data.py --set).
           - type: custom-api
             title: Accounts
             cache: 5m
