@@ -6,6 +6,20 @@ is often what you need when something similar breaks again.
 
 Newest first-ish; dates are when the work was finished.
 
+## 2026-10-01 — Finance tab: editable balances, Accounts first
+
+- New `services/balances-ui/` (port 8095, localhost + Tailscale only): a one-page
+  form that edits `~/ai-memory/finance/balances.json`; Glance's Accounts card
+  links to it. Why: Glance widgets are read-only, so editing from the dashboard
+  needed a tiny writer. No login; access control is the Tailscale-only binding
+  (don't tunnel it). Only changed fields are written, so a concurrent agent
+  edit isn't clobbered.
+- Accounts card now sits above Portfolio; the duplicate "Emergency fund" header
+  is gone (it is still a row); the months-of-spending line shows only once
+  `monthly_spend` is set. Portfolio holdings now show quantity (e.g. BTC amount).
+- First payslip PDF dropped in `#ai-finance` was saved and ingested by Paperless
+  (Paperless sleeps; the folder write still works).
+
 ## 2026-10-01 — payslip PDFs from Discord into Paperless
 
 Attaching a PDF/image in `#ai-finance` now saves it to Paperless's consume

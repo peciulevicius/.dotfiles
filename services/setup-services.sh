@@ -47,6 +47,7 @@ SERVICES=(
   strava-mcp
   paperclip
   discord-bridge
+  balances-ui
   wud
   radicale
 )
@@ -84,6 +85,7 @@ SERVICE_PORTS=(
   "strava-mcp:8093"
   "paperclip:3100"
   "discord-bridge:—"
+  "balances-ui:8095"
   "wud:3070"
   "radicale:5232"
 )

@@ -829,6 +829,7 @@ def render(providers, unit):
                       "partial": any(provider["configured"] and name not in included for name, provider in providers.items())},
             "positions": [{"symbol": position["symbol"], "provider": NAMES[position["provider"]],
                            "value": money(position["value_base"]), "pnl": money(position.get("pnl_base"), sign=True),
+                           "qty": f"{position['quantity']:.6g}" if isinstance(position.get("quantity"), (int, float)) else "",
                            "pct": f"{position['value_base'] / value * 100:.1f}%" if value else "–",
                            "pnl_level": "neutral" if position.get("pnl_base") is None else "ok" if position["pnl_base"] >= 0 else "bad"} for position in positions[:8]],
             "errors": [f"{NAMES[name]}: {provider['error']}" for name, provider in providers.items() if provider.get("error")]}

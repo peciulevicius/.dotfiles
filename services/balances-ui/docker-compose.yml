@@ -1,0 +1,21 @@
+# balances-ui — a one-page form to edit the hand-entered account balances shown
+# on the Glance Finance tab. Writes ~/ai-memory/finance/balances.json (the same
+# file the Finance Manager agent edits); finance-refresh-on-change.sh then
+# rebuilds the Glance snapshot within ~2 minutes. See README.
+#
+# Reachable on localhost and the Tailscale IP only — no LAN, no tunnel.
+
+name: balances-ui
+
+services:
+  balances-ui:
+    container_name: balances-ui
+    build: .
+    image: balances-ui:local
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8095:8095"
+      - "100.81.171.49:8095:8095"
+    volumes:
+      - ${HOME}/ai-memory/finance:/finance
+    mem_limit: 64m

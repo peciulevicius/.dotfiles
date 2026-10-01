@@ -21,6 +21,7 @@ Run your own cloud on a Mac mini (or any Docker host). Self-hosted services cove
 | [Calibre-Web](#calibre-web) ⚡ | books.peciulevicius.com | 8083 | Kindle Cloud |
 | [Rclone](#rclone) | — | — | Cloud backup |
 | [discord-bridge](#discord-bridge) | outbound only | — | — |
+| [balances-ui](#balances-ui) | 8095 | — | — |
 | [WUD](#wud) | Tailscale only | 3070 | — |
 | [Radicale](#radicale) | Tailscale only | 5232 | Google Calendar + Contacts |
 
@@ -901,6 +902,20 @@ Paperclip's Docker network). It relays only the owner's messages, and keeps
 state in `./data/state.json`. It signs in with the Paperclip board login in
 its `.env`. Setup: `services/discord-bridge/README.md` (create the bot, then
 `configure.sh`).
+
+---
+
+### balances-ui
+
+**What:** a one-page form (`services/balances-ui/`, stdlib Python, port 8095 on
+localhost + Tailscale) that edits `~/ai-memory/finance/balances.json`; linked
+from the Glance Accounts card.
+
+**Why:** Glance widgets are read-only, and the balances are hand-entered.
+
+**How:** writes only changed fields, then `finance-refresh-on-change.sh` rebuilds
+the Glance snapshot. No login: Tailscale-only binding is the access control;
+never route it through the tunnel. See `services/balances-ui/README.md`.
 
 ---
 
