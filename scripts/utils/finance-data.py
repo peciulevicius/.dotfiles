@@ -35,7 +35,7 @@ BINANCE_BOOK = "https://api.binance.com/api/v3/ticker/bookTicker"
 # env key -> (symbol, price source, address pattern, units per coin); source is a Kraken pair or "binance:<pair>"
 LEDGER_COINS = {
     "LEDGER_BTC_ADDRESSES": ("BTC", "XBTEUR", r"(bc1[a-z0-9]{20,87}|[13][a-km-zA-HJ-NP-Z1-9]{25,34})", 10**8),
-    "LEDGER_BTC_XPUBS": ("BTC", "XBTEUR", r"[xyz]pub[1-9A-HJ-NP-Za-km-z]{100,112}", 10**8),
+    "LEDGER_BTC_XPUBS": ("BTC", "XBTEUR", r"[xyz]pub[1-9A-HJ-NP-Za-km-z]{100,112}(@(p2wpkh|p2sh|p2pkh))?", 10**8),
     "LEDGER_ETH_ADDRESSES": ("ETH", "ETHEUR", r"0x[0-9a-fA-F]{40}", 10**18),
     "LEDGER_SOL_ADDRESSES": ("SOL", "SOLEUR", r"[1-9A-HJ-NP-Za-km-z]{32,44}", 10**9),
     "LEDGER_ADA_ADDRESSES": ("ADA", "ADAEUR", r"(stake1|addr1)[a-z0-9]{50,110}", 10**6),
@@ -476,9 +476,10 @@ def _xpub_address(kind, point):
 
 
 def xpub_addresses(xpub, branch, count):
+    xpub, _, forced = xpub.partition("@")
     raw = _b58check_decode(xpub)
-    kind = _XPUB_KINDS.get(raw[:4])
-    if len(raw) != 78 or kind is None:
+    kind = forced or _XPUB_KINDS.get(raw[:4])
+    if len(raw) != 78 or raw[:4] not in _XPUB_KINDS:
         raise DataError("A Ledger BTC extended public key in ledger.env is not an xpub/ypub/zpub; check it")
     chain, key = raw[13:45], raw[45:78]
     x = int.from_bytes(key[1:], "big")
@@ -637,7 +638,7 @@ def collect(cache_dir, source=None):
             "KRAKEN_API_KEY",
             "KRAKEN_API_SECRET",
         ), 120),
-        "ledger": (ledger, "ledger.env", tuple(LEDGER_COINS), 300),
+        "ledger": (ledger, "ledger.env", tuple(LEDGER_COINS), 1800),
     }
     providers = {}
     for name, (fetch, filename, keys, ttl) in definitions.items():

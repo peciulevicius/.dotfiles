@@ -269,6 +269,8 @@ private key. Addresses (or, for BTC, an extended public key) go in `~/.config/ho
 umask 077
 cat > ~/.config/homelab/ledger.env <<'EOF'
 LEDGER_BTC_XPUBS=zpub...         # preferred for BTC: tracks every rotating address
+# Ledger Live shows an xpub6... even for native segwit (bc1q) accounts; append the
+# address type so the right addresses are derived: xpub6...@p2wpkh
 LEDGER_BTC_ADDRESSES=bc1q...,bc1q...   # or single addresses (does not follow rotation)
 LEDGER_ETH_ADDRESSES=0x...
 LEDGER_SOL_ADDRESSES=...
@@ -287,7 +289,9 @@ the Bitcoin account → ⋯ / Edit → **Advanced → Extended public key**. Der
 happens locally in `finance-data.py` (stdlib only, checked against the BIP84
 test vectors); the key is never sent anywhere. Only the derived addresses are
 looked up on mempool.space, 0.5 s apart, scanning receive and change chains
-until 20 unused addresses in a row (the standard gap limit). Privacy cost,
+until 20 unused addresses in a row (the standard gap limit). A wallet with
+many used addresses takes minutes, because mempool.space rate-limits bursts (429,
+retried with backoff), so the Ledger result is cached 30 minutes. Privacy cost,
 stated plainly: mempool.space sees those addresses queried from your IP in one
 burst, so it can link them as one wallet — the same exposure as listing the
 addresses by hand, just including future ones. The key shows every address and
