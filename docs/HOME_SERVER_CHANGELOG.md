@@ -6,6 +6,19 @@ is often what you need when something similar breaks again.
 
 Newest first-ish; dates are when the work was finished.
 
+## 2026-10-01 — Finance company + Finance Manager agent
+
+Created the **Finance** Paperclip company (prefix FIN) with one agent, Finance
+Manager (Sonnet, wake on demand), plus a Sunday 10:00 "Weekly money review"
+routine. It works only in `/ai-memory/finance/` (balances, plan, income log,
+read-only snapshots) and is forbidden from moving money: it proposes a paycheck
+split as a decision, the owner transfers, then it records the result. Why: the
+owner wanted help splitting paychecks and tracking wants / property plans, but
+agents with bank access are a risk not worth the convenience. Instructions in
+`services/paperclip/finance-agents-addendum.md`; docs in the Paperclip README.
+BTC test address returned 0 on-chain history, so the Ledger BTC row is empty
+until an address that has received coins is supplied.
+
 ## 2026-10-01 — strict review of the Codex PRs (#41–#55), consolidated
 
 Codex's fifteen PRs (finance feeds, Discord routing, Paperclip rehire/binding
