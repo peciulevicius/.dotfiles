@@ -27,6 +27,24 @@ TODO/CHANGELOG sections and would have conflicted.
   Claude; it now documents the Claude GitHub App route.
 - Removed the idle live cron line for the staged recovery helper.
 
+## 2026-10-01 — Discord decision buttons, multi-company bridge, more Ledger coins
+
+- **discord-bridge v2** (`services/discord-bridge/`): channels may map to agents
+  in any Paperclip company (company looked up from the agent), and the bridge
+  now polls each company's `/attention` feed and posts every decision that needs
+  the owner to Discord with buttons — confirmations (Accept/Reject + reason),
+  single-choice questions (option buttons / select + Other… box), approvals
+  (Approve/Reject) — and link-only messages for OAuth consents, multi-question
+  forms and blockers. Owner-only; buttons vanish when resolved in the UI.
+  Reason: decisions were only visible after logging in to Paperclip. The
+  "need a new ticket to continue" complaint is not a Paperclip limit: human
+  comments wake the assignee and reopen done/blocked issues; Discord threads
+  are a continuous chat on one issue.
+- **Ledger** also reads ADA (Koios), XRP (XRPL) and BNB Smart Chain; hand-entered
+  `balances.json` now lives in `~/ai-memory/finance/` so the Finance Manager
+  agent can read and update it. Tested live for XRP and BNB; ADA only
+  structurally (no address available yet).
+
 ## 2026-10-01 — Ledger feed, hand-entered accounts + emergency fund; A11yWatch outreach on hold
 
 - **Ledger** is a fourth Glance finance provider (`finance-data.py`): public

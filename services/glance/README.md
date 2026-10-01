@@ -271,16 +271,24 @@ cat > ~/.config/homelab/ledger.env <<'EOF'
 LEDGER_BTC_ADDRESSES=bc1q...,bc1q...
 LEDGER_ETH_ADDRESSES=0x...
 LEDGER_SOL_ADDRESSES=...
+LEDGER_ADA_ADDRESSES=stake1...   # or addr1...; stake1 covers the whole wallet
+LEDGER_XRP_ADDRESSES=r...
+LEDGER_BNB_ADDRESSES=0x...       # BNB Smart Chain, native BNB only
 EOF
 ```
 
 Ledger Live shows an account's addresses under **Receive**. List every BTC
 address that holds coins, since Ledger Live rotates them. Balances come from
-mempool.space (BTC), ethereum-rpc.publicnode.com (ETH) and the public Solana
-RPC; only the address is sent. Value is quantity × the Kraken spot midpoint in
-EUR, labelled indicative. Ledger counts in the connected-investments total.
+mempool.space (BTC), ethereum-rpc.publicnode.com (ETH), the public Solana RPC,
+bsc-rpc.publicnode.com (BNB), api.koios.rest (ADA) and xrplcluster.com (XRP);
+only the address is sent. For Cardano use the **stake address** (`stake1…`,
+Ledger Live / Yoroi account details) — it sums every address of the wallet; a
+single `addr1…` is resolved to its stake account and also covers the whole
+wallet. Value is quantity × the Kraken spot midpoint in EUR (BNB: Binance
+`BNBEUR` midpoint, Kraken does not list it), labelled indicative. An address
+that has never received funds reads 0 (not an error). Ledger counts in the connected-investments total.
 Not covered, on purpose: **xpubs** (they would hand every address you will
-ever use to a third party — list addresses instead), **ERC-20/SPL tokens**
+ever use to a third party — list addresses instead), **ERC-20/BEP-20/SPL tokens**
 (need a token list; add if you hold any), NFTs, and other chains. A malformed
 address makes the whole Ledger row unavailable rather than silently dropping it.
 
@@ -290,7 +298,7 @@ Banks offer no free unattended balance feed: open banking (e.g. Enable
 Banking) needs a browser re-consent every 90 days and an RSA-signed JWT, and
 Finbee has no API at all. So the nine Swedbank accounts (Main, Investments,
 Crypto, Credit card, Bike, Wants, Travel, Business, Emergency) live in a
-private file, `~/.config/homelab/balances.json` (mode 600, never committed):
+private file, `~/ai-memory/finance/balances.json` (mode 600, never committed):
 
 ```json
 { "currency": "EUR", "monthly_spend": 1500, "emergency": ["Emergency"],

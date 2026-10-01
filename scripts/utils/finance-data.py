@@ -28,10 +28,18 @@ NAMES = {"ibkr": "IBKR", "trading212": "Trading 212", "kraken": "Kraken", "ledge
 MEMPOOL = "https://mempool.space/api/address/"
 ETH_RPC = "https://ethereum-rpc.publicnode.com"
 SOL_RPC = "https://api.mainnet-beta.solana.com"
-LEDGER_COINS = {  # env key -> (symbol, Kraken EUR pair, address pattern, units per coin)
+BSC_RPC = "https://bsc-rpc.publicnode.com"
+XRP_RPC = "https://xrplcluster.com"
+KOIOS = "https://api.koios.rest/api/v1/"
+BINANCE_BOOK = "https://api.binance.com/api/v3/ticker/bookTicker"
+# env key -> (symbol, price source, address pattern, units per coin); source is a Kraken pair or "binance:<pair>"
+LEDGER_COINS = {
     "LEDGER_BTC_ADDRESSES": ("BTC", "XBTEUR", r"(bc1[a-z0-9]{20,87}|[13][a-km-zA-HJ-NP-Z1-9]{25,34})", 10**8),
     "LEDGER_ETH_ADDRESSES": ("ETH", "ETHEUR", r"0x[0-9a-fA-F]{40}", 10**18),
     "LEDGER_SOL_ADDRESSES": ("SOL", "SOLEUR", r"[1-9A-HJ-NP-Za-km-z]{32,44}", 10**9),
+    "LEDGER_ADA_ADDRESSES": ("ADA", "ADAEUR", r"(stake1|addr1)[a-z0-9]{50,110}", 10**6),
+    "LEDGER_XRP_ADDRESSES": ("XRP", "XRPEUR", r"r[1-9A-HJ-NP-Za-km-z]{24,34}", 10**6),
+    "LEDGER_BNB_ADDRESSES": ("BNB", "binance:BNBEUR", r"0x[0-9a-fA-F]{40}", 10**18),
 }
 STALE_DAYS = 35
 KRAKEN = "https://api.kraken.com"
@@ -342,6 +350,23 @@ def kraken(env, cache_dir):
             "basis": "Kraken default wallet balances × spot midpoints (indicative EUR value)"}
 
 
+def rpc_balance(url, address):
+    reply = json.loads(request(url, body={"jsonrpc": "2.0", "id": 1, "method": "eth_getBalance", "params": [address, "latest"]}))
+    return number(int(reply["result"], 16))
+
+
+def cardano_balance(address):
+    # Koios account_info gives the whole wallet's balance for a stake address (all its payment addresses).
+    stake = address
+    if address.startswith("addr1"):
+        info = json.loads(request(KOIOS + "address_info", body={"_addresses": [address]}))
+        stake = info[0].get("stake_address") if info else None
+        if not stake:
+            return 0
+    info = json.loads(request(KOIOS + "account_info", body={"_stake_addresses": [stake]}))
+    return number(info[0]["total_balance"]) if info else 0
+
+
 def ledger_balance(symbol, address):
     # Only the address is sent to the public endpoint; it never leaves this function in an error.
     if symbol == "BTC":
@@ -350,15 +375,40 @@ def ledger_balance(symbol, address):
         spent = stats["chain_stats"]["spent_txo_sum"] + stats["mempool_stats"]["spent_txo_sum"]
         return number(funded - spent)
     if symbol == "ETH":
-        reply = json.loads(request(ETH_RPC, body={"jsonrpc": "2.0", "id": 1, "method": "eth_getBalance", "params": [address, "latest"]}))
-        return number(int(reply["result"], 16))
+        return rpc_balance(ETH_RPC, address)
+    if symbol == "BNB":
+        return rpc_balance(BSC_RPC, address)
+    if symbol == "ADA":
+        return cardano_balance(address)
+    if symbol == "XRP":
+        reply = json.loads(request(XRP_RPC, body={"method": "account_info", "params": [{"account": address, "ledger_index": "validated"}]}))["result"]
+        if reply.get("error") == "actNotFound":
+            return 0
+        return number(int(reply["account_data"]["Balance"]))
     reply = json.loads(request(SOL_RPC, body={"jsonrpc": "2.0", "id": 1, "method": "getBalance", "params": [address]}))
     return number(reply["result"]["value"])
 
 
+def spot_mid(source):
+    if source.startswith("binance:"):
+        quote = json.loads(request(BINANCE_BOOK, {"symbol": source[8:]}))
+        bid, ask = number(quote["bidPrice"]), number(quote["askPrice"])
+    else:
+        ticker = kraken_result(request(KRAKEN + "/0/public/Ticker", {"pair": source}))
+        if len(ticker) != 1:
+            raise DataError("Kraken did not return exactly one price; total is unavailable")
+        quote = next(iter(ticker.values()))
+        if not isinstance(quote, dict) or any(not isinstance(quote.get(side), list) or not quote[side] for side in ("a", "b")):
+            raise DataError("Kraken returned an incomplete bid/ask price; total is unavailable")
+        ask, bid = number(quote["a"][0]), number(quote["b"][0])
+    if bid <= 0 or ask < bid:
+        raise DataError("A market has no valid bid/ask price; total is unavailable")
+    return (bid + ask) / 2
+
+
 def ledger(env):
     positions = []
-    for key, (symbol, pair, pattern, units) in LEDGER_COINS.items():
+    for key, (symbol, source, pattern, units) in LEDGER_COINS.items():
         addresses = [item.strip() for item in env.get(key, "").split(",") if item.strip()]
         if not addresses:
             continue
@@ -367,21 +417,12 @@ def ledger(env):
         quantity = sum(ledger_balance(symbol, address) for address in set(addresses)) / units
         if quantity == 0:
             continue
-        ticker = kraken_result(request(KRAKEN + "/0/public/Ticker", {"pair": pair}))
-        if len(ticker) != 1:
-            raise DataError("Kraken did not return exactly one price; total is unavailable")
-        quote = next(iter(ticker.values()))
-        if not isinstance(quote, dict) or any(not isinstance(quote.get(side), list) or not quote[side] for side in ("a", "b")):
-            raise DataError("Kraken returned an incomplete bid/ask price; total is unavailable")
-        ask, bid = number(quote["a"][0]), number(quote["b"][0])
-        if bid <= 0 or ask < bid:
-            raise DataError("A Kraken market has no valid bid/ask price; total is unavailable")
         positions.append({"symbol": symbol, "quantity": quantity, "currency": "EUR",
-                          "value_base": quantity * (bid + ask) / 2, "pnl_base": None})
+                          "value_base": quantity * spot_mid(source), "pnl_base": None})
     return {"nav": sum(position["value_base"] for position in positions), "cash": None,
             "currency": "EUR", "unrealized_pnl": None, "positions": positions,
             "as_of": datetime.now().strftime("%Y-%m-%d %H:%M"),
-            "basis": "Ledger public addresses (on-chain, read-only) × Kraken spot midpoints"}
+            "basis": "Ledger public addresses (on-chain, read-only) × spot midpoints (Kraken; BNB from Binance)"}
 
 
 def load(path):
@@ -486,7 +527,7 @@ def collect(cache_dir, source=None):
 
 
 def balances_path():
-    return Path(os.environ.get("FINANCE_BALANCES_FILE", str(Path.home() / ".config/homelab/balances.json")))
+    return Path(os.environ.get("FINANCE_BALANCES_FILE", str(Path.home() / "ai-memory/finance/balances.json")))
 
 
 def read_balances(path):
