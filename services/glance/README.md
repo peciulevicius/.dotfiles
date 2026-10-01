@@ -298,7 +298,8 @@ looked up on mempool.space, 0.5 s apart, scanning receive and change chains
 until 20 unused addresses in a row (the standard gap limit). A wallet with
 many used addresses takes minutes, because mempool.space rate-limits bursts (429,
 retried with backoff), so the Ledger result is cached 30 minutes. The scan
-alternates mempool.space and blockstream.info on a 429, and remembers which
+uses blockstream.info first (15 s timeout) and falls back to mempool.space on a
+429 or timeout, and remembers which
 address indices were used (`btc-xpub-*.json` in the finance cache, indices
 only): later runs re-query those plus the next 20, with a full rescan every 7
 days. A run stops after 150 s, saves how far it got and reports the Ledger

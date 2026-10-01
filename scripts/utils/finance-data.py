@@ -56,7 +56,7 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
         raise DataError("Unexpected API redirect; credentials were not forwarded")
 
 
-def request(url, params=None, authorization=None, body=None):
+def request(url, params=None, authorization=None, body=None, timeout=60):
     headers = {"User-Agent": "homelab-finance/2", "Accept": "application/json, application/xml"}
     if authorization:
         headers["Authorization"] = authorization
@@ -66,7 +66,7 @@ def request(url, params=None, authorization=None, body=None):
     if body is not None:
         data = json.dumps(body).encode()
         headers["Content-Type"] = "application/json"
-    with urllib.request.build_opener(NoRedirect()).open(urllib.request.Request(url, data=data, headers=headers), timeout=60) as response:
+    with urllib.request.build_opener(NoRedirect()).open(urllib.request.Request(url, data=data, headers=headers), timeout=timeout) as response:
         return response.read()
 
 
@@ -489,22 +489,25 @@ def xpub_addresses(xpub, branch, count):
         yield _xpub_address(kind, _child(point, chain, index)[0])
 
 
-MEMPOOL_HOSTS = (MEMPOOL, "https://blockstream.info/api/address/")
+MEMPOOL_HOSTS = ("https://blockstream.info/api/address/", MEMPOOL)
 XPUB_FULL_RESCAN_DAYS = 7
 XPUB_BUDGET_SECONDS = 150
 
 
 def _mempool_get(address):
-    # Alternate between two Esplora hosts: a 429 on one switches to the other
-    # before any sleeping, which keeps a full scan to seconds, not minutes.
+    # blockstream.info answers in <1 s; mempool.space sometimes hangs ~60 s, so
+    # it is the fallback and every attempt has a short timeout.
     attempt = 0
     for wait in (1, 2, 5, 15, 30, None):
         host = MEMPOOL_HOSTS[attempt % len(MEMPOOL_HOSTS)]
         attempt += 1
         try:
-            return request(host + address)
+            return request(host + address, timeout=15)
         except urllib.error.HTTPError as error:
             if error.code != 429 or wait is None:
+                raise
+        except (urllib.error.URLError, TimeoutError):
+            if wait is None:
                 raise
         time.sleep(wait)
 
