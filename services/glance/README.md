@@ -139,6 +139,12 @@ calendar) were tried the same day and removed. They frame fine (no
 `X-Frame-Options`/`frame-ancestors`), but they render as light boxes that
 clash with the dark theme.
 
+### Editing balances
+
+The Accounts card's "Edit balances" link opens `services/balances-ui`
+(`http://100.81.171.49:8095`), a form over `balances.json`. Saved changes reach
+the card within ~2 minutes (`finance-refresh-on-change.sh`).
+
 ### Portfolio: direct IBKR, Trading 212, Kraken and Ledger feeds
 
 Wallet was removed on 2026-09-30 at the user's request: a successful Wallet
