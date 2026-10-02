@@ -109,6 +109,9 @@ OC_PASS='NEW_PASSWORD' docker exec -u www-data -e OC_PASS nextcloud \
   php occ user:resetpassword --password-from-env <username>
 # Paperless-ngx (interactive prompt)
 docker exec -it paperless python3 /usr/src/paperless/src/manage.py changepassword <username>
+# FreshRSS (password briefly visible in the container's process list)
+docker exec freshrss php /var/www/FreshRSS/cli/update-user.php \
+  --user '<username>' --password 'NEW_PASSWORD'
 ```
 
 ## ⬜ API keys, not passwords
@@ -166,9 +169,9 @@ kind you are dealing with saves guessing:
 
 ## ⚠️ Open issues to settle during this pass
 
-- **Immich's Postgres password is the old reused personal password.**
-  Internal-only, but changing it needs `ALTER USER` inside Postgres *and* the
-  `.env` updated together, or Immich loses its database. Deliberate session.
+- ~~Immich's Postgres password was the old reused personal password~~ —
+  rotated 2026-10-02 (`ALTER USER` over stdin + `.env`). Only open step: save
+  it in Vaultwarden (see TODO §6).
 - **Nextcloud has two accounts** — the standard username, and a second `admin` whose
   display name is confusingly the same as the standard username. Pick one, delete the other.
 - **Retire the old reused personal password** everywhere it still appears.

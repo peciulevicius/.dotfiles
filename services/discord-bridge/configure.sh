@@ -67,14 +67,14 @@ PY
 }
 
 set_var DISCORD_BOT_TOKEN "$token"
-# Refresh only the Coach/Dietitian entries (their agent IDs change on a
+# Refresh only the Coach/Dietitian channels (their agent IDs change on a
 # rehire) and keep every other channel (Studio, Homelab, Finance, Travel).
 current_map=$(grep '^CHANNEL_MAP=' "$ENV_FILE" | cut -d= -f2-)
 new_map=$(python3 - "$current_map" "${coach_ch}:${COACH_ID}:Coach" "${diet_ch}:${DIETITIAN_ID}:Dietitian" <<'PY'
 import sys
 current, *ours = sys.argv[1:]
-labels = {entry.rsplit(":", 1)[1] for entry in ours}
-kept = [e for e in current.split(",") if e and e.rsplit(":", 1)[-1] not in labels]
+channels = {entry.split(":", 1)[0] for entry in ours}  # match by channel, not label
+kept = [e for e in current.split(",") if e and e.split(":", 1)[0] not in channels]
 print(",".join(ours + kept))
 PY
 )
