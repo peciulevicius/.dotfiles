@@ -67,11 +67,18 @@ PY
 }
 
 set_var DISCORD_BOT_TOKEN "$token"
-# Only seed CHANNEL_MAP on first setup: later channels (Studio, Homelab,
-# Finance, Travel) are added by hand and a token rotation must not drop them.
-if ! grep -q '^CHANNEL_MAP=.' "$ENV_FILE"; then
-  set_var CHANNEL_MAP "${coach_ch}:${COACH_ID}:Coach,${diet_ch}:${DIETITIAN_ID}:Dietitian"
-fi
+# Refresh only the Coach/Dietitian entries (their agent IDs change on a
+# rehire) and keep every other channel (Studio, Homelab, Finance, Travel).
+current_map=$(grep '^CHANNEL_MAP=' "$ENV_FILE" | cut -d= -f2-)
+new_map=$(python3 - "$current_map" "${coach_ch}:${COACH_ID}:Coach" "${diet_ch}:${DIETITIAN_ID}:Dietitian" <<'PY'
+import sys
+current, *ours = sys.argv[1:]
+labels = {entry.rsplit(":", 1)[1] for entry in ours}
+kept = [e for e in current.split(",") if e and e.rsplit(":", 1)[-1] not in labels]
+print(",".join(ours + kept))
+PY
+)
+set_var CHANNEL_MAP "$new_map"
 unset token
 chmod 600 "$ENV_FILE"
 

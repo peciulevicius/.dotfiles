@@ -10,7 +10,7 @@ ENV_FILE="$SVC/.env"
 [[ -f "$ENV_FILE" ]] || { echo "No $ENV_FILE"; exit 1; }
 docker ps --format '{{.Names}}' | grep -qx vaultwarden || { echo "vaultwarden container is not running"; exit 1; }
 
-echo "Save the new admin token in Vaultwarden first (generate a long random one),"
+echo "Save the new admin token in Vaultwarden as a NEW entry first (keep the old token until /admin accepts the new one),"
 echo "then paste it at both prompts below. Nothing you type is echoed or recorded."
 transcript=$(mktemp)
 trap 'rm -f "$transcript"' EXIT

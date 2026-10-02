@@ -9,11 +9,15 @@ Newest first-ish; dates are when the work was finished.
 ## 2026-10-02 — Studio runs autonomously
 
 The owner asked for a studio that iterates on ideas and validates them without
-approvals. The Paperclip Studio now follows a five-stage validation ladder
-(`~/ai-memory/studio/PLAYBOOK.md`) with a €25/month cap that only opens after
-paid pre-orders. Six agents stay active (CEO moved Opus → Sonnet to stretch the
-quota), and 13 are paused until a build. Three CEO routines (4×/day pipeline,
-21:00 digest to `#ai-studio`, Sunday review) replace the paused standup.
+approvals. The Paperclip Studio follows a validation ladder
+(`~/ai-memory/studio/PLAYBOOK.md`), revised the same evening to the owner's
+flow: read-only research → password-protected private preview → owner review
+(Discord button) → owner buys the domain and posting starts → pre-orders →
+build. Spend ≤ €25/month, only after the owner's review. Scope: any
+computer-based business. Six agents stay active (CEO moved Opus → Sonnet to
+stretch the quota), and 13 are paused until a build. CEO routines: pipeline
+every 4 h around the clock, 21:00 digest to `#ai-studio`, Sunday review; the
+standup stays paused. A11yWatch was killed by the owner.
 STU-13's identity purchase was cancelled before anything was bought. Agents
 get their own Cloudflare account rather than the homelab token, which can
 overwrite personal Pages projects.

@@ -4,10 +4,12 @@ Working checklist for giving each service a unique generated password stored in
 Vaultwarden. Tick rows off as you go.
 
 🚫 **No passwords in this file — this repo is public.** Values you still need to
-transcribe live in `~/credentials-import.md` (chmod 600, outside the repo);
-delete that file once the vault holds everything.
+live only in Vaultwarden (the old `~/credentials-import.md` worksheet was
+transcribed and deleted 2026-10-02).
 
-Status: **5 of ~18 services done.** Started 2026-09-19.
+Status (2026-10-02): **every homelab login is in Vaultwarden** (folder
+`peciulevicius.com`); 16 have unique generated passwords. Left: 6 manual UI
+rotations and the Vaultwarden email change. Started 2026-09-19.
 
 ---
 
@@ -76,58 +78,38 @@ than one at a time. Start with the ones whose mail feeds automation:
 | Radicale | `http://100.81.171.49:5232` | `dziugas` | Generated 2026-09-28, bcrypt hash in `~/services/radicale/users`; plain copy in `~/.config/homelab/radicale.env` for `calendar-status.sh`. 👤 save to Vaultwarden |
 | Pi-hole | `https://pihole.peciulevicius.com` | *(password only)* | 32-char random. Old one was **5 characters** on a public panel controlling DNS — assume exposed. **Glance keeps a copy** (`PIHOLE_PASSWORD`, DNS widget) since the v6 upgrade |
 | Calibre-Web | `https://books.peciulevicius.com` | `<username>` | Generated, in Vaultwarden (2026-09-26); SMTP moved to Purelymail the same day |
+| Immich, Linkwarden, FreshRSS, Uptime Kuma, Audiobookshelf | see Glance | `<username>` / email | **2026-10-02**: random password, bcrypt hash written from the host (Postgres / `config.php` / SQLite with the container stopped), saved straight to Vaultwarden |
+| Nextcloud (both users), Paperless | `cloud.` / `papers.` | `<username>`, `admin` | **2026-10-02**: `occ user:resetpassword` / Django `set_password`, saved straight to Vaultwarden |
+| Syncthing | `http://100.81.171.49:8384` | `<username>` | **2026-10-02**: set through the REST API (Syncthing hashes it), saved to Vaultwarden |
+| Paperclip | `http://100.81.171.49:3100` | `dziugas@peciulevicius.com` | **2026-10-02**: changed via Better Auth API (`scripts/utils/paperclip-change-password.py`) |
 
 ---
 
-## ⬜ Resettable from the command line
+## ⬜ Still to rotate — UI only (about a minute each)
 
-Generate in Vaultwarden first, then run the command, then save.
+Open the app's change-password screen, generate in Bitwarden, save to the
+existing entry. Their hash formats (Servarr PBKDF2, Jellyfin PBKDF2, Portainer
+BoltDB) are riskier to write directly than bcrypt, so these stay manual.
 
 | Service | URL | Username |
 |---|---|---|
-| Nextcloud | `https://cloud.peciulevicius.com` | `<username>` |
-| Paperless-ngx | `https://papers.peciulevicius.com` | `<username>` |
-| FreshRSS | `https://rss.peciulevicius.com` | `<username>` |
-| Grafana | `http://100.81.171.49:3000` | `admin` |
+| Jellyfin (also the Jellyseerr login) | `https://watch.peciulevicius.com` | `<username>` |
+| Sonarr | `http://100.81.171.49:8989` | `<username>` |
+| Radarr | `http://100.81.171.49:7878` | `<username>` |
+| Prowlarr | `http://100.81.171.49:9696` | `<username>` |
+| Portainer | `http://100.81.171.49:9000` | `<username>` |
+| NAS (UGOS) | `https://nas.peciulevicius.com` | personal admin account |
+| NAS SMB service account | *(macOS Keychain)* | `macmini` |
+
+CLI resets for later rotations:
 
 ```bash
 # Nextcloud
 OC_PASS='NEW_PASSWORD' docker exec -u www-data -e OC_PASS nextcloud \
   php occ user:resetpassword --password-from-env <username>
-
-# Paperless-ngx  (interactive prompt)
-docker exec -it paperless python3 /usr/src/paperless/src/manage.py \
-  changepassword <username>
-
-# FreshRSS
-docker exec freshrss php /var/www/FreshRSS/cli/update-user.php \
-  --user '<username>' --password 'NEW_PASSWORD'
-
-# Grafana
-docker exec grafana grafana cli admin reset-admin-password 'NEW_PASSWORD'
+# Paperless-ngx (interactive prompt)
+docker exec -it paperless python3 /usr/src/paperless/src/manage.py changepassword <username>
 ```
-
----
-
-## ⬜ UI only — change inside the app
-
-| Service | URL | Username / email |
-|---|---|---|
-| Immich | `https://photos.peciulevicius.com` | email (now `dziugas@`) |
-| Linkwarden | `https://links.peciulevicius.com` | `<username>` (no email stored) |
-| Jellyfin | `https://watch.peciulevicius.com` | `<username>` |
-| Audiobookshelf | `https://listen.peciulevicius.com` | `<username>` |
-| Uptime Kuma | `https://status.peciulevicius.com` | `<username>` |
-| Portainer | `https://portainer.peciulevicius.com` | `<username>` |
-| Syncthing | `http://100.81.171.49:8384` | `<username>` |
-| Bazarr | `http://100.81.171.49:6767` | `<username>` |
-| LazyLibrarian | `http://100.81.171.49:5299` | `<username>` |
-| Jellyseerr | `http://100.81.171.49:5055` | via Jellyfin |
-| NAS (UGOS) | `https://nas.peciulevicius.com` | personal admin account (in Vaultwarden) |
-| NAS SMB service account | *(macOS Keychain)* | `macmini` |
-| Paperclip | `http://100.81.171.49:3100` | `dziugas@peciulevicius.com` (switched from Gmail 2026-09-26 in the embedded DB). Password generated (28-char); move from `~/services/paperclip/.env` into Vaultwarden, then delete the `PAPERCLIP_ADMIN_*` lines |
-
----
 
 ## ⬜ API keys, not passwords
 
@@ -144,7 +126,9 @@ Copy each from **Settings → General → API Key** into Bitwarden as a secure n
 ## No login at all — skip
 
 Glance (`home.`), Stirling PDF (`pdf.`), IT-Tools (`tools.`), Calibre desktop
-(`:8888`), Prometheus (`:9090`).
+(`:8888`), Bazarr (`:6767`, auth disabled), LazyLibrarian (`:5299`, no
+`http_user`) — all Tailscale-only or behind Caddy. (Prometheus/Grafana were
+removed.)
 
 ---
 
@@ -152,7 +136,7 @@ Glance (`home.`), Stirling PDF (`pdf.`), IT-Tools (`tools.`), Calibre desktop
 
 | Thing | Where it lives |
 |---|---|
-| ~~Gmail app password~~ | No longer used (all three consumers moved to Purelymail 2026-09-26) — revoke it |
+| ~~Gmail app password~~ | Revoked (all three consumers moved to Purelymail 2026-09-26; re-checked 2026-10-02) |
 | Purelymail `dziugas@` | `pkm/config.py`, Uptime Kuma SMTP, Calibre-Web SMTP, `~/.config/homelab/purelymail.env` — **one password, four copies**; rotate all together (`credential-rotation` skill) |
 | Discord webhook | `~/.config/homelab/notify.env` |
 | Cloudflare tunnel credentials | `~/.cloudflared/*.json` |

@@ -294,24 +294,22 @@ and lets the collector derive the whole address family itself. In Ledger Live:
 the Bitcoin account → ⋯ / Edit → **Advanced → Extended public key**. Derivation
 happens locally in `finance-data.py` (stdlib only, checked against the BIP84
 test vectors); the key is never sent anywhere. Only the derived addresses are
-looked up on mempool.space, 0.5 s apart, scanning receive and change chains
-until 20 unused addresses in a row (the standard gap limit). A wallet with
-many used addresses takes minutes, because mempool.space rate-limits bursts (429,
-retried with backoff), so the Ledger result is cached 30 minutes. The scan
-uses blockstream.info first (15 s timeout) and falls back to mempool.space on a
-429 or timeout, and remembers which
-address indices were used (`btc-xpub-*.json` in the finance cache, indices
-only): later runs re-query those plus the next 20, with a full rescan every 7
-days. A run stops after 150 s, saves how far it got and reports the Ledger
-card as stale; the next refresh resumes, so a throttled scan converges instead
-of restarting. Blockstream also sees the derived addresses. Privacy cost,
-stated plainly: mempool.space sees those addresses queried from your IP in one
-burst, so it can link them as one wallet — the same exposure as listing the
-addresses by hand, just including future ones. The key shows every address and
+looked up — on **blockstream.info** first (15 s timeout, 0.7 s apart), falling
+back to mempool.space on a 429 or timeout — scanning receive and change chains
+until 20 unused addresses in a row (the standard gap limit). Used address
+indices are remembered (`btc-xpub-*.json` in the finance cache, indices only):
+later runs re-query those plus the gap after the last one (where new funds
+land), with a full rescan every 7 days. A run stops after 150 s, saves how far
+it got and reports the Ledger card as stale; the next refresh resumes from that
+point, so a throttled scan converges instead of restarting. The Ledger result
+is cached 30 minutes. Privacy cost, stated plainly: Blockstream (and
+mempool.space whenever the fallback is used) sees those addresses queried from
+your IP in one burst, so it can link them as one wallet — the same exposure as
+listing the addresses by hand, just including future ones. The key shows every address and
 balance of the account, so treat it as private: `ledger.env` only, never the repo.
 
 Ledger Live shows an account's addresses under **Receive**. Balances come from
-mempool.space (BTC), ethereum-rpc.publicnode.com (ETH), the public Solana RPC,
+blockstream.info / mempool.space (BTC), ethereum-rpc.publicnode.com (ETH), the public Solana RPC,
 bsc-rpc.publicnode.com (BNB), api.koios.rest (ADA) and xrplcluster.com (XRP);
 only the address is sent. For Cardano use the **stake address** (`stake1…`,
 Ledger Live / Yoroi account details) — it sums every address of the wallet; a

@@ -11,14 +11,19 @@ Lightweight Bitwarden server. Use with the official Bitwarden browser extension 
 ## Quick Start
 
 ```bash
-# Generate admin token
-openssl rand -base64 48
-
+# 1. Generate a long random admin token in Vaultwarden/Bitwarden and keep it there.
+# 2. Hash it at vaultwarden's own hidden prompt (typed, never on a command line;
+#    --rm so the throwaway container is gone afterwards):
+docker run --rm -it vaultwarden/server:1.37.3 /vaultwarden hash
+# 3. Put ONLY the printed hash in .env, single-quoted: ADMIN_TOKEN='$argon2id$...'
 cp .env.example .env
-nano .env  # paste token, set DOMAIN
+nano .env  # paste the hash, set DOMAIN
 
 docker compose up -d
 ```
+
+Never put the plain token in `.env` — it would sit in the container
+environment, readable through `docker inspect`.
 
 ## Connect Bitwarden Clients
 
