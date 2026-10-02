@@ -6,6 +6,13 @@ is often what you need when something similar breaks again.
 
 Newest first-ish; dates are when the work was finished.
 
+## 2026-10-02 — Vaultwarden admin token rotated
+
+The token disclosed via `docker inspect` on 2026-09-21 was replaced. New
+`scripts/utils/vaultwarden-rotate-admin-token.sh` runs vaultwarden's hidden
+`hash` prompt inside the live container under a pty, so the token never sits
+in a command line or container config; only the Argon2id hash reaches `.env`.
+
 ## 2026-10-02 — Discord bot token + Paperclip admin password rotated
 
 Both were exposed in a session transcript on 2026-10-01. Discord: Reset Token,
