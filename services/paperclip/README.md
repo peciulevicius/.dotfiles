@@ -484,9 +484,14 @@ historical; the live rules are:
   offline work or client services for now. Agents behave like a real company:
   public posts only about things that are live. A11yWatch killed by the owner.
 - STU-20: studio name + brand shortlist for the owner to pick (needed before
-  the studio's Cloudflare/Bluesky accounts), plus a re-score of A11yWatch.
-- STU-13 (paid-pilot study, $30/yr identity) cancelled; A11yWatch is idea
-  I-001 at stage 2. STU-15 answered and closed.
+  the studio's Cloudflare/Bluesky accounts); runs in parallel with light
+  effort — ideas come first.
+- STU-13 (paid-pilot study, $30/yr identity) cancelled; A11yWatch (I-001)
+  killed. STU-15 answered and closed.
+- **Previews are password-gated:** a `*.pages.dev` URL is public, so stage-2
+  previews sit behind a Pages Function Basic-auth middleware
+  (`PREVIEW_PASSWORD` Pages secret) with `X-Robots-Tag: noindex`; URL and
+  password go only into the owner-review card.
 
 #### Marketing rules (in every marketing agent's AGENTS.md)
 
@@ -522,11 +527,11 @@ CMO is the only `cmo`).
   approved, the same path the approval wall forces on the CEO.
 - AGENTS.md per role: Paperclip's generated text stays on top; a short
   *"Your job — … (added by the board)"* section is appended (≤15 lines). The
-  CEO and Researcher sections carry the idea rubric from the private Obsidian
-  note (*adjacent paid product? · 100 buyers without ads? · MVP in ~6 weeks of
-  evenings?* plus problem/payer/revenue/first-10/kill criteria) and the
-  ruled-out list (faceless content **as** the business; ads-dependent, big-team
-  or regulated ideas). Stack defaults and "no secrets, PRs only, board approves
+  CEO and Researcher sections carried the original idea rubric (*adjacent paid
+  product? · 100 buyers without ads? · MVP in ~6 weeks of evenings?*) — since
+  2026-10-02 superseded by the rubric and scope in
+  `~/ai-memory/studio/PLAYBOOK.md` (any computer-based business; ruled out:
+  offline labour, client services, big-team, regulated, paid-ads-only). Stack defaults and "no secrets, PRs only, board approves
   merges" are in CEO and PM. Brand names and anonymity detail stay in the vault,
   not in Paperclip.
 - Projects: **Idea Pipeline** (in progress — the one active project),

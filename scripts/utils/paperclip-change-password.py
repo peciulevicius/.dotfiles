@@ -22,6 +22,7 @@ if "--probe" in sys.argv:
     print("change-password probe:", *post("/api/auth/change-password", {"currentPassword": "wrong-on-purpose", "newPassword": "x" * 20}))
     sys.exit()
 new = getpass.getpass("New Paperclip password: ")
+if new != new.strip(): sys.exit("leading/trailing whitespace is not allowed (the env readers strip it); nothing changed")
 if len(new) < 12 or new != getpass.getpass("Again: "): sys.exit("passwords differ or shorter than 12; nothing changed")
 code, body = post("/api/auth/change-password", {"currentPassword": current, "newPassword": new, "revokeOtherSessions": True})
 if code != 200: sys.exit(f"change failed ({code}): {body!r}; nothing changed")

@@ -45,7 +45,7 @@ for key, hidden, agent_name, prompt in VALUES:
         secret_id = created.get("id") or created["secret"]["id"]
     agent = api("GET", "/api/agents/" + agents[agent_name]["id"])
     config = dict(agent["adapterConfig"])
-    config["env"] = {**(config.get("env") or {}), key: {"type": "secret_ref", "secretId": secret_id}}
+    config["env"] = {**(config.get("env") or {}), key: {"type": "secret_ref", "secretId": secret_id, "version": "latest"}}
     api("PATCH", "/api/agents/" + agent["id"], {"adapterConfig": config})
     print(f"  {key} stored and bound to {agent_name}")
 

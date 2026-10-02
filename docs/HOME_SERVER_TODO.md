@@ -203,7 +203,9 @@ Section names in *italics* are headings below.
 - [x] ~~Agent → Discord delivery test~~ — `#ai-agents` webhook returned 204.
 - [ ] 👤 **Buy Claude Max 5x** (owner's call 2026-10-02: also for own coding,
       chats, Odysseus). Then update `💰 Finance/Subscriptions & Credits.md`.
-- [ ] 👤 **Studio accounts (~15 min, once):** a free **Cloudflare account** for
+- [ ] 👤 **Studio accounts (~15 min, once) — after you pick the studio name in
+      STU-20** (it arrives as a Discord button), so the accounts carry that
+      name: a free **Cloudflare account** for
       the studio + an API token (Pages edit, Workers KV edit), a **Bluesky**
       account + app password, a **Reddit** account (drafts only for now).
       Save each in Vaultwarden, then run
@@ -221,13 +223,10 @@ Section names in *italics* are headings below.
   Keep `AUTO_SWITCH=0`: Paperclip retries a quota failure on the same agent and
   has no provider failover (upstream #2014, #7891, #11597 are open). The owner
   prefers Claude Max — do not build a router.
-  Open: paused managed-bound roles need a safe recovery path; normal agent
-  Discord delivery is unverified (no test message sent); STU-13 is on
-  **hold** (backlog, board comment 2026-10-01): no domain, Migadu inbox or
-  outreach until the owner has seen designs/a working A11yWatch. The studio's
-  own go/no-go (STU-9) was "no build until the paid-pilot interviews", so the
-  owner's "build first" call reverses that — next step is a decision on a
-  scoped prototype, not the $30/yr identity.
+  Open: paused managed-bound roles need a safe recovery path. Agent → Discord
+  delivery verified 2026-10-02 (`#ai-agents` and `#ai-studio` webhooks, 204).
+  The Studio runs autonomously since 2026-10-02 (see 🏭 Studio above);
+  STU-13 is cancelled and A11yWatch killed.
 
 - [x] ~~Rotate the **Radarr + Sonarr API keys**~~ — **done 2026-09-27**
   (Prowlarr, Jellyseerr, Bazarr updated + tested; see changelog).
@@ -360,20 +359,21 @@ treated as disclosed.
 
 ### 5. ✅ Gmail consumers repointed — app passwords revoked (re-checked 2026-10-02)
 
-All three were moved to Purelymail on 2026-09-26 (changelog); the test mails
-and the revoke are in 🔝 Next up. Lesson kept here: **two of the three hid
+All three were moved to Purelymail on 2026-09-26 (changelog), and every Google
+app password was deleted (re-checked 2026-10-02). Lesson kept here: **two of the three hid
 their config in SQLite** (Calibre-Web, Uptime Kuma) rather than environment
 variables, so an `env`-based audit reports "nothing uses email" and is wrong
 (the 2026-09-21 audit made exactly that mistake). Calibre-Web fails
 **silently** with no fallback. Full detail in [guides/EMAIL.md](guides/EMAIL.md) §2.
-Revoke at <https://myaccount.google.com/apppasswords>.
+Nothing left to revoke.
 
 ### 6. 🔑 One pass per service — password AND email together
 
 Both changes need the same ~14 logins. **Doing them separately means 28.**
 Checklist, no secrets: [CREDENTIAL_MIGRATION.md](CREDENTIAL_MIGRATION.md) —
-5 of ~18 services done. Worksheet with real values: `~/credentials-import.md`
-(deliberately outside this public repo; still present 2026-09-26).
+all homelab logins are in Vaultwarden since 2026-10-02 (nine rotated
+automatically); what's left is the manual rotations below and external
+accounts (`~/credentials-email-worklist.md`, outside the repo).
 
 **The rule: one unique generated password per service, master copy in
 Vaultwarden** (decided 2026-09-19: one non-default username everywhere; one
@@ -392,9 +392,13 @@ Critical accounts first: Apple ID, banks, GitHub, Cloudflare, Stripe.
 - [ ] 👤 ⚠️ **Retire the old reused personal password.** It was in use across
       many services; treat any account still on it as compromised-by-reuse
       until rotated. The string is deliberately not recorded in this repo.
-- [x] ~~Self-hosted logins/emails off Gmail~~ — done 2026-10-02 (see
-      `CREDENTIAL_MIGRATION.md`). **Vaultwarden is the one left** — 👤 web vault
-      → Account settings → change email, last.
+- [x] ~~Self-hosted logins/emails off Gmail, except Vaultwarden~~ — done
+      2026-10-02 (see `CREDENTIAL_MIGRATION.md`); Vaultwarden is the next item.
+- [ ] 👤 **Save Immich's new DB password in Vaultwarden** (`.env` files are
+      excluded from R2, so Vaultwarden is the recovery copy). Copy it without
+      displaying it: `grep '^DB_PASSWORD=' ~/services/immich/.env | cut -d= -f2- | pbcopy`
+      → new Vaultwarden entry "Immich DB (postgres)" → paste → clear the
+      clipboard (`pbcopy </dev/null`).
 - [ ] 👤 ⚠️ **Change Vaultwarden's own address LAST** — it is what recovers all
       the others; do not move it while still depending on it
 - [x] ~~Homelab logins into Bitwarden + random passwords~~ — 2026-10-02. Every
@@ -423,8 +427,9 @@ Critical accounts first: Apple ID, banks, GitHub, Cloudflare, Stripe.
 changed from a file (all done — changelog); everything else cannot.** Init-only env vars are
 inert once the account exists (`ADMIN_USER` / `GRAFANA_USER` included — renames
 happen in each app's UI), and app accounts are salted hashes. Nextcloud,
-Paperless and FreshRSS have CLI resets; the rest are UI only. Commands are in
-`~/credentials-import.md`. Leave internal database roles alone
+Paperless and FreshRSS have CLI resets (commands in `CREDENTIAL_MIGRATION.md`);
+the 2026-10-02 rotation also wrote bcrypt hashes directly for Immich,
+Linkwarden, Uptime Kuma, Audiobookshelf and FreshRSS (changelog). Leave internal database roles alone
 (`DB_USERNAME=postgres` and friends) — change the app's *login*, not the role.
 
 ⚠️ **After rotating any password, check every OTHER service that stores its own
