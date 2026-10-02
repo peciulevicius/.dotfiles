@@ -95,7 +95,14 @@ class Paperclip:
         self.http = httpx.AsyncClient(base_url=PC_URL, headers={"Origin": PC_URL}, timeout=30)
 
     async def login(self) -> None:
-        r = await self.http.post("/api/auth/sign-in/email", json={"email": PC_EMAIL, "password": PC_PASSWORD})
+        # Paperclip rate-limits sign-ins (429 after a few quick restarts); retry
+        # instead of failing on_ready and leaving the bot connected but idle.
+        for wait in (15, 30, 60, 120, None):
+            r = await self.http.post("/api/auth/sign-in/email", json={"email": PC_EMAIL, "password": PC_PASSWORD})
+            if r.status_code != 429 or wait is None:
+                break
+            log.warning("Paperclip sign-in rate-limited; retrying in %ss", wait)
+            await asyncio.sleep(wait)
         r.raise_for_status()
         log.info("signed in to Paperclip")
 

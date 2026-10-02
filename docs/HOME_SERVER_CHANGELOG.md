@@ -6,6 +6,17 @@ is often what you need when something similar breaks again.
 
 Newest first-ish; dates are when the work was finished.
 
+## 2026-10-02 — Discord bot token + Paperclip admin password rotated
+
+Both were exposed in a session transcript on 2026-10-01. Discord: Reset Token,
+new value written straight into the bridge `.env`. `configure.sh` was not used
+because it rewrote `CHANNEL_MAP` to Coach + Dietitian only, which would have
+dropped the Studio/Homelab/Finance/Travel channels; it now seeds the map only
+when it is empty. Paperclip: the UI has no password field, so it was changed via
+Better Auth's API (`scripts/utils/paperclip-change-password.py`). The bridge's
+restart then hit a sign-in 429 and sat connected to Discord but not relaying;
+its login now retries with back-off.
+
 ## 2026-10-01 — xpub scan loop fixed
 
 Symptom: Glance's finance card stopped updating; a rebuild hit a 15-minute
