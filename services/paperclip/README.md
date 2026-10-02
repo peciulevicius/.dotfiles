@@ -438,6 +438,47 @@ CEO
 | Marketing | SEO Specialist | OpenCode, `deepseek-v3.2` | CMO | $3 | resumed by board |
 | Marketing | Growth & Content | OpenCode, `gemini-3.5-flash-lite` | CMO | $3 | resumed by board |
 
+#### Autonomy charter (2026-10-02) — supersedes the board gates below
+
+The owner switched the Studio to **autonomous until it makes money**. The
+older "nothing ships without board approval" and "draft only" rules below are
+historical; the live rules are:
+
+- **Validation ladder** in `~/ai-memory/studio/PLAYBOOK.md` (mounted at
+  `/ai-memory/studio/`): 0 generate → 1 desk evidence → 2 design + landing page
+  + waitlist on a free `*.pages.dev` → 3 paid pre-orders, then name + domain →
+  4 build + launch. Each stage has a pass/kill rule; every idea and kill
+  reason is in `ideas.md`. Decision record:
+  `~/ai-memory/decisions/2026-10-02-studio-autonomy.md`.
+- **Hard limits:** spend ≤ €25/month and only from stage 3; agents can't pay
+  or sign up — purchases, Stripe/KYC and new accounts are raised as board
+  questions, which the bridge turns into Discord buttons in `#ai-studio`. No
+  sockpuppets or vote manipulation; community rules first; faceless brand.
+- **Lean roster** to save quota: CEO (moved **Opus → Sonnet 5**), Researcher,
+  UI/UX Designer, Frontend Developer, Copywriter, Community & Launch are
+  active; the other 13 are **paused** until an idea reaches stage 4 (the CEO
+  asks the board to resume engineering). Original AGENTS.md files were backed
+  up privately before the board sections were rewritten.
+- **Routines** (Europe/Vilnius, CEO, `coalesce_if_active`, `skip_missed`):
+  *Pipeline cycle* 08/12/16/20:00, *Daily digest* 21:00, *Weekly review*
+  Sunday 18:00. Daily standup stays paused.
+- **Discord:** the CEO posts the digest through a `#ai-studio` webhook created
+  by the bridge bot (`STUDIO_DISCORD_WEBHOOK`, a Paperclip company secret bound
+  to the CEO's env; host copy `~/.config/homelab/studio-discord.env`).
+- **Posting:** Community & Launch posts to Bluesky over the AT Protocol API
+  (max ~3/week). Reddit/HN/PH/IH stay drafts the owner pastes — Reddit's API
+  needs pre-approval and browser-automated posting breaks its terms.
+- **Deploys:** Frontend Developer deploys with `wrangler pages deploy` to a
+  **separate Studio Cloudflare account** only. The homelab's own deploy token
+  can overwrite every personal Pages project, so it is deliberately not given
+  to agents.
+- **Owner credentials** go in with `scripts/utils/paperclip-studio-secrets.py`
+  (hidden prompts → encrypted company secrets → env bindings:
+  `BLUESKY_HANDLE`/`BLUESKY_APP_PASSWORD` → Community & Launch,
+  `CLOUDFLARE_ACCOUNT_ID`/`CLOUDFLARE_API_TOKEN` → Frontend Developer).
+- STU-13 (paid-pilot study, $30/yr identity) cancelled; A11yWatch is idea
+  I-001 at stage 2. STU-15 answered and closed.
+
 #### Marketing rules (in every marketing agent's AGENTS.md)
 
 > Draft only. Never post, sign up, or contact anyone. The board posts from the
