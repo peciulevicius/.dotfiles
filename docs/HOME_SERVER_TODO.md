@@ -67,7 +67,7 @@ Section names in *italics* are headings below.
 - 👤 Install signature v2 on Mac Mail (select your account in the left column → + → paste, or `config/email/install-mac-signature.sh` for the dark-mode logo) + iPhone (`signature.txt`). Avatar: **decided 2026-09-28 — skip** (Gravatar isn't shown by Gmail/Apple Mail; BIMI logo needs a $650+/yr certificate; Google-account photo conflicts with de-Google) — *✉️ Email identity*
 - Email: inbound test, more folders/filters (catch-all, iPhone Mail, signature built, mail-tester **10/10** — done 2026-09-28/29) — *📋 Open user steps*
 - Reset Odysseus 2FA; first coaching session in Odysseus — *⚡ Batch 2026-09-24*
-- Rotate the Vaultwarden admin token (Claude can do the hash + `.env`; you save it) — *3. Rotate the Vaultwarden admin token*
+- ~~Rotate the Vaultwarden admin token~~ — done 2026-10-02
 - Credential + email pass per service, NAS account passwords, `~/credentials-import.md` — *6. One pass per service*
 - Vaultwarden Chrome extension on the work laptop — *7. Vaultwarden Chrome extension*
 - Odysseus: chat-history exports, ChatGPT memories by hand, API balance/top-up check, save admin password to Vaultwarden — *8. Odysseus*
@@ -281,7 +281,7 @@ is written out so it survives being read cold in a year.
 | # | Step | Why it is here and not later |
 |---|---|---|
 | **2** | ✅ ~~Move TOTP off Google Authenticator~~ | Done 2026-09-26 — codes in Bitwarden Authenticator |
-| **3** | 🔴 Rotate the Vaultwarden admin token | Leaked into a container config on 2026-09-21 |
+| **3** | ✅ ~~Rotate the Vaultwarden admin token~~ | Done 2026-10-02 (`vaultwarden-rotate-admin-token.sh`) |
 | **5** | ✅ ~~Revoke the Gmail app password~~ | Done 2026-09-26 |
 | **6** | 🔑 One pass: password + email per service | Same ~14 logins — separating them doubles the work |
 | **7** | 🧩 Vaultwarden Chrome extension | Blocked on the work laptop, not on us |
@@ -325,7 +325,7 @@ token, email DNS cutover, coach build) are in the changelog.
       ⚠️ `peciulevicius@purelymail.com` (admin) and `dziugas@peciulevicius.com`
       are **separate mailboxes** — log clients in as `dziugas@`, not the admin.
 
-### 3. 🔴 Rotate the Vaultwarden admin token
+### 3. ✅ Rotate the Vaultwarden admin token — done 2026-10-02
 
 On 2026-09-21 a throwaway container (`relaxed_ritchie`, vaultwarden 1.35.4) was
 created to run `vaultwarden hash`. **The pre-hash admin token stayed visible in
@@ -333,9 +333,9 @@ its container config for ~4 hours**, readable by anything that could run
 `docker inspect`. The container has been removed, but the token should be
 treated as disclosed.
 
-- [ ] 👤+Claude Generate a new `ADMIN_TOKEN`, hash it, update `~/services/vaultwarden/.env`
-- [ ] `docker compose up -d` and confirm `/admin` accepts only the new one
-- [ ] 👤 Save it in Vaultwarden itself
+- [x] Generate a new `ADMIN_TOKEN`, hash it, update `~/services/vaultwarden/.env` (`scripts/utils/vaultwarden-rotate-admin-token.sh`)
+- [x] `docker compose up -d`; `/admin` login with the new token confirmed
+- [x] Saved in Vaultwarden itself
 
 > 💡 Lesson: `docker inspect` exposes the full command line of every container,
 > including secrets passed as arguments. Pipe secrets via stdin to a container
