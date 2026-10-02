@@ -60,7 +60,7 @@ Section names in *italics* are headings below.
   - [ ] 📅 **2026-10-28 (calendar event set): fresh tailnet on `peciulevicius.com`** (custom OIDC + WebFinger) — re-add all devices, move the Mullvad add-on, re-apply DNS/exit nodes/key-expiry policy, update 100.x IPs everywhere. Can't switch the current tailnet: it's a gmail.com tailnet, and GitHub/Apple can't be switch targets.
 
 - [x] ~~Discord two-way chat with Coach + Dietitian~~ — bridge live 2026-09-27
-- **Delete the Claude.ai export** once the Coach team and Studio brief look right: `~/Downloads/claude_export/`, `claude_export_full.json`, `export_from_claude.md` (they hold every chat, not just training)
+- **Delete the Claude.ai export** (approved 2026-10-02; macOS blocks Claude from `~/Downloads`, so run it yourself; a copy is in `~/ai-memory/finance/imports/`): `~/Downloads/claude_export/`, `claude_export_full.json`, `export_from_claude.md` (they hold every chat, not just training)
 - Mail wrap-up: Kuma + Calibre-Web test mails, approve `dziugas@` as an Amazon sender, Gmail→Kindle filter — *🔝 Next up*
 - Coach: upload skill zip, add the `tp-mcp` custom connector in claude.ai, "Coach" Project — *🏃 Coach in the Claude app*
 - Website: `checkOrigin` decision, `IP_HASH_SALT` secret, Resend domain check; janioniu: sort your local TODO edits, confirm placeholder facts with Dad, Purelymail domain, Workers Builds toggle — *🌐 Other repo backlogs* and below
@@ -196,6 +196,23 @@ Section names in *italics* are headings below.
 
 - 👤 Optional: Uptime Kuma **DNS** monitor for the resolver chain (Kuma has no monitor API — UI step): + Add New Monitor → DNS → hostname `example.com`, resolver `host.docker.internal` port 53 → alerts if Pi-hole *or* unbound stops answering.
 
+### 🏭 Studio — autonomous (2026-10-02)
+
+- [x] ~~Autonomy charter, playbook, lean roster, routines, digest webhook~~ —
+      see `services/paperclip/README.md` → *Autonomy charter*.
+- [x] ~~Agent → Discord delivery test~~ — `#ai-agents` webhook returned 204.
+- [ ] 👤 **Buy Claude Max 5x** (owner's call 2026-10-02: also for own coding,
+      chats, Odysseus). Then update `💰 Finance/Subscriptions & Credits.md`.
+- [ ] 👤 **Studio accounts (~15 min, once):** a free **Cloudflare account** for
+      the studio + an API token (Pages edit, Workers KV edit), a **Bluesky**
+      account + app password, a **Reddit** account (drafts only for now).
+      Save each in Vaultwarden, then run
+      `scripts/utils/paperclip-studio-secrets.py`.
+- [ ] 👤 Optional: apply for Reddit API access (Responsible Builder policy);
+      until then Reddit posts are drafts in the digest.
+- [ ] 👤 When the first idea reaches stage 3: a **Stripe** account (KYC) for
+      pre-orders — the CEO raises it as a Discord button.
+
 ### 🤖 An AI agent can do next
 
 - Paperclip: recovery, runner, webhook-binding and shared-memory repairs are
@@ -218,7 +235,7 @@ Section names in *italics* are headings below.
 - Optional: OpenCode + `qwen2.5-coder:7b` for offline snippets — *⚡ Batch 2026-09-24*
 - Odysseus: chat-export import, CalDAV after Nextcloud, RAG over Paperless + Linkwarden — *8. Odysseus*
 - ~~Rotate Immich's DB password~~ — done 2026-10-02
-- 👤 `rm -rf ~/services/mealie ~/services/grafana` (say go) — *9. Maintenance backlog*
+- 👤 `rm -rf ~/services/mealie ~/services/grafana` (approved 2026-10-02; Claude's sandbox can't delete them — run it yourself) — *9. Maintenance backlog*
 - Pi-hole local DNS records, only after a Caddy decision — *Pi-hole — finish the deployment*
 - Optional `scp` push to the Scribe — *Notes*
 - Major-version image upgrades, one per sitting, with `upgrade-service.sh` — *Pinned images*

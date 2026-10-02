@@ -6,6 +6,18 @@ is often what you need when something similar breaks again.
 
 Newest first-ish; dates are when the work was finished.
 
+## 2026-10-02 — Studio runs autonomously
+
+The owner asked for a studio that iterates on ideas and validates them without
+approvals. The Paperclip Studio now follows a five-stage validation ladder
+(`~/ai-memory/studio/PLAYBOOK.md`) with a €25/month cap that only opens after
+paid pre-orders. Six agents stay active (CEO moved Opus → Sonnet to stretch the
+quota), and 13 are paused until a build. Three CEO routines (4×/day pipeline,
+21:00 digest to `#ai-studio`, Sunday review) replace the paused standup.
+STU-13's identity purchase was cancelled before anything was bought. Agents
+get their own Cloudflare account rather than the homelab token, which can
+overwrite personal Pages projects.
+
 ## 2026-10-02 — Homelab logins in Bitwarden, nine passwords rotated
 
 Two one-off scripts run by the owner with an unlocked `bw` session (the CLI
