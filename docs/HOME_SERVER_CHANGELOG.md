@@ -6,6 +6,13 @@ is often what you need when something similar breaks again.
 
 Newest first-ish; dates are when the work was finished.
 
+## 2026-10-02 — Self-hosted logins moved off Gmail
+
+Immich, Jellyseerr, Paperless and Nextcloud now use `dziugas@peciulevicius.com`
+(Nextcloud's spare `admin` user got `nextcloud-admin@` so the two don't share an
+address). All done from the CLI/DB; details and the per-app method in
+`CREDENTIAL_MIGRATION.md`. Vaultwarden is the last one and stays a manual step.
+
 ## 2026-10-02 — Immich DB password rotated, Google app passwords revoked
 
 Immich's `DB_PASSWORD` was the old reused personal password (found
