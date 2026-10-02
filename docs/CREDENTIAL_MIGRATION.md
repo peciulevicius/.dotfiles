@@ -35,6 +35,24 @@ spam you know exactly which service leaked it.
 
 Doing this later means a second pass through all eighteen.
 
+### Self-hosted accounts → `dziugas@peciulevicius.com` (done 2026-10-02)
+
+Self-hosted apps use the plain mailbox, not aliases (they never send
+marketing). Switched from the command line, no UI visit needed:
+
+| App | How | Result |
+|---|---|---|
+| Immich | `UPDATE "user"` in `immich_postgres` | login is now `dziugas@` |
+| Jellyseerr | `user` table in `db.sqlite3` (app asleep, so no live writer) | `dziugas@` |
+| Paperless | `auth_user.email` in `paperless_db` (was `root@localhost`) | `dziugas@` |
+| Nextcloud | `occ user:setting <uid> settings email …` | `peciulevicius` → `dziugas@`, `admin` → `nextcloud-admin@` (Nextcloud email login breaks if two users share one address) |
+| Calibre-Web, Paperclip | already `dziugas@` | — |
+| Linkwarden, FreshRSS, Audiobookshelf, Uptime Kuma | no email stored | — |
+| **Vaultwarden** | 👤 web vault → Account settings → change email — **last** | pending |
+
+A config sweep of `~/services/*` (excluding data dirs) found no other Gmail
+address.
+
 ### External accounts on Gmail → per-service aliases
 
 Same pass, outside the homelab. Decided 2026-09-25 to do these together rather
@@ -95,9 +113,8 @@ docker exec grafana grafana cli admin reset-admin-password 'NEW_PASSWORD'
 
 | Service | URL | Username / email |
 |---|---|---|
-| Immich | `https://photos.peciulevicius.com` | email → switch to an alias |
-| Linkwarden | `https://links.peciulevicius.com` | email → switch to an alias |
-| Mealie | `https://recipes.peciulevicius.com` | email → switch to an alias |
+| Immich | `https://photos.peciulevicius.com` | email (now `dziugas@`) |
+| Linkwarden | `https://links.peciulevicius.com` | `<username>` (no email stored) |
 | Jellyfin | `https://watch.peciulevicius.com` | `<username>` |
 | Audiobookshelf | `https://listen.peciulevicius.com` | `<username>` |
 | Uptime Kuma | `https://status.peciulevicius.com` | `<username>` |

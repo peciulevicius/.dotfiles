@@ -369,15 +369,15 @@ autofill URL** → change address to `<service>@peciulevicius.com` → confirm t
 verification mail arrives (this also proves catch-all works) → tick it off.
 Critical accounts first: Apple ID, banks, GitHub, Cloudflare, Stripe.
 
-- [ ] 👤 Transcribe the three pending passwords from `~/credentials-import.md`
-      (CouchDB, Transmission, Pi-hole) plus the Gmail app password, then `rm`
-      that file when the list is exhausted
+- [x] ~~Transcribe the three pending passwords from `~/credentials-import.md`~~
+      — saved to Vaultwarden and the file deleted 2026-10-02
 - [ ] 👤 Work down the checklist
 - [ ] 👤 ⚠️ **Retire the old reused personal password.** It was in use across
       many services; treat any account still on it as compromised-by-reuse
       until rotated. The string is deliberately not recorded in this repo.
-- [ ] 👤 Several services use **the Gmail address as the login itself** —
-      Vaultwarden, Immich, Linkwarden. Those logins change in this pass.
+- [x] ~~Self-hosted logins/emails off Gmail~~ — done 2026-10-02 (see
+      `CREDENTIAL_MIGRATION.md`). **Vaultwarden is the one left** — 👤 web vault
+      → Account settings → change email, last.
 - [ ] 👤 ⚠️ **Change Vaultwarden's own address LAST** — it is what recovers all
       the others; do not move it while still depending on it
 - [ ] 👤 Both NAS accounts still share a password with elsewhere:
