@@ -472,7 +472,9 @@ historical; the live rules are:
   (max ~3/week). Reddit/HN/PH/IH stay drafts the owner pastes — Reddit's API
   needs pre-approval and browser-automated posting breaks its terms.
 - **Deploys:** Frontend Developer deploys with `wrangler pages deploy` to a
-  **separate Studio Cloudflare account** only. The homelab's own deploy token
+  **separate Studio Cloudflare account** only — created 2026-10-02 as a second
+  account under the owner's Cloudflare login, with a token whose Account
+  Resources include only that account. The homelab's own deploy token
   can overwrite every personal Pages project, so it is deliberately not given
   to agents.
 - **Owner credentials** go in with `scripts/utils/paperclip-studio-secrets.py`
