@@ -217,7 +217,7 @@ Section names in *italics* are headings below.
 
 - Optional: OpenCode + `qwen2.5-coder:7b` for offline snippets — *⚡ Batch 2026-09-24*
 - Odysseus: chat-export import, CalDAV after Nextcloud, RAG over Paperless + Linkwarden — *8. Odysseus*
-- 👤 Rotate Immich's DB password (restarts Immich — say go) — *9. Maintenance backlog*
+- ~~Rotate Immich's DB password~~ — done 2026-10-02
 - 👤 `rm -rf ~/services/mealie ~/services/grafana` (say go) — *9. Maintenance backlog*
 - Pi-hole local DNS records, only after a Caddy decision — *Pi-hole — finish the deployment*
 - Optional `scp` push to the Scribe — *Notes*
@@ -341,7 +341,7 @@ treated as disclosed.
 > including secrets passed as arguments. Pipe secrets via stdin to a container
 > started with `--rm`, and verify it actually exited.
 
-### 5. 🔁 Gmail consumers repointed — revoke left
+### 5. ✅ Gmail consumers repointed — app passwords revoked (re-checked 2026-10-02)
 
 All three were moved to Purelymail on 2026-09-26 (changelog); the test mails
 and the revoke are in 🔝 Next up. Lesson kept here: **two of the three hid
@@ -564,23 +564,12 @@ whole-house outage now alerts.
             script path, and ensure a request will not wake a sleeping Sablier
             service. Create a dedicated Admin API token and keep it out of chat
             and Git; configure only after those checks.
-- [ ] 👤 🔴 **Rotate Immich's database password** (with a go-ahead — it
-      restarts Immich). Found 2026-09-22: `~/services/immich/.env`'s
-      `DB_PASSWORD` is still the old, reused personal password. Internal-only
-      (Postgres isn't exposed outside the Docker network), so not an active
-      exposure, but it's the one password in this stack never replaced with a
-      random one.
-      ⚠️ **Changing `.env` alone will NOT work**: Immich's Postgres already has
-      the OLD password set on the database user, so a mismatched `.env` breaks
-      Immich's DB connection entirely (photos safe on disk, app inaccessible).
-      Correct sequence:
-      ```bash
-      NEW_PASS="$(openssl rand -base64 32)"
-      docker exec immich_postgres psql -U postgres -c "ALTER USER postgres WITH PASSWORD '$NEW_PASS';"
-      # then update DB_PASSWORD in ~/services/immich/.env to match $NEW_PASS
-      docker compose -f ~/services/immich/docker-compose.yml up -d
-      # verify: docker logs immich_server --tail 20 (no auth errors), open the app
-      ```
+- [x] ~~Rotate Immich's database password~~ — done 2026-10-02. Random
+      `openssl rand -hex 32`, set with `ALTER USER postgres` piped over stdin
+      (not on a command line), then `DB_PASSWORD` in `~/services/immich/.env`
+      and `docker compose up -d`. Changing `.env` alone breaks Immich: Postgres
+      keeps the password it was initialised with. Backups are unaffected —
+      `backup-databases.sh` runs `pg_dump` over the container's local socket.
 - [ ] 👤 Clear the leftover data directories from the removals:
       `rm -rf ~/services/mealie ~/services/grafana` (both confirmed
       empty/unused before removal; both still present 2026-09-25).

@@ -6,6 +6,13 @@ is often what you need when something similar breaks again.
 
 Newest first-ish; dates are when the work was finished.
 
+## 2026-10-02 — Immich DB password rotated, Google app passwords revoked
+
+Immich's `DB_PASSWORD` was the old reused personal password (found
+2026-09-22). Replaced with a random one via `ALTER USER` over stdin, then
+`.env`; all four Immich containers came back healthy. All remaining Google
+app passwords were deleted; nothing in the stack sends mail through Gmail.
+
 ## 2026-10-02 — Vaultwarden admin token rotated
 
 The token disclosed via `docker inspect` on 2026-09-21 was replaced. New
