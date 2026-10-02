@@ -6,6 +6,18 @@ is often what you need when something similar breaks again.
 
 Newest first-ish; dates are when the work was finished.
 
+## 2026-10-02 — Homelab logins in Bitwarden, nine passwords rotated
+
+Two one-off scripts run by the owner with an unlocked `bw` session (the CLI
+2026.9 logs a harmless `KeyIdBackfillError` against Vaultwarden 1.37.3). The
+first created a Bitwarden entry for every login. The second generated random
+passwords and set them without the UI: bcrypt hash (via node in
+`immich_server`) written to Immich/Linkwarden Postgres, FreshRSS `config.php`,
+Uptime Kuma/Audiobookshelf SQLite (container stopped first); `occ` for
+Nextcloud, Django `set_password` for Paperless, the REST API for Syncthing. Each
+password went into Bitwarden immediately after the app accepted it. The
+Servarr apps, Jellyfin, Portainer and the NAS stay manual (TODO).
+
 ## 2026-10-02 — Self-hosted logins moved off Gmail
 
 Immich, Jellyseerr, Paperless and Nextcloud now use `dziugas@peciulevicius.com`

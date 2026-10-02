@@ -380,6 +380,20 @@ Critical accounts first: Apple ID, banks, GitHub, Cloudflare, Stripe.
       → Account settings → change email, last.
 - [ ] 👤 ⚠️ **Change Vaultwarden's own address LAST** — it is what recovers all
       the others; do not move it while still depending on it
+- [x] ~~Homelab logins into Bitwarden + random passwords~~ — 2026-10-02. Every
+      login has an entry in the `peciulevicius.com` folder (URL, username,
+      Email field). Rotated from the host and saved straight to Bitwarden:
+      Immich, Nextcloud (both users), Paperless, Linkwarden, FreshRSS, Uptime
+      Kuma, Audiobookshelf, Syncthing. Bazarr, LazyLibrarian and Calibre
+      desktop have no login (Tailscale-only).
+- [ ] 👤 **Rotate by hand (about a minute each, app settings → change password,
+      Bitwarden generator, save to the existing entry):** Jellyfin, Sonarr,
+      Radarr, Prowlarr, Portainer, and the two NAS accounts below. Their hash
+      formats (PBKDF2 / BoltDB) are riskier to write directly than bcrypt.
+- [ ] 👤 **Regenerate the Bazarr API key** (Bazarr → Settings → General → API
+      key → regenerate). It was printed into a session transcript on
+      2026-10-02. Tailscale-only; nothing in the repo or `.env` files uses it
+      (Glance only links to Bazarr), so no consumer needs updating.
 - [ ] 👤 Both NAS accounts still share a password with elsewhere:
       - [ ] personal admin (web UI) — generate in Bitwarden, update entry
       - [ ] `macmini` (SMB) — after changing on the NAS, update the saved
