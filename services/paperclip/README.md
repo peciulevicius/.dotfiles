@@ -445,12 +445,15 @@ older "nothing ships without board approval" and "draft only" rules below are
 historical; the live rules are:
 
 - **Validation ladder** in `~/ai-memory/studio/PLAYBOOK.md` (mounted at
-  `/ai-memory/studio/`): 0 generate → 1 desk evidence → 2 design + landing page
-  + waitlist on a free `*.pages.dev` → 3 paid pre-orders, then name + domain →
-  4 build + launch. Each stage has a pass/kill rule; every idea and kill
-  reason is in `ideas.md`. Decision record:
+  `/ai-memory/studio/`), revised the same evening to the owner's flow:
+  0 generate → 1 deep **read-only** research (nothing posted) → 2 private
+  preview (name shortlist with RDAP availability, design, landing + waitlist on
+  `*.pages.dev`, owner-only link) → **owner review** (one Discord button) → 3
+  owner buys the domain, page goes public, posting starts → 4 paid pre-orders →
+  5 build. Never post from a `*.pages.dev` URL. Every idea and kill reason is in
+  `ideas.md`. Decision record:
   `~/ai-memory/decisions/2026-10-02-studio-autonomy.md`.
-- **Hard limits:** spend ≤ €25/month and only from stage 3; agents can't pay
+- **Hard limits:** spend ≤ €25/month and only after the owner's review; agents can't pay
   or sign up — purchases, Stripe/KYC and new accounts are raised as board
   questions, which the bridge turns into Discord buttons in `#ai-studio`. No
   sockpuppets or vote manipulation; community rules first; faceless brand.
@@ -460,7 +463,7 @@ historical; the live rules are:
   asks the board to resume engineering). Original AGENTS.md files were backed
   up privately before the board sections were rewritten.
 - **Routines** (Europe/Vilnius, CEO, `coalesce_if_active`, `skip_missed`):
-  *Pipeline cycle* 08/12/16/20:00, *Daily digest* 21:00, *Weekly review*
+  *Pipeline cycle* every 4 h around the clock (`0 */4 * * *`; the quota had room), *Daily digest* 21:00, *Weekly review*
   Sunday 18:00. Daily standup stays paused.
 - **Discord:** the CEO posts the digest through a `#ai-studio` webhook created
   by the bridge bot (`STUDIO_DISCORD_WEBHOOK`, a Paperclip company secret bound
@@ -476,6 +479,8 @@ historical; the live rules are:
   (hidden prompts → encrypted company secrets → env bindings:
   `BLUESKY_HANDLE`/`BLUESKY_APP_PASSWORD` → Community & Launch,
   `CLOUDFLARE_ACCOUNT_ID`/`CLOUDFLARE_API_TOKEN` → Frontend Developer).
+- STU-20: studio name + brand shortlist for the owner to pick (needed before
+  the studio's Cloudflare/Bluesky accounts), plus a re-score of A11yWatch.
 - STU-13 (paid-pilot study, $30/yr identity) cancelled; A11yWatch is idea
   I-001 at stage 2. STU-15 answered and closed.
 
