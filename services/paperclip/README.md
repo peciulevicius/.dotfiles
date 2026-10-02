@@ -479,6 +479,10 @@ historical; the live rules are:
   (hidden prompts → encrypted company secrets → env bindings:
   `BLUESKY_HANDLE`/`BLUESKY_APP_PASSWORD` → Community & Launch,
   `CLOUDFLARE_ACCOUNT_ID`/`CLOUDFLARE_API_TOKEN` → Frontend Developer).
+- **Scope widened** (same evening): any computer-based business — SaaS,
+  apps, Shopify/e-commerce, digital products, newsletters, marketplaces; no
+  offline work or client services for now. Agents behave like a real company:
+  public posts only about things that are live. A11yWatch killed by the owner.
 - STU-20: studio name + brand shortlist for the owner to pick (needed before
   the studio's Cloudflare/Bluesky accounts), plus a re-score of A11yWatch.
 - STU-13 (paid-pilot study, $30/yr identity) cancelled; A11yWatch is idea
