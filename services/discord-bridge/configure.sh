@@ -67,7 +67,11 @@ PY
 }
 
 set_var DISCORD_BOT_TOKEN "$token"
-set_var CHANNEL_MAP "${coach_ch}:${COACH_ID}:Coach,${diet_ch}:${DIETITIAN_ID}:Dietitian"
+# Only seed CHANNEL_MAP on first setup: later channels (Studio, Homelab,
+# Finance, Travel) are added by hand and a token rotation must not drop them.
+if ! grep -q '^CHANNEL_MAP=.' "$ENV_FILE"; then
+  set_var CHANNEL_MAP "${coach_ch}:${COACH_ID}:Coach,${diet_ch}:${DIETITIAN_ID}:Dietitian"
+fi
 unset token
 chmod 600 "$ENV_FILE"
 

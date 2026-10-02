@@ -73,6 +73,17 @@ creates — the Docker image configures itself from env vars instead (checked
 2026-09-26: *"No config found … Run paperclip onboard first"*). Vaultwarden is
 the recovery path.
 
+**Changing the admin password.** The UI has no change-password field, but
+Better Auth exposes `POST /api/auth/change-password` (signed-in session,
+`{currentPassword, newPassword, revokeOtherSessions}`).
+`scripts/utils/paperclip-change-password.py` signs in with the current password
+from `~/.config/homelab/paperclip-admin.env`, asks for the new one twice
+(hidden), changes it, and only then rewrites that file and the Discord bridge's
+`PAPERCLIP_PASSWORD`. Save the new password in Vaultwarden first, then
+`docker compose up -d --force-recreate` the bridge. Those two files are the only
+copies (checked 2026-10-02). Sign-ins are rate-limited: a few quick restarts
+return 429, which is why the bridge retries its login with back-off.
+
 ## Adding agents
 
 Paperclip calls this "hiring". Every agent needs a **runtime** (adapter) and a
