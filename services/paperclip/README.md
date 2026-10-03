@@ -904,6 +904,18 @@ failed with `provider_quota`; the issue is In review with a human-only vendor-
 access question pending. Automatic cross-provider quota routing is disabled.
 The repaired command sandbox did not clear the hold automatically.
 
+## Usage-limit recovery (2026-10-03)
+
+When the Claude limit hits mid-run, the agent goes to `error` and its task is
+stranded until a board operator resumes it — overnight on 2026-10-02 this left
+the Studio's Frontend Developer stuck for ~7 hours. `scripts/utils/paperclip-limit-recover.py`
+(cron every 15 min, log `~/logs/paperclip-limit-recover.log`) reads each
+company's attention feed for `agent_error_alert`s whose reason mentions a
+limit, and once the error is ≥30 min old resumes the agent and @mentions it on
+its open tasks (status untouched), at most once an hour per agent (state in
+`~/.config/homelab/paperclip-limit-recover.json`). Other errors are left alone.
+`--dry-run` prints what it would do.
+
 ## Usage-limit fallback (2026-09-29)
 
 When the Claude subscription hits its limit, `claude_local` can report
