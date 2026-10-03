@@ -63,6 +63,7 @@ def load_state() -> dict:
     s.setdefault("threads", {})  # thread_id -> {issue_id, identifier, agent_name, seen: [comment ids]}
     s.setdefault("notified", {})  # dedupKey -> {company, channel, message, closed}
     s.setdefault("actions", {})  # interaction/approval id -> context for button clicks
+    s.setdefault("chats", {})  # channel_id -> {issue_id, identifier, thread_id}: the standing conversation
     return s
 
 
@@ -126,6 +127,12 @@ class Paperclip:
     async def comments(self, issue_id: str) -> list[dict]:
         data = (await self.request("GET", f"/api/issues/{issue_id}/comments")).json()
         return data if isinstance(data, list) else data.get("comments", data.get("items", []))
+
+    async def issue(self, issue_id: str) -> dict:
+        return (await self.request("GET", f"/api/issues/{issue_id}")).json()
+
+    async def set_status(self, issue_id: str, status: str) -> None:
+        await self.request("PATCH", f"/api/issues/{issue_id}", json={"status": status})
 
     async def comment(self, issue_id: str, body: str) -> dict:
         return (await self.request("POST", f"/api/issues/{issue_id}/comments", json={"body": body})).json()
@@ -206,16 +213,35 @@ async def on_message(msg: discord.Message) -> None:
     # Reply inside a tracked thread -> comment that wakes the agent.
     if isinstance(msg.channel, discord.Thread) and str(msg.channel.id) in state["threads"]:
         t = state["threads"][str(msg.channel.id)]
+        if any(ch["issue_id"] == t["issue_id"] for ch in state["chats"].values()):
+            if (await pc.issue(t["issue_id"]))["status"] in ("done", "cancelled"):
+                await pc.set_status(t["issue_id"], "todo")
         c = await pc.comment(t["issue_id"], f"@{t['agent_name']} {text}\n\n_(via Discord)_")
         t["seen"].append(c.get("id"))
         save_state(state)
         await msg.add_reaction("📨")
         return
 
-    # New message in a mapped channel -> new issue + thread.
     target = CHANNELS.get(msg.channel.id)
     if not target:
         return
+    # "/task ..." keeps the old behaviour: a separate issue + thread.
+    if text.lower().startswith("/task "):
+        await new_task(msg, target, text[6:].strip())
+        return
+    # Anything else is conversation: one standing issue + thread per channel.
+    await chat(msg, target, text)
+
+
+CHAT_INTRO = """Standing conversation between the owner and you, relayed from Discord.
+
+- Reply to each owner message with a comment here: answer, or say what you will do.
+- This issue is a chat, not a work item: do the real work in separate tasks you create and assign (link them in your reply), then report back here.
+- Never mark this issue done or cancelled; leave it in progress between messages.
+"""
+
+
+async def new_task(msg: discord.Message, target: dict, text: str) -> None:
     title = text.splitlines()[0][:80]
     issue = await pc.create_issue(target["company_id"], target["agent_id"], title,
                                   f"{text}\n\n_(from Discord, {msg.created_at:%Y-%m-%d %H:%M} UTC)_")
@@ -225,6 +251,45 @@ async def on_message(msg: discord.Message) -> None:
                                         "agent_name": target["name"], "seen": []}
     save_state(state)
     await thread.send(f"📋 **{ident}** created for {target['name']}. Replies land here; answer in this thread.")
+
+
+async def chat_thread(channel: discord.TextChannel, target: dict) -> dict:
+    """Return the channel's standing chat, creating or reviving it when needed."""
+    c = state["chats"].get(str(channel.id))
+    if c:
+        try:
+            issue = await pc.issue(c["issue_id"])
+            thread = client.get_channel(c["thread_id"]) or await client.fetch_channel(c["thread_id"])
+            if issue["status"] in ("done", "cancelled"):
+                await pc.set_status(c["issue_id"], "todo")
+            if getattr(thread, "archived", False):
+                await thread.edit(archived=False)
+            return c
+        except (discord.NotFound, httpx.HTTPStatusError):
+            log.info("chat for channel %s is gone; starting a new one", channel.id)
+    issue = await pc.create_issue(target["company_id"], target["agent_id"],
+                                  f"💬 Chat with the owner ({target['name']})", CHAT_INTRO)
+    ident = issue.get("identifier", issue["id"][:8])
+    thread = await channel.create_thread(name=f"💬 Chat with {target['name']} · {ident}"[:100],
+                                         type=discord.ChannelType.public_thread, auto_archive_duration=10080)
+    state["threads"][str(thread.id)] = {"issue_id": issue["id"], "identifier": ident,
+                                        "agent_name": target["name"], "seen": []}
+    c = state["chats"][str(channel.id)] = {"issue_id": issue["id"], "identifier": ident, "thread_id": thread.id}
+    save_state(state)
+    await thread.send(f"💬 This is your ongoing chat with **{target['name']}** ({ident}). "
+                      "Write here or in the channel; replies land here. Start a message with `/task ` "
+                      "for a separate task instead.")
+    return c
+
+
+async def chat(msg: discord.Message, target: dict, text: str) -> None:
+    c = await chat_thread(msg.channel, target)
+    comment = await pc.comment(c["issue_id"], f"@{target['name']} {text}\n\n_(via Discord)_")
+    state["threads"][str(c["thread_id"])]["seen"].append(comment.get("id"))
+    save_state(state)
+    thread = client.get_channel(c["thread_id"]) or await client.fetch_channel(c["thread_id"])
+    await thread.send(f"> {clip(text, 1800)}", allowed_mentions=NO_PING)
+    await msg.add_reaction("💬")
 
 
 async def poll_loop() -> None:

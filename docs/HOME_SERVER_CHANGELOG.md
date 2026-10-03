@@ -6,6 +6,15 @@ is often what you need when something similar breaks again.
 
 Newest first-ish; dates are when the work was finished.
 
+## 2026-10-03 — Discord chat mode + limit auto-recovery
+
+Two fixes so the owner can leave the Studio running for a week. The Discord
+bridge now keeps **one standing conversation per channel** (a Paperclip issue +
+Discord thread) instead of creating a task per message; `/task ` keeps the old
+behaviour. And `paperclip-limit-recover.py` (cron, 15 min) resumes agents that
+stopped on a Claude usage limit and nudges their tasks — the overnight limit on
+2026-10-02 had stranded the Frontend Developer until morning.
+
 ## 2026-10-02 — Codex agents moved to Claude
 
 ChatGPT Plus's Codex allowance ran out after a single Frontend Developer build,
