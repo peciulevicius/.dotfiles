@@ -1,6 +1,6 @@
 # WUD — image update checker
 
-[What's Up Docker](https://github.com/getwud/wud) (`getwud/wud:9.2.0`) lists
+[What's Up Docker](https://github.com/getwud/wud) (`getwud/wud:9.2.1`) lists
 which containers have a newer image tag. Added 2026-09-28.
 
 **URL:** <http://100.81.171.49:3070> (Tailscale) · `http://localhost:3070`.

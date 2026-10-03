@@ -260,7 +260,7 @@ QUIET = discord.AllowedMentions.none()
 async def chat_issue(channel_id: int, target: dict) -> dict | None:
     """The channel's standing chat if it still exists and belongs to the mapped agent."""
     c = state["chats"].get(str(channel_id))
-    if not c or c.get("agent_id", target["agent_id"]) != target["agent_id"]:
+    if not c:
         return None
     try:
         issue = await pc.issue(c["issue_id"])
@@ -268,6 +268,11 @@ async def chat_issue(channel_id: int, target: dict) -> dict | None:
         if e.response.status_code == 404:
             return None
         raise  # transient: keep the pointer, let the caller fail loudly
+    if "agent_id" not in c:  # record from the first chat-mode release: learn its agent from the issue
+        c["agent_id"] = issue.get("assigneeAgentId")
+        save_state(state)
+    if c["agent_id"] != target["agent_id"]:
+        return None
     if issue["status"] in ("done", "cancelled"):
         await pc.set_status(c["issue_id"], "todo")
     return c
@@ -284,7 +289,10 @@ async def chat_thread(channel: discord.TextChannel, c: dict, target: dict) -> di
     thread = await channel.create_thread(name=f"💬 Chat with {target['name']} · {c['identifier']}"[:100],
                                          type=discord.ChannelType.public_thread, auto_archive_duration=10080)
     old = str(c.get("thread_id"))
-    seen = state["threads"].pop(old, {}).get("seen", []) if old in state["threads"] else []
+    state["threads"].pop(old, None)
+    # Everything already on the issue counts as delivered, so a replacement
+    # thread doesn't replay the whole history.
+    seen = [x["id"] for x in await pc.comments(c["issue_id"])]
     state["threads"][str(thread.id)] = {"issue_id": c["issue_id"], "identifier": c["identifier"],
                                         "agent_name": target["name"], "seen": seen}
     c["thread_id"] = thread.id

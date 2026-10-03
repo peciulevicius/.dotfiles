@@ -279,7 +279,7 @@ line and wiring: `services/pihole/README.md` → *Encrypted upstream*.
 
 ## Image updates — WUD + upgrade-service.sh (2026-09-28)
 
-- **WUD** (`services/wud`, `getwud/wud:9.2.0`, port 3070, Tailscale/localhost)
+- **WUD** (`services/wud`, `getwud/wud:9.2.1`, port 3070, Tailscale/localhost)
   reports available image updates; it never changes anything. Docker access
   via `tecnativa/docker-socket-proxy:v0.5.0` with `POST=0`.
 - **WUD 9 refuses to start without an admin user** ("Authentication is
