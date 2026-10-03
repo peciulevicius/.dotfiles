@@ -196,6 +196,21 @@ Section names in *italics* are headings below.
 
 - 👤 Optional: Uptime Kuma **DNS** monitor for the resolver chain (Kuma has no monitor API — UI step): + Add New Monitor → DNS → hostname `example.com`, resolver `host.docker.internal` port 53 → alerts if Pi-hole *or* unbound stops answering.
 
+### 🔌 NAS is OFF for the owner's week away (since 2026-10-03)
+
+Stopped containers are listed in `~/.config/homelab/nas-off-stopped.txt`;
+`BACKUP_IMMICH_PHOTOS=false` in `~/services/rclone/.env`. Full reversal steps:
+`~/ai-memory/handoffs/2026-10-03-claude-code.md` → *NAS OFF*.
+
+- [ ] 👤 **Turn the NAS on** (physical power button) and tell Claude "NAS on" —
+      it restarts the stopped containers (Immich first), re-enables the photo
+      backup, and re-checks the Immich videos (41 of the "missing" 49 were a
+      stale Docker view of the SMB share; 8 still to check).
+- [ ] 👤 **Enable Wake-on-LAN in UGOS** (Control Panel → Hardware & Power), so
+      the NAS can be started remotely next time. Then Claude adds a
+      `wake-nas` script (magic packet from the Mac mini, MAC from the router's
+      client list) and documents it in `NAS.md`.
+
 ### 🏭 Studio — autonomous (2026-10-02)
 
 - [x] ~~Autonomy charter, playbook, lean roster, routines, digest webhook~~ —

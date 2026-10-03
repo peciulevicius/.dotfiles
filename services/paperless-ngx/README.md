@@ -35,3 +35,25 @@ docker compose up -d
 ## Scanner Setup
 
 Configure your scanner/printer to save to the consume directory (map the network path).
+
+## Payslips (2026-10-03)
+
+Visma payslips ("Atsiskaitymų lapelis <year> <month>", usually posted in
+Discord `#ai-finance`, which the bridge drops into `consume/`) are cleaned up
+automatically by `scripts/payslip.py`, run after every consume through
+`PAPERLESS_POST_CONSUME_SCRIPT=/usr/src/paperless/scripts/post-consume.sh`
+(`./scripts` mounted read-only):
+
+- **Title** = the payslip's own month, e.g. `September 2026` — read from the
+  text, because the document date is the *issue* date (the following month).
+- **Document type** `Payslip`, **storage path** `Payslips` (one folder,
+  files named `Payslips/<title>.pdf`).
+- **No tags, no correspondent.**
+
+Re-run for every existing payslip:
+`docker exec -i paperless python3 /usr/src/paperless/src/manage.py shell < services/paperless-ngx/scripts/payslip.py`.
+
+All tags and correspondents use matching **None** since 2026-10-03: the old
+*Auto* matching guessed the trip receipts' tag and people onto unrelated new
+documents. Set matching on a tag deliberately if you ever want it.
+

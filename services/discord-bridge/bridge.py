@@ -134,6 +134,20 @@ class Paperclip:
     async def set_status(self, issue_id: str, status: str) -> None:
         await self.request("PATCH", f"/api/issues/{issue_id}", json={"status": status})
 
+    async def reopen(self, issue_id: str, status: str) -> None:
+        """Make a standing chat wakeable again. A reply run that ends without
+        setting a status leaves a 'missing disposition' recovery that holds the
+        issue in `blocked`; resolve it (as the board) before reopening."""
+        if status == "blocked":
+            try:
+                await self.request("POST", f"/api/issues/{issue_id}/recovery-actions/resolve",
+                                   json={"outcome": "restored", "sourceIssueStatus": "todo",
+                                         "resolutionNote": "Standing owner chat: reopened by the Discord bridge."})
+                return
+            except httpx.HTTPStatusError:
+                pass  # no active recovery action: a plain status change is enough
+        await self.set_status(issue_id, "todo")
+
     async def comment(self, issue_id: str, body: str) -> dict:
         return (await self.request("POST", f"/api/issues/{issue_id}/comments", json={"body": body})).json()
 
@@ -214,8 +228,9 @@ async def on_message(msg: discord.Message) -> None:
     if isinstance(msg.channel, discord.Thread) and str(msg.channel.id) in state["threads"]:
         t = state["threads"][str(msg.channel.id)]
         if any(ch["issue_id"] == t["issue_id"] for ch in state["chats"].values()):
-            if (await pc.issue(t["issue_id"]))["status"] in ("done", "cancelled"):
-                await pc.set_status(t["issue_id"], "todo")
+            status = (await pc.issue(t["issue_id"]))["status"]
+            if status in ("done", "cancelled", "blocked"):
+                await pc.reopen(t["issue_id"], status)
         c = await pc.comment(t["issue_id"], f"@{t['agent_name']} {text}\n\n_(via Discord)_")
         t["seen"].append(c.get("id"))
         save_state(state)
@@ -273,8 +288,8 @@ async def chat_issue(channel_id: int, target: dict) -> dict | None:
         save_state(state)
     if c["agent_id"] != target["agent_id"]:
         return None
-    if issue["status"] in ("done", "cancelled"):
-        await pc.set_status(c["issue_id"], "todo")
+    if issue["status"] in ("done", "cancelled", "blocked"):
+        await pc.reopen(c["issue_id"], issue["status"])
     return c
 
 
