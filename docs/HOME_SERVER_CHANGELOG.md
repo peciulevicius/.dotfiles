@@ -6,6 +6,23 @@ is often what you need when something similar breaks again.
 
 Newest first-ish; dates are when the work was finished.
 
+## 2026-10-03 — Payslips tidy in Paperless; chats unstick themselves; NAS off for a week
+
+- **Paperless:** payslips get a month title from their own text ("September
+  2026"), type *Payslip*, one *Payslips* folder, no tags/correspondent, via a
+  post-consume script. Auto-matching on tags/correspondents turned off — it had
+  guessed the Austria-trip tag and people onto the payslip.
+- **Discord chats:** both the Studio and Finance chats stalled in `blocked`:
+  a reply run that ends without a status leaves a Paperclip "missing
+  disposition" recovery. The bridge now resolves it (`recovery-actions/resolve`,
+  outcome `restored`) and reopens the chat whenever the owner writes.
+- **NAS powered off** for the owner's week away; 13 dependent containers
+  stopped and the Immich R2 step paused (see TODO 🔌).
+- **Immich "missing" videos:** host-side `rclone copy` found all 41 checked
+  files already on the NAS — the container's SMB view was stale (ESTALE), not
+  data loss. Two `docker pull`s of `rclone/rclone` crashed Docker Desktop
+  (and briefly Pi-hole DNS for Tailscale devices); don't pull images casually.
+
 ## 2026-10-03 — WUD and Audiobookshelf image bumps
 
 `upgrade-service.sh`: WUD `9.2.0` → `9.2.1` (patch) and Audiobookshelf
