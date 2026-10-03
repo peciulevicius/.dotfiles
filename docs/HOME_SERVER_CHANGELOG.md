@@ -6,6 +6,14 @@ is often what you need when something similar breaks again.
 
 Newest first-ish; dates are when the work was finished.
 
+## 2026-10-03 — WUD and Audiobookshelf image bumps
+
+`upgrade-service.sh`: WUD `9.2.0` → `9.2.1` (patch) and Audiobookshelf
+`2.36.1` → `2.37.1` (minor), both health-checked; backups under
+`~/backups/upgrades/` plus an ABS `data/config` copy. The one-way majors
+(Jellyfin 10.11, Syncthing 2, Uptime Kuma 2, Nextcloud) were deliberately left
+for a sitting when the owner is around.
+
 ## 2026-10-03 — Discord chat mode + limit auto-recovery
 
 Two fixes so the owner can leave the Studio running for a week. The Discord
