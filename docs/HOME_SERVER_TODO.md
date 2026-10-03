@@ -243,7 +243,6 @@ Section names in *italics* are headings below.
 - Optional: OpenCode + `qwen2.5-coder:7b` for offline snippets — *⚡ Batch 2026-09-24*
 - Odysseus: chat-export import, CalDAV after Nextcloud, RAG over Paperless + Linkwarden — *8. Odysseus*
 - ~~Rotate Immich's DB password~~ — done 2026-10-02
-- 👤 `rm -rf ~/services/mealie ~/services/grafana` (approved 2026-10-02; Claude's sandbox can't delete them — run it yourself) — *9. Maintenance backlog*
 - Pi-hole local DNS records, only after a Caddy decision — *Pi-hole — finish the deployment*
 - Optional `scp` push to the Scribe — *Notes*
 - Major-version image upgrades, one per sitting, with `upgrade-service.sh` — *Pinned images*
@@ -589,9 +588,8 @@ whole-house outage now alerts.
       ghosts, 116K). Claude's `rm -rf` was blocked by permissions 2026-09-26.
       The ghosts are held open by Docker Desktop's VM, so do it after the next
       Docker Desktop restart: `rm -rf /Volumes/media/music`.
-- [ ] 👤 **Delete the old staged dirs** `rm -rf ~/services/beets ~/services/lidarr`
-      (containers and images already removed 2026-09-26), and after a week of
-      Uptime Kuma running fine, `rm ~/services/uptime-kuma/data/kuma.db.bak-2026-09-26-music`.
+- [x] ~~Delete the old staged dirs~~ `~/services/beets`, `~/services/lidarr` — gone (checked 2026-10-03).
+- [ ] 👤 After a week of Uptime Kuma running fine, `rm ~/services/uptime-kuma/data/kuma.db.bak-2026-09-26-music`.
 - [ ] 👤 **Optional immediate library refresh while a media server is awake.**
       The 30-minute restart cron was removed 2026-09-28 (verified absent in
       the installed crontab 2026-09-29); it woke Sablier sleepers and interrupted
@@ -615,10 +613,7 @@ whole-house outage now alerts.
       and `docker compose up -d`. Changing `.env` alone breaks Immich: Postgres
       keeps the password it was initialised with. Backups are unaffected —
       `backup-databases.sh` runs `pg_dump` over the container's local socket.
-- [ ] 👤 Clear the leftover data directories from the removals:
-      `rm -rf ~/services/mealie ~/services/grafana` (both confirmed
-      empty/unused before removal; both still present 2026-09-25).
-      `rclone-backup.sh` already excludes both.
+- [x] ~~Clear the leftover data directories~~ `~/services/mealie`, `~/services/grafana` — removed by the owner 2026-10-02.
 - [x] **Scale-to-zero rollout (Caddy + Sablier, `services/caddy/README.md`)
       — all 3 phases done 2026-09-27.** Phase 1: Stirling PDF, IT-Tools.
       Phase 2: Paperless, Nextcloud, Odysseus, Linkwarden, Jellyseerr, Bazarr.
@@ -851,7 +846,13 @@ run):
 | paperless_db | paperless-ngx | `16-alpine` | `18-alpine3.24` | major | Postgres major = dump/restore migration, not a tag bump |
 
 Notes on the list:
-- **Safe:** `odysseus-searxng-1` (minor) — `upgrade-service.sh odysseus
+- **2026-10-03:** WUD 9.2.0 → 9.2.1 and Audiobookshelf 2.36.1 → 2.37.1 taken
+  with `upgrade-service.sh` (health-checked; ABS `data/config` also copied to
+  `~/backups/abs-2026-10-03/`). Jellyfin now offers `10.11.11` — still a one-way
+  DB migration, see below.
+- **SearXNG:** `upgrade-service.sh odysseus` doesn't work — Odysseus runs from
+  its upstream checkout, so there is no `services/odysseus/docker-compose.yml`.
+  Bump the tag in `~/services/odysseus/` by hand (minor, low risk). Was: `upgrade-service.sh odysseus
   --image searxng` whenever convenient.
 - **Jellyfin:** WUD proposed a dated build (`12.1.2026…`); the
   `wud.tag.include` label (plain `X.Y.Z` only) applies on the next recreate and
