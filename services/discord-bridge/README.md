@@ -15,6 +15,16 @@ Coach comments on the issue ──► bridge polls (30s) ──► posted in tha
 you: reply in the thread ──► bridge ──► issue comment "@Coach …" (the @mention wakes it)
 ```
 
+- **Chat mode (2026-10-03):** a plain message in a mapped channel no longer
+  creates a task. It goes into **one standing conversation per channel**: a
+  Paperclip issue *"💬 Chat with the owner (<Agent>)"* plus a Discord thread
+  *"💬 Chat with <Agent>"* (auto-archive 7 days; revived on the next message).
+  Your message is posted as an `@Agent` comment (which wakes it), quoted in the
+  thread, and the agent's replies land in that thread. The issue tells the
+  agent it's a chat: reply there, create separate tasks for real work, never
+  close it (the bridge reopens it if it does). Start a message with `/task `
+  to get the old behaviour — a separate issue + thread. State lives in
+  `state.json` → `chats`.
 - One channel per agent, set by `CHANNEL_MAP`
   (`channelId:agentId:AgentName,…`). Currently `#ai-training-coach` → Coach
   and `#ai-training-dietitian` → Dietitian. The bridge looks up each agent's
