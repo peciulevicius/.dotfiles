@@ -588,7 +588,6 @@ whole-house outage now alerts.
       ghosts, 116K). Claude's `rm -rf` was blocked by permissions 2026-09-26.
       The ghosts are held open by Docker Desktop's VM, so do it after the next
       Docker Desktop restart: `rm -rf /Volumes/media/music`.
-- [x] ~~Delete the old staged dirs~~ `~/services/beets`, `~/services/lidarr` — gone (checked 2026-10-03).
 - [ ] 👤 After a week of Uptime Kuma running fine, `rm ~/services/uptime-kuma/data/kuma.db.bak-2026-09-26-music`.
 - [ ] 👤 **Optional immediate library refresh while a media server is awake.**
       The 30-minute restart cron was removed 2026-09-28 (verified absent in
@@ -613,7 +612,6 @@ whole-house outage now alerts.
       and `docker compose up -d`. Changing `.env` alone breaks Immich: Postgres
       keeps the password it was initialised with. Backups are unaffected —
       `backup-databases.sh` runs `pg_dump` over the container's local socket.
-- [x] ~~Clear the leftover data directories~~ `~/services/mealie`, `~/services/grafana` — removed by the owner 2026-10-02.
 - [x] **Scale-to-zero rollout (Caddy + Sablier, `services/caddy/README.md`)
       — all 3 phases done 2026-09-27.** Phase 1: Stirling PDF, IT-Tools.
       Phase 2: Paperless, Nextcloud, Odysseus, Linkwarden, Jellyseerr, Bazarr.
@@ -852,7 +850,9 @@ Notes on the list:
   DB migration, see below.
 - **SearXNG:** `upgrade-service.sh odysseus` doesn't work — Odysseus runs from
   its upstream checkout, so there is no `services/odysseus/docker-compose.yml`.
-  Bump the tag in `~/services/odysseus/` by hand (minor, low risk). Was: `upgrade-service.sh odysseus
+  Don't edit the upstream checkout (it creates a local modification that
+  blocks `git pull`); pin it with a `docker-compose.override.yml` next to it, or
+  wait for upstream to bump it. Was: `upgrade-service.sh odysseus
   --image searxng` whenever convenient.
 - **Jellyfin:** WUD proposed a dated build (`12.1.2026…`); the
   `wud.tag.include` label (plain `X.Y.Z` only) applies on the next recreate and

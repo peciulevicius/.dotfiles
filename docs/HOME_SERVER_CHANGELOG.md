@@ -10,7 +10,8 @@ Newest first-ish; dates are when the work was finished.
 
 `upgrade-service.sh`: WUD `9.2.0` → `9.2.1` (patch) and Audiobookshelf
 `2.36.1` → `2.37.1` (minor), both health-checked; backups under
-`~/backups/upgrades/` plus an ABS `data/config` copy. The one-way majors
+`~/backups/upgrades/` plus an ABS `data/config` copy. Leftover dirs `~/services/{mealie,grafana,beets,lidarr}` were
+confirmed gone (owner removed them 2026-10-02). The one-way majors
 (Jellyfin 10.11, Syncthing 2, Uptime Kuma 2, Nextcloud) were deliberately left
 for a sitting when the owner is around.
 

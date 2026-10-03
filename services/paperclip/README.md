@@ -910,9 +910,11 @@ When the Claude limit hits mid-run, the agent goes to `error` and its task is
 stranded until a board operator resumes it — overnight on 2026-10-02 this left
 the Studio's Frontend Developer stuck for ~7 hours. `scripts/utils/paperclip-limit-recover.py`
 (cron every 15 min, log `~/logs/paperclip-limit-recover.log`) reads each
-company's attention feed for `agent_error_alert`s whose reason mentions a
-limit, and once the error is ≥30 min old resumes the agent and @mentions it on
-its open tasks (status untouched), at most once an hour per agent (state in
+company's attention feed (all pages) for `agent_error_alert`s on `claude_local`
+agents whose reason is a subscription-quota failure ("terminal limit failure",
+usage/rate limit), and once the error is ≥30 min old resumes the agent and
+@mentions it on its **in-progress** task only — todo/blocked tasks are left
+alone, as they may be waiting on dependencies — at most once an hour per agent (state in
 `~/.config/homelab/paperclip-limit-recover.json`). Other errors are left alone.
 `--dry-run` prints what it would do.
 

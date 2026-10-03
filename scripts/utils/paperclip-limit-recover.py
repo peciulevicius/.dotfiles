@@ -61,6 +61,7 @@ except (FileNotFoundError, ValueError):
 
 api("POST", "/api/auth/sign-in/email", {"email": "dziugas@peciulevicius.com", "password": password})
 now = time.time()
+failures = 0
 for company in api("GET", "/api/companies"):
     cid = company["id"]
     feed = attention(cid)
@@ -99,9 +100,12 @@ for company in api("GET", "/api/companies"):
                     {"body": f"@{name} automatic retry: your last run stopped on a usage limit; the limit should have reset. Continue where you left off."})
             except Exception as error:
                 print(f"  comment on {i['identifier']} failed: {error}")
+                failures += 1
 
 if not DRY:
     STATE.parent.mkdir(parents=True, exist_ok=True)
     STATE.write_text(json.dumps(state))
     os.chmod(STATE, 0o600)
 api("POST", "/api/auth/sign-out", {})
+if failures:
+    sys.exit(f"{failures} retry comment(s) failed; the agent was resumed but may not wake — check the log")  # run-with-notify alerts
