@@ -472,7 +472,9 @@ historical; the live rules are:
   (max ~3/week). Reddit/HN/PH/IH stay drafts the owner pastes — Reddit's API
   needs pre-approval and browser-automated posting breaks its terms.
 - **Deploys:** Frontend Developer deploys with `wrangler pages deploy` to a
-  **separate Studio Cloudflare account** only. The homelab's own deploy token
+  **separate Studio Cloudflare account** only — created 2026-10-02 as a second
+  account under the owner's Cloudflare login, with a token whose Account
+  Resources include only that account. The homelab's own deploy token
   can overwrite every personal Pages project, so it is deliberately not given
   to agents.
 - **Owner credentials** go in with `scripts/utils/paperclip-studio-secrets.py`
@@ -835,8 +837,15 @@ Kept from it:
   with its own self-installing cron (PR #52 in git history if ever needed).
   Write any future one against the then-current API. Its staged recovery cron
   was removed once the journal emptied.
-- **Decision:** the owner prefers Claude Max, so agents stay on Claude. Existing
-  Codex roles (Studio) remain, but no automatic Claude ↔ Codex routing is built.
+- **Decision:** the owner prefers Claude Max, so agents stay on Claude.
+- **2026-10-02: all 8 Codex roles moved to Claude Sonnet 5** — Studio PM,
+  Engineering Manager, Frontend, DevOps, Mobile; Homelab Network Engineer,
+  Security Analyst, DevOps/Homelab Engineer. ChatGPT Plus's Codex allowance ran
+  out after one Frontend build. Method: hire a `claude_local` replacement via
+  `agent-hires` + board approval with the same name/role/manager/skills/env,
+  copy the AGENTS.md, reassign open issues and direct reports, then terminate
+  the old record (originals backed up privately). No Codex agents remain;
+  the cheap OpenRouter agents stay on OpenRouter.
 
 ### Restore missing Coach notification bindings
 

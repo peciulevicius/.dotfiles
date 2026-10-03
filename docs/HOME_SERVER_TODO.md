@@ -203,13 +203,22 @@ Section names in *italics* are headings below.
 - [x] ~~Agent → Discord delivery test~~ — `#ai-agents` webhook returned 204.
 - [ ] 👤 **Buy Claude Max 5x** (owner's call 2026-10-02: also for own coding,
       chats, Odysseus). Then update `💰 Finance/Subscriptions & Credits.md`.
-- [ ] 👤 **Studio accounts (~15 min, once) — after you pick the studio name in
-      STU-20** (it arrives as a Discord button), so the accounts carry that
-      name: a free **Cloudflare account** for
-      the studio + an API token (Pages edit, Workers KV edit), a **Bluesky**
-      account + app password, a **Reddit** account (drafts only for now).
-      Save each in Vaultwarden, then run
-      `scripts/utils/paperclip-studio-secrets.py`.
+- [x] ~~Studio Cloudflare account + token~~ — 2026-10-02. Added as a second
+      account under the owner's Cloudflare login (*Add account*, email
+      `studio@peciulevicius.com`); token `studio-agents` (Pages edit + Workers KV
+      edit, Account Resources = the Studio account only), bound to the Frontend
+      Developer via `paperclip-studio-secrets.py`. Login saved in Bitwarden as
+      "Cloudflare (Studio)".
+- [ ] 👤 🔐 **Turn on 2FA for the Cloudflare login** (My Profile →
+      Authentication → TOTP into Bitwarden Authenticator). The Studio account
+      now sits under the same login as DNS, the tunnel and R2, so one 2FA
+      protects both.
+- [ ] 👤 Optional: in the "Cloudflare (Studio)" Bitwarden entry, move the API
+      token and Account ID into **Custom fields → Hidden / Text** instead of
+      notes. Not critical — the token can always be re-created in Cloudflare.
+- [ ] 👤 **Bluesky + Reddit studio accounts — after the studio name is picked**
+      (on return from training; only needed once an idea is approved for
+      launch). Then rerun `paperclip-studio-secrets.py` for the Bluesky values.
 - [ ] 👤 Optional: apply for Reddit API access (Responsible Builder policy);
       until then Reddit posts are drafts in the digest.
 - [ ] 👤 When the first idea reaches stage 3: a **Stripe** account (KYC) for

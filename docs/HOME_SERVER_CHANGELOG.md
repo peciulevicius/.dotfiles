@@ -6,6 +6,15 @@ is often what you need when something similar breaks again.
 
 Newest first-ish; dates are when the work was finished.
 
+## 2026-10-02 — Codex agents moved to Claude
+
+ChatGPT Plus's Codex allowance ran out after a single Frontend Developer build,
+leaving the Studio's only builder in error. All 8 Codex agents (5 Studio, 3
+Homelab) were rehired on Claude Sonnet 5 with identical instructions, skills,
+managers, env bindings and open tasks, then the Codex records were terminated.
+OpenRouter agents were left alone — they are cheap. Owner is upgrading to
+Claude Max 5x.
+
 ## 2026-10-02 — Studio runs autonomously
 
 The owner asked for a studio that iterates on ideas and validates them without
