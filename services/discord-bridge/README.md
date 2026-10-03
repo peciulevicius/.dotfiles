@@ -24,7 +24,9 @@ you: reply in the thread ──► bridge ──► issue comment "@Coach …" (
   agent it's a chat: reply there, create separate tasks for real work, never
   close it (the bridge reopens it if it does). Start a message with `/task `
   to get the old behaviour — a separate issue + thread. State lives in
-  `state.json` → `chats`.
+  `state.json` → `chats` (issue, thread and agent per channel; a remapped
+  channel starts a fresh chat). Creation is serialized per channel, and the
+  owner's message is saved to Paperclip before any Discord call.
 - One channel per agent, set by `CHANNEL_MAP`
   (`channelId:agentId:AgentName,…`). Currently `#ai-training-coach` → Coach
   and `#ai-training-dietitian` → Dietitian. The bridge looks up each agent's
@@ -115,9 +117,11 @@ scripts in `services/paperclip/README.md` do.
    `~/services/discord-bridge/.env` (chmod 600), builds and starts the
    container, and prints the log. The Paperclip login is already filled in from
    `~/.config/homelab/paperclip-admin.env`.
-5. **Test:** post "test — reply with one line" in `#ai-training-coach`. A
-   thread opens with `📋 COA-n created`, and the Coach's reply appears there
-   within about a minute of its run finishing.
+5. **Test:** post "test — reply with one line" in `#ai-training-coach`. The
+   message gets a 💬 reaction, a thread *"💬 Chat with Coach · COA-n"* opens
+   (first time only) with your message quoted, and the Coach's reply appears
+   there within about a minute of its run finishing. `/task test` should
+   instead open a `📋 COA-n created` thread.
 
 ## Operating
 

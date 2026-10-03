@@ -3,10 +3,10 @@
 # session/weekly limit hits, a claude_local run fails with "terminal limit
 # failure", the agent goes to `error` and its task is stranded until a board
 # operator resumes it. This cron job (every 15 min) resumes such agents once the
-# error is >= COOLDOWN_MIN old and re-queues their stranded tasks with an
-# @mention comment (status untouched: a blocked task may be legitimately
-# waiting on sub-tasks), at most once per RETRY_MIN per agent, so a still-active limit isn't
-# hammered. Only limit failures are touched; any other error is left alone.
+# error is >= COOLDOWN_MIN old and @mentions it on its in-progress task (the
+# run the limit interrupted; todo/blocked tasks are left alone), at most once
+# per RETRY_MIN per agent, so a still-active limit isn't hammered. Only Claude
+# subscription-quota failures are touched; any other error is left alone.
 #   paperclip-limit-recover.py            # act
 #   paperclip-limit-recover.py --dry-run  # print what it would do
 import http.cookiejar, json, os, re, sys, time, urllib.request
@@ -31,10 +31,29 @@ def api(method, path, body=None):
         return json.load(r)
 
 
+QUOTA_MARKERS = ("terminal limit failure", "usage limit", "rate limit", "limit reached", "provider_quota")
+
+
+def is_quota_failure(excerpt):
+    text = (excerpt or "").lower()
+    return any(marker in text for marker in QUOTA_MARKERS)
+
+
+def attention(cid):
+    items, cursor = [], None
+    while True:
+        page = api("GET", f"/api/companies/{cid}/attention?limit=100" + (f"&cursor={cursor}" if cursor else ""))
+        items += page["items"]
+        cursor = page.get("nextCursor")
+        if not cursor:
+            return items
+
+
 def age_min(stamp):
     return (time.time() - datetime.fromisoformat(stamp.replace("Z", "+00:00")).timestamp()) / 60
 
 
+STATE.parent.mkdir(parents=True, exist_ok=True)
 try:
     state = json.loads(STATE.read_text())
 except (FileNotFoundError, ValueError):
@@ -44,11 +63,11 @@ api("POST", "/api/auth/sign-in/email", {"email": "dziugas@peciulevicius.com", "p
 now = time.time()
 for company in api("GET", "/api/companies"):
     cid = company["id"]
-    feed = api("GET", f"/api/companies/{cid}/attention?limit=100")["items"]
+    feed = attention(cid)
     alerts = {}
     for item in feed:
         detail = item.get("detail") or {}
-        if item["sourceKind"] == "agent_error_alert" and "limit" in (detail.get("failureReasonExcerpt") or "").lower():
+        if item["sourceKind"] == "agent_error_alert" and is_quota_failure(detail.get("failureReasonExcerpt")):
             alerts[detail.get("agentName")] = item
     if not alerts:
         continue
@@ -56,7 +75,7 @@ for company in api("GET", "/api/companies"):
     issues = None
     for name, item in alerts.items():
         agent = agents.get(name)
-        if not agent or agent["status"] != "error":
+        if not agent or agent["status"] != "error" or agent.get("adapterType") != "claude_local":
             continue
         if age_min(item.get("activityAt") or item["createdAt"]) < COOLDOWN_MIN:
             print(f"{company['name']}/{name}: limit error too recent, waiting")
@@ -67,15 +86,19 @@ for company in api("GET", "/api/companies"):
         if issues is None:
             data = api("GET", f"/api/companies/{cid}/issues?limit=200")
             issues = data.get("items", data) if isinstance(data, dict) else data
-        stranded = [i for i in issues if i.get("assigneeAgentId") == agent["id"] and i["status"] in ("blocked", "in_progress", "todo")]
+        stranded = [i for i in issues if i.get("assigneeAgentId") == agent["id"] and i["status"] == "in_progress"]
         print(f"{company['name']}/{name}: resume + re-queue {[i['identifier'] for i in stranded]}")
         if DRY:
             continue
         api("POST", f"/api/agents/{agent['id']}/resume", {})
+        state[agent["id"]] = now  # recorded before the comments: a failed comment must not cause a resume loop
+        STATE.write_text(json.dumps(state))
         for i in stranded:
-            api("POST", f"/api/issues/{i['id']}/comments",
-                {"body": f"@{name} automatic retry: your last run stopped on a usage limit; the limit should have reset. Continue where you left off."})
-        state[agent["id"]] = now
+            try:
+                api("POST", f"/api/issues/{i['id']}/comments",
+                    {"body": f"@{name} automatic retry: your last run stopped on a usage limit; the limit should have reset. Continue where you left off."})
+            except Exception as error:
+                print(f"  comment on {i['identifier']} failed: {error}")
 
 if not DRY:
     STATE.parent.mkdir(parents=True, exist_ok=True)

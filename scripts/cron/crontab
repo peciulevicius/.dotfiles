@@ -67,6 +67,6 @@ PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin
 */5 * * * * ~/.dotfiles/scripts/utils/paperclip-fallback.sh >> ~/logs/paperclip-fallback.log 2>&1
 # Paperclip usage-limit recovery (every 15 min): resume agents stuck in `error` after a Claude limit,
 # once the error is >=30 min old, and @mention their stranded tasks. services/paperclip/README.md.
-*/15 * * * * ~/.dotfiles/scripts/utils/paperclip-limit-recover.py >> ~/logs/paperclip-limit-recover.log 2>&1
+*/15 * * * * ~/.dotfiles/scripts/utils/run-with-notify.sh "Paperclip limit recovery" ~/.dotfiles/scripts/utils/paperclip-limit-recover.py >> ~/logs/paperclip-limit-recover.log 2>&1
 # Monthly: remind to check prepaid AI credits + subscriptions (list lives privately in the Obsidian vault)
 0 10 1 * * /bin/bash -c 'source ~/.dotfiles/scripts/lib/notify.sh && notify_discord "💳 Monthly money check" "Check prepaid balances (OpenRouter, Anthropic console, Codex usage) and update Obsidian → 💰 Finance/Subscriptions & Credits." info reminders' >> ~/logs/monthly-reminder.log 2>&1
