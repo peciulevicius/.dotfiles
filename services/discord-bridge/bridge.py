@@ -144,8 +144,10 @@ class Paperclip:
                                    json={"outcome": "restored", "sourceIssueStatus": "todo",
                                          "resolutionNote": "Standing owner chat: reopened by the Discord bridge."})
                 return
-            except httpx.HTTPStatusError:
-                pass  # no active recovery action: a plain status change is enough
+            except httpx.HTTPStatusError as e:
+                if e.response.status_code not in (404, 409):
+                    raise  # unexpected: surface it instead of silently leaving the chat blocked
+                # 404/409: no active recovery action, a plain status change is enough
         await self.set_status(issue_id, "todo")
 
     async def comment(self, issue_id: str, body: str) -> dict:
@@ -229,11 +231,13 @@ async def on_message(msg: discord.Message) -> None:
         t = state["threads"][str(msg.channel.id)]
         if any(ch["issue_id"] == t["issue_id"] for ch in state["chats"].values()):
             status = (await pc.issue(t["issue_id"]))["status"]
-            if status in ("done", "cancelled", "blocked"):
-                await pc.reopen(t["issue_id"], status)
+        else:
+            status = None
         c = await pc.comment(t["issue_id"], f"@{t['agent_name']} {text}\n\n_(via Discord)_")
         t["seen"].append(c.get("id"))
         save_state(state)
+        if status in ("done", "cancelled", "blocked"):
+            await pc.reopen(t["issue_id"], (await pc.issue(t["issue_id"]))["status"])
         await msg.add_reaction("📨")
         return
 
@@ -288,8 +292,7 @@ async def chat_issue(channel_id: int, target: dict) -> dict | None:
         save_state(state)
     if c["agent_id"] != target["agent_id"]:
         return None
-    if issue["status"] in ("done", "cancelled", "blocked"):
-        await pc.reopen(c["issue_id"], issue["status"])
+    c["_status"] = issue["status"]  # reopened by chat() only after the owner's comment is saved
     return c
 
 
@@ -301,13 +304,17 @@ async def chat_thread(channel: discord.TextChannel, c: dict, target: dict) -> di
         return thread
     except discord.NotFound:
         pass
+    # Fetch history first (a failure here must not orphan a new thread). Agent
+    # replies the old thread already delivered count as seen; anything newer is
+    # still relayed into the replacement.
+    old = str(c.get("thread_id"))
+    delivered = set(state["threads"].get(old, {}).get("seen", []))
+    history = await pc.comments(c["issue_id"])
+    seen = [x["id"] for x in history if x["id"] in delivered or x.get("authorType") != "agent"] if delivered \
+        else [x["id"] for x in history]
     thread = await channel.create_thread(name=f"💬 Chat with {target['name']} · {c['identifier']}"[:100],
                                          type=discord.ChannelType.public_thread, auto_archive_duration=10080)
-    old = str(c.get("thread_id"))
     state["threads"].pop(old, None)
-    # Everything already on the issue counts as delivered, so a replacement
-    # thread doesn't replay the whole history.
-    seen = [x["id"] for x in await pc.comments(c["issue_id"])]
     state["threads"][str(thread.id)] = {"issue_id": c["issue_id"], "identifier": c["identifier"],
                                         "agent_name": target["name"], "seen": seen}
     c["thread_id"] = thread.id
@@ -328,8 +335,11 @@ async def chat(msg: discord.Message, target: dict, text: str) -> None:
                 "issue_id": issue["id"], "identifier": issue.get("identifier", issue["id"][:8]),
                 "agent_id": target["agent_id"], "thread_id": 0}
             save_state(state)
-        # Persist the owner's words in Paperclip before any Discord call can fail.
+        # Persist the owner's words in Paperclip before any Discord call can fail,
+        # and before reopening: reopening wakes the agent, which must see them.
         comment = await pc.comment(c["issue_id"], f"@{target['name']} {text}\n\n_(via Discord)_")
+        if c.pop("_status", None) in ("done", "cancelled", "blocked"):
+            await pc.reopen(c["issue_id"], (await pc.issue(c["issue_id"]))["status"])
         thread = await chat_thread(msg.channel, c, target)
         state["threads"][str(thread.id)]["seen"].append(comment.get("id"))
         save_state(state)

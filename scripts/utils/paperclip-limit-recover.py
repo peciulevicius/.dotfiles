@@ -62,6 +62,17 @@ except (FileNotFoundError, ValueError):
 api("POST", "/api/auth/sign-in/email", {"email": "dziugas@peciulevicius.com", "password": password})
 now = time.time()
 failures = 0
+RETRY_TEXT = "automatic retry: your last run stopped on a usage limit; the limit should have reset. Continue where you left off."
+# Retry comments that failed on an earlier run (the agent is no longer in `error`).
+still_pending = []
+for p in ([] if DRY else state.get("pending", [])):
+    try:
+        api("POST", f"/api/issues/{p['issue']}/comments", {"body": f"@{p['agent']} {RETRY_TEXT}"})
+    except Exception as error:
+        print(f"  pending comment on {p['issue']} failed again: {error}")
+        still_pending.append(p)
+if not DRY:
+    state["pending"] = still_pending
 for company in api("GET", "/api/companies"):
     cid = company["id"]
     feed = attention(cid)
@@ -96,16 +107,17 @@ for company in api("GET", "/api/companies"):
         STATE.write_text(json.dumps(state))
         for i in stranded:
             try:
-                api("POST", f"/api/issues/{i['id']}/comments",
-                    {"body": f"@{name} automatic retry: your last run stopped on a usage limit; the limit should have reset. Continue where you left off."})
+                api("POST", f"/api/issues/{i['id']}/comments", {"body": f"@{name} {RETRY_TEXT}"})
             except Exception as error:
                 print(f"  comment on {i['identifier']} failed: {error}")
                 failures += 1
+                state.setdefault("pending", []).append({"issue": i["id"], "agent": name})
 
 if not DRY:
     STATE.parent.mkdir(parents=True, exist_ok=True)
     STATE.write_text(json.dumps(state))
     os.chmod(STATE, 0o600)
 api("POST", "/api/auth/sign-out", {})
+failures += len(state.get("pending", []))
 if failures:
     sys.exit(f"{failures} retry comment(s) failed; the agent was resumed but may not wake — check the log")  # run-with-notify alerts
