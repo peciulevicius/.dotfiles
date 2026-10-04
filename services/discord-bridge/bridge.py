@@ -257,6 +257,10 @@ CHAT_INTRO = """Standing conversation between the owner and you, relayed from Di
 - Reply to each owner message with a comment here: answer, or say what you will do.
 - This issue is a chat, not a work item: do the real work in separate tasks you create and assign (link them in your reply), then report back here.
 - Never mark this issue done or cancelled; leave it in progress between messages.
+- Post exactly ONE comment per owner message: your reply. Every comment here is
+  relayed to the owner's phone, so never post status notes, "already handled",
+  "no action needed" or disposition confirmations. If a wake brings no new owner
+  message, set the status to in_progress with no comment and stop.
 """
 
 
