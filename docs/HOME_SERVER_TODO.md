@@ -866,8 +866,8 @@ Notes on the list:
 - **SearXNG:** `upgrade-service.sh odysseus` doesn't work — Odysseus runs from
   its upstream checkout, so there is no `services/odysseus/docker-compose.yml`.
   Don't edit the upstream checkout (it creates a local modification that
-  blocks `git pull`); pin it with a `docker-compose.override.yml` next to it, or
-  wait for upstream to bump it. Was: `upgrade-service.sh odysseus
+  blocks `git pull`); pin it in the tracked `services/odysseus/docker-compose.override.yml`
+  (staged by `setup-services.sh`), or wait for upstream to bump it. Was: `upgrade-service.sh odysseus
   --image searxng` whenever convenient.
 - **Jellyfin:** WUD proposed a dated build (`12.1.2026…`); the
   `wud.tag.include` label (plain `X.Y.Z` only) applies on the next recreate and

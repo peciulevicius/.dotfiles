@@ -191,6 +191,15 @@ stage_service() {
     log_ok "$svc: copied $(basename "$script")"
   done
 
+  # Copy a scripts/ directory mounted into the container (e.g. paperless-ngx
+  # post-consume hooks). Mirrors it, so removed scripts disappear too.
+  if [[ -d "$svc_dir/scripts" ]]; then
+    rm -rf "$dest_dir/scripts"
+    cp -R "$svc_dir/scripts" "$dest_dir/scripts"
+    find "$dest_dir/scripts" -name '*.sh' -exec chmod +x {} +
+    log_ok "$svc: copied scripts/"
+  fi
+
   # Copy any config files mounted into the container (e.g. couchdb/local.ini)
   for conf in "$svc_dir"/*.ini "$svc_dir"/*.conf; do
     [[ -f "$conf" ]] || continue
