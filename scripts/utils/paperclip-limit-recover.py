@@ -64,15 +64,21 @@ now = time.time()
 failures = 0
 RETRY_TEXT = "automatic retry: your last run stopped on a usage limit; the limit should have reset. Continue where you left off."
 # Retry comments that failed on an earlier run (the agent is no longer in `error`).
-still_pending = []
-for p in ([] if DRY else state.get("pending", [])):
+def save_state():
+    STATE.write_text(json.dumps(state))
+    os.chmod(STATE, 0o600)
+
+
+for p in list([] if DRY else state.get("pending", [])):
     try:
-        api("POST", f"/api/issues/{p['issue']}/comments", {"body": f"@{p['agent']} {RETRY_TEXT}"})
+        issue = api("GET", f"/api/issues/{p['issue']}")
+        # Only nudge if the same agent still owns an open, in-progress task.
+        if issue.get("assigneeAgentId") == p.get("agent_id") and issue["status"] == "in_progress":
+            api("POST", f"/api/issues/{p['issue']}/comments", {"body": f"@{p['agent']} {RETRY_TEXT}"})
+        state["pending"].remove(p)
+        save_state()  # persist each success, so a later failure can't cause a duplicate nudge
     except Exception as error:
         print(f"  pending comment on {p['issue']} failed again: {error}")
-        still_pending.append(p)
-if not DRY:
-    state["pending"] = still_pending
 for company in api("GET", "/api/companies"):
     cid = company["id"]
     feed = attention(cid)
@@ -111,7 +117,7 @@ for company in api("GET", "/api/companies"):
             except Exception as error:
                 print(f"  comment on {i['identifier']} failed: {error}")
                 failures += 1
-                state.setdefault("pending", []).append({"issue": i["id"], "agent": name})
+                state.setdefault("pending", []).append({"issue": i["id"], "agent": name, "agent_id": agent["id"]})
 
 if not DRY:
     STATE.parent.mkdir(parents=True, exist_ok=True)

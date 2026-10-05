@@ -127,6 +127,7 @@ stage_service() {
     for py in "$svc_dir"/*.py; do
       [[ -f "$py" ]] && log_info "[dry-run] Would copy $(basename "$py")"
     done
+    [[ -d "$svc_dir/scripts" ]] && log_info "[dry-run] Would sync scripts/ (rsync --delete, in place)"
     for yml in "$svc_dir"/*.yml; do
       [[ -f "$yml" && "$(basename "$yml")" != "docker-compose.yml" ]] && log_info "[dry-run] Would copy $(basename "$yml")"
     done
@@ -193,11 +194,13 @@ stage_service() {
 
   # Copy a scripts/ directory mounted into the container (e.g. paperless-ngx
   # post-consume hooks). Mirrors it, so removed scripts disappear too.
+  # Synced in place (rsync --delete), never rm+recreate: the directory may be
+  # bind-mounted into a running container, which would keep the old inode.
   if [[ -d "$svc_dir/scripts" ]]; then
-    rm -rf "$dest_dir/scripts"
-    cp -R "$svc_dir/scripts" "$dest_dir/scripts"
+    mkdir -p "$dest_dir/scripts"
+    rsync -a --delete "$svc_dir/scripts/" "$dest_dir/scripts/"
     find "$dest_dir/scripts" -name '*.sh' -exec chmod +x {} +
-    log_ok "$svc: copied scripts/"
+    log_ok "$svc: synced scripts/"
   fi
 
   # Copy any config files mounted into the container (e.g. couchdb/local.ini)

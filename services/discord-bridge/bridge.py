@@ -237,7 +237,9 @@ async def on_message(msg: discord.Message) -> None:
         t["seen"].append(c.get("id"))
         save_state(state)
         if status in ("done", "cancelled", "blocked"):
-            await pc.reopen(t["issue_id"], (await pc.issue(t["issue_id"]))["status"])
+            now = (await pc.issue(t["issue_id"]))["status"]
+            if now in ("done", "cancelled", "blocked"):
+                await pc.reopen(t["issue_id"], now)
         await msg.add_reaction("📨")
         return
 
@@ -343,7 +345,9 @@ async def chat(msg: discord.Message, target: dict, text: str) -> None:
         # and before reopening: reopening wakes the agent, which must see them.
         comment = await pc.comment(c["issue_id"], f"@{target['name']} {text}\n\n_(via Discord)_")
         if c.pop("_status", None) in ("done", "cancelled", "blocked"):
-            await pc.reopen(c["issue_id"], (await pc.issue(c["issue_id"]))["status"])
+            now = (await pc.issue(c["issue_id"]))["status"]  # a human comment may already have reopened it
+            if now in ("done", "cancelled", "blocked"):
+                await pc.reopen(c["issue_id"], now)
         thread = await chat_thread(msg.channel, c, target)
         state["threads"][str(thread.id)]["seen"].append(comment.get("id"))
         save_state(state)
