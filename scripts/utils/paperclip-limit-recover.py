@@ -31,7 +31,10 @@ def api(method, path, body=None):
         return json.load(r)
 
 
-QUOTA_MARKERS = ("terminal limit failure", "usage limit", "rate limit", "limit reached", "provider_quota")
+# "process lost": the run's subprocess died (host sleep / memory squeeze, seen
+# 2026-10-08 01:51–06:01) — as safe to retry as a quota stop.
+QUOTA_MARKERS = ("terminal limit failure", "usage limit", "rate limit", "limit reached", "provider_quota",
+                 "process lost")
 
 
 def is_quota_failure(excerpt):
