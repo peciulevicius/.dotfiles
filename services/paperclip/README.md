@@ -912,7 +912,8 @@ the Studio's Frontend Developer stuck for ~7 hours. `scripts/utils/paperclip-lim
 (cron every 15 min, log `~/logs/paperclip-limit-recover.log`) reads each
 company's attention feed (all pages) for `agent_error_alert`s on `claude_local`
 agents whose reason is a subscription-quota failure ("terminal limit failure",
-usage/rate limit), and once the error is ≥30 min old resumes the agent and
+usage/rate limit) or a lost run process ("Process lost — server may have
+restarted", e.g. the host slept), and once the error is ≥30 min old resumes the agent and
 @mentions it on its **in-progress** task only — todo/blocked tasks are left
 alone, as they may be waiting on dependencies — at most once an hour per agent (state in
 `~/.config/homelab/paperclip-limit-recover.json`). Other errors are left alone.
