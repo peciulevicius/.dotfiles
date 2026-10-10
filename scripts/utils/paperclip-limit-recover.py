@@ -16,6 +16,10 @@ from pathlib import Path
 BASE = "http://127.0.0.1:3100"
 COOLDOWN_MIN = int(os.environ.get("COOLDOWN_MIN", "30"))
 RETRY_MIN = int(os.environ.get("RETRY_MIN", "60"))
+# Resume at most this many agents per run (cron every 15 min): after a host
+# sleep/memory squeeze many runs die together, and resuming them all at once
+# would recreate the squeeze.
+MAX_RESUMES = int(os.environ.get("MAX_RESUMES", "2"))
 STATE = Path.home() / ".config/homelab/paperclip-limit-recover.json"
 DRY = "--dry-run" in sys.argv
 
@@ -65,7 +69,10 @@ except (FileNotFoundError, ValueError):
 api("POST", "/api/auth/sign-in/email", {"email": "dziugas@peciulevicius.com", "password": password})
 now = time.time()
 failures = 0
-RETRY_TEXT = "automatic retry: your last run stopped on a usage limit; the limit should have reset. Continue where you left off."
+resumed = 0
+RETRY_TEXT = ("automatic retry: your last run stopped (usage limit or a lost process). Before redoing "
+              "anything, check what the interrupted run already did (comments, files, deploys) so "
+              "nothing runs twice, then continue where you left off.")
 # Retry comments that failed on an earlier run (the agent is no longer in `error`).
 def save_state():
     STATE.write_text(json.dumps(state))
@@ -104,6 +111,9 @@ for company in api("GET", "/api/companies"):
         if now - state.get(agent["id"], 0) < RETRY_MIN * 60:
             print(f"{company['name']}/{name}: retried < {RETRY_MIN} min ago, waiting")
             continue
+        if resumed >= MAX_RESUMES:
+            print(f"{company['name']}/{name}: resume cap ({MAX_RESUMES}) reached this run, next run")
+            continue
         if issues is None:
             data = api("GET", f"/api/companies/{cid}/issues?limit=200")
             issues = data.get("items", data) if isinstance(data, dict) else data
@@ -112,6 +122,7 @@ for company in api("GET", "/api/companies"):
         if DRY:
             continue
         api("POST", f"/api/agents/{agent['id']}/resume", {})
+        resumed += 1
         state[agent["id"]] = now  # recorded before the comments: a failed comment must not cause a resume loop
         STATE.write_text(json.dumps(state))
         for i in stranded:
