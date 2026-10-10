@@ -915,7 +915,9 @@ agents whose reason is a subscription-quota failure ("terminal limit failure",
 usage/rate limit) or a lost run process ("Process lost — server may have
 restarted", e.g. the host slept), and once the error is ≥30 min old resumes the agent and
 @mentions it on its **in-progress** task only — todo/blocked tasks are left
-alone, as they may be waiting on dependencies — at most once an hour per agent (state in
+alone, as they may be waiting on dependencies — at most two agents per run (staggered, so a mass process loss doesn't
+recreate the memory squeeze), at most once an hour per agent; the retry note
+tells the agent to check what the interrupted run already did first (state in
 `~/.config/homelab/paperclip-limit-recover.json`). Other errors are left alone.
 `--dry-run` prints what it would do.
 
