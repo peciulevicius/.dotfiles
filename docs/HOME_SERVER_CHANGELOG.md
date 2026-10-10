@@ -6,6 +6,16 @@ is often what you need when something similar breaks again.
 
 Newest first-ish; dates are when the work was finished.
 
+## 2026-10-10 — NAS back on after the owner's week away
+
+All 13 NAS-dependent containers restarted, FlareSolverr stopped again,
+`BACKUP_IMMICH_PHOTOS=true` restored. With a fresh SMB mount, Immich can read
+122 of the 138 thumbnail-less video originals; 16 iPhone clips (mostly
+11–18 Sept) are genuinely gone from the NAS and only 2 are in R2 — they need a
+re-upload from the phone (TODO 🔌). Lesson: an `ESTALE` in the container is a
+stale mount, not data loss — restart the container before concluding files
+are gone.
+
 ## 2026-10-03 — Payslips tidy in Paperless; chats unstick themselves; NAS off for a week
 
 - **Paperless:** payslips get a month title from their own text ("September

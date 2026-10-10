@@ -196,20 +196,21 @@ Section names in *italics* are headings below.
 
 - 👤 Optional: Uptime Kuma **DNS** monitor for the resolver chain (Kuma has no monitor API — UI step): + Add New Monitor → DNS → hostname `example.com`, resolver `host.docker.internal` port 53 → alerts if Pi-hole *or* unbound stops answering.
 
-### 🔌 NAS is OFF for the owner's week away (since 2026-10-03)
+### 🔌 NAS back on (2026-10-10) — leftovers
 
-Stopped containers are listed in `~/.config/homelab/nas-off-stopped.txt`;
-`BACKUP_IMMICH_PHOTOS=false` in `~/services/rclone/.env`. Full reversal steps:
-`~/ai-memory/handoffs/2026-10-03-claude-code.md` → *NAS OFF*.
-
-- [ ] 👤 **Turn the NAS on** (physical power button) and tell Claude "NAS on" —
-      it restarts the stopped containers (Immich first), re-enables the photo
-      backup, and re-checks the Immich videos (41 of the "missing" 49 were a
-      stale Docker view of the SMB share; 8 still to check).
+- [x] ~~NAS off for the week, services stopped and restarted~~ — back 2026-10-10,
+      all 13 containers restarted (FlareSolverr stopped again), photo backup on.
+- [ ] 👤 **Immich: 16 video originals really are missing** (iPhone clips
+      `IMG_0200`, `IMG_1023`, `IMG_1174`, `IMG_1350`–`IMG_1390`, mostly
+      11–18 Sept 2026). They're probably still on the iPhone. Check Photos, then
+      in Immich delete those broken entries (they show "error loading") and
+      empty the trash, so the Immich app re-uploads them. Only 2 of the 16 are in R2.
+- [ ] 👤 Immich → Administration → Jobs → **Generate Thumbnails → Missing**
+      (122 videos have readable originals but no thumbnail).
+- [ ] Delete the R2 rescue copy `immich-rescue-2026-10-03` (41 files, all present
+      on the NAS — the "missing 49" was a stale SMB view in the container).
 - [ ] 👤 **Enable Wake-on-LAN in UGOS** (Control Panel → Hardware & Power), so
-      the NAS can be started remotely next time. Then Claude adds a
-      `wake-nas` script (magic packet from the Mac mini, MAC from the router's
-      client list) and documents it in `NAS.md`.
+      the NAS can be started remotely; then Claude adds a `wake-nas` script.
 
 ### 🏭 Studio — autonomous (2026-10-02)
 
