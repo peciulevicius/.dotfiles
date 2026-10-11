@@ -209,6 +209,18 @@ Section names in *italics* are headings below.
 - [x] ~~Delete the R2 rescue copy~~ — purged 2026-10-11.
 - [x] ~~Wake-on-LAN~~ — enabled in UGOS; `scripts/utils/wake-nas.sh` (see `NAS.md`), 2026-10-11.
 
+### 💾 Disk space after the 2026-10-11 upgrades
+
+Free space dropped to 9.6 GB (new images + pre-upgrade backups). Removed the
+intermediate `nextcloud:31–34` images → 17 GB free.
+- [ ] **After ~2026-10-18, if all is fine:** `docker rmi nextcloud:30-apache
+      jellyfin/jellyfin:10.10.7 louislam/uptime-kuma:1.23.17 syncthing/syncthing:1.30.0`
+      (~3.4 GB of rollback images) and delete the 2026-09-25 / 2026-10-11 dirs in
+      `~/backups/` (~2.5 GB).
+- Note: Immich "Storage space" and Jellyfin "Paths" show ~57 TiB — a Docker
+  Desktop file-sharing (VirtioFS) reporting bug for bind mounts, not real. Real
+  numbers: `df -h /` on the host, UGOS for the NAS, Glance, `homelab-audit.sh`.
+
 ### 🛒 Barbora weekly order — as automated as possible (requested 2026-10-11)
 
 Goal: the Dietitian picks next week's food, checks what's in stock and fills the
