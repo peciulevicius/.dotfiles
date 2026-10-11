@@ -205,12 +205,10 @@ Section names in *italics* are headings below.
       11–18 Sept 2026). They're probably still on the iPhone. Check Photos, then
       in Immich delete those broken entries (they show "error loading") and
       empty the trash, so the Immich app re-uploads them. Only 2 of the 16 are in R2.
-- [ ] 👤 Immich → Administration → Jobs → **Generate Thumbnails → Missing**
-      (122 videos have readable originals but no thumbnail).
+- [x] ~~Immich Generate Thumbnails → Missing~~ — run by the owner 2026-10-11.
 - [ ] Delete the R2 rescue copy `immich-rescue-2026-10-03` (41 files, all present
       on the NAS — the "missing 49" was a stale SMB view in the container).
-- [ ] 👤 **Enable Wake-on-LAN in UGOS** (Control Panel → Hardware & Power), so
-      the NAS can be started remotely; then Claude adds a `wake-nas` script.
+- [x] ~~Wake-on-LAN~~ — enabled in UGOS; `scripts/utils/wake-nas.sh` (see `NAS.md`), 2026-10-11.
 
 ### 🏭 Studio — autonomous (2026-10-02)
 

@@ -70,3 +70,6 @@ PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin
 */15 * * * * ~/.dotfiles/scripts/utils/run-with-notify.sh "Paperclip limit recovery" ~/.dotfiles/scripts/utils/paperclip-limit-recover.py >> ~/logs/paperclip-limit-recover.log 2>&1
 # Monthly: remind to check prepaid AI credits + subscriptions (list lives privately in the Obsidian vault)
 0 10 1 * * /bin/bash -c 'source ~/.dotfiles/scripts/lib/notify.sh && notify_discord "💳 Monthly money check" "Check prepaid balances (OpenRouter, Anthropic console, Codex usage) and update Obsidian → 💰 Finance/Subscriptions & Credits." info reminders' >> ~/logs/monthly-reminder.log 2>&1
+# One-off reminders (year-guarded so they fire once and the line can stay tracked; delete after).
+0 10 25 10 * [ "$(date +\%Y)" = 2026 ] && /bin/bash -c 'source ~/.dotfiles/scripts/lib/notify.sh && notify_discord "⏰ Cancel the Tailscale Mullvad add-on TODAY" "Deadline 26 Oct (renews ~28 Oct). login.tailscale.com/admin/settings/billing → Mullvad add-on → cancel. See docs/HOME_SERVER_TODO.md." warning reminders'
+0 10 27 10 * [ "$(date +\%Y)" = 2026 ] && /bin/bash -c 'source ~/.dotfiles/scripts/lib/notify.sh && notify_discord "⏰ Tailnet move due 28 Oct" "Move to the own-domain tailnet / Headscale now that Mullvad is cancelled. See memory note + docs/HOME_SERVER_TODO.md." warning reminders'
