@@ -246,6 +246,12 @@ async def on_message(msg: discord.Message) -> None:
     target = CHANNELS.get(msg.channel.id)
     if not target:
         return
+    if "company_id" not in target:
+        # on_ready may not have finished (e.g. Paperclip was down at startup);
+        # resolve lazily instead of dropping the owner's message.
+        target["company_id"] = (await pc.agent(target["agent_id"]))["companyId"]
+        COMPANY_OF_CHANNEL[msg.channel.id] = target["company_id"]
+        DEFAULT_CHANNEL.setdefault(target["company_id"], msg.channel.id)
     # "/task ..." keeps the old behaviour: a separate issue + thread.
     if text.lower().startswith("/task "):
         await new_task(msg, target, text[6:].strip())
