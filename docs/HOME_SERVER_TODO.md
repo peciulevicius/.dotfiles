@@ -904,7 +904,15 @@ Oldest and most exposed first:
   - **Stirling PDF 2.14 → 3.x**: 2.14.3 taken 2026-09-26 (changelog). WUD
     still reports 3.0.0 as newest (2026-09-28) — wait for a 3.0.x point
     release, re-read its notes, check `SECURITY_ENABLELOGIN=false` still applies.
-  - **Nextcloud 30 → 31 → 32 …**: 30 is end-of-life. Must step one major at
+  - ✅ **Nextcloud 30 → 35.0.1 — done 2026-10-11**, one major at a time
+    (31.0.14 → 32.0.15 → 33.0.9 → 34.0.4 → 35.0.1), each verified with `occ
+    status` (no maintenance, no pending DB upgrade). 51 apps enabled, users and
+    files intact. Full data tar in `~/backups/nextcloud-2026-10-11/`.
+  - [ ] Nextcloud background jobs last ran ~19 days ago: it is scale-to-zero, so
+    no cron fires while it sleeps. Options: a host cron that wakes it daily
+    (`curl` via Caddy) then runs `occ background:cron`, or accept it (low
+    usage). Decide alongside the Nextcloud keep-or-remove question.
+  Original plan (Nextcloud 30 → 31 → 32 …): 30 is end-of-life. Must step one major at
     a time (`occ upgrade` each), maintenance mode, MariaDB dump first
     (`backup-databases.sh`), check apps compatibility per step. Biggest job
     here — schedule an evening.

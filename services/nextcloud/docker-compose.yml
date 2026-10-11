@@ -29,7 +29,7 @@ services:
 
   nextcloud:
     container_name: nextcloud
-    image: nextcloud:30-apache
+    image: nextcloud:35-apache
     restart: unless-stopped
     labels:
       - "sablier.enable=true"

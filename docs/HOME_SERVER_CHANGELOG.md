@@ -16,6 +16,9 @@ Newest first-ish; dates are when the work was finished.
 - Uptime Kuma `1.23.17` → `2.5.5`. Heartbeat retention cut 180 → 30 days and
   old rows pruned + VACUUM first (658 → 99 MB) so the v2 data migration stays
   short; 24 monitors and 2 notifiers carried over.
+- Nextcloud `30` (EOL) → `35.0.1`, stepped 31→32→33→34→35 with
+  `upgrade-service.sh --image nextcloud:` and an `occ status` check between
+  steps; data dir tarred first. MariaDB 11.4 unchanged (supported).
 - `scripts/utils/wake-nas.sh` (WoL), Mullvad/tailnet reminders, R2 rescue copy
   purged; 24 stale pre-change backups (~4.5 GB) removed by the owner.
 
