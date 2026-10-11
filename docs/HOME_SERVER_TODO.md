@@ -884,7 +884,9 @@ Oldest and most exposed first:
     mid-migration). Backup: stop, tar `~/services/jellyfin/data/config`
     (~200MB, cache excluded). Rollback: restore the tar + `10.10.7` tag — a
     10.11 DB will not open on 10.10. Check client app versions first.
-  - **Uptime Kuma 1.23 → 2.x**: 2.0 migrates SQLite in place (heartbeat table
+  - ✅ **Uptime Kuma 1.23 → 2.5.5 — done 2026-10-11** (heartbeats trimmed to 30
+    days first: 4.1M → 718k rows, 658 → 99 MB; retention now 30 days; data/ copy
+    in `~/backups/uptime-kuma-2026-10-11/`). Original plan: 2.0 migrates SQLite in place (heartbeat table
     rewrite; minutes on a 1.3GB `kuma.db` — trim heartbeat retention first)
     and can optionally move to MariaDB. Backup: stop, copy `data/`. Rollback:
     restore `data/` + `1.23.17`. Watch the Discord notifier and the

@@ -13,6 +13,9 @@ Newest first-ish; dates are when the work was finished.
   backed up to `~/backups/jellyfin-2026-10-11/config.tgz` first.
 - Syncthing `1.30.0` → `2.1.5` (one-way index migration to SQLite, 125 files,
   instant); `obsidian-vault` folder and both paired devices intact.
+- Uptime Kuma `1.23.17` → `2.5.5`. Heartbeat retention cut 180 → 30 days and
+  old rows pruned + VACUUM first (658 → 99 MB) so the v2 data migration stays
+  short; 24 monitors and 2 notifiers carried over.
 - `scripts/utils/wake-nas.sh` (WoL), Mullvad/tailnet reminders, R2 rescue copy
   purged; 24 stale pre-change backups (~4.5 GB) removed by the owner.
 
