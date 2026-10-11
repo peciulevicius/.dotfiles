@@ -206,8 +206,7 @@ Section names in *italics* are headings below.
       in Immich delete those broken entries (they show "error loading") and
       empty the trash, so the Immich app re-uploads them. Only 2 of the 16 are in R2.
 - [x] ~~Immich Generate Thumbnails → Missing~~ — run by the owner 2026-10-11.
-- [ ] Delete the R2 rescue copy `immich-rescue-2026-10-03` (41 files, all present
-      on the NAS — the "missing 49" was a stale SMB view in the container).
+- [x] ~~Delete the R2 rescue copy~~ — purged 2026-10-11.
 - [x] ~~Wake-on-LAN~~ — enabled in UGOS; `scripts/utils/wake-nas.sh` (see `NAS.md`), 2026-10-11.
 
 ### 🏭 Studio — autonomous (2026-10-02)
@@ -878,7 +877,9 @@ Oldest and most exposed first:
 
 - [ ] **Majors NOT taken — each has a one-way data migration.** Plan per item;
       do one per sitting, never two at once:
-  - **Jellyfin 10.10 → 10.11**: 10.11 moves the library DB to EF Core,
+  - ✅ **Jellyfin 10.10 → 10.11.11 — done 2026-10-11** (migrations applied in
+    seconds; config tar in `~/backups/jellyfin-2026-10-11/`, rollback = untar +
+    `10.10.7`). Original plan: 10.11 moves the library DB to EF Core,
     one-way, and can take 10–30+ min on first start (don't restart it
     mid-migration). Backup: stop, tar `~/services/jellyfin/data/config`
     (~200MB, cache excluded). Rollback: restore the tar + `10.10.7` tag — a
