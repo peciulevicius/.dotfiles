@@ -16,6 +16,15 @@ Newest first-ish; dates are when the work was finished.
 - Uptime Kuma `1.23.17` → `2.5.5`. Heartbeat retention cut 180 → 30 days and
   old rows pruned + VACUUM first (658 → 99 MB) so the v2 data migration stays
   short; 24 monitors and 2 notifiers carried over.
+  ⚠️ Its background aggregate migration ("[DON'T STOP]") keeps running after the
+  container reports healthy. A restart during it (here: the NAS power-off test)
+  leaves `setting.migrateAggregateTableState = "migrating"` and Kuma then
+  crash-loops ("Aggregate table migration is already in progress"). Fix used:
+  stop Kuma, back up `kuma.db`, `DELETE FROM stat_minutely/stat_hourly/stat_daily`
+  and the `migrateAggregateTableState` row, start it — the migration reruns and
+  ends with the value `"migrated"`.
+- Wake-on-LAN tested from fully off: `wake-nas.sh` brought the NAS up in a few
+  minutes, shares remounted on their own.
 - Nextcloud `30` (EOL) → `35.0.1`, stepped 31→32→33→34→35 with
   `upgrade-service.sh --image nextcloud:` and an `occ status` check between
   steps; data dir tarred first. MariaDB 11.4 unchanged (supported).
