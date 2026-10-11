@@ -889,7 +889,9 @@ Oldest and most exposed first:
     and can optionally move to MariaDB. Backup: stop, copy `data/`. Rollback:
     restore `data/` + `1.23.17`. Watch the Discord notifier and the
     `status.` page after.
-  - **Syncthing 1 → 2**: v2 replaces the LevelDB index with SQLite (migrated
+  - ✅ **Syncthing 1.30 → 2.1.5 — done 2026-10-11** (LevelDB → SQLite migration,
+    125 files, <1 s; config tar in `~/backups/syncthing-2026-10-11/`). 👤 Update
+    the phone/desktop Syncthing apps soon. Original plan: v2 replaces the LevelDB index with SQLite (migrated
     on first start, one-way) and drops some legacy options. Backup
     `data/config`; rollback = restore it + `1.30.0` (index rescans). Upgrade
     the phone/desktop peers soon after — v2 still talks to v1 peers.
