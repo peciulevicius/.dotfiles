@@ -767,6 +767,24 @@ only runs when asked.
 expect gaps and a "could not verify" note rather than a guess. Long searches use
 tokens; keep requests specific.
 
+### Library — reading companion (live, 2026-10-11)
+
+One agent, **Librarian** (`claude_local`, `claude-sonnet-5`, heartbeat off,
+wake on demand, board approval on). Company prefix `LIB`. Recommends what to
+read next (3 options, one pick, with *why him / why now*), keeps a reading log
+with takeaways, and builds goal-based reading lists. It never downloads, buys
+or suggests acquiring copies, and it can't reach Calibre-Web/Audiobookshelf —
+it works from what the owner tells it.
+
+**Instructions:** `library-agents-addendum.md` + `shared-ai-memory-addendum.md`
+appended to its AGENTS.md. **Notebook** `~/ai-memory/library/`:
+`reading-log.md`, `to-read.md`, `interests.md`. **Chat:** `#ai-library`
+(created by the bridge bot, mapped in `CHANNEL_MAP` as `…:Librarian`). No routine.
+
+Why this agent and not others: of the Claude.ai export projects, reading has
+recurring work and data (the Kindle/Calibre setup); real estate is too
+occasional and stays a chat, Finance and Travel already exist.
+
 ## Skills (Studio, 2026-09-29)
 
 Eleven vetted third-party skills are installed in the **Studio** company's
