@@ -14,6 +14,7 @@ click. Items resolved elsewhere get their buttons removed.
 
 import asyncio
 import json
+import re
 import logging
 import os
 from pathlib import Path
@@ -51,6 +52,11 @@ CONSUME_MAX_BYTES = 20 * 1024 * 1024
 POLL_SECONDS = int(os.environ.get("POLL_SECONDS", "30"))
 STATE_FILE = Path(os.environ.get("STATE_FILE", "/data/state.json"))
 DISCORD_LIMIT = 1900
+# Status-only agent comments ("Confirmed in_progress.") are never relayed: a
+# stale Paperclip continuation flag woke the Coach dozens of times and each
+# wake posted one of these to the owner's phone (2026-10-11).
+NOISE = re.compile(r"^\s*(status\s+in[_ ]progress|confirmed\s+in[_ ]progress|no (new owner message|action needed)|already handled)\b",
+                   re.IGNORECASE)
 ATTENTION_KINDS = {"issue_thread_interaction", "approval", "blocker_attention"}
 NO_PING = discord.AllowedMentions(everyone=False, roles=False, users=True)
 
@@ -264,11 +270,13 @@ CHAT_INTRO = """Standing conversation between the owner and you, relayed from Di
 
 - Reply to each owner message with a comment here: answer, or say what you will do.
 - This issue is a chat, not a work item: do the real work in separate tasks you create and assign (link them in your reply), then report back here.
-- Never mark this issue done or cancelled; leave it in progress between messages.
+- Never mark this issue done or cancelled. After replying, set it to in_review:
+  that parks the chat (no automatic "continue" wakes); the owner's next message
+  wakes you again.
 - Post exactly ONE comment per owner message: your reply. Every comment here is
   relayed to the owner's phone, so never post status notes, "already handled",
   "no action needed" or disposition confirmations. If a wake brings no new owner
-  message, set the status to in_progress with no comment and stop.
+  message, set the status to in_review with no comment and stop.
 """
 
 
@@ -367,6 +375,12 @@ async def poll_loop() -> None:
             try:
                 new = [c for c in await pc.comments(t["issue_id"])
                        if c.get("authorType") == "agent" and c["id"] not in t["seen"]]
+                noise = [c for c in new if NOISE.match(c.get("body") or "")]
+                for c in noise:
+                    t["seen"].append(c["id"])
+                new = [c for c in new if c not in noise]
+                if noise and not new:
+                    save_state(state)
                 if not new:
                     continue
                 thread = client.get_channel(int(thread_id)) or await client.fetch_channel(int(thread_id))
