@@ -11,6 +11,8 @@ Newest first-ish; dates are when the work was finished.
 - Jellyfin `10.10.7` → `10.11.11` with `upgrade-service.sh` (`TIMEOUT=1800`
   for the one-way EF Core migration, which in practice took seconds). Config
   backed up to `~/backups/jellyfin-2026-10-11/config.tgz` first.
+- Syncthing `1.30.0` → `2.1.5` (one-way index migration to SQLite, 125 files,
+  instant); `obsidian-vault` folder and both paired devices intact.
 - `scripts/utils/wake-nas.sh` (WoL), Mullvad/tailnet reminders, R2 rescue copy
   purged; 24 stale pre-change backups (~4.5 GB) removed by the owner.
 
