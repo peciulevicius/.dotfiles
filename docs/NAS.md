@@ -122,3 +122,19 @@ T7 keeps the pre-migration copy as fallback. Before unplugging:
 1. Update rclone/T5 backup scripts to read from NAS paths
 2. A few days of green backups + stable services
 3. Then: wipe, repurpose as local backup target (T5 stays offsite)
+
+## Waking the NAS remotely (Wake-on-LAN)
+
+WoL is enabled in UGOS (confirmed 2026-10-11). From anywhere you can SSH into
+the Mac mini (Tailscale, also from the phone):
+
+```bash
+~/.dotfiles/scripts/utils/wake-nas.sh
+```
+
+It broadcasts a magic packet on the LAN (ports 9 and 7) to the MAC in
+`~/.config/homelab/nas.env` (`NAS_MAC`, `NAS_HOST`; kept out of the repo), then
+waits up to 3 min for `DH4300PLUS-DP.local` to answer. The SMB shares come back
+via `nas-watchdog.sh`. Only works while the NAS has power and its Ethernet
+link — it can't help if the plug was pulled. Shut it down from UGOS as usual.
+
