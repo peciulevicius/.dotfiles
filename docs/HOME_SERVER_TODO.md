@@ -214,8 +214,7 @@ Section names in *italics* are headings below.
 - [x] ~~Autonomy charter, playbook, lean roster, routines, digest webhook~~ —
       see `services/paperclip/README.md` → *Autonomy charter*.
 - [x] ~~Agent → Discord delivery test~~ — `#ai-agents` webhook returned 204.
-- [ ] 👤 **Buy Claude Max 5x** (owner's call 2026-10-02: also for own coding,
-      chats, Odysseus). Then update `💰 Finance/Subscriptions & Credits.md`.
+- [x] ~~Buy Claude Max 5x~~ — upgraded 2026-10-11. 👤 Update `💰 Finance/Subscriptions & Credits.md` (Max 5x, its $100/month API credit; Claude Pro gone).
 - [x] ~~Studio Cloudflare account + token~~ — 2026-10-02. Added as a second
       account under the owner's Cloudflare login (*Add account*, email
       `studio@peciulevicius.com`); token `studio-agents` (Pages edit + Workers KV
