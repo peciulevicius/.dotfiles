@@ -6,6 +6,18 @@ is often what you need when something similar breaks again.
 
 Newest first-ish; dates are when the work was finished.
 
+## 2026-10-11 — Library agent; bridge fixes; NAS SMB password rotated
+
+- New Paperclip company **Library** with one agent, **Librarian** (`#ai-library`).
+- Discord bridge: messages were dropped (`KeyError: company_id`) after an
+  incomplete startup — company now resolved on demand; status-only chatter
+  filtered and chats park in `in_review` (a stale continuation flag had the
+  Coach post "Confirmed in_progress" dozens of times).
+- NAS `macmini` SMB password changed in UGOS; macOS Keychain updated (verified
+  with `smbutil view`). Bitwarden CLI 2026.9.x crashes on unlock against
+  Vaultwarden 1.37.3 (key-id backfill endpoint missing) — pinned 2026.8.0 in
+  `~/.local/bw-cli/` for scripts.
+
 ## 2026-10-11 — Jellyfin 10.11, Wake-on-LAN
 
 - Jellyfin `10.10.7` → `10.11.11` with `upgrade-service.sh` (`TIMEOUT=1800`

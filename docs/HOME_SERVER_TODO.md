@@ -209,6 +209,23 @@ Section names in *italics* are headings below.
 - [x] ~~Delete the R2 rescue copy~~ — purged 2026-10-11.
 - [x] ~~Wake-on-LAN~~ — enabled in UGOS; `scripts/utils/wake-nas.sh` (see `NAS.md`), 2026-10-11.
 
+### 🛒 Barbora weekly order — as automated as possible (requested 2026-10-11)
+
+Goal: the Dietitian picks next week's food, checks what's in stock and fills the
+Barbora cart; the owner only pays.
+- [ ] Investigate Barbora's web app API in a supervised session (owner logged in
+      in Chrome): product search, stock/availability, add-to-cart. No public API
+      exists; an unofficial client may break and may be against Barbora's terms —
+      check before building.
+- [ ] If viable: a small local service the Dietitian calls (search/stock/cart),
+      authenticated with the owner's own session cookie stored as a Paperclip
+      secret — never his password, never checkout/payment.
+- [ ] Fallback that works today: Dietitian writes the list in
+      `#ai-training-dietitian`, Claude fills the cart via Claude in Chrome while
+      the owner is logged in; owner pays.
+- [ ] Transmission has no VPN exit since the Mullvad add-on was cancelled
+      (2026-10-11); kill switch prevents leaks. Fixed by the tailnet move.
+
 ### 🏭 Studio — autonomous (2026-10-02)
 
 - [x] ~~Autonomy charter, playbook, lean roster, routines, digest webhook~~ —
