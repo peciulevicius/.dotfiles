@@ -6,6 +6,14 @@ is often what you need when something similar breaks again.
 
 Newest first-ish; dates are when the work was finished.
 
+## 2026-10-11 — Jellyfin 10.11, Wake-on-LAN
+
+- Jellyfin `10.10.7` → `10.11.11` with `upgrade-service.sh` (`TIMEOUT=1800`
+  for the one-way EF Core migration, which in practice took seconds). Config
+  backed up to `~/backups/jellyfin-2026-10-11/config.tgz` first.
+- `scripts/utils/wake-nas.sh` (WoL), Mullvad/tailnet reminders, R2 rescue copy
+  purged; 24 stale pre-change backups (~4.5 GB) removed by the owner.
+
 ## 2026-10-10 — NAS back on after the owner's week away
 
 All 13 NAS-dependent containers restarted, FlareSolverr stopped again,
