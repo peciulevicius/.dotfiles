@@ -23,6 +23,10 @@ you: reply in the thread ──► bridge ──► issue comment "@Coach …" (
   still go to Paperless instead.
 - **Assignment guard:** each owner message re-assigns the chat to its agent if a
   Paperclip recovery moved it to the board user (seen 2026-10-12).
+- **Replies land in the channel (2026-10-12):** agent replies to the standing chat
+  are posted straight into the channel you wrote in, not a side thread — threads
+  were easy to miss on the phone. Old `💬 Chat with …` threads are no longer
+  relayed; write in the channel.
 - **Chat mode (2026-10-03):** a plain message in a mapped channel no longer
   creates a task. It goes into **one standing conversation per channel**: a
   Paperclip issue *"💬 Chat with the owner (<Agent>)"* plus a Discord thread
