@@ -64,6 +64,10 @@ DISCORD_LIMIT = 1900
 # wake posted one of these to the owner's phone (2026-10-11).
 NOISE = re.compile(r"^\s*(status\s+in[_ ]progress|confirmed\s+in[_ ]progress|no (new owner message|action needed)|already handled)\b",
                    re.IGNORECASE)
+# Agents narrating their own wake/bookkeeping ("this wake is a stale re-delivery",
+# "no new owner message", "disposition"…) — useful in Paperclip, noise on a phone.
+META = re.compile(r"stale (re-?)?deliver|no new owner message|duplicate comment|this wake\b|"
+                  r"\bdisposition\b|successfulRunHandoff|issue_continuation", re.IGNORECASE)
 ATTENTION_KINDS = {"issue_thread_interaction", "approval", "blocker_attention"}
 NO_PING = discord.AllowedMentions(everyone=False, roles=False, users=True)
 
@@ -411,7 +415,8 @@ async def poll_loop() -> None:
             try:
                 new = [c for c in await pc.comments(t["issue_id"])
                        if c.get("authorType") == "agent" and c["id"] not in t["seen"]]
-                noise = [c for c in new if NOISE.match(c.get("body") or "")]
+                noise = [c for c in new if NOISE.match(c.get("body") or "")
+                         or META.search((c.get("body") or "")[:300])]
                 for c in noise:
                     t["seen"].append(c["id"])
                 new = [c for c in new if c not in noise]
