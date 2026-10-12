@@ -202,6 +202,9 @@ async def on_ready() -> None:
         DEFAULT_CHANNEL[company] = ch
     log.info("logged in to Discord as %s; owner %s; channels %s; companies %s",
              client.user, OWNER_ID, list(CHANNELS), list(DEFAULT_CHANNEL))
+    for ch, c in list(state["chats"].items()):
+        if str(c.get("thread_id")) != ch and int(ch) in CHANNELS:
+            await relay_into_channel(int(ch), c, CHANNELS[int(ch)]["name"])
     client.loop.create_task(poll_loop())
     client.loop.create_task(attention_loop())
 
@@ -356,35 +359,6 @@ async def chat_issue(channel_id: int, target: dict) -> dict | None:
     return c
 
 
-async def chat_thread(channel: discord.TextChannel, c: dict, target: dict) -> discord.Thread:
-    try:
-        thread = client.get_channel(c["thread_id"]) or await client.fetch_channel(c["thread_id"])
-        if getattr(thread, "archived", False):
-            await thread.edit(archived=False)
-        return thread
-    except discord.NotFound:
-        pass
-    # Fetch history first (a failure here must not orphan a new thread). Agent
-    # replies the old thread already delivered count as seen; anything newer is
-    # still relayed into the replacement.
-    old = str(c.get("thread_id"))
-    delivered = set(state["threads"].get(old, {}).get("seen", []))
-    history = await pc.comments(c["issue_id"])
-    seen = [x["id"] for x in history if x["id"] in delivered or x.get("authorType") != "agent"] if delivered \
-        else [x["id"] for x in history]
-    thread = await channel.create_thread(name=f"💬 Chat with {target['name']} · {c['identifier']}"[:100],
-                                         type=discord.ChannelType.public_thread, auto_archive_duration=10080)
-    state["threads"].pop(old, None)
-    state["threads"][str(thread.id)] = {"issue_id": c["issue_id"], "identifier": c["identifier"],
-                                        "agent_name": target["name"], "seen": seen}
-    c["thread_id"] = thread.id
-    save_state(state)
-    await thread.send(f"💬 This is your ongoing chat with **{target['name']}** ({c['identifier']}). "
-                      "Write here or in the channel; replies land here. Start a message with `/task ` "
-                      "for a separate task instead.")
-    return thread
-
-
 async def chat(msg: discord.Message, target: dict, text: str) -> None:
     async with CHAT_LOCKS.setdefault(msg.channel.id, asyncio.Lock()):
         c = await chat_issue(msg.channel.id, target)
@@ -402,11 +376,27 @@ async def chat(msg: discord.Message, target: dict, text: str) -> None:
             now = (await pc.issue(c["issue_id"]))["status"]  # a human comment may already have reopened it
             if now in ("done", "cancelled", "blocked"):
                 await pc.reopen(c["issue_id"], now)
-        thread = await chat_thread(msg.channel, c, target)
-        state["threads"][str(thread.id)]["seen"].append(comment.get("id"))
+        await relay_into_channel(msg.channel.id, c, target["name"])
+        state["threads"][str(msg.channel.id)]["seen"].append(comment.get("id"))
         save_state(state)
-        await thread.send(f"> {clip(text, 1800)}", allowed_mentions=QUIET)
         await msg.add_reaction("💬")
+
+
+async def relay_into_channel(channel_id: int, c: dict, agent_name: str) -> None:
+    """Agent replies go straight into the channel the owner writes in — threads
+    are easy to miss, especially on the phone (2026-10-12). Migrates a chat that
+    still relays into its old thread."""
+    key = str(channel_id)
+    old_key = str(c.get("thread_id") or "")
+    if key not in state["threads"]:
+        old = state["threads"].get(old_key)
+        seen = old["seen"] if old else [x["id"] for x in await pc.comments(c["issue_id"])]
+        state["threads"][key] = {"issue_id": c["issue_id"], "identifier": c["identifier"],
+                                 "agent_name": agent_name, "seen": seen}
+    if old_key and old_key != key:
+        state["threads"].pop(old_key, None)  # stop relaying into the old thread
+    c["thread_id"] = channel_id
+    save_state(state)
 
 
 async def poll_loop() -> None:
