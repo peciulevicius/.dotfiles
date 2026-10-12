@@ -20,6 +20,8 @@ services:
       - ./data:/data
       # Paperless's consume folder: attachments from CONSUME_CHANNELS land here.
       - ${HOME}/services/paperless-ngx/data/consume:/consume
+      # Images from agent channels; agents read them at /ai-memory/attachments.
+      - ${HOME}/ai-memory/attachments:/attachments
     networks:
       - paperclip
     mem_limit: 128m

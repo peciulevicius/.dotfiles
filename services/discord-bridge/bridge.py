@@ -49,6 +49,13 @@ CONSUME_CHANNELS = {int(c) for c in os.environ.get("CONSUME_CHANNELS", "").split
 CONSUME_DIR = Path(os.environ.get("CONSUME_DIR", "/consume"))
 CONSUME_EXTS = {".pdf", ".png", ".jpg", ".jpeg"}
 CONSUME_MAX_BYTES = 20 * 1024 * 1024
+# Images posted in any agent channel/thread are saved where agents can open them:
+# host ~/ai-memory/attachments, mounted here at ATTACH_DIR and inside Paperclip
+# at /ai-memory/attachments (the path the agent is given).
+ATTACH_DIR = Path(os.environ.get("ATTACH_DIR", "/attachments"))
+AGENT_ATTACH_PREFIX = os.environ.get("AGENT_ATTACH_PREFIX", "/ai-memory/attachments")
+IMAGE_EXTS = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".heic"}
+IMAGE_MAX_BYTES = 15 * 1024 * 1024
 POLL_SECONDS = int(os.environ.get("POLL_SECONDS", "30"))
 STATE_FILE = Path(os.environ.get("STATE_FILE", "/data/state.json"))
 DISCORD_LIMIT = 1900
@@ -211,6 +218,21 @@ async def save_attachments(msg: discord.Message) -> list[str]:
     return saved
 
 
+async def save_images(msg: discord.Message) -> list[str]:
+    folder = f"{msg.created_at:%Y-%m}"
+    (ATTACH_DIR / folder).mkdir(parents=True, exist_ok=True)
+    paths = []
+    for a in msg.attachments:
+        ext = Path(a.filename).suffix.lower()
+        if ext not in IMAGE_EXTS or a.size > IMAGE_MAX_BYTES:
+            continue
+        stem = "".join(ch if ch.isalnum() or ch in "-_" else "_" for ch in Path(a.filename).stem)[:40]
+        name = f"{msg.created_at:%Y%m%d-%H%M%S}-{a.id % 100000}-{stem}{ext}"
+        await a.save(ATTACH_DIR / folder / name)
+        paths.append(f"{AGENT_ATTACH_PREFIX}/{folder}/{name}")
+    return paths
+
+
 @client.event
 async def on_message(msg: discord.Message) -> None:
     if msg.author.bot or msg.author.id != OWNER_ID:
@@ -229,6 +251,14 @@ async def on_message(msg: discord.Message) -> None:
                 await msg.reply(f"Not saved: only {', '.join(sorted(CONSUME_EXTS))} up to 20 MB are accepted.",
                                 mention_author=False)
     text = msg.content.strip()
+    in_agent_space = msg.channel.id in CHANNELS or (
+        isinstance(msg.channel, discord.Thread) and str(msg.channel.id) in state["threads"])
+    if msg.attachments and in_agent_space and msg.channel.id not in CONSUME_CHANNELS:
+        paths = await save_images(msg)
+        if paths:
+            listing = "\n".join(f"- {p}" for p in paths)
+            text = (text + "\n\n" if text else "") + f"Attached image(s) — open them with your Read tool:\n{listing}"
+            await msg.add_reaction("🖼️")
     if not text:
         return
 
@@ -312,6 +342,12 @@ async def chat_issue(channel_id: int, target: dict) -> dict | None:
         save_state(state)
     if c["agent_id"] != target["agent_id"]:
         return None
+    if issue.get("assigneeAgentId") != target["agent_id"] or issue.get("assigneeUserId"):
+        # Paperclip recovery can move a chat to the board user ("Cancelled before
+        # issue reassignment"); a message to nobody is never answered. An issue
+        # takes one assignee, so clear the user while setting the agent.
+        await pc.request("PATCH", f"/api/issues/{c['issue_id']}",
+                         json={"assigneeUserId": None, "assigneeAgentId": target["agent_id"]})
     c["_status"] = issue["status"]  # reopened by chat() only after the owner's comment is saved
     return c
 
