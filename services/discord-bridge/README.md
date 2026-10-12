@@ -15,6 +15,14 @@ Coach comments on the issue ──► bridge polls (30s) ──► posted in tha
 you: reply in the thread ──► bridge ──► issue comment "@Coach …" (the @mention wakes it)
 ```
 
+- **Images (2026-10-12):** images (png/jpg/webp/gif/heic, ≤15 MB) posted in any
+  agent channel or chat thread are saved to `~/ai-memory/attachments/<yyyy-mm>/`
+  (mounted at `/attachments`; git-ignored in ai-memory) and their
+  `/ai-memory/attachments/…` paths are appended to the message, so the agent
+  opens them with its Read tool. 🖼️ reaction = saved. `#ai-finance` PDFs/images
+  still go to Paperless instead.
+- **Assignment guard:** each owner message re-assigns the chat to its agent if a
+  Paperclip recovery moved it to the board user (seen 2026-10-12).
 - **Chat mode (2026-10-03):** a plain message in a mapped channel no longer
   creates a task. It goes into **one standing conversation per channel**: a
   Paperclip issue *"💬 Chat with the owner (<Agent>)"* plus a Discord thread
