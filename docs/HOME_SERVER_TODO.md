@@ -209,17 +209,18 @@ Section names in *italics* are headings below.
 - [x] ~~Delete the R2 rescue copy~~ — purged 2026-10-11.
 - [x] ~~Wake-on-LAN~~ — enabled in UGOS; `scripts/utils/wake-nas.sh` (see `NAS.md`), 2026-10-11.
 
-### 💾 Disk space after the 2026-10-11 upgrades
+### 💾 Disk space (internal SSD is 228 GB)
 
-Free space dropped to 9.6 GB (new images + pre-upgrade backups). Removed the
-intermediate `nextcloud:31–34` images → 17 GB free.
-- [ ] **After ~2026-10-18, if all is fine:** `docker rmi nextcloud:30-apache
-      jellyfin/jellyfin:10.10.7 louislam/uptime-kuma:1.23.17 syncthing/syncthing:1.30.0`
-      (~3.4 GB of rollback images) and delete the 2026-09-25 / 2026-10-11 dirs in
-      `~/backups/` (~2.5 GB).
+- [x] ~~Free space for Liftoff~~ — 2026-10-13: removed all rollback/unused images
+      (nextcloud 30–34, jellyfin 10.10.7, kuma 1.23.17, syncthing 1.30.0, wud 9.2.0,
+      abs 2.36.1, bazarr 1.6.1); owner removed iMovie + GarageBand, the Ollama models,
+      old `~/backups/*` and `~/Library/Caches` (~18 GB).
+- [x] ~~Weekly cleanup~~ — `scripts/utils/disk-cleanup.sh` (cron Sun 04:30): Docker
+      build cache, dangling layers, Homebrew cache. Log `~/logs/disk-cleanup.log`.
+- [ ] 👤 Decide: Steam library on an external SSD (Steam → Settings → Storage →
+      Add drive) so games never compete with the server for the internal disk.
 - Note: Immich "Storage space" and Jellyfin "Paths" show ~57 TiB — a Docker
-  Desktop file-sharing (VirtioFS) reporting bug for bind mounts, not real. Real
-  numbers: `df -h /` on the host, UGOS for the NAS, Glance, `homelab-audit.sh`.
+  Desktop file-sharing reporting bug, not real. Real numbers: `df -h /`, UGOS, Glance.
 
 ### 🛒 Barbora weekly order — as automated as possible (requested 2026-10-11)
 
