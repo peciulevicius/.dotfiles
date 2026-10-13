@@ -3,6 +3,14 @@
 Started 2026-10-11. Personal context and goals live in the private
 `~/ai-memory/projects/fpv.md`; this file is the technical runbook.
 
+## Status (2026-10-13)
+
+TX15 arrived. EdgeTX **3.0.0** (RadioMaster build), stick **Mode 2**, internal
+ELRS **3.5.5 FCC, on the 900 MHz band** as shipped ("FCC915"). Before a first
+real quad: switch the band to 2.4 GHz and decide LBT (EU-legal, reflash with
+ExpressLRS Configurator) vs FCC — receivers must match. Irrelevant for the sim.
+Storage is built in (504 MB, no SD card); config backed up to `config/edgetx/tx15/`.
+
 ## Gear
 
 | Item | Notes |
@@ -101,7 +109,8 @@ duty (since July 2026). **Buy LiPo batteries from EU shops.**
 
 ## Open items
 
-- [ ] TX15 arrives → day-one checklist above (Claude drives it).
-- [ ] Confirm LBT/FCC on the radio.
+- [x] ~~TX15 arrives → backup~~ — 2026-10-13, `config/edgetx/tx15/` + raw copy in `~/backups/edgetx/`.
+- [ ] Quad model (Multirotor wizard) + arm/beeper switches; Liftoff set up.
+- [x] ~~Confirm LBT/FCC~~ — FCC (900 MHz as shipped). Reflash to LBT + switch to 2.4 GHz before the first quad.
 - [ ] Choose the video system + goggles, then a matching BNF ELRS whoop.
 - [ ] EU operator registration + test before outdoor flying (spring).
