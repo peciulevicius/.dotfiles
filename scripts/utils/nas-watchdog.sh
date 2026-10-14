@@ -73,6 +73,15 @@ fi
 
 # Mounts are healthy on the host. Now check that each running container can
 # actually still read its bind mount — see the header for why this differs.
+# Game mode (scripts/utils/game-mode.sh) pauses Immich, Jellyfin and
+# Audiobookshelf on purpose. A paused container can't run `docker exec`, so
+# the stale-mount probe below read that as a dead mount and restarted them
+# mid-game, undoing the pause (2026-10-14 16:30). Mounts are still handled
+# above; container checks wait until game mode is off.
+if [ -f "$HOME/.config/homelab/game-mode.state" ]; then
+    exit 0
+fi
+
 STALE_STACKS=()
 for stack in "${NAS_STACKS[@]}"; do
     compose="$SERVICES_DIR/$stack/docker-compose.yml"
@@ -80,6 +89,8 @@ for stack in "${NAS_STACKS[@]}"; do
 
     for cname in $(docker compose -f "$compose" --project-directory "$SERVICES_DIR/$stack" \
                      ps --format '{{.Name}}' 2>/dev/null); do
+        # Paused by hand or by game mode: exec can't run, which isn't staleness.
+        [ "$(docker inspect -f '{{.State.Paused}}' "$cname" 2>/dev/null)" = "true" ] && continue
         for dest in $(docker inspect "$cname" \
                         --format '{{range .Mounts}}{{.Source}}>{{.Destination}}{{"\n"}}{{end}}' 2>/dev/null \
                       | grep '^/Volumes/' | cut -d'>' -f2); do
@@ -123,10 +134,16 @@ for stack in "${NAS_STACKS[@]}"; do
     compose="$SERVICES_DIR/$stack/docker-compose.yml"
     [ -f "$compose" ] || continue
 
-    # Any container belonging to this stack that isn't running?
+    # Any container belonging to this stack that isn't running? Services
+    # behind a compose profile (FlareSolverr: `ondemand`) are stopped on
+    # purpose and `up -d` won't start them anyway — skipping them stops a
+    # pointless `compose up` every run (2,745 of them by 2026-10-14).
+    # `config --services` lists only the default (non-profile) services.
+    services=$(docker compose -f "$compose" --project-directory "$SERVICES_DIR/$stack" \
+                 config --services 2>/dev/null | tr '\n' ' ')
     down=$(docker compose -f "$compose" --project-directory "$SERVICES_DIR/$stack" \
-             ps -a --format '{{.Name}} {{.State}}' 2>/dev/null \
-           | awk '$2 != "running" {print $1}')
+             ps -a --format '{{.Name}} {{.State}} {{.Service}}' 2>/dev/null \
+           | awk -v svcs=" $services" '$2 != "running" && $2 != "paused" && index(svcs, " " $3 " ") {print $1}')
 
     [ -z "$down" ] && continue
 
