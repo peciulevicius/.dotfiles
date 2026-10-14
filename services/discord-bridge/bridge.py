@@ -115,9 +115,19 @@ class Paperclip:
     async def login(self) -> None:
         # Paperclip rate-limits sign-ins (429 after a few quick restarts); retry
         # instead of failing on_ready and leaving the bot connected but idle.
-        for wait in (15, 30, 60, 120, None):
-            r = await self.http.post("/api/auth/sign-in/email", json={"email": PC_EMAIL, "password": PC_PASSWORD})
-            if r.status_code != 429 or wait is None:
+        # Paperclip may still be starting (after a Docker restart the bridge
+        # comes up first) or rate-limit sign-ins; retry instead of failing
+        # on_ready, which would leave the relay loops unstarted.
+        for wait in (5, 15, 30, 60, 120, 240, None):
+            try:
+                r = await self.http.post("/api/auth/sign-in/email", json={"email": PC_EMAIL, "password": PC_PASSWORD})
+            except httpx.TransportError:
+                if wait is None:
+                    raise
+                log.warning("Paperclip not reachable yet; retrying in %ss", wait)
+                await asyncio.sleep(wait)
+                continue
+            if r.status_code not in (429, 502, 503) or wait is None:
                 break
             log.warning("Paperclip sign-in rate-limited; retrying in %ss", wait)
             await asyncio.sleep(wait)
