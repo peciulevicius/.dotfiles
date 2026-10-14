@@ -27,7 +27,9 @@ notify() {
   source "$HOME/.dotfiles/scripts/lib/notify.sh" 2>/dev/null && notify_discord "$1" "$2" info reminders || true
 }
 
-game_running() { pgrep -fi "$GAME_PATTERNS" >/dev/null 2>&1; }
+# Match the process *name* only (no -f): matching full command lines fired on any
+# command that merely mentioned "Liftoff" (a PR description, 2026-10-14).
+game_running() { pgrep -i "^(${GAME_PATTERNS})" >/dev/null 2>&1; }
 
 turn_on() {
   [[ -f "$STATE" ]] && return 0
