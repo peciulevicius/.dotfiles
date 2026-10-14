@@ -1068,7 +1068,7 @@ paths to every app that can drift apart. **Today the tunnel already works from
 inside the house**, so this is an optimisation, not a fix. Decide before doing
 any of it.
 
-- [ ] 👤 Decide: Caddy for local HTTPS, or leave everything on the tunnel
+- [x] Decided 2026-10-14: **leave everything on the tunnel** — it already works at home; local HTTPS is an optimisation not worth a second path to every app. GitHub #17 closed. (Router DNS below is still worth doing on its own.)
 - [ ] 👤 Independent of that, and worth doing on its own: set router DNS to the
       Mac mini IP (primary) + `1.1.1.1` (fallback), so every device gets
       ad-blocking, not just the manually configured ones (see below)
@@ -1106,11 +1106,17 @@ Only if Paperless is kept — it is on-demand for now (`ondemand start
 paperless-ngx`), see *9. Maintenance backlog*. Paperless-NGX doesn't support traditional folders — it uses **tags**,
 **document types**, and **correspondents** instead.
 
-- [ ] 👤 Create document types: e.g. "Invoice", "Contract", "Receipt", "Statement"
-- [ ] 👤 Create correspondents: e.g. "Bank", "Employer", "Government"
-- [ ] 👤 Create tags: e.g. "Tax 2024", "Important", "Archive"
-- [ ] 👤 Assign types/correspondents/tags to uploaded documents
-- [ ] 👤 Use **Saved Views** (left sidebar) to create folder-like filtered views
+- [x] Document types with auto-matching: Receipt, Invoice, Contract,
+      Statement, Career, Signature (+ Payslip) — 2026-10-14
+- [x] Correspondents kept as they are: on the Austria receipts they record
+      *who paid* (Darius / Džiugas / Jolanta), which is what the trip split
+      needs. Add sender correspondents (bank, employer…) only when such
+      documents arrive — they'd be empty today.
+- [x] Tags: `Important` (signature images), `Austria 2026` kept
+- [x] All 15 documents typed; 0 left in *Needs sorting*
+- [x] Saved views (sidebar + dashboard): Payslips, Receipts, Austria 2026,
+      Needs sorting, Recently added
+Details: `services/paperless-ngx/README.md` → *Organisation*.
 
 ### Linkwarden — it's set up; the friction is Brave Shields
 
