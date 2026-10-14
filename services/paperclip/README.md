@@ -463,8 +463,17 @@ historical; the live rules are:
   asks the board to resume engineering). Original AGENTS.md files were backed
   up privately before the board sections were rewritten.
 - **Routines** (Europe/Vilnius, CEO, `coalesce_if_active`, `skip_missed`):
-  *Pipeline cycle* every 4 h around the clock (`0 */4 * * *`; the quota had room), *Daily digest* 21:00, *Weekly review*
-  Sunday 18:00. Daily standup stays paused.
+  *Pipeline cycle* hourly (`0 * * * *`) until the weekly Max reset on
+  2026-10-15 11:00, then every 2 h (`0 */2 * * *`); was every 4 h. Up to 6
+  sub-tasks in flight (was 3), and the Frontend Developer takes 3 runs at once
+  (`runtimeConfig.heartbeat.maxConcurrentRuns`, was 1) so redesign waves run in
+  parallel. *Daily digest* 21:00, *Weekly review* Sunday 18:00. Daily standup
+  stays paused.
+- **Scope** (2026-10-14): any computer-run business with **no inventory** —
+  print-on-demand, digital products, content/affiliate sites are in, and half
+  of each idea batch must come from them. Text:
+  `studio-scope-addendum.md`, appended to the CEO and Researcher AGENTS.md;
+  the private PLAYBOOK carries the same rule.
 - **Discord:** the CEO posts the digest through a `#ai-studio` webhook created
   by the bridge bot (`STUDIO_DISCORD_WEBHOOK`, a Paperclip company secret bound
   to the CEO's env; host copy `~/.config/homelab/studio-discord.env`).
