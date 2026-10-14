@@ -6,6 +6,18 @@ is often what you need when something similar breaks again.
 
 Newest first-ish; dates are when the work was finished.
 
+## 2026-10-14 — Roast Room for the Studio CEO
+
+- Roast Room vendored as a global skill (`config/claude/skills/roast-room/`,
+  seat agents in `agents/`) instead of living only in `~/dev/roast-room`.
+- Installed in the Studio skill library and attached to the CEO, with
+  `services/paperclip/studio-roast-room-addendum.md` appended to its
+  instructions: only for expensive or hard-to-undo calls, `--quick` by default,
+  run the seats one after another (Paperclip agents can't spawn sub-agents),
+  results go in an issue document.
+- REA deliberately **not** given to Studio agents: its MCP server runs only in
+  host Claude Code, and the usage rule keeps it away from autonomous agents.
+
 ## 2026-10-14 — Automatic game mode
 
 Liftoff lagged while Paperclip agents ran (Docker may use all 10 cores).
