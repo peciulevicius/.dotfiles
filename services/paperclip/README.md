@@ -795,6 +795,7 @@ same ones Claude Code uses — details in `config/claude/README.md` → *Skills*
 
 | Agent | Skills added (plus the default `paperclip` skill it already had) |
 |---|---|
+| CEO | `roast-room` (2026-10-14; when and how: `studio-roast-room-addendum.md`, appended to its AGENTS.md) |
 | UI/UX Designer | `frontend-design`, `design-taste-frontend`, `web-design-guidelines`, `design-systems-reference`, `image-to-code`, `scroll-craft` (2026-10-14) |
 | Frontend Developer (Claude since 2026-10-02; `scroll-craft` added 2026-10-14) | `frontend-design`, `web-design-guidelines`, `design-systems-reference`, `vercel-react-best-practices`, `image-to-code` |
 | Mobile Developer (Codex) | `frontend-design`, `design-systems-reference`, `vercel-react-native-skills` |

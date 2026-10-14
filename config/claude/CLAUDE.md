@@ -35,7 +35,7 @@ Džiugas — full-stack TypeScript developer. Building a SaaS product (landing +
 ## Skills — use these
 Vetted and pinned in `~/.dotfiles/config/claude/skills/` (sources in each `SOURCE.md`).
 - Building UI → `frontend-design`; landing pages/redesigns → also `design-taste-frontend`; "make it feel like X" → `design-systems-reference`
-- Premium/cinematic scroll-driven landing pages → `scroll-craft`; business decisions to stress-test → Roast Room (`~/dev/roast-room`)
+- Premium/cinematic scroll-driven landing pages → `scroll-craft`; business decisions to stress-test → `roast-room` (best from `~/dev/roast-room`)
 - Building from a screenshot/mockup → `image-to-code`
 - UI/UX/accessibility audit → `web-design-guidelines`
 - React / Next.js → `vercel-react-best-practices`; Expo / React Native → `vercel-react-native-skills`
