@@ -359,6 +359,16 @@ async def chat_issue(channel_id: int, target: dict) -> dict | None:
         save_state(state)
     if c["agent_id"] != target["agent_id"]:
         return None
+    if issue.get("executionBlocker"):
+        # A legacy "no replay" recovery hold defers every wake on the issue
+        # forever, and neither resolve nor /new clears it (STU-35, 2026-10-14:
+        # owner messages sat unanswered for hours). Retire the chat; the caller
+        # opens a fresh one.
+        log.warning("chat %s has an execution blocker; starting a new chat", c.get("identifier"))
+        await pc.comment(c["issue_id"], "Retired by the Discord bridge: a stale execution hold "
+                         "blocked every wake. The conversation continues in a new chat issue.")
+        await pc.set_status(c["issue_id"], "done")
+        return None
     if issue.get("assigneeAgentId") != target["agent_id"] or issue.get("assigneeUserId"):
         # Paperclip recovery can move a chat to the board user ("Cancelled before
         # issue reassignment"); a message to nobody is never answered. An issue
@@ -398,6 +408,11 @@ async def relay_into_channel(channel_id: int, c: dict, agent_name: str) -> None:
     still relays into its old thread."""
     key = str(channel_id)
     old_key = str(c.get("thread_id") or "")
+    if state["threads"].get(key, {}).get("issue_id") not in (None, c["issue_id"]):
+        # The chat was replaced (retired for an execution hold): relay the new
+        # issue, not the dead one, or the agent's replies never reach Discord.
+        state["threads"][key] = {"issue_id": c["issue_id"], "identifier": c["identifier"],
+                                 "agent_name": agent_name, "seen": []}
     if key not in state["threads"]:
         old = state["threads"].get(old_key)
         seen = old["seen"] if old else [x["id"] for x in await pc.comments(c["issue_id"])]

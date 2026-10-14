@@ -6,6 +6,18 @@ is often what you need when something similar breaks again.
 
 Newest first-ish; dates are when the work was finished.
 
+## 2026-10-14 — Studio chat was silently stuck; bridge now self-heals
+
+- Since 2026-10-03 every message to the Studio CEO (Discord and board
+  comments) was deferred: STU-35 carried a legacy `execution_reconciliation`
+  "no replay" hold. `recovery-actions/resolve` returns 404 for it and `/new`
+  does not clear it; `GET /api/issues/<id>/diagnostics/wakes` shows the wakes
+  as `deferred_issue_execution`.
+- Fix: STU-35 retired, new standing chat **STU-204**. The bridge now retires
+  any chat whose issue has an `executionBlocker` and opens a fresh one, and it
+  re-points the relay when a chat is replaced (before, replies on the new issue
+  would never have reached Discord).
+
 ## 2026-10-14 — Roast Room for the Studio CEO
 
 - Roast Room vendored as a global skill (`config/claude/skills/roast-room/`,

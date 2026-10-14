@@ -174,7 +174,10 @@ cd ~/services/discord-bridge && docker compose up -d --build   # after editing b
   channel, or it is a kind outside the table above.
 - **Thread gets no reply:** the agent is paused, or its run failed. Check the
   issue in Paperclip. The bridge only relays comments; it never retries
-  runs.
+  runs. If the agent is idle and `GET /api/issues/<id>/diagnostics/wakes`
+  shows `deferred_issue_execution`, the issue has a stale execution hold: the
+  bridge retires that chat and opens a new one on the owner's next message
+  (added 2026-10-14 after STU-35 swallowed messages for 11 days).
 
 ## Failure mode: item without a link (fixed 2026-10-01)
 
