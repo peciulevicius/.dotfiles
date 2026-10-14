@@ -6,6 +6,14 @@ is often what you need when something similar breaks again.
 
 Newest first-ish; dates are when the work was finished.
 
+## 2026-10-14 — Studio: faster cadence, no-inventory scope
+
+- Pipeline cycle hourly until the Max weekly reset (2026-10-15 11:00), then
+  every 2 h; 6 sub-tasks in flight; Frontend Developer 3 concurrent runs.
+- Scope widened to any computer-run business without inventory (POD on
+  Etsy/Shopify Starter, digital products, newsletters, affiliate sites);
+  `services/paperclip/studio-scope-addendum.md` applied to CEO + Researcher.
+
 ## 2026-10-14 — Studio chat was silently stuck; bridge now self-heals
 
 - Since 2026-10-03 every message to the Studio CEO (Discord and board
