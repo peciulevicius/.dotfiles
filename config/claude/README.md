@@ -70,7 +70,7 @@ See `docs/AI_COLLABORATION.md`.
 | `support-engineer` | Troubleshooting, docs |
 | `technical-writer` | READMEs, guides |
 
-## Skills (47)
+## Skills (48)
 
 Invoke with `/name`, or Claude triggers them when the task matches (skills
 marked *manual* have `disable-model-invocation: true`).
@@ -139,6 +139,7 @@ fetched at runtime and an update is a deliberate re-vendor + review.
 |-------|--------------|-----------------|---------|
 | `frontend-design` | Design direction ("taste"): subject-grounded palette/type/layout plan, reviewed against AI-default looks, then built and self-critiqued. The default design skill. | anthropics/skills @ `8a1541c` | Apache-2.0 |
 | `design-taste-frontend` | Heavier anti-slop rulebook for landing pages, portfolios and redesigns (brief → design read → dials → pre-flight checklist). ~35k tokens when loaded. | Leonxlnx/taste-skill @ `ce26fc2` | MIT |
+| `scroll-craft` | Premium scroll-driven landing pages: visitor journey, page grammar, one signature interaction per site, dimensional heroes, verified desktop/mobile/reduced-motion. Optional paid kie.ai asset generation — key **not** set. | nateherkai/scroll-craft @ `75d81f7` | MIT |
 | `web-design-guidelines` | UI audit against Vercel's Web Interface Guidelines, `file:line` findings. Rules vendored locally (upstream fetches them from `main` at runtime — removed). | vercel-labs/web-interface-guidelines @ `e3d624b` | MIT |
 | `design-systems-reference` | All 74 awesome-design-md systems as DESIGN.md token sets; 12 marked as defaults (Linear, Stripe, Supabase, Vercel, Raycast, Resend, Cal.com, Expo, Sentry, PostHog, Notion, Revolut) — derive, don't clone. Local wrapper. | VoltAgent/awesome-design-md @ `f696123` | MIT |
 | `playwright-cli` | Drive a real browser from the shell: snapshots, clicks, screenshots, tracing, test generation. CLI installed on the Mac mini 2026-09-29: `pnpm add -g @playwright/cli@0.1.22` (uses the installed Chrome; no separate browser download was needed). | microsoft/playwright-cli @ `b85c7a7` | Apache-2.0 |
@@ -223,3 +224,20 @@ git commit -m "feat: add [thing]"
 the Pro plan's weekly limit for the moments where the stronger model matters.
 Switch any time with `/model`. Note `settings.json` is **copied** into
 `~/.claude` by `setup-claude.sh` (not symlinked) — re-run it, or edit both.
+
+## Project tools outside this folder (2026-10-14)
+
+- **Roast Room** — `~/dev/roast-room` (nateherkai/roast-room @ `f5e7b63`, MIT).
+  Seven simulated advisors debate a business decision and give a verdict. It
+  runs from its own folder because it ships 7 sub-agents and writes session
+  files: `cd ~/dev/roast-room && claude`, then `/roast-room <question>`. The
+  optional Node web app is not set up. Reviewed: one local quote-checker script,
+  no network calls.
+- **REA (Reverse Engineer Anything)** — MCP server for Claude Code
+  (morluto/rea, MIT). Install once: `npx rea-agents setup` → pick Claude Code,
+  **decline Hopper** (web, JS/Electron, .NET, SQLite and Go/Rust work without
+  it) → restart Claude Code; check with `/mcp`. Remove:
+  `npm uninstall -g rea-agents` and delete its MCP entry. **Use only** for
+  interoperability, security checks and learning on software you own or use —
+  never to copy paid apps, and never wired into autonomous agents.
+
