@@ -22,6 +22,9 @@ RETRY_MIN = int(os.environ.get("RETRY_MIN", "60"))
 MAX_RESUMES = int(os.environ.get("MAX_RESUMES", "2"))
 STATE = Path.home() / ".config/homelab/paperclip-limit-recover.json"
 DRY = "--dry-run" in sys.argv
+if (Path.home() / ".config/homelab/game-mode.state").exists():
+    print(time.strftime("%F %T"), "game mode on, skipping")  # Paperclip is paused while a game runs
+    sys.exit(0)
 
 admin = (Path.home() / ".config/homelab/paperclip-admin.env").read_text()
 password = re.search(r"^PAPERCLIP_ADMIN_PASSWORD=(.*)$", admin, re.M).group(1).strip().strip("'\"")

@@ -1,4 +1,6 @@
 #!/bin/bash
+# Game mode (scripts/utils/game-mode.sh) pauses Paperclip while a game runs.
+[[ -f "$HOME/.config/homelab/game-mode.state" ]] && { echo "$(date '+%F %T') game mode on, skipping"; exit 0; }
 # Weekly reports feed for the Paperclip "Homelab" company.
 #
 #   paperclip-reports.sh            # write ~/services/paperclip/reports/latest.md

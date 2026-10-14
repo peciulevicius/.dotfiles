@@ -729,3 +729,22 @@ to the parents' house — the two are complementary, not either/or.
 | Immich DB | `/var/lib/postgresql/data` | `~/services/immich/data/postgres` (internal SSD) |
 
 All `/Volumes/<share>` paths are NAS SMB mounts — see `docs/NAS.md`.
+
+## Game mode (2026-10-14)
+
+Games on the Mac mini (Liftoff first) lagged because Docker may use all 10
+cores and Paperclip's agent runs can take a third of the machine.
+`scripts/utils/game-mode.sh` runs from cron every minute:
+
+- A game process running (`GAME_PATTERNS`, default `Liftoff|Uncrashed|VelociDrone`)
+  → `docker pause` the busy containers that are running: Paperclip, Immich
+  (server + ML), Jellyfin, Audiobookshelf, Odysseus, Uptime Kuma (so it doesn't
+  alert), the Strava/TrainingPeaks MCPs, Linkwarden, Nextcloud, Paperless.
+- No game for `RESUME_AFTER_MIN` (20) → `docker unpause` exactly those.
+- Never paused: Pi-hole/unbound, Vaultwarden, Caddy/Sablier, Glance, the Discord bridge.
+- State/flag: `~/.config/homelab/game-mode.state`. While it exists,
+  `paperclip-limit-recover.py`, `paperclip-fallback.sh` and
+  `paperclip-reports.sh` skip instead of reporting Paperclip as down.
+- By hand: `game-mode.sh on|off|status`. A Discord line in reminders marks on/off.
+  Log: `~/logs/game-mode.log`. Paused containers keep their memory (pause ≠ stop).
+

@@ -6,6 +6,13 @@ is often what you need when something similar breaks again.
 
 Newest first-ish; dates are when the work was finished.
 
+## 2026-10-14 — Automatic game mode
+
+Liftoff lagged while Paperclip agents ran (Docker may use all 10 cores).
+`game-mode.sh` (cron, every minute) pauses the busy containers while a game runs
+and resumes them 20 min after it closes; essentials stay up; Paperclip crons
+skip while it's on. Tested: 8 containers paused/resumed, Vaultwarden stayed up.
+
 ## 2026-10-11 — Library agent; bridge fixes; NAS SMB password rotated
 
 - New Paperclip company **Library** with one agent, **Librarian** (`#ai-library`).

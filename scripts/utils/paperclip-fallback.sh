@@ -30,6 +30,8 @@
 #      FALLBACK_MODEL (default openrouter/deepseek/deepseek-v3.2),
 #      LOOKBACK_MIN (default 15), PROBE_EVERY_MIN (default 60).
 set -euo pipefail
+# Game mode (scripts/utils/game-mode.sh) pauses Paperclip while a game runs.
+[[ -f "$HOME/.config/homelab/game-mode.state" ]] && { echo "$(date '+%F %T') game mode on, skipping"; exit 0; }
 
 STATE_DIR="$HOME/.config/homelab/paperclip-fallback"
 mkdir -p "$STATE_DIR"
