@@ -75,3 +75,5 @@ PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin
 0 10 27 10 * [ "$(date +\%Y)" = 2026 ] && /bin/bash -c 'source ~/.dotfiles/scripts/lib/notify.sh && notify_discord "⏰ Tailnet move due 28 Oct" "Move to the own-domain tailnet / Headscale now that Mullvad is cancelled. See memory note + docs/HOME_SERVER_TODO.md." warning reminders'
 # Weekly disk cleanup (Sunday 04:30): Docker build cache + dangling layers, Homebrew cache.
 30 4 * * 0 ~/.dotfiles/scripts/utils/run-with-notify.sh "Disk cleanup" ~/.dotfiles/scripts/utils/disk-cleanup.sh >> ~/logs/disk-cleanup.log 2>&1
+# Game mode (every minute): pause busy containers while Liftoff/Uncrashed/VelociDrone runs, resume 20 min after.
+* * * * * ~/.dotfiles/scripts/utils/game-mode.sh auto >> ~/logs/game-mode.log 2>&1

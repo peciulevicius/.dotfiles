@@ -87,6 +87,10 @@ raw SD-card image goes to a private location (`~/backups/edgetx/`), not Git.
 | **Uncrashed** | Steam (has a Mac version) | Very realistic freestyle; add later. |
 | **VelociDrone** | velocidrone.com (not on Steam), Mac version available | Racing standard; only if racing. |
 
+**Lag:** game mode (see `HOME_SERVER_REFERENCE.md` → *Game mode*) pauses the
+busy homelab containers automatically while Liftoff runs and resumes them 20 min
+after it closes.
+
 Setup: radio in **USB Joystick (HID)** mode → in the sim pick the TX15,
 calibrate all axes, map an aux switch to arm/reset. Practice ladder: hover and
 gentle laps → orbits around an object → proximity lines → dives. Expect
