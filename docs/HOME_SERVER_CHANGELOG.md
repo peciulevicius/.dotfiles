@@ -8,9 +8,10 @@ Newest first-ish; dates are when the work was finished.
 
 ## 2026-10-14 — Paperless organised; local DNS decided
 
-- Paperless: auto-matching document types (Receipt, Invoice, Contract,
-  Statement, Career, Signature), `Important` tag, five saved views; all 15
-  documents typed. Closes #13.
+- Paperless: document types Receipt, Invoice, Contract, Statement, Career
+  (auto-matched on content) and Signature (manual); `Important` tag; five
+  saved views; all 15 documents typed. Correspondents on trip receipts record
+  who paid, kept as is. Closes #13. Details: `services/paperless-ngx/README.md`.
 - Pi-hole local DNS (#17) closed: the tunnel works from home; local HTTPS via
   Caddy isn't worth a second path to every app.
 ## 2026-10-14 — Linkwarden: start race fixed, newer bookmarks imported

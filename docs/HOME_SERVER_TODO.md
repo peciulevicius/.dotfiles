@@ -128,7 +128,6 @@ Section names in *italics* are headings below.
     expires every few weeks. Steps: `services/trainingpeaks-mcp/README.md`.
 - Pi-hole: Caddy decision, router DNS — *Pi-hole — finish the deployment*
 - Old photo archives into Immich (needs T7 + judgement) — *Import old photo archives into Immich*
-- Paperless tags/types — *Paperless-NGX — organise documents*
 - Brave Shields for Linkwarden — *Linkwarden*
 - Capture Shortcut, Web Clipper, 30-day habit, Kindle/KOReader items — *Notes*
 - "Sign in with Google" audit, Gmail redirect decision, Takeout — *De-Google*
@@ -1099,24 +1098,6 @@ Pi-hole, so only manually configured devices use it.
 - [ ] 👤 Sort/tag the unsorted iPhone folder before importing
 - [ ] 👤 Delete originals from T7 after confirming import (frees ~140GB); also
       decide on the stale `/Volumes/T7/docker/` (53G old Docker VM copy)
-
-### Paperless-NGX — organise documents
-
-Only if Paperless is kept — it is on-demand for now (`ondemand start
-paperless-ngx`), see *9. Maintenance backlog*. Paperless-NGX doesn't support traditional folders — it uses **tags**,
-**document types**, and **correspondents** instead.
-
-- [x] Document types with auto-matching: Receipt, Invoice, Contract,
-      Statement, Career, Signature (+ Payslip) — 2026-10-14
-- [x] Correspondents kept as they are: on the Austria receipts they record
-      *who paid* (Darius / Džiugas / Jolanta), which is what the trip split
-      needs. Add sender correspondents (bank, employer…) only when such
-      documents arrive — they'd be empty today.
-- [x] Tags: `Important` (signature images), `Austria 2026` kept
-- [x] All 15 documents typed; 0 left in *Needs sorting*
-- [x] Saved views (sidebar + dashboard): Payslips, Receipts, Austria 2026,
-      Needs sorting, Recently added
-Details: `services/paperless-ngx/README.md` → *Organisation*.
 
 ### Linkwarden — it's set up; the friction is Brave Shields
 

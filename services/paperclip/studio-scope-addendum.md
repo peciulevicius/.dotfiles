@@ -17,10 +17,21 @@ from this list until the board says otherwise:
 Still out: holding stock, manufacturing, dropshipping that needs us to handle
 returns or customer goods, offline work, client services, regulated products.
 
-Money rules are unchanged: spend ≤ €25/month and only after paid pre-orders.
-Opening a store, a marketplace seller account or a payment account is an
-owner step: raise one board question when an idea is ready for it. Prefer
-platforms that fit the budget (Etsy, Gumroad, Lemon Squeezy, Shopify Starter)
-over Shopify Basic. Validate POD and digital ideas the same way as software:
+Money rules are unchanged (the autonomy charter): spend ≤ €25/month and
+only after the owner's review of the private preview. Opening a store, a
+marketplace seller account or a payment account is an owner step: raise one
+board question when an idea is ready for it. Prefer platforms that fit the
+budget (Etsy, Gumroad, Lemon Squeezy, Shopify Starter) over Shopify Basic.
+Validate POD and digital ideas the same way as software:
 evidence that buyers already pay (best-seller lists, review counts, competitor
 sales estimates), a mock-up or listing page, then a signal before building.
+
+**Stage 4 for models without pre-orders.** "Paid pre-orders" is the gate for
+products you build first. Equivalent measurable signals, set as kill criteria
+before launch and judged after 30 days:
+- POD store: real organic orders (the store sells from day one; nothing to
+  pre-order) — e.g. ≥5 orders from non-paid traffic.
+- Digital product: paid pre-sales or first sales on Gumroad/Etsy/Lemon Squeezy.
+- Newsletter / content / affiliate site: audience and earning signal — e.g.
+  ≥200 organic subscribers, or affiliate clicks with at least one commission.
+Write the chosen numbers in `ideas.md`; the CEO decides advance/kill on them.

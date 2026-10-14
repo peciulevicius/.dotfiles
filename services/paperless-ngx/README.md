@@ -64,11 +64,14 @@ Paperless has no folders; it files by **document type**, **tag** and
 **correspondent**, and **saved views** act as the folders.
 
 - **Types, matched automatically on content** (regex, case-insensitive):
-  Receipt (`UID`, `Summe`, `Kundenbeleg`, `kvitas`, `čekis`…), Invoice
+  Receipt (`\b(UID|ATU ?\d{6,}|Summe|Gesamt|Kassenbon|Kundenbeleg|kvitas|čekis|PVM mokėtojo kodas)\b`), Invoice
   (`sąskaita faktūra`, `invoice`, `Rechnung`), Contract (`sutartis`,
   `contract`, `Vertrag`), Statement (`sąskaitos išrašas`, `Kontoauszug`),
   Career (`curriculum vitae`, `cover letter`, `Dear Hiring Manager`).
   Signature has no rule (manual). Payslip is set by `scripts/payslip.py`.
+  Every alternative sits inside one `\b(…)\b` group, so `UID` doesn't match
+  `GUID`. When several types match, Paperless picks the first — an Austrian
+  invoice carrying a VAT `UID` may land in Receipt; fix those by hand.
 - **Correspondents** on the Austria 2026 receipts mean *who paid*, for the
   trip split — not the sender. Keep that convention for shared-expense trips.
 - **Tags:** `Important`, plus one tag per trip (`Austria 2026`).
