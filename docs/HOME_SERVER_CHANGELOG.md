@@ -6,6 +6,13 @@ is often what you need when something similar breaks again.
 
 Newest first-ish; dates are when the work was finished.
 
+## 2026-10-14 — Paperless organised; local DNS decided
+
+- Paperless: auto-matching document types (Receipt, Invoice, Contract,
+  Statement, Career, Signature), `Important` tag, five saved views; all 15
+  documents typed. Closes #13.
+- Pi-hole local DNS (#17) closed: the tunnel works from home; local HTTPS via
+  Caddy isn't worth a second path to every app.
 ## 2026-10-14 — Linkwarden: start race fixed, newer bookmarks imported
 
 - Linkwarden had been down since 2026-10-10: Sablier starts app + DB together,

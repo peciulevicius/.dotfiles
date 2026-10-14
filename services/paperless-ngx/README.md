@@ -57,3 +57,21 @@ All tags and correspondents use matching **None** since 2026-10-03: the old
 *Auto* matching guessed the trip receipts' tag and people onto unrelated new
 documents. Set matching on a tag deliberately if you ever want it.
 
+
+## Organisation (2026-10-14)
+
+Paperless has no folders; it files by **document type**, **tag** and
+**correspondent**, and **saved views** act as the folders.
+
+- **Types, matched automatically on content** (regex, case-insensitive):
+  Receipt (`UID`, `Summe`, `Kundenbeleg`, `kvitas`, `čekis`…), Invoice
+  (`sąskaita faktūra`, `invoice`, `Rechnung`), Contract (`sutartis`,
+  `contract`, `Vertrag`), Statement (`sąskaitos išrašas`, `Kontoauszug`),
+  Career (`curriculum vitae`, `cover letter`, `Dear Hiring Manager`).
+  Signature has no rule (manual). Payslip is set by `scripts/payslip.py`.
+- **Correspondents** on the Austria 2026 receipts mean *who paid*, for the
+  trip split — not the sender. Keep that convention for shared-expense trips.
+- **Tags:** `Important`, plus one tag per trip (`Austria 2026`).
+- **Saved views** (sidebar + dashboard): Payslips, Receipts, Austria 2026,
+  Needs sorting (no document type: anything the rules didn't catch), Recently
+  added. Check *Needs sorting* now and then and give those a type.
