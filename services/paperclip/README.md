@@ -465,9 +465,14 @@ historical; the live rules are:
 - **Routines** (Europe/Vilnius, CEO, `coalesce_if_active`, `skip_missed`):
   *Pipeline cycle* hourly (`0 * * * *`) until the weekly Max reset on
   2026-10-15 11:00, then every 2 h (`0 */2 * * *`); was every 4 h. Up to 6
-  sub-tasks in flight (was 3), and the Frontend Developer takes 3 runs at once
-  (`runtimeConfig.heartbeat.maxConcurrentRuns`, was 1) so redesign waves run in
-  parallel. *Daily digest* 21:00, *Weekly review* Sunday 18:00. Daily standup
+  sub-tasks in flight (was 3), and the Frontend Developer takes 2 runs at once
+  (`runtimeConfig.heartbeat.maxConcurrentRuns`, was 1) — **2, not 3**: at 3,
+  three Frontend runs plus the CEO and Researcher reach ~3 GB, the container's
+  limit (see *Memory while agents run*). Watch
+  `docker exec paperclip cat /sys/fs/cgroup/memory.events` — `oom_kill` must
+  stay 0. The step-down to 2 h is a one-shot live crontab line
+  (`scripts/utils/studio-cadence.py "0 */2 * * *" --once`, 2026-10-15 11:37)
+  that removes itself after running. *Daily digest* 21:00, *Weekly review* Sunday 18:00. Daily standup
   stays paused.
 - **Scope** (2026-10-14): any computer-run business with **no inventory** —
   print-on-demand, digital products, content/affiliate sites are in, and half
@@ -492,7 +497,8 @@ historical; the live rules are:
   `CLOUDFLARE_ACCOUNT_ID`/`CLOUDFLARE_API_TOKEN` → Frontend Developer).
 - **Scope widened** (same evening): any computer-based business — SaaS,
   apps, Shopify/e-commerce, digital products, newsletters, marketplaces; no
-  offline work or client services for now. Agents behave like a real company:
+  offline work or client services for now. *Narrowed 2026-10-14: no
+  inventory we hold or manufacture — see Scope above.* Agents behave like a real company:
   public posts only about things that are live. A11yWatch killed by the owner.
 - STU-20: studio name + brand shortlist for the owner to pick (needed before
   the studio's Cloudflare/Bluesky accounts); runs in parallel with light
@@ -541,8 +547,9 @@ CMO is the only `cmo`).
   CEO and Researcher sections carried the original idea rubric (*adjacent paid
   product? · 100 buyers without ads? · MVP in ~6 weeks of evenings?*) — since
   2026-10-02 superseded by the rubric and scope in
-  `~/ai-memory/studio/PLAYBOOK.md` (any computer-based business; ruled out:
-  offline labour, client services, big-team, regulated, paid-ads-only). Stack defaults and "no secrets, PRs only, board approves
+  `~/ai-memory/studio/PLAYBOOK.md` (any computer-based business with no
+  inventory we hold or manufacture; ruled out: offline labour, client
+  services, big-team, regulated, paid-ads-only). Stack defaults and "no secrets, PRs only, board approves
   merges" are in CEO and PM. Brand names and anonymity detail stay in the vault,
   not in Paperclip.
 - Projects: **Idea Pipeline** (in progress — the one active project),
