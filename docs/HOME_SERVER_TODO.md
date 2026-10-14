@@ -1117,7 +1117,9 @@ paperless-ngx`), see *9. Maintenance backlog*. Paperless-NGX doesn't support tra
 **Linkwarden is the keeper, not the thing being scrapped.** Karakeep was the
 experiment, tried as a replacement and reverted; its containers are gone.
 Linkwarden stays on port 3005 / `links.peciulevicius.com`, extension installed,
-**621 bookmarks imported**.
+**all Brave bookmarks imported**: 621 earlier, plus the 73 newer ones on
+2026-10-14 (Car, Trading, AI tools, Homelab… — collections named after the
+Brave folders), 692 links total.
 
 What's actually wrong: **Brave needs Shields disabled for the site** or the
 extension silently fails — which makes it feel like it doesn't work.

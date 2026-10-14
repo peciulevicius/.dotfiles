@@ -6,6 +6,15 @@ is often what you need when something similar breaks again.
 
 Newest first-ish; dates are when the work was finished.
 
+## 2026-10-14 — Linkwarden: start race fixed, newer bookmarks imported
+
+- Linkwarden had been down since 2026-10-10: Sablier starts app + DB together,
+  `prisma migrate deploy` hit P1001 and the container died too fast for the
+  restart policy. The compose `command:` now waits for the DB port. Verified by
+  stopping both and starting them at the same moment.
+- 73 Brave bookmarks that weren't in Linkwarden yet were added via the API
+  (692 links, 11 new collections named after the Brave folders). Closes #14.
+
 ## 2026-10-14 — Studio: faster cadence, no-inventory scope
 
 - Pipeline cycle hourly until the Max weekly reset (2026-10-15 11:00), then

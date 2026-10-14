@@ -183,6 +183,15 @@ Per phase, per hostname:
   `<nil>`, add one (`curl`/`wget` against a local endpoint is usually enough;
   check what the image actually has with
   `docker exec <container> sh -c 'which curl wget nc'` before picking one).
+- **Sablier starts every container in a group at the same instant** —
+  `depends_on` only applies to `docker compose up`, not to `docker start`. An
+  app whose first step needs its database (Linkwarden's `prisma migrate
+  deploy`) can die in under 10 s with "can't reach database", and a container
+  that dies that fast is *not* restarted by `restart: unless-stopped`. It then
+  stays down until someone notices (Linkwarden, 2026-10-10 → 10-14). Fix: make
+  the app wait for the DB port in its own `command:` before running the
+  image's CMD — see `services/linkwarden/docker-compose.yml`. Images that
+  already wait for their DB (Paperless, Nextcloud) don't need it.
 - Editing `Caddyfile` or `docker-compose.yml` here follows the same
   copy-not-symlink rule as every other service: re-copy to
   `~/services/caddy/` and `docker compose up -d --build caddy` (rebuild is
