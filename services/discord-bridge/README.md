@@ -175,9 +175,15 @@ cd ~/services/discord-bridge && docker compose up -d --build   # after editing b
 - **Thread gets no reply:** the agent is paused, or its run failed. Check the
   issue in Paperclip. The bridge only relays comments; it never retries
   runs. If the agent is idle and `GET /api/issues/<id>/diagnostics/wakes`
-  shows `deferred_issue_execution`, the issue has a stale execution hold: the
-  bridge retires that chat and opens a new one on the owner's next message
-  (added 2026-10-14 after STU-35 swallowed messages for 11 days).
+  shows `deferred_issue_execution`, the issue has a stale execution hold. For
+  the permanent kind (`legacy_execution_requires_reconciliation`) the bridge
+  replaces the chat on the owner's next message, in a crash-safe order:
+  relay the old chat's unrelayed agent replies → create the new chat → carry
+  over owner messages the old chat never answered → post the new message →
+  only then close the old chat. Recoverable holds are left to Paperclip.
+  If delivery fails at any step the bot replies "⚠️ Not delivered … send it
+  again" instead of dropping the message (added 2026-10-14 after STU-35
+  swallowed messages for 11 days; hardened after the Codex review of #112).
 
 ## Failure mode: item without a link (fixed 2026-10-01)
 

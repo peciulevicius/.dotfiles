@@ -68,6 +68,9 @@ NOISE = re.compile(r"^\s*(status\s+in[_ ]progress|confirmed\s+in[_ ]progress|no 
 # "no new owner message", "disposition"…) — useful in Paperclip, noise on a phone.
 META = re.compile(r"stale (re-?)?deliver|no new owner message|duplicate comment|this wake\b|"
                   r"\bdisposition\b|successfulRunHandoff|issue_continuation", re.IGNORECASE)
+# Execution holds that never clear on their own (see chat_issue). Others are
+# recoverable and handled by Paperclip, so the bridge must not abandon them.
+PERMANENT_HOLDS = {"legacy_execution_requires_reconciliation"}
 ATTENTION_KINDS = {"issue_thread_interaction", "approval", "blocker_attention"}
 NO_PING = discord.AllowedMentions(everyone=False, roles=False, users=True)
 
@@ -310,7 +313,14 @@ async def on_message(msg: discord.Message) -> None:
         await new_task(msg, target, text[6:].strip())
         return
     # Anything else is conversation: one standing issue + thread per channel.
-    await chat(msg, target, text)
+    try:
+        await chat(msg, target, text)
+    except Exception:
+        # Discord never redelivers a message, so a failure here would lose it
+        # silently. Say so; every step before the failure is safe to repeat.
+        log.exception("chat delivery failed")
+        await msg.reply(f"⚠️ Not delivered to {target['name']} (Paperclip error). Send it again.",
+                        mention_author=False)
 
 
 CHAT_INTRO = """Standing conversation between the owner and you, relayed from Discord.
@@ -359,16 +369,18 @@ async def chat_issue(channel_id: int, target: dict) -> dict | None:
         save_state(state)
     if c["agent_id"] != target["agent_id"]:
         return None
-    if issue.get("executionBlocker"):
-        # A legacy "no replay" recovery hold defers every wake on the issue
-        # forever, and neither resolve nor /new clears it (STU-35, 2026-10-14:
-        # owner messages sat unanswered for hours). Retire the chat; the caller
-        # opens a fresh one.
-        log.warning("chat %s has an execution blocker; starting a new chat", c.get("identifier"))
-        await pc.comment(c["issue_id"], "Retired by the Discord bridge: a stale execution hold "
-                         "blocked every wake. The conversation continues in a new chat issue.")
-        await pc.set_status(c["issue_id"], "done")
-        return None
+    blocker = issue.get("executionBlocker")
+    if blocker and blocker.get("cause") in PERMANENT_HOLDS:
+        # This hold defers every wake on the issue forever; neither resolve nor
+        # /new clears it (STU-35, 2026-10-14: owner messages sat unanswered for
+        # 11 days). chat() replaces the chat. Recoverable holds (active
+        # reconciliation, workspace repair) are left to Paperclip's recovery.
+        log.warning("chat %s: permanent hold (%s); replacing it", c.get("identifier"), blocker["cause"])
+        c["_retire"] = True
+        return c
+    if blocker:
+        log.warning("chat %s: execution hold %s; message stored, Paperclip recovery owns it",
+                    c.get("identifier"), blocker.get("cause"))
     if issue.get("assigneeAgentId") != target["agent_id"] or issue.get("assigneeUserId"):
         # Paperclip recovery can move a chat to the board user ("Cancelled before
         # issue reassignment"); a message to nobody is never answered. An issue
@@ -379,9 +391,59 @@ async def chat_issue(channel_id: int, target: dict) -> dict | None:
     return c
 
 
+async def replace_chat(channel_id: int, old: dict, target: dict) -> dict:
+    """Open a new chat for a channel whose chat issue is permanently held.
+    The old issue stays open (and keeps being retired on the next message)
+    until finish_replacement() has carried everything over, so a failure at
+    any step loses nothing."""
+    key = str(channel_id)
+    t = state["threads"].get(key)
+    if t and t["issue_id"] == old["issue_id"]:
+        await relay_thread(key, t)  # agent replies not yet relayed from the old chat
+    issue = await pc.create_issue(target["company_id"], target["agent_id"],
+                                  f"💬 Chat with the owner ({target['name']})", CHAT_INTRO)
+    c = state["chats"][key] = {
+        "issue_id": issue["id"], "identifier": issue.get("identifier", issue["id"][:8]),
+        "agent_id": target["agent_id"], "thread_id": old.get("thread_id", 0),
+        "retire_from": {"issue_id": old["issue_id"], "identifier": old.get("identifier")}}
+    save_state(state)
+    return c
+
+
+async def carry_over(c: dict, target: dict) -> None:
+    """Copy owner messages the held chat never answered (everything after the
+    agent's last comment) into the new chat, before the triggering message."""
+    if c.get("carried"):
+        return
+    old = c["retire_from"]
+    comments = sorted(await pc.comments(old["issue_id"]), key=lambda x: x["createdAt"])
+    last_agent = max((i for i, x in enumerate(comments) if x.get("authorType") == "agent"), default=-1)
+    pending = [x for x in comments[last_agent + 1:] if x.get("authorType") != "agent"
+               and (x.get("body") or "").strip() not in ("", "/new")]
+    if pending:
+        quoted = "\n\n".join("> " + (x.get("body") or "").replace("\n", "\n> ") for x in pending)
+        await pc.comment(c["issue_id"], f"@{target['name']} Carried over from {old['identifier']}, "
+                         f"which a stale execution hold blocked, so these were never answered:\n\n{quoted}")
+    c["carried"] = True
+    save_state(state)
+
+
+async def finish_replacement(c: dict) -> None:
+    old = c.pop("retire_from")
+    c.pop("carried", None)
+    await pc.comment(old["issue_id"], f"Retired by the Discord bridge: a stale execution hold blocked "
+                     f"every wake. The conversation continues in {c['identifier']}.")
+    await pc.set_status(old["issue_id"], "done")
+    save_state(state)
+
+
 async def chat(msg: discord.Message, target: dict, text: str) -> None:
     async with CHAT_LOCKS.setdefault(msg.channel.id, asyncio.Lock()):
         c = await chat_issue(msg.channel.id, target)
+        if c is not None and c.pop("_retire", False):
+            c = await replace_chat(msg.channel.id, c, target)
+        if c is not None and c.get("retire_from"):
+            await carry_over(c, target)
         if c is None:
             issue = await pc.create_issue(target["company_id"], target["agent_id"],
                                           f"💬 Chat with the owner ({target['name']})", CHAT_INTRO)
@@ -399,6 +461,8 @@ async def chat(msg: discord.Message, target: dict, text: str) -> None:
         await relay_into_channel(msg.channel.id, c, target["name"])
         state["threads"][str(msg.channel.id)]["seen"].append(comment.get("id"))
         save_state(state)
+        if c.get("retire_from"):
+            await finish_replacement(c)  # only now: carried-over and new messages are stored
         await msg.add_reaction("💬")
 
 
@@ -409,8 +473,8 @@ async def relay_into_channel(channel_id: int, c: dict, agent_name: str) -> None:
     key = str(channel_id)
     old_key = str(c.get("thread_id") or "")
     if state["threads"].get(key, {}).get("issue_id") not in (None, c["issue_id"]):
-        # The chat was replaced (retired for an execution hold): relay the new
-        # issue, not the dead one, or the agent's replies never reach Discord.
+        # The chat was replaced (permanent execution hold): relay the new issue.
+        # replace_chat() already drained the old one's unrelayed replies.
         state["threads"][key] = {"issue_id": c["issue_id"], "identifier": c["identifier"],
                                  "agent_name": agent_name, "seen": []}
     if key not in state["threads"]:
@@ -424,27 +488,32 @@ async def relay_into_channel(channel_id: int, c: dict, agent_name: str) -> None:
     save_state(state)
 
 
+async def relay_thread(thread_id: str, t: dict) -> None:
+    """Post agent comments on the thread's issue that haven't been relayed yet."""
+    new = [c for c in await pc.comments(t["issue_id"])
+           if c.get("authorType") == "agent" and c["id"] not in t["seen"]]
+    noise = [c for c in new if NOISE.match(c.get("body") or "")
+             or META.search((c.get("body") or "")[:300])]
+    for c in noise:
+        t["seen"].append(c["id"])
+    new = [c for c in new if c not in noise]
+    if noise and not new:
+        save_state(state)
+    if not new:
+        return
+    thread = client.get_channel(int(thread_id)) or await client.fetch_channel(int(thread_id))
+    for c in sorted(new, key=lambda c: c["createdAt"]):
+        for part in chunks(c.get("body") or ""):
+            await thread.send(part)
+        t["seen"].append(c["id"])
+    save_state(state)
+
+
 async def poll_loop() -> None:
     while True:
         for thread_id, t in list(state["threads"].items()):
             try:
-                new = [c for c in await pc.comments(t["issue_id"])
-                       if c.get("authorType") == "agent" and c["id"] not in t["seen"]]
-                noise = [c for c in new if NOISE.match(c.get("body") or "")
-                         or META.search((c.get("body") or "")[:300])]
-                for c in noise:
-                    t["seen"].append(c["id"])
-                new = [c for c in new if c not in noise]
-                if noise and not new:
-                    save_state(state)
-                if not new:
-                    continue
-                thread = client.get_channel(int(thread_id)) or await client.fetch_channel(int(thread_id))
-                for c in sorted(new, key=lambda c: c["createdAt"]):
-                    for part in chunks(c.get("body") or ""):
-                        await thread.send(part)
-                    t["seen"].append(c["id"])
-                save_state(state)
+                await relay_thread(thread_id, t)
             except discord.NotFound:
                 log.info("thread %s gone, untracking", thread_id)
                 del state["threads"][thread_id]
