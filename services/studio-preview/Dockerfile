@@ -20,6 +20,8 @@ COPY package.json ./
 RUN npm install --omit=dev && npm link playwright
 COPY server.mjs smoke.mjs ./
 
+# Volume mount points owned by node, so named volumes start out writable.
+RUN mkdir -p /home/node/.expo /home/node/.local/share/pnpm && chown -R node:node /home/node
 # Same uid as the host user's files on the VirtioFS bind mount.
 USER node
 EXPOSE 7301 8081
