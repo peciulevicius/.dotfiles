@@ -24,6 +24,9 @@ for dir in "$HOME"/services/paperclip/data/instances/*/workspaces \
            "$HOME"/dev/studio/.worktrees; do
     [ -d "$dir" ] && find "$dir" -type d -name node_modules -prune -mtime +3 -exec rm -rf {} + 2>/dev/null || true
 done
+# Package caches the agents fill inside Paperclip (pnpm store, npm), ~5 GB by
+# 2026-10-15. pnpm only drops packages no project references any more.
+docker exec -u node -e HOME=/paperclip paperclip sh -c 'pnpm store prune >/dev/null 2>&1; npm cache clean --force >/dev/null 2>&1' 2>/dev/null || true
 # Preview screenshots older than two weeks.
 [ -d "$HOME/dev/studio/.previews/artifacts" ] && \
     find "$HOME/dev/studio/.previews/artifacts" -mindepth 2 -maxdepth 2 -type d -mtime +14 -exec rm -rf {} + 2>/dev/null || true

@@ -73,6 +73,11 @@ def discord(text):
         urllib.request.urlopen(req, timeout=15).read()
 
 
+# Posted with the owner's own GitHub login (the only one the bot has), so make
+# authorship obvious; a separate identity would need a GitHub App.
+SIGNED = "\n\n<sub>🤖 Posted by the Studio PR bot (automation on Džiugas's account), not by Džiugas.</sub>"
+
+
 def preview_and_report(repo, branch, sha, pr):
     r = api("POST", "/preview", {"repo": repo, "branch": branch, "slot": "owner"})
     if r.get("httpError"):
@@ -84,7 +89,7 @@ def preview_and_report(repo, branch, sha, pr):
         print(f"{repo}@{branch}: preview superseded by {s.get('repo')}@{s.get('branch')}; retrying next run")
         return False
     if s["state"] != "running":
-        body = f"⚠️ Preview failed for `{sha[:7]}`:\n```\n{(s.get('error') or '')[:1500]}\n```"
+        body = f"⚠️ Preview failed for `{sha[:7]}`:\n```\n{(s.get('error') or '')[:1500]}\n```" + SIGNED
         sh("gh", "pr", "comment", pr["url"], "--body", body)
         discord(f"⚠️ **{repo}** PR #{pr['number']} preview failed: {pr['url']}")
         return True
@@ -104,7 +109,7 @@ def preview_and_report(repo, branch, sha, pr):
               else f"❌ smoke test failed:\n```\n{(t.get('error') or 'timed out')[:1200]}\n```")
     body = (f"### 📱 Preview of `{sha[:7]}` is live\n{phone}"
             f"- **Web:** {tap if 'phoneTap' not in L else L['web']}\n- **Screenshots:** {tested}\n\n"
-            f"_The link above always opens this PR's branch._")
+            f"_The link above always opens this PR's branch._" + SIGNED)
     sh("gh", "pr", "comment", pr["url"], "--body", body)
     discord(f"📱 **{repo}** PR #{pr['number']}: {pr['title']}\n"
             + (f"Tap on iPhone (opens Expo Go): {tap}\n" if "phoneTap" in L else f"Open: {tap}\n") + (f"Screenshots: {t['index']}\n" if t.get("state") == "passed" else "Smoke test ❌\n")
@@ -159,7 +164,7 @@ def main():
                         log = sh("git", "log", "--format=- %s", f"origin/main..{branch}", cwd=path)
                         url = sh("gh", "pr", "create", "--base", "main", "--head", branch, "--title", title,
                                  "--body", f"Opened by the Studio PR bot for an agent branch.\n\n{log}\n\n"
-                                           "A preview with an iPhone link and screenshots follows in a comment.", cwd=path)
+                                           "A preview with an iPhone link and screenshots follows in a comment." + SIGNED, cwd=path)
                         prs = [json.loads(sh("gh", "pr", "view", url, "--json", "number,url,title", cwd=path))]
                         print(f"opened {url}")
                 except Exception as e:  # one bad branch must not stop the others (or the state save)
