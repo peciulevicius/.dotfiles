@@ -6,6 +6,20 @@ is often what you need when something similar breaks again.
 
 Newest first-ish; dates are when the work was finished.
 
+## 2026-10-14 — NAS watchdog no longer fights game mode
+
+- The stale-mount probe (`docker exec ls`) failed on containers game mode had
+  paused, so the watchdog restarted Immich, Jellyfin and Audiobookshelf
+  mid-game (16:30), undoing the pause. It now skips container checks while
+  game mode is on and ignores paused containers.
+- It also ran `compose up -d` for FlareSolverr every run (2,745 times since
+  2026-09-26) although FlareSolverr sits behind the `ondemand` profile and
+  never starts that way; profile services are now ignored.
+- Immich ML's health check broke after the pause ("error starting setns
+  process" on every exec); `docker restart` did not help, recreating it
+  (`docker compose up -d --force-recreate --no-deps immich-machine-learning`)
+  did.
+
 ## 2026-10-14 — Paperless organised; local DNS decided
 
 - Paperless: document types Receipt, Invoice, Contract, Statement, Career
