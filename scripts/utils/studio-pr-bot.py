@@ -77,14 +77,23 @@ def preview_and_report(repo, branch, sha, pr):
     if r.get("httpError"):
         print(f"{repo}@{branch}: preview busy/refused: {r}")
         return False
-    s = wait(lambda s: s["state"] in ("running", "failed", "crashed"), 600)
+    mine = lambda s: s.get("repo") == repo and s.get("branch") == branch
+    s = wait(lambda s: not mine(s) or s["state"] in ("running", "failed", "crashed"), 600)
+    if not mine(s):
+        print(f"{repo}@{branch}: preview superseded by {s.get('repo')}@{s.get('branch')}; retrying next run")
+        return False
     if s["state"] != "running":
         body = f"⚠️ Preview failed for `{sha[:7]}`:\n```\n{(s.get('error') or '')[:1500]}\n```"
         sh("gh", "pr", "comment", pr["url"], "--body", body)
         discord(f"⚠️ **{repo}** PR #{pr['number']} preview failed: {pr['url']}")
         return True
     api("POST", "/test", {"slot": "owner"})
-    t = wait(lambda s: (s.get("test") or {}).get("state") in ("passed", "failed"), 600).get("test") or {}
+    done = wait(lambda s: not mine(s) or ((s.get("test") or {}).get("sha") == s.get("sha")
+                                           and (s.get("test") or {}).get("state") in ("passed", "failed")), 600)
+    if not mine(done):
+        print(f"{repo}@{branch}: preview replaced during the screenshot run; retrying next run")
+        return False
+    t = done.get("test") or {}
     L = s["links"]
     phone = (f"- **iPhone:** open {L['phoneTap']} (Tailscale on, Expo Go installed) or scan {L['qr']}\n"
              if "phoneTap" in L else "")
