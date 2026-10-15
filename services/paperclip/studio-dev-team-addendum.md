@@ -37,9 +37,12 @@ owner until
 Each reviewer comments on the Paperclip issue with the PR link and either
 "approved" or the changes needed; the author fixes on the same branch.
 
-**Quality bar:** professional, detailed, designed in Claude Design first
-(Design artifacts), real product UI, accessible, fast. No placeholder logic
-shipped as finished.
+**Quality bar:** the owner's design standard, `/ai-memory/studio/DESIGN_STANDARD.md`.
+Every product must look and feel like Chris Raroque's apps (ellieplanner.com,
+lunabudgeting.com, mogulnetworking.com, amyfoodjournal.com): one promise, real
+product UI, whitespace, one brand colour, native iOS feel, subtle premium
+animations (Reanimated springs, haptics, number transitions). Designed in Claude
+Design first and approved by the owner. No placeholder logic shipped as finished.
 
 **Never:** commit secrets or `.env`, push or commit to `main` after the first
 commit, rewrite another agent's branch, create store/payment/developer accounts
