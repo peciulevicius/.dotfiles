@@ -73,7 +73,12 @@ PATH=/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin
 # One-off reminders (year-guarded so they fire once and the line can stay tracked; delete after).
 0 10 25 10 * [ "$(date +\%Y)" = 2026 ] && /bin/bash -c 'source ~/.dotfiles/scripts/lib/notify.sh && notify_discord "⏰ Cancel the Tailscale Mullvad add-on TODAY" "Deadline 26 Oct (renews ~28 Oct). login.tailscale.com/admin/settings/billing → Mullvad add-on → cancel. See docs/HOME_SERVER_TODO.md." warning reminders'
 0 10 27 10 * [ "$(date +\%Y)" = 2026 ] && /bin/bash -c 'source ~/.dotfiles/scripts/lib/notify.sh && notify_discord "⏰ Tailnet move due 28 Oct" "Move to the own-domain tailnet / Headscale now that Mullvad is cancelled. See memory note + docs/HOME_SERVER_TODO.md." warning reminders'
-# Weekly disk cleanup (Sunday 04:30): Docker build cache + dangling layers, Homebrew cache.
-30 4 * * 0 ~/.dotfiles/scripts/utils/run-with-notify.sh "Disk cleanup" ~/.dotfiles/scripts/utils/disk-cleanup.sh >> ~/logs/disk-cleanup.log 2>&1
+# Daily disk cleanup (04:30): Docker build cache + dangling layers, Homebrew cache, old Studio agent node_modules; Discord ping under 15 GB free.
+30 4 * * * ~/.dotfiles/scripts/utils/run-with-notify.sh "Disk cleanup" ~/.dotfiles/scripts/utils/disk-cleanup.sh >> ~/logs/disk-cleanup.log 2>&1
 # Game mode (every minute): pause busy containers while Liftoff/Uncrashed/VelociDrone runs, resume 20 min after.
 * * * * * ~/.dotfiles/scripts/utils/game-mode.sh auto >> ~/logs/game-mode.log 2>&1
+
+# Studio PR bot (every 2 min): pushes agents' agent/* branches in ~/dev/studio,
+# opens PRs, previews the newest change and posts iPhone/web links. Skips
+# while game mode is on. See services/studio-preview/README.md.
+*/2 * * * * /usr/bin/env python3 $HOME/.dotfiles/scripts/utils/studio-pr-bot.py >> $HOME/logs/studio-pr-bot.log 2>&1

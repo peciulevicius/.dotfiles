@@ -1,0 +1,43 @@
+# Studio preview runner — one branch of any Studio repo at a time: Expo apps for
+# the owner's phone (Expo Go over Tailscale) and websites, plus Playwright
+# screenshots. See README.md.
+name: studio-preview
+
+services:
+  studio-preview:
+    build: .
+    container_name: studio-preview
+    restart: unless-stopped
+    # Expo dev server + one headless Chromium. Docker's VM has ~4 GiB headroom
+    # (2026-10-15); one slot keeps this well inside it.
+    mem_limit: 2560m
+    environment:
+      PREVIEW_HOST: ${PREVIEW_HOST:-100.81.171.49}
+      STUDIO_DIR: ${HOME}/dev/studio
+      GIT_CONFIG_COUNT: "1"
+      GIT_CONFIG_KEY_0: "safe.directory"
+      GIT_CONFIG_VALUE_0: "*"
+    ports:
+      # Tailscale only: the owner's phone and Mac. Never on the LAN or tunnel.
+      - "${PREVIEW_HOST:-100.81.171.49}:7301:7301"   # API, phone link, QR, screenshots
+      - "${PREVIEW_HOST:-100.81.171.49}:8081:8081"   # dev server (Expo phone + web, or website)
+      - "127.0.0.1:7301:7301"                         # host PR bot
+    volumes:
+      # Same absolute path as on the host, so git worktree paths written here
+      # are valid on the Mac and inside Paperclip too.
+      # Every Studio repo (apps, landing pages, waitlists) lives here.
+      - ${HOME}/dev/studio:${HOME}/dev/studio
+      - pnpm-store:/home/node/.local/share/pnpm
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:7301/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  pnpm-store:
+
+networks:
+  default:
+    name: paperclip
+    external: true

@@ -6,6 +6,31 @@ is often what you need when something similar breaks again.
 
 Newest first-ish; dates are when the work was finished.
 
+## 2026-10-15 — Studio dev pipeline; disk-full Docker crash; all agents on Claude
+
+- **Disk full → Docker crash:** the disk hit 97% (7 GB free), macOS couldn't
+  grow swap, Docker Desktop stopped answering and the watchdog force-restarted
+  it. Freed ~9 GB: 65 agent `node_modules` folders under Paperclip's data,
+  Docker build cache, npm cache, and two merged/pushed Claude worktrees
+  (poet-lt, peciulevicius.com). `disk-cleanup.sh` now runs **daily**, also
+  clears old agent `node_modules`/preview screenshots, and pings Discord under
+  15 GB free.
+- **All agents on Claude:** the remaining 9 OpenRouter agents (5 Studio, 4
+  Homelab) plus 2 Homelab agents bound to the broken "My Claude subscription"
+  connection were re-hired as unbound `claude_local` / Sonnet 5 copies
+  (instructions, skills, paused state kept) and the old ones terminated.
+  34 active agents, all Claude.
+- **Studio dev pipeline:** every product is a private GitHub repo under
+  `~/dev/studio` (pilot `peciulevicius/carbstride`, the Mobile Developer's
+  Expo scaffold moved there with history + CI). Paperclip mounts it at the same
+  absolute path; agents commit on `agent/*` branches as the owner with an
+  `Agent:` trailer. New `studio-preview` container (Expo/websites + Playwright,
+  one slot, 2.5 GB cap, Tailscale-only ports). `scripts/utils/studio-pr-bot.py`
+  (cron */2) pushes agent branches, opens PRs, creates private repos for new
+  products, previews the newest change and posts iPhone/web links +
+  phone-size screenshots on the PR and in #ai-studio. Dev team resumed with a
+  QA → Security → CTO review gate (replaces Codex reviews after 2026-10-29).
+
 ## 2026-10-15 — Studio: last OpenRouter roles moved to Claude; Claude Design login
 
 - Community & Launch (hit its $3/mo OpenRouter cap) and Researcher ($2.97 of

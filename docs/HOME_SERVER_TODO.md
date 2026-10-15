@@ -240,6 +240,20 @@ Barbora cart; the owner only pays.
 
 ### 🏭 Studio — autonomous (2026-10-02)
 
+Dev pipeline since 2026-10-15 (`services/studio-preview/README.md`). Open:
+- [ ] 👤 Install **Expo Go** on the iPhone (Tailscale on) to open PR preview links.
+- [ ] 👤 **Code review after Codex ends (2026-10-29):** the Studio's QA,
+      Security and CTO agents review every PR on the Paperclip issue already.
+      For a bot comment on the GitHub PR itself (dotfiles too), run
+      `/install-github-app` in Claude Code once per repo: it installs the Claude
+      GitHub app and the review workflow, using the Max plan. Decide before
+      2026-10-29.
+- [ ] 👤 Later: free **Expo account** + `EXPO_TOKEN` → EAS Update per PR
+      (permanent preview links, several PRs at once); **Apple Developer**
+      ($99/yr) → development build + TestFlight (RevenueCat, HealthKit, OAuth).
+- [ ] Watch disk: each preview install adds ~1 GB; the daily cleanup drops
+      agent `node_modules` older than 3 days and pings Discord under 15 GB free.
+
 - [x] ~~Autonomy charter, playbook, lean roster, routines, digest webhook~~ —
       see `services/paperclip/README.md` → *Autonomy charter*.
 - [x] ~~Agent → Discord delivery test~~ — `#ai-agents` webhook returned 204.
