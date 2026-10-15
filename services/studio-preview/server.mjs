@@ -1,14 +1,17 @@
-// Studio preview runner. One preview slot: the most recently requested branch
-// of a Studio repo runs as a dev server — an Expo app (phone via Expo Go + web
-// build) or a website (Astro / Next / Vite) — and Playwright can screenshot it. Agents call it from the `paperclip`
-// network (http://studio-preview:7301); the PR bot calls it from the host.
+// Studio preview runner. Two preview slots, each running one branch of a
+// Studio repo as a dev server — an Expo app (phone via Expo Go + web build)
+// or a website (Astro / Next / Vite) — which Playwright can screenshot:
+//   owner  port 8081, published on Tailscale; only the host PR bot uses it, so
+//          the links posted on a PR keep showing that PR (2026-10-15: one
+//          shared slot let an agent's own test replace a PR's preview).
+//   agent  port 8082, internal (`paperclip` network); agents try their work.
 //
-//   POST /preview {repo, branch}  check the branch out and start it (async)
-//   POST /test    {}              screenshot the running preview (async)
-//   GET  /status                  slot state, links, last test result
-//   GET  /open                    302 to exp://… (tap on the phone; Expo apps)
-//   GET  /qr.png                  QR of the exp:// link (Expo apps)
-//   GET  /artifacts/…             screenshots and their index.html
+//   POST /preview {repo, branch, slot?}  check out + start (async; slot defaults to "agent")
+//   POST /test    {slot?}                screenshot the running preview (async)
+//   GET  /status[?slot=owner|agent]      slot state, links, log tail, last test
+//   GET  /open                           owner slot: 302 to exp://… (tap on the phone)
+//   GET  /qr.png                         owner slot: QR of the exp:// link
+//   GET  /artifacts/…                    screenshots and their index.html
 import { spawn } from "node:child_process";
 import fs from "node:fs";
 import http from "node:http";
@@ -20,39 +23,44 @@ const STUDIO = process.env.STUDIO_DIR; // host path of ~/dev/studio, mounted at 
 // Every git repo directly under ~/dev/studio can be previewed; no config per repo.
 const repos = () => fs.readdirSync(STUDIO).filter((d) => !d.startsWith(".") && fs.existsSync(path.join(STUDIO, d, ".git")));
 const API_PORT = 7301;
-const METRO_PORT = 8081;
-const WT_ROOT = path.join(STUDIO, ".previews");
-const ARTIFACTS = path.join(WT_ROOT, "artifacts");
+const PREVIEWS = path.join(STUDIO, ".previews");
+const ARTIFACTS = path.join(PREVIEWS, "artifacts");
 const BRANCH_RE = /^[A-Za-z0-9._\/-]{1,120}$/;
+const BUSY = ["preparing", "installing", "starting"];
 
-const slot = { repo: null, branch: null, sha: null, kind: null, state: "idle", error: null, startedAt: null, test: null, log: [] };
-let metro = null;
-
-const links = () => ({
-  ...(slot.kind === "expo" ? {
-    phone: `exp://${HOST}:${METRO_PORT}`,
-    phoneTap: `http://${HOST}:${API_PORT}/open`,
-    qr: `http://${HOST}:${API_PORT}/qr.png`,
-  } : {}),
-  web: `http://${HOST}:${METRO_PORT}`,
+const newSlot = (name, port, publicHost) => ({
+  name, port, publicHost, proc: null,
+  repo: null, branch: null, sha: null, kind: null, state: "idle", error: null, startedAt: null, test: null, log: [],
 });
+const slots = { owner: newSlot("owner", 8081, HOST), agent: newSlot("agent", 8082, "studio-preview") };
+
+function links(s) {
+  const web = `http://${s.publicHost}:${s.port}`;
+  if (s.kind !== "expo") return { web };
+  return s.name === "owner"
+    ? { phone: `exp://${HOST}:${s.port}`, phoneTap: `http://${HOST}:${API_PORT}/open`, qr: `http://${HOST}:${API_PORT}/qr.png`, web }
+    : { web };
+}
+
+const view = (s) => { const { proc, ...rest } = s; return { ...rest, links: links(s) }; };
 
 // How to run a checkout: Expo apps via `expo start`, websites via their dev
 // script with host/port flags their framework understands.
-function devCommand(wt) {
+function devCommand(wt, s) {
   const pkg = JSON.parse(fs.readFileSync(path.join(wt, "package.json"), "utf8"));
   const deps = { ...pkg.dependencies, ...pkg.devDependencies };
   const env = { CI: "1", EXPO_NO_TELEMETRY: "1", NEXT_TELEMETRY_DISABLED: "1", ASTRO_TELEMETRY_DISABLED: "1" };
+  const port = String(s.port);
   if (deps.expo)
-    return { kind: "expo", args: ["exec", "expo", "start", "--port", String(METRO_PORT), "--lan"], env: { ...env, REACT_NATIVE_PACKAGER_HOSTNAME: HOST } };
-  if (deps.next) return { kind: "web", args: ["exec", "next", "dev", "--hostname", "0.0.0.0", "--port", String(METRO_PORT)], env };
+    return { kind: "expo", args: ["exec", "expo", "start", "--port", port, "--lan"], env: { ...env, REACT_NATIVE_PACKAGER_HOSTNAME: s.publicHost } };
+  if (deps.next) return { kind: "web", args: ["exec", "next", "dev", "--hostname", "0.0.0.0", "--port", port], env };
   if (!pkg.scripts?.dev) throw new Error("no expo dependency and no `dev` script — don't know how to run this repo");
-  return { kind: "web", args: ["run", "dev", "--host", "0.0.0.0", "--port", String(METRO_PORT)], env }; // Astro, Vite, SvelteKit
+  return { kind: "web", args: ["run", "dev", "--host", "0.0.0.0", "--port", port], env }; // Astro, Vite, SvelteKit
 }
 
-function log(line) {
-  slot.log.push(`${new Date().toISOString().slice(11, 19)} ${line}`);
-  if (slot.log.length > 200) slot.log.splice(0, slot.log.length - 200);
+function log(s, line) {
+  s.log.push(`${new Date().toISOString().slice(11, 19)} ${line}`);
+  if (s.log.length > 200) s.log.splice(0, s.log.length - 200);
 }
 
 function run(cmd, args, opts = {}) {
@@ -65,24 +73,24 @@ function run(cmd, args, opts = {}) {
   });
 }
 
-async function stopMetro() {
-  if (!metro) return;
-  const p = metro;
-  metro = null;
+async function stop(s) {
+  if (!s.proc) return;
+  const p = s.proc;
+  s.proc = null;
   p.kill("SIGTERM");
   await new Promise((r) => setTimeout(r, 1500));
   if (p.exitCode === null) p.kill("SIGKILL");
 }
 
-async function waitForMetro(ms) {
+async function waitForServer(s, ms) {
   const end = Date.now() + ms;
   while (Date.now() < end) {
     try {
-      if (slot.kind === "expo") {
-        const r = await fetch(`http://127.0.0.1:${METRO_PORT}/status`);
+      if (s.kind === "expo") {
+        const r = await fetch(`http://127.0.0.1:${s.port}/status`);
         if ((await r.text()).includes("packager-status:running")) return true;
       } else {
-        await fetch(`http://127.0.0.1:${METRO_PORT}/`); // any HTTP answer means the dev server is up
+        await fetch(`http://127.0.0.1:${s.port}/`); // any HTTP answer means the dev server is up
         return true;
       }
     } catch {}
@@ -91,56 +99,58 @@ async function waitForMetro(ms) {
   return false;
 }
 
-async function startPreview(repo, branch) {
-  await stopMetro();
-  Object.assign(slot, { repo, branch, sha: null, kind: null, state: "preparing", error: null, startedAt: new Date().toISOString(), test: null, log: [] });
+async function startPreview(s, repo, branch) {
+  await stop(s);
+  Object.assign(s, { repo, branch, sha: null, kind: null, state: "preparing", error: null, startedAt: new Date().toISOString(), test: null, log: [] });
   const repoDir = path.join(STUDIO, repo);
-  const wt = path.join(WT_ROOT, repo);
+  const wt = path.join(PREVIEWS, s.name, repo);
   try {
-    log(`checkout ${branch}`);
+    log(s, `checkout ${branch}`);
     await run("git", ["-C", repoDir, "worktree", "remove", "--force", wt]).catch(() => {});
     await run("git", ["-C", repoDir, "worktree", "prune"]);
     await run("git", ["-C", repoDir, "worktree", "add", "--force", "--detach", wt, branch]);
-    slot.sha = (await run("git", ["-C", wt, "rev-parse", "--short", "HEAD"])).trim();
-    log(`installing dependencies (${slot.sha})`);
-    slot.state = "installing";
-    await run("pnpm", ["install", "--frozen-lockfile"], { cwd: wt }).catch(async (e) => {
-      log("frozen install failed, retrying without --frozen-lockfile");
+    s.sha = (await run("git", ["-C", wt, "rev-parse", "--short", "HEAD"])).trim();
+    log(s, `installing dependencies (${s.sha})`);
+    s.state = "installing";
+    await run("pnpm", ["install", "--frozen-lockfile"], { cwd: wt }).catch(async () => {
+      log(s, "frozen install failed, retrying without --frozen-lockfile");
       await run("pnpm", ["install"], { cwd: wt });
     });
-    const cmd = devCommand(wt);
-    slot.kind = cmd.kind;
-    slot.state = "starting";
-    log(`starting ${cmd.kind} dev server: pnpm ${cmd.args.join(" ")}`);
-    metro = spawn("pnpm", cmd.args, { cwd: wt, env: { ...process.env, ...cmd.env } });
-    metro.stdout.on("data", (d) => log(String(d).trim().slice(0, 300)));
-    metro.stderr.on("data", (d) => log(String(d).trim().slice(0, 300)));
-    metro.on("close", (code) => {
-      if (slot.state !== "stopped") Object.assign(slot, { state: "crashed", error: `dev server exited ${code}` });
+    const cmd = devCommand(wt, s);
+    s.kind = cmd.kind;
+    s.state = "starting";
+    log(s, `starting ${cmd.kind} dev server: pnpm ${cmd.args.join(" ")}`);
+    const p = spawn("pnpm", cmd.args, { cwd: wt, env: { ...process.env, ...cmd.env } });
+    s.proc = p;
+    p.stdout.on("data", (d) => log(s, String(d).trim().slice(0, 300)));
+    p.stderr.on("data", (d) => log(s, String(d).trim().slice(0, 300)));
+    p.on("close", (code) => {
+      if (s.proc === p) Object.assign(s, { proc: null, state: "crashed", error: `dev server exited ${code}` });
     });
-    if (!(await waitForMetro(240_000))) throw new Error("dev server did not come up in 4 min");
-    slot.state = "running";
-    log(`running: ${links().web}`);
+    if (!(await waitForServer(s, 240_000))) throw new Error("dev server did not come up in 4 min");
+    s.state = "running";
+    log(s, `running: ${links(s).web}`);
   } catch (e) {
-    await stopMetro();
-    Object.assign(slot, { state: "failed", error: String(e.message || e).slice(0, 2000) });
-    log(`failed: ${slot.error.split("\n")[0]}`);
+    await stop(s);
+    Object.assign(s, { state: "failed", error: String(e.message || e).slice(0, 2000) });
+    log(s, `failed: ${s.error.split("\n")[0]}`);
   }
 }
 
-async function runTest() {
-  if (slot.state !== "running") throw new Error(`no running preview (state: ${slot.state})`);
-  const out = path.join(ARTIFACTS, slot.repo, `${slot.sha}-${Date.now()}`);
+async function runTest(s) {
+  if (s.state !== "running") throw new Error(`no running preview in the ${s.name} slot (state: ${s.state})`);
+  const sha = s.sha;
+  const out = path.join(ARTIFACTS, s.repo, `${sha}-${Date.now()}`);
   fs.mkdirSync(out, { recursive: true });
-  slot.test = { state: "running", dir: out };
+  s.test = { state: "running", sha };
   try {
-    const res = await run("node", ["smoke.mjs", `http://127.0.0.1:${METRO_PORT}`, out], { cwd: "/srv" });
+    const res = await run("node", ["smoke.mjs", `http://127.0.0.1:${s.port}`, out], { cwd: "/srv" });
     const shots = fs.readdirSync(out).filter((f) => f.endsWith(".png"));
     const rel = path.relative(ARTIFACTS, out);
-    slot.test = { state: "passed", shots: shots.map((f) => `http://${HOST}:${API_PORT}/artifacts/${rel}/${f}`),
-                  index: `http://${HOST}:${API_PORT}/artifacts/${rel}/index.html`, output: res.slice(-1500) };
+    s.test = { state: "passed", sha, shots: shots.map((f) => `http://${HOST}:${API_PORT}/artifacts/${rel}/${f}`),
+               index: `http://${HOST}:${API_PORT}/artifacts/${rel}/index.html`, output: res.slice(-1500) };
   } catch (e) {
-    slot.test = { state: "failed", error: String(e.message || e).slice(0, 2000) };
+    s.test = { state: "failed", sha, error: String(e.message || e).slice(0, 2000) };
   }
 }
 
@@ -155,18 +165,28 @@ async function readJson(req) {
   return b ? JSON.parse(b) : {};
 }
 
+function pickSlot(name) {
+  const s = slots[name || "agent"];
+  if (!s) throw Object.assign(new Error("slot must be owner or agent"), { status: 400 });
+  return s;
+}
+
 http.createServer(async (req, res) => {
   const url = new URL(req.url, "http://x");
   try {
     if (req.method === "GET" && url.pathname === "/health") return send(res, 200, { ok: true });
-    if (req.method === "GET" && url.pathname === "/status") return send(res, 200, { ...slot, links: links() });
-    if (req.method === "GET" && url.pathname === "/open") {
-      if (slot.kind !== "expo") return send(res, 409, { error: "the running preview is a website; open links.web" });
-      res.writeHead(302, { Location: links().phone });
-      return res.end();
+    if (req.method === "GET" && url.pathname === "/status") {
+      const name = url.searchParams.get("slot");
+      return send(res, 200, name ? view(pickSlot(name)) : { owner: view(slots.owner), agent: view(slots.agent) });
     }
-    if (req.method === "GET" && url.pathname === "/qr.png") {
-      return send(res, 200, await QRCode.toBuffer(links().phone, { width: 512, margin: 2 }), "image/png");
+    if (req.method === "GET" && (url.pathname === "/open" || url.pathname === "/qr.png")) {
+      const s = slots.owner;
+      if (s.kind !== "expo" || s.state !== "running")
+        return send(res, 409, { error: s.kind === "web" ? `the preview for ${s.repo}@${s.branch} is a website: open ${links(s).web}`
+          : `no app preview is running right now (state: ${s.state}); try again in a minute` });
+      if (url.pathname === "/qr.png") return send(res, 200, await QRCode.toBuffer(links(s).phone, { width: 512, margin: 2 }), "image/png");
+      res.writeHead(302, { Location: links(s).phone });
+      return res.end();
     }
     if (req.method === "GET" && url.pathname.startsWith("/artifacts/")) {
       const file = path.normalize(path.join(ARTIFACTS, decodeURIComponent(url.pathname.slice("/artifacts/".length))));
@@ -175,27 +195,27 @@ http.createServer(async (req, res) => {
       return send(res, 200, fs.readFileSync(file), type);
     }
     if (req.method === "POST" && url.pathname === "/preview") {
-      const { repo, branch } = await readJson(req);
+      const { repo, branch, slot } = await readJson(req);
+      const s = pickSlot(slot);
       if (!repos().includes(repo)) return send(res, 400, { error: `repo must be one of ${repos().join(", ")}` });
       if (!BRANCH_RE.test(branch || "") || branch.includes("..")) return send(res, 400, { error: "bad branch name" });
-      if (["preparing", "installing", "starting"].includes(slot.state))
-        return send(res, 409, { error: `busy: ${slot.state} ${slot.repo}@${slot.branch}` });
-      startPreview(repo, branch);
-      return send(res, 202, { accepted: true, poll: "/status" });
+      if (BUSY.includes(s.state)) return send(res, 409, { error: `busy: ${s.state} ${s.repo}@${s.branch}` });
+      startPreview(s, repo, branch);
+      return send(res, 202, { accepted: true, slot: s.name, poll: `/status?slot=${s.name}` });
     }
     if (req.method === "POST" && url.pathname === "/test") {
-      if (slot.test?.state === "running") return send(res, 409, { error: "test already running" });
-      runTest().catch((e) => (slot.test = { state: "failed", error: String(e.message || e) }));
-      return send(res, 202, { accepted: true, poll: "/status" });
+      const s = pickSlot((await readJson(req)).slot);
+      if (s.test?.state === "running") return send(res, 409, { error: "test already running" });
+      runTest(s).catch((e) => (s.test = { state: "failed", error: String(e.message || e) }));
+      return send(res, 202, { accepted: true, slot: s.name, poll: `/status?slot=${s.name}` });
     }
     return send(res, 404, { error: "not found" });
   } catch (e) {
-    return send(res, 500, { error: String(e.message || e) });
+    return send(res, e.status || 500, { error: String(e.message || e) });
   }
 }).listen(API_PORT, () => console.log(`studio-preview on :${API_PORT}, repos ${repos().join(",")}, host ${HOST}`));
 
 process.on("SIGTERM", async () => {
-  slot.state = "stopped";
-  await stopMetro();
+  for (const s of Object.values(slots)) { s.state = "stopped"; await stop(s); }
   process.exit(0);
 });
