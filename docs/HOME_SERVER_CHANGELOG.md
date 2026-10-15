@@ -6,6 +6,26 @@ is often what you need when something similar breaks again.
 
 Newest first-ish; dates are when the work was finished.
 
+## 2026-10-15 — Studio: last OpenRouter roles moved to Claude; Claude Design login
+
+- Community & Launch (hit its $3/mo OpenRouter cap) and Researcher ($2.97 of
+  $3) now run `claude_local` / Sonnet 5 on the Max plan. They couldn't be
+  switched in place: their `runtimeConfig.aiConnection` pinned OpenRouter,
+  `PATCH /api/agents/:id` re-copies an existing binding when you omit it, and
+  binding them to "My Claude subscription" fails validation (refreshing that
+  connection needs the *local operator*). So each was re-hired with **no
+  binding** (like every other Claude agent, which runs on the container's
+  `CLAUDE_CODE_OAUTH_TOKEN`), its AGENTS.md copied over, and the old agent
+  terminated. Neither had open issues or env bindings.
+- The container's Claude token was rotated (`claude setup-token` →
+  `~/services/paperclip/.env` → `docker compose up -d`). The restart took ~10
+  min because of the entrypoint's recursive chown (TODO).
+- Claude Design: the owner ran `/design-login` **inside** the container
+  (`docker exec -it -u node -e HOME=/paperclip -w /paperclip paperclip claude`);
+  it must run where the agents run. Note `DesignSync` only syncs a design
+  system through the `/design-sync` skill; finished designs live as Design
+  artifacts at claude.ai/artifacts/design.
+
 ## 2026-10-14 — NAS watchdog no longer fights game mode
 
 - The stale-mount probe (`docker exec ls`) failed on containers game mode had
