@@ -6,6 +6,20 @@ is often what you need when something similar breaks again.
 
 Newest first-ish; dates are when the work was finished.
 
+## 2026-10-15 — NAS shares over NFS for every container
+
+- Owner enabled NFS in UGOS (5 shares, `192.168.1.0/24`, no squash,
+  non-privileged ports). Immich, Jellyfin, Audiobookshelf, Sonarr, Radarr,
+  Bazarr, Transmission and LazyLibrarian now use Docker NFS volumes instead of
+  binds of the macOS SMB mounts, which went stale after NAS reboots. All
+  verified mounted as `nfs` with their files listed; Immich healthy with
+  thumbnails still on the SSD. Details and reasons: `HOME_SERVER_REFERENCE.md`
+  → *NAS over NFS*.
+- Fixed in passing: LazyLibrarian wrote audiobooks to a local folder
+  (`~/services/audiobookshelf/data/audiobooks`, empty) that Audiobookshelf
+  never read; it now writes to the NAS `audiobooks` share.
+- Calibre stays on the SSD: its SQLite `metadata.db` must not live on NFS.
+
 ## 2026-10-15 — Calibre: 734 MB duplicate out of the library
 
 - "Can't Hurt Me" was in Calibre twice: entry 20 (normal EPUB + KFX) and entry

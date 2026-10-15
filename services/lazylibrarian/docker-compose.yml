@@ -17,9 +17,10 @@ services:
     volumes:
       - ./data:/config
       - ${BOOKS_DIR:-/Volumes/books}:/books
-      - ${AUDIOBOOKS_DIR:-/Users/dziugaspeciulevicius/services/audiobookshelf/data/audiobooks}:/audiobooks
-      - ${DOWNLOADS_DIR:-/Volumes/media/downloads}:/downloads
+      - audiobooks:/audiobooks
+      - downloads:/downloads
     environment:
+      UMASK: "000"
       PUID: ${PUID:-1000}
       PGID: ${PGID:-1000}
       TZ: ${TZ:-Europe/Vilnius}
@@ -39,3 +40,20 @@ networks:
     external: true
   media:
     external: true
+
+# NAS shares over NFS, mounted by Docker's VM directly instead of the macOS
+# SMB mounts under /Volumes (those went stale after NAS reboots). Same paths
+# inside the containers. See docs/HOME_SERVER_REFERENCE.md → NAS over NFS.
+volumes:
+  audiobooks:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: "addr=${NAS_IP:-192.168.1.73},nfsvers=3,nolock,hard,rw"
+      device: ":/volume1/audiobooks"
+  downloads:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: "addr=${NAS_IP:-192.168.1.73},nfsvers=3,nolock,hard,rw"
+      device: ":/volume1/media/downloads"

@@ -73,8 +73,9 @@ services:
         restart: true
     volumes:
       - ./data/config:/config
-      - ${MEDIA_DIR:-/Volumes/media}/downloads:/downloads
+      - downloads:/downloads
     environment:
+      UMASK: "000"
       PUID: ${PUID:-1000}
       PGID: ${PGID:-1000}
       TZ: ${TZ:-Europe/Vilnius}
@@ -84,3 +85,14 @@ services:
 networks:
   default:
     name: media
+
+# NAS shares over NFS, mounted by Docker's VM directly instead of the macOS
+# SMB mounts under /Volumes (those went stale after NAS reboots). Same paths
+# inside the containers. See docs/HOME_SERVER_REFERENCE.md → NAS over NFS.
+volumes:
+  downloads:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: "addr=${NAS_IP:-192.168.1.73},nfsvers=3,nolock,hard,rw"
+      device: ":/volume1/media/downloads"

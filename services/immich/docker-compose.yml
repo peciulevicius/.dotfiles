@@ -12,7 +12,10 @@ services:
     ports:
       - "${IMMICH_PORT:-2283}:2283"
     volumes:
-      - ${UPLOAD_LOCATION:-./library}:/usr/src/app/upload
+      # Originals on the NAS over NFS, mounted by Docker's VM directly (not the
+      # macOS SMB mount at /Volumes/immich): a NAS reboot used to leave the
+      # container on a dead mount. See docs/HOME_SERVER_REFERENCE.md → NAS over NFS.
+      - immich-upload:/usr/src/app/upload
       # Thumbnails on the internal SSD, overlaying the NAS path above.
       # Scrolling the timeline requests hundreds of these at once; served
       # from spinning NAS disks that is audible seek noise and visibly
@@ -80,3 +83,9 @@ services:
 
 volumes:
   immich-model-cache:
+  immich-upload:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: "addr=${NAS_IP:-192.168.1.73},nfsvers=3,nolock,hard,rw"
+      device: ":/volume1/immich/upload"
