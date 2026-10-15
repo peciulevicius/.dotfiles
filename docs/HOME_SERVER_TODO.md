@@ -281,6 +281,13 @@ Barbora cart; the owner only pays.
 - [x] ~~Rotate the **Radarr + Sonarr API keys**~~ — **done 2026-09-27**
   (Prowlarr, Jellyseerr, Bazarr updated + tested; see changelog).
 
+- **Paperclip restarts take ~10 min (2026-10-15):** the image's entrypoint runs
+  `chown -R node:node /paperclip` over the whole data dir, which now holds
+  agent workspaces (`node_modules`) on VirtioFS; the healthcheck reports
+  `unhealthy` meanwhile and the UI refuses connections. Fix in our
+  `Dockerfile.binding-order` patch layer: only chown when the top-level owner
+  is wrong, or skip `instances/*/workspaces` and `projects`. Measure first:
+  `time docker restart paperclip`.
 - Optional: OpenCode + `qwen2.5-coder:7b` for offline snippets — *⚡ Batch 2026-09-24*
 - Odysseus: chat-export import, CalDAV after Nextcloud, RAG over Paperless + Linkwarden — *8. Odysseus*
 - ~~Rotate Immich's DB password~~ — done 2026-10-02
