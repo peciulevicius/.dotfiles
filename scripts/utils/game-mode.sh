@@ -16,7 +16,7 @@ export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
 
 GAME_PATTERNS="${GAME_PATTERNS:-Liftoff|Uncrashed|VelociDrone}"
 RESUME_AFTER_MIN="${RESUME_AFTER_MIN:-20}"
-PAUSE_LIST="${PAUSE_LIST:-paperclip immich_server immich_machine_learning jellyfin audiobookshelf odysseus-odysseus-1 uptime_kuma strava-mcp trainingpeaks-mcp linkwarden nextcloud paperless}"
+PAUSE_LIST="${PAUSE_LIST:-paperclip studio-preview immich_server immich_machine_learning jellyfin audiobookshelf odysseus-odysseus-1 uptime_kuma strava-mcp trainingpeaks-mcp linkwarden nextcloud paperless}"
 STATE="$HOME/.config/homelab/game-mode.state"
 LAST_SEEN="$HOME/.config/homelab/game-mode.last-seen"
 

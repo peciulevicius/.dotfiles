@@ -6,6 +6,18 @@ is often what you need when something similar breaks again.
 
 Newest first-ish; dates are when the work was finished.
 
+## 2026-10-15 — Carbstride monorepo merged; game mode pauses the preview runner
+
+- STU-308 merged (merge commit `d1ba1c9`, history preserved): `apps/mobile`,
+  `apps/web`, `packages/`, `supabase/`, `legacy/`. Seven old PRs closed with
+  their branches and worktrees removed; `carbstride-site` and
+  `carbstride-strava-auth` archived on GitHub, local clones in
+  `~/dev/studio/.archive/` (dot-folder: ignored by the bot and runner).
+- The PR bot no longer reopens a PR someone closed (it skips branches whose
+  PR is closed).
+- Game mode now also pauses `studio-preview`: Liftoff plus the runner's two
+  Expo servers and Chromium pushed swap to 17 GB and filled the disk.
+
 ## 2026-10-15 — studio-preview understands monorepos
 
 - Carbstride's monorepo migration (PR #9, STU-308) failed every preview with
