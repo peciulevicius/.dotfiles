@@ -116,6 +116,10 @@ SYNC_CMD+=(--exclude "paperclip/data/.claude.json*")
 SYNC_CMD+=(--exclude "paperclip/data/.codex/**")
 SYNC_CMD+=(--exclude "paperclip/data/.gemini/**")
 SYNC_CMD+=(--exclude "paperclip/data/.cache/**")
+# Agents' package caches (re-downloadable, several GB by 2026-10-15).
+SYNC_CMD+=(--exclude "paperclip/data/.npm/**")
+SYNC_CMD+=(--exclude "paperclip/data/.local/share/pnpm/**")
+SYNC_CMD+=(--exclude "**/node_modules/**")
 SYNC_CMD+=(--exclude "paperclip/data/.npm/**")
 # Upstream source tree — it is a git clone, re-creatable with setup.sh
 SYNC_CMD+=(--exclude "odysseus/.git/**")
