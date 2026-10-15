@@ -24,6 +24,12 @@ STATE = HOME / ".config/homelab/studio-pr-bot.json"
 LOCK = HOME / ".config/homelab/studio-pr-bot.lock"
 GAME_MODE = HOME / ".config/homelab/game-mode.state"
 os.environ["PATH"] = "/opt/homebrew/bin:/usr/local/bin:" + os.environ.get("PATH", "")
+# gh keeps its login in the macOS Keychain, which cron can't read (every PR
+# call failed with HTTP 401 on 2026-10-15). A copy of the token lives in a
+# 0600 file: `umask 077; gh auth token > ~/.config/homelab/gh-token`.
+_TOKEN = HOME / ".config/homelab/gh-token"
+if _TOKEN.exists() and "GH_TOKEN" not in os.environ:
+    os.environ["GH_TOKEN"] = _TOKEN.read_text().strip()
 
 
 def sh(*args, cwd=None, check=True):
@@ -47,11 +53,11 @@ def api(method, path, body=None):
 def wait(pred, timeout):
     end = time.time() + timeout
     while time.time() < end:
-        s = api("GET", "/status")
+        s = api("GET", "/status?slot=owner")
         if pred(s):
             return s
         time.sleep(5)
-    return api("GET", "/status")
+    return api("GET", "/status?slot=owner")
 
 
 def discord(text):
@@ -67,7 +73,7 @@ def discord(text):
 
 
 def preview_and_report(repo, branch, sha, pr):
-    r = api("POST", "/preview", {"repo": repo, "branch": branch})
+    r = api("POST", "/preview", {"repo": repo, "branch": branch, "slot": "owner"})
     if r.get("httpError"):
         print(f"{repo}@{branch}: preview busy/refused: {r}")
         return False
@@ -77,8 +83,8 @@ def preview_and_report(repo, branch, sha, pr):
         sh("gh", "pr", "comment", pr["url"], "--body", body)
         discord(f"⚠️ **{repo}** PR #{pr['number']} preview failed: {pr['url']}")
         return True
-    api("POST", "/test", {})
-    t = wait(lambda s: (s.get("test") or {}).get("state") in ("passed", "failed"), 420).get("test") or {}
+    api("POST", "/test", {"slot": "owner"})
+    t = wait(lambda s: (s.get("test") or {}).get("state") in ("passed", "failed"), 600).get("test") or {}
     L = s["links"]
     phone = (f"- **iPhone:** open {L['phoneTap']} (Tailscale on, Expo Go installed) or scan {L['qr']}\n"
              if "phoneTap" in L else "")
@@ -86,7 +92,7 @@ def preview_and_report(repo, branch, sha, pr):
               else f"❌ smoke test failed:\n```\n{(t.get('error') or 'timed out')[:1200]}\n```")
     body = (f"### 📱 Preview of `{sha[:7]}` is live\n{phone}"
             f"- **Web:** {L['web']}\n- **Screenshots:** {tested}\n\n"
-            f"_One preview runs at a time; a newer PR replaces this one._")
+            f"_Your preview slot shows the most recently updated PR; a newer PR replaces this one._")
     sh("gh", "pr", "comment", pr["url"], "--body", body)
     discord(f"📱 **{repo}** PR #{pr['number']}: {pr['title']}\n"
             + (f"Tap on iPhone: {L['phoneTap']}\n" if "phoneTap" in L else "") + f"Web: {L['web']}\n" + (f"Screenshots: {t['index']}\n" if t.get("state") == "passed" else "Smoke test ❌\n")
@@ -126,21 +132,27 @@ def main():
             for line in sh("git", "for-each-ref", "--sort=-committerdate", "refs/heads/agent/",
                            "--format=%(refname:short) %(objectname)", cwd=path).splitlines():
                 branch, sha = line.split()
-                remote = sh("git", "rev-parse", "-q", "--verify", f"origin/{branch}", cwd=path, check=False)
-                if remote != sha:
-                    sh("git", "push", "-q", "--force-with-lease", "origin", f"{branch}:{branch}", cwd=path)
-                    print(f"pushed {repo}@{branch} {sha[:7]}")
-                prs = json.loads(sh("gh", "pr", "list", "--head", branch, "--state", "open",
-                                    "--json", "number,url,title", cwd=path) or "[]")
-                if not prs:
-                    title = sh("git", "log", "--format=%s", "-1", f"origin/main..{branch}", cwd=path) or branch
-                    log = sh("git", "log", "--format=- %s", f"origin/main..{branch}", cwd=path)
-                    url = sh("gh", "pr", "create", "--base", "main", "--head", branch, "--title", title,
-                             "--body", f"Opened by the Studio PR bot for an agent branch.\n\n{log}\n\n"
-                                       "A preview with an iPhone link and screenshots follows in a comment.", cwd=path)
-                    prs = json.loads(sh("gh", "pr", "view", url, "--json", "number,url,title", cwd=path))
-                    prs = [prs]
-                    print(f"opened {url}")
+                try:
+                    if not sh("git", "log", "--format=%h", "-1", f"origin/main..{branch}", cwd=path):
+                        continue  # nothing new vs main (merged, or empty): no PR to open
+                    remote = sh("git", "rev-parse", "-q", "--verify", f"origin/{branch}", cwd=path, check=False)
+                    if remote != sha:
+                        sh("git", "push", "-q", "--force-with-lease", "origin", f"{branch}:{branch}", cwd=path)
+                        print(f"pushed {repo}@{branch} {sha[:7]}")
+                        continue  # let GitHub catch up; the PR opens on the next run
+                    prs = json.loads(sh("gh", "pr", "list", "--head", branch, "--state", "open",
+                                        "--json", "number,url,title", cwd=path) or "[]")
+                    if not prs:
+                        title = sh("git", "log", "--format=%s", "-1", f"origin/main..{branch}", cwd=path) or branch
+                        log = sh("git", "log", "--format=- %s", f"origin/main..{branch}", cwd=path)
+                        url = sh("gh", "pr", "create", "--base", "main", "--head", branch, "--title", title,
+                                 "--body", f"Opened by the Studio PR bot for an agent branch.\n\n{log}\n\n"
+                                           "A preview with an iPhone link and screenshots follows in a comment.", cwd=path)
+                        prs = [json.loads(sh("gh", "pr", "view", url, "--json", "number,url,title", cwd=path))]
+                        print(f"opened {url}")
+                except Exception as e:  # one bad branch must not stop the others (or the state save)
+                    print(f"{time.strftime('%F %T')} {repo}@{branch}: {e}", file=sys.stderr)
+                    continue
                 key = f"{repo}@{branch}"
                 if state.get(key) != sha and newest is None:
                     newest = (branch, sha, prs[0], key)
@@ -148,6 +160,7 @@ def main():
                 branch, sha, pr, key = newest
                 if preview_and_report(repo, branch, sha, pr):
                     state[key] = sha
+                    STATE.write_text(json.dumps(state, indent=1))  # saved now: a later error can't redo this preview
         STATE.write_text(json.dumps(state, indent=1))
     finally:
         shutil.rmtree(LOCK, ignore_errors=True)

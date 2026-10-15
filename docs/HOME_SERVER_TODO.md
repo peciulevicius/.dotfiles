@@ -242,12 +242,11 @@ Barbora cart; the owner only pays.
 
 Dev pipeline since 2026-10-15 (`services/studio-preview/README.md`). Open:
 - [ ] 👤 Install **Expo Go** on the iPhone (Tailscale on) to open PR preview links.
-- [ ] 👤 **Code review after Codex ends (2026-10-29):** the Studio's QA,
-      Security and CTO agents review every PR on the Paperclip issue already.
-      For a bot comment on the GitHub PR itself (dotfiles too), run
-      `/install-github-app` in Claude Code once per repo: it installs the Claude
-      GitHub app and the review workflow, using the Max plan. Decide before
-      2026-10-29.
+- [ ] 👤 **Turn on Claude PR review** (workflow already in dotfiles +
+      Carbstride, idle until the secret exists): `claude setup-token`, then
+      `gh secret set CLAUDE_CODE_OAUTH_TOKEN -R peciulevicius/<repo>` (paste at
+      the hidden prompt) for `.dotfiles` and `carbstride`. New Studio repos get
+      the workflow from `carbstride` (copy it with CI).
 - [ ] 👤 Later: free **Expo account** + `EXPO_TOKEN` → EAS Update per PR
       (permanent preview links, several PRs at once); **Apple Developer**
       ($99/yr) → development build + TestFlight (RevenueCat, HealthKit, OAuth).

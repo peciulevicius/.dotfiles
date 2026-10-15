@@ -25,17 +25,19 @@ Owner
 ## The runner
 
 `studio-preview` (this folder) is one container with Node, pnpm and headless
-Chromium. It holds **one preview slot**: the most recently requested branch
-runs as a dev server: an Expo app (served to the phone via Expo Go and as a
+Chromium. It holds **two preview slots**, each running one branch as a dev
+server. **owner** (port 8081, published on Tailscale) is used only by the PR
+bot, so the links on a PR keep showing that PR. **agent** (port 8082, internal)
+is where agents try their own work. Each runs: an Expo app (served to the phone via Expo Go and as a
 web build) or a website (Next via `next dev`, Astro/Vite/SvelteKit via their
 `dev` script). Any git repo directly under `~/dev/studio` can be previewed. A new request replaces the running one. It joins the `paperclip`
 network so agents reach it at `http://studio-preview:7301`.
 
 | Endpoint | What |
 |---|---|
-| `POST /preview {"repo":"carbstride","branch":"agent/…"}` | check the branch out into `~/dev/studio/.previews/<repo>` and start it (async; `409` while another is starting) |
-| `GET /status` | state (`preparing → installing → starting → running`, or `failed`/`crashed`), links, log tail, last test |
-| `POST /test` | Playwright at iPhone size (390×844): home + up to 8 in-app links, one PNG each + `index.html`; fails on uncaught page errors |
+| `POST /preview {"repo":"carbstride","branch":"agent/…","slot":"agent"}` (slot defaults to agent; the bot uses owner) | check the branch out into `~/dev/studio/.previews/<repo>` and start it (async; `409` while another is starting) |
+| `GET /status[?slot=owner\|agent]` | per slot: state (`preparing → installing → starting → running`, or `failed`/`crashed`), links, log tail, last test |
+| `POST /test {"slot":…}` | Playwright at iPhone size (390×844): home + up to 8 in-app links, one PNG each + `index.html`; fails on uncaught page errors |
 | `GET /open` | Expo apps: 302 to `exp://100.81.171.49:8081`, so a tap on the phone opens Expo Go |
 | `GET /qr.png` | Expo apps: QR of the same link |
 | `GET /artifacts/…` | screenshots (under `~/dev/studio/.previews/artifacts/`) |
@@ -75,8 +77,10 @@ see below); until then those screens can only be checked on the web build.
   worktree created at `/work/...` in a container is broken on the Mac.
 - **Host bot pushes, not agents:** no GitHub token or deploy key inside the
   agents' container; everything reaching GitHub goes through one small script.
-- **One slot:** memory. The newest change wins; older PRs keep their last
-  screenshots.
+- **Two slots, not one:** with one shared slot an agent's own test replaced a
+  PR's preview while the bot was screenshotting it (2026-10-15). Two dev
+  servers plus one Chromium fit the 2.5 GB cap; more would not. Older PRs keep
+  their last screenshots; the owner slot shows the newest PR.
 
 ## Failure modes
 

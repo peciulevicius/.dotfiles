@@ -21,9 +21,11 @@ commit to `main` again.
    (Expo apps), a web link and screenshots, in the PR and in `#ai-studio`.
 3. Before handing over: the repo's checks pass (typecheck, lint, tests). Try
    the branch yourself on the preview runner:
-   `POST http://studio-preview:7301/preview {"repo":"<repo>","branch":"agent/…"}`,
-   poll `GET /status` until `running`, `POST /test`, read the screenshots. One
-   preview at a time; if it's busy (`409`), wait.
+   `POST http://studio-preview:7301/preview {"repo":"<repo>","branch":"agent/…"}`
+   (the agents' slot), poll `GET /status?slot=agent` until `running`,
+   `POST /test` and read the screenshots. The agents share that one slot; if
+   it's busy (`409`), wait. The owner's slot belongs to the PR bot — never use
+   `"slot":"owner"`.
 
 **Review gate (replaces the Codex bot after 2026-10-29):** no PR goes to the
 owner until

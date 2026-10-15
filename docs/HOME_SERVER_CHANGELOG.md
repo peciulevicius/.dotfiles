@@ -6,6 +6,23 @@ is often what you need when something similar breaks again.
 
 Newest first-ish; dates are when the work was finished.
 
+## 2026-10-15 — Studio pipeline fixes; Claude PR review
+
+- PR bot under cron couldn't use `gh` (its login is in the Keychain → HTTP
+  401): it now reads a 0600 copy of the token, `~/.config/homelab/gh-token`
+  (`umask 077; gh auth token > …`; re-run after `gh auth login`).
+- One shared preview slot let agents' own previews replace a PR's preview
+  mid-screenshot. `studio-preview` now has an **owner** slot (8081, Tailscale,
+  PR bot only) and an **agent** slot (8082, internal).
+- The bot crashed on one branch GitHub refused ("no commits between") and then
+  redid the same preview every run; errors are now per branch, it waits one
+  run after a push before opening the PR, and saves state right after each
+  preview. `/open` explains when no app preview is running.
+- **Claude code review** workflow (`.github/workflows/claude-review.yml`) on
+  dotfiles and Carbstride: inline comments + a verdict on every PR, on the Max
+  plan. Inactive until the `CLAUDE_CODE_OAUTH_TOKEN` repo secret is set (owner
+  step, see TODO). Replaces the Codex bot after 2026-10-29.
+
 ## 2026-10-15 — Studio dev pipeline; disk-full Docker crash; all agents on Claude
 
 - **Disk full → Docker crash:** the disk hit 97% (7 GB free), macOS couldn't
