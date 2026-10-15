@@ -14,10 +14,11 @@ services:
     environment:
       PREVIEW_HOST: ${PREVIEW_HOST:-100.81.171.49}
       STUDIO_DIR: ${HOME}/dev/studio
-      # Expo access token (expo.dev → Account settings → Access tokens), so the
-      # dev server runs signed in as the owner. Expo Go refuses a signed-out dev
-      # server when the phone's Expo Go is signed in ("you're signed in to Expo
-      # Go as …, but not signed in to Expo CLI"). Empty = anonymous.
+      # Optional Expo access token. Usually unnecessary: sign in once with
+      # `expo login` inside the container (see README), stored in expo-state.
+      # Expo Go refuses a signed-out dev server when the phone's Expo Go is
+      # signed in ("you're signed in to Expo Go as …, but not signed in to
+      # Expo CLI").
       EXPO_TOKEN: ${EXPO_TOKEN:-}
       GIT_CONFIG_COUNT: "1"
       GIT_CONFIG_KEY_0: "safe.directory"
@@ -33,6 +34,9 @@ services:
       # Every Studio repo (apps, landing pages, waitlists) lives here.
       - ${HOME}/dev/studio:${HOME}/dev/studio
       - pnpm-store:/home/node/.local/share/pnpm
+      # Expo CLI session from a one-time `expo login` inside the container, so
+      # previews run signed in as the owner and survive rebuilds.
+      - expo-state:/home/node/.expo
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:7301/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
       interval: 30s
@@ -41,6 +45,7 @@ services:
 
 volumes:
   pnpm-store:
+  expo-state:
 
 networks:
   default:

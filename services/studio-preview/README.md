@@ -89,9 +89,10 @@ see below); until then those screens can only be checked on the web build.
 - `failed` with a pnpm error — lockfile out of date on that branch; the agent
   fixes it in its branch.
 - Expo Go says "you're signed in to Expo Go as …, but not signed in to Expo
-  CLI" — the dev server runs anonymously. Either sign out in Expo Go, or put
-  an Expo access token in `~/services/studio-preview/.env` as `EXPO_TOKEN=`
-  and `docker compose up -d` (runs previews signed in as the owner).
+  CLI" — the dev server runs anonymously. Either sign out in Expo Go, or sign
+  the runner in once (kept in the `expo-state` volume across rebuilds):
+  `docker exec -it studio-preview sh -c 'cd "$STUDIO_DIR/.previews/owner/carbstride" && pnpm exec expo login'`
+  then reopen the PR link (the next preview start picks the session up).
 - Phone says "could not connect" — Tailscale off on the phone, or the preview
   was replaced by a newer one (check `/status`).
 - Expo Go says the SDK is unsupported — Expo Go only runs the latest SDK; keep
