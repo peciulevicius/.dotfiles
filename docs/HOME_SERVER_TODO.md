@@ -998,6 +998,9 @@ done
 ```
 
 Follow-ups left:
+- [ ] **Owner wants the library on the NAS** (2026-10-15): move it back once the
+      NAS is mounted over **NFS** inside Docker (the planned UGOS NFS step). Not
+      over SMB: SQLite (`metadata.db`) on SMB is what broke it before.
 
 - [ ] 👤 Verify OPDS still serves to KOReader afterwards, and that Calibre-Web
       opens a shelf (the old `disk I/O error` path) — server side checked

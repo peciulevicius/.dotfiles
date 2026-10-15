@@ -6,6 +6,15 @@ is often what you need when something similar breaks again.
 
 Newest first-ish; dates are when the work was finished.
 
+## 2026-10-15 — Calibre: 734 MB duplicate out of the library
+
+- "Can't Hurt Me" was in Calibre twice: entry 20 (normal EPUB + KFX) and entry
+  41, an EPUB with the full audiobook embedded (768 MB, 112 files). Entry 41
+  was copied to `/Volumes/unsorted/Books/` (verified with `diff -rq`) and
+  removed with `calibredb remove 41 --permanent` from a one-off container while
+  the `calibre` container was stopped (calibredb refuses while the Calibre GUI
+  has the library open). Library 1.1 GB → 346 MB.
+
 ## 2026-10-15 — Studio pipeline fixes; Claude PR review
 
 - PR bot under cron couldn't use `gh` (its login is in the Keychain → HTTP
