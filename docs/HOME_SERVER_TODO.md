@@ -1039,7 +1039,10 @@ Run a backup with:
 No longer load-bearing — everything addresses the NAS as `DH4300PLUS-DP.local`
 (mDNS) since 2026-09-05, which absorbs IP drift. Still worth pinning.
 
-- [ ] 👤 OpenWrt (`192.168.1.1`) → static lease for the NAS (MAC from the router's client list)
+- [ ] 👤 Router (`192.168.1.1`, a **Technicolor** ISP box — not OpenWrt as noted
+      earlier; admin password is on its sticker, save it in Vaultwarden) →
+      static leases: NAS `192.168.1.73`, Mac mini Ethernet `192.168.1.157`.
+      Optional if the NFS rules allow `192.168.1.0/24`.
 
 ---
 
