@@ -9,6 +9,8 @@
 //   POST /preview {repo, branch, slot?}  check out + start (async; slot defaults to "agent")
 //   POST /test    {slot?}                screenshot the running preview (async)
 //   GET  /status[?slot=owner|agent]      slot state, links, log tail, last test
+//   GET  /p?repo=…&branch=…              per-PR link: opens that branch (starts it in the owner
+//                                        slot if needed, with a self-refreshing wait page)
 //   GET  /open                           owner slot: 302 to exp://… (tap on the phone)
 //   GET  /qr.png                         owner slot: QR of the exp:// link
 //   GET  /artifacts/…                    screenshots and their index.html
@@ -165,6 +167,35 @@ async function readJson(req) {
   return b ? JSON.parse(b) : {};
 }
 
+const esc = (t) => String(t ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+
+// Small phone-friendly page that reloads itself until the preview is ready.
+function waitPage(title, detail, refresh = 4) {
+  return `<!doctype html><meta name=viewport content="width=device-width,initial-scale=1">
+${refresh ? `<meta http-equiv=refresh content="${refresh}">` : ""}<title>${esc(title)}</title>
+<style>body{font:17px -apple-system,system-ui;margin:0;padding:32px 24px;background:#0b0d12;color:#e8eaf0}
+h1{font-size:22px;margin:0 0 12px}p{color:#9aa3b2;line-height:1.5}pre{white-space:pre-wrap;font-size:12px;color:#6b7385}</style>
+<h1>${esc(title)}</h1>${detail}`;
+}
+
+// Per-PR link. The PR bot posts this, so a link never goes stale: tapping it
+// shows that branch even if another PR took the owner slot since.
+function prLink(res, repo, branch) {
+  const s = slots.owner;
+  const same = s.repo === repo && s.branch === branch;
+  if (same && s.state === "running") {
+    res.writeHead(302, { Location: s.kind === "expo" ? links(s).phone : links(s).web });
+    return res.end();
+  }
+  if (!same && BUSY.includes(s.state))
+    return send(res, 200, waitPage("Another preview is starting…", `<p>${esc(s.repo)} @ ${esc(s.branch)} is building. This page retries by itself.</p>`, 8), "text/html");
+  if (same && s.state === "failed")
+    return send(res, 200, waitPage("This preview failed to start", `<p>The agents fix it on the PR.</p><pre>${esc(s.error)}</pre>`, 0), "text/html");
+  if (!same || ["idle", "crashed", "stopped"].includes(s.state)) startPreview(s, repo, branch);
+  return send(res, 200, waitPage(`Starting ${repo}…`, `<p>${esc(branch)}<br>Usually about a minute. Expo Go opens by itself when it's ready.</p>
+<pre>${esc(s.log.slice(-4).join("\n"))}</pre>`), "text/html");
+}
+
 function pickSlot(name) {
   const s = slots[name || "agent"];
   if (!s) throw Object.assign(new Error("slot must be owner or agent"), { status: 400 });
@@ -178,6 +209,12 @@ http.createServer(async (req, res) => {
     if (req.method === "GET" && url.pathname === "/status") {
       const name = url.searchParams.get("slot");
       return send(res, 200, name ? view(pickSlot(name)) : { owner: view(slots.owner), agent: view(slots.agent) });
+    }
+    if (req.method === "GET" && url.pathname === "/p") {
+      const repo = url.searchParams.get("repo"), branch = url.searchParams.get("branch");
+      if (!repos().includes(repo) || !BRANCH_RE.test(branch || "") || branch.includes(".."))
+        return send(res, 400, waitPage("Unknown preview", "<p>That repo or branch doesn't exist.</p>", 0), "text/html");
+      return prLink(res, repo, branch);
     }
     if (req.method === "GET" && (url.pathname === "/open" || url.pathname === "/qr.png")) {
       const s = slots.owner;

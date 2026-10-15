@@ -18,6 +18,10 @@ Newest first-ish; dates are when the work was finished.
   redid the same preview every run; errors are now per branch, it waits one
   run after a push before opening the PR, and saves state right after each
   preview. `/open` explains when no app preview is running.
+- **Per-PR preview links** (`/p?repo=…&branch=…`): the PR comment and the
+  Discord message link to that PR's branch, not to "whatever runs now". A tap
+  starts it on demand (wait page, then Expo Go / browser), so old links never
+  show another PR or a JSON error.
 - **Claude code review** workflow (`.github/workflows/claude-review.yml`) on
   dotfiles and Carbstride: inline comments + a verdict on every PR, on the Max
   plan. Inactive until the `CLAUDE_CODE_OAUTH_TOKEN` repo secret is set (owner
