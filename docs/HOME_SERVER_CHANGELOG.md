@@ -26,6 +26,12 @@ Newest first-ish; dates are when the work was finished.
   `/Volumes/unsorted/{Documents,Kindle}`; the Photos library stays (its DB is
   written by macOS daemons even with Photos closed), copy in
   `/Volumes/unsorted/Pictures`.
+- Previews failed with "dev server did not come up in 4 min": stopping a
+  website preview killed `pnpm` but not its `next dev` child, which kept port
+  8081, so the next Expo server couldn't start (and the bot mislabeled apps as
+  websites). Dev servers now run in their own process group, are killed as a
+  group, and the port is freed from `/proc` before each start. Wait pages are
+  served as UTF-8. Verified: link → Expo manifest over Tailscale in ~97 s.
 - **Per-PR preview links** (`/p?repo=…&branch=…`): the PR comment and the
   Discord message link to that PR's branch, not to "whatever runs now". A tap
   starts it on demand (wait page, then Expo Go / browser), so old links never

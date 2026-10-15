@@ -75,13 +75,46 @@ function run(cmd, args, opts = {}) {
   });
 }
 
+// Dev servers run in their own process group: `pnpm run dev` starts the real
+// server (next, astro, metro) as a grandchild, and killing only pnpm left it
+// holding the port — the next preview then never came up (2026-10-15).
+function killGroup(p, sig) {
+  try { process.kill(-p.pid, sig); } catch {}
+}
+
 async function stop(s) {
-  if (!s.proc) return;
+  if (!s.proc) return freePort(s.port);
   const p = s.proc;
   s.proc = null;
-  p.kill("SIGTERM");
-  await new Promise((r) => setTimeout(r, 1500));
-  if (p.exitCode === null) p.kill("SIGKILL");
+  killGroup(p, "SIGTERM");
+  await new Promise((r) => setTimeout(r, 2000));
+  killGroup(p, "SIGKILL");
+  await freePort(s.port);
+}
+
+// Belt and braces: whatever still listens on the slot's port gets killed
+// (from /proc, so no lsof/fuser needed in the image).
+async function freePort(port) {
+  const hex = port.toString(16).toUpperCase().padStart(4, "0");
+  const inodes = new Set();
+  for (const f of ["/proc/net/tcp", "/proc/net/tcp6"]) {
+    try {
+      for (const line of fs.readFileSync(f, "utf8").split("\n").slice(1)) {
+        const c = line.trim().split(/\s+/);
+        if (c[1]?.endsWith(":" + hex) && c[3] === "0A") inodes.add(c[9]);
+      }
+    } catch {}
+  }
+  if (!inodes.size) return;
+  for (const pid of fs.readdirSync("/proc").filter((d) => /^\d+$/.test(d))) {
+    try {
+      for (const fd of fs.readdirSync(`/proc/${pid}/fd`)) {
+        const m = /socket:\[(\d+)\]/.exec(fs.readlinkSync(`/proc/${pid}/fd/${fd}`));
+        if (m && inodes.has(m[1])) { process.kill(Number(pid), "SIGKILL"); break; }
+      }
+    } catch {}
+  }
+  await new Promise((r) => setTimeout(r, 500));
 }
 
 async function waitForServer(s, ms) {
@@ -122,7 +155,8 @@ async function startPreview(s, repo, branch) {
     s.kind = cmd.kind;
     s.state = "starting";
     log(s, `starting ${cmd.kind} dev server: pnpm ${cmd.args.join(" ")}`);
-    const p = spawn("pnpm", cmd.args, { cwd: wt, env: { ...process.env, ...cmd.env } });
+    await freePort(s.port);
+    const p = spawn("pnpm", cmd.args, { cwd: wt, env: { ...process.env, ...cmd.env }, detached: true });
     s.proc = p;
     p.stdout.on("data", (d) => log(s, String(d).trim().slice(0, 300)));
     p.stderr.on("data", (d) => log(s, String(d).trim().slice(0, 300)));
@@ -157,8 +191,9 @@ async function runTest(s) {
 }
 
 function send(res, code, body, type = "application/json") {
+  if (type === "text/html") type = "text/html; charset=utf-8";
   res.writeHead(code, { "Content-Type": type, "Cache-Control": "no-store" });
-  res.end(type === "application/json" ? JSON.stringify(body, null, 2) : body);
+  res.end(type.startsWith("application/json") ? JSON.stringify(body, null, 2) : body);
 }
 
 async function readJson(req) {
