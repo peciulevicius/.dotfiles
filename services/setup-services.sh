@@ -46,6 +46,7 @@ SERVICES=(
   trainingpeaks-mcp
   strava-mcp
   paperclip
+  studio-preview
   discord-bridge
   balances-ui
   wud

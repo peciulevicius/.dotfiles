@@ -474,6 +474,13 @@ historical; the live rules are:
   (`scripts/utils/studio-cadence.py "0 */2 * * *" --once`, 2026-10-15 11:37)
   that removes itself after running. *Daily digest* 21:00, *Weekly review* Sunday 18:00. Daily standup
   stays paused.
+- **Dev pipeline** (2026-10-15): every Studio product is a private repo under
+  `~/dev/studio/<name>`, mounted into this container at the same path; agents
+  commit on `agent/*` branches (as the owner, with an `Agent:` trailer), the
+  host PR bot pushes and opens PRs, `studio-preview` gives the owner an iPhone
+  link + screenshots. QA → Security → CTO review each PR before the owner.
+  Rules: `studio-dev-team-addendum.md` (CEO, CTO, Mobile, Backend, Frontend,
+  QA, Security, Designer). Full runbook: `services/studio-preview/README.md`.
 - **Scope** (2026-10-14): any computer-run business with **no inventory** —
   print-on-demand, digital products, content/affiliate sites are in, and half
   of each idea batch must come from them. Text:

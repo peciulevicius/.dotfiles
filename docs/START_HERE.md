@@ -131,7 +131,7 @@ reopening the topic** — they record what was ruled out and why.
 | Notes / PKM | [guides/NOTES.md](./guides/NOTES.md) | Vault + sync exist; capture friction is the real problem |
 | Books + Kindle | [guides/BOOKS.md](./guides/BOOKS.md) · [setup](./guides/KINDLE_SETUP.md) | **Jailbroken 2026-09-20.** KOReader + OPDS is the live task |
 | FPV drones | [guides/FPV.md](./guides/FPV.md) | Started 2026-10-11. TX15 radio ordered; Liftoff sim on the Mac mini; day-one radio checklist ready for when it arrives |
-| Self-hosted AI | [guides/SELF_HOSTED_AI.md](./guides/SELF_HOSTED_AI.md) | ✅ **Odysseus running on 7001** (7000 is AirPlay). Local models via native Ollama. **Paperclip** (agent teams) on 3100, Tailscale only — setup, the Homelab + Studio companies, reports feed and usage rules in `services/paperclip/README.md` |
+| Self-hosted AI | [guides/SELF_HOSTED_AI.md](./guides/SELF_HOSTED_AI.md) | ✅ **Odysseus running on 7001** (7000 is AirPlay). Local models via native Ollama. **Paperclip** (agent teams) on 3100, Tailscale only — setup, the Homelab + Studio companies, reports feed and usage rules in `services/paperclip/README.md`. **Studio dev pipeline** (private repos in `~/dev/studio`, agent branches → PRs → iPhone preview links): `services/studio-preview/README.md` |
 | Octopus Deploy | [guides/OCTOPUS_DEPLOY.md](./guides/OCTOPUS_DEPLOY.md) | ❌ Ruled out on RAM — don't re-research |
 | Automation & repo safety | `config/claude/skills/` (homelab-service, credential-rotation, homelab-audit) · `scripts/utils/homelab-audit.sh` · `.githooks/pre-commit` · `.github/workflows/checks.yml` | ✅ Weekly audit cron'd; gitleaks blocks secret commits locally and re-scans every push in CI, with shellcheck + strict docs build |
 

@@ -54,6 +54,17 @@ services:
     environment:
       HOST: "0.0.0.0"
       PORT: "3100"
+      # Studio agents commit as the owner (his GitHub no-reply address), so the
+      # commits count on his profile; agents name themselves in an
+      # `Agent: <role>` trailer. The mount is owned by the host user, so let
+      # git work there without "dubious ownership".
+      GIT_AUTHOR_NAME: "Džiugas Pečiulevičius"
+      GIT_AUTHOR_EMAIL: "43075730+peciulevicius@users.noreply.github.com"
+      GIT_COMMITTER_NAME: "Džiugas Pečiulevičius"
+      GIT_COMMITTER_EMAIL: "43075730+peciulevicius@users.noreply.github.com"
+      GIT_CONFIG_COUNT: "1"
+      GIT_CONFIG_KEY_0: "safe.directory"
+      GIT_CONFIG_VALUE_0: "*"
       PAPERCLIP_HOME: /paperclip
       PAPERCLIP_DEPLOYMENT_MODE: authenticated
       PAPERCLIP_DEPLOYMENT_EXPOSURE: private
@@ -74,6 +85,13 @@ services:
       # runs `chown -R /paperclip` as root on every start and exits non-zero on
       # a read-only mount there -> crash loop (hit 2026-09-26).
       - ./reports:/reports:ro
+      # Studio repos (2026-10-15): every Studio product (apps, landing pages,
+      # waitlists) is a private repo under ~/dev/studio, mounted once at the
+      # SAME absolute path as on the Mac so git worktree paths stay valid for
+      # the host PR bot and studio-preview too — a new repo needs no restart.
+      # Outside /paperclip, so the entrypoint's chown never touches it.
+      # Workflow: services/studio-preview/README.md.
+      - ${HOME}/dev/studio:${HOME}/dev/studio
       # Shared AI memory (plain markdown, local git repo, backed up to R2 +
       # NAS) that every agent reads/writes — Paperclip agents, Odysseus, Claude
       # Code. Read-write; outside /paperclip for the same chown reason as
