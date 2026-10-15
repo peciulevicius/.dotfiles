@@ -30,7 +30,10 @@ server. **owner** (port 8081, published on Tailscale) is used only by the PR
 bot, so the links on a PR keep showing that PR. **agent** (port 8082, internal)
 is where agents try their own work. Each runs: an Expo app (served to the phone via Expo Go and as a
 web build) or a website (Next via `next dev`, Astro/Vite/SvelteKit via their
-`dev` script). Any git repo directly under `~/dev/studio` can be previewed. A new request replaces the running one. It joins the `paperclip`
+`dev` script). Any git repo directly under `~/dev/studio` can be previewed. **Monorepos**
+(pnpm workspace / Turborepo): dependencies install from the root, then the
+Expo app under `apps/` (or `packages/`) runs; with no Expo app, the first
+website there. A new request replaces the running one. It joins the `paperclip`
 network so agents reach it at `http://studio-preview:7301`.
 
 | Endpoint | What |
