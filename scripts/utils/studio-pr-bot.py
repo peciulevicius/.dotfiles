@@ -136,6 +136,9 @@ def preview_and_report(repo, branch, sha, pr):
     if "phoneTap" in L:
         phone += (f"- **iPhone, live from the Mac:** {tap} (Tailscale on; starts this branch first if another "
                   f"PR is running, ~1 min)\n")
+    if (STUDIO / repo / "apps" / "web").is_dir():
+        web_tap = "http://100.81.171.49:7301/p?" + urllib.parse.urlencode({"repo": repo, "branch": branch, "app": "web"})
+        phone += f"- **Web app / site:** {web_tap} (starts it on demand, ~1 min)\n"
     tested = (f"✅ {len(t.get('shots', []))} screens: {t['index']}" if t.get("state") == "passed"
               else f"❌ smoke test failed:\n```\n{(t.get('error') or 'timed out')[:1200]}\n```")
     body = (f"### 📱 Preview of `{sha[:7]}` is live\n{phone}"
