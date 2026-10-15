@@ -33,7 +33,8 @@ web build) or a website (Next via `next dev`, Astro/Vite/SvelteKit via their
 `dev` script). Any git repo directly under `~/dev/studio` can be previewed. **Monorepos**
 (pnpm workspace / Turborepo): dependencies install from the root, then the
 Expo app under `apps/` (or `packages/`) runs; with no Expo app, the first
-website there. A new request replaces the running one. It joins the `paperclip`
+website there. Pick another app with `app` (`POST /preview {"app":"web"}`,
+`/p?…&app=web`); PR comments for monorepos link both. A new request replaces the running one. It joins the `paperclip`
 network so agents reach it at `http://studio-preview:7301`.
 
 | Endpoint | What |
@@ -41,7 +42,7 @@ network so agents reach it at `http://studio-preview:7301`.
 | `POST /preview {"repo":"carbstride","branch":"agent/…","slot":"agent"}` (slot defaults to agent; the bot uses owner) | check the branch out into `~/dev/studio/.previews/<repo>` and start it (async; `409` while another is starting) |
 | `GET /status[?slot=owner\|agent]` | per slot: state (`preparing → installing → starting → running`, or `failed`/`crashed`), links, log tail, last test |
 | `POST /test {"slot":…}` | Playwright at iPhone size (390×844): home + up to 8 in-app links, one PNG each + `index.html`; fails on uncaught page errors |
-| `GET /p?repo=…&branch=…` | **per-PR link** (what the bot posts): opens that branch — Expo Go for apps, the browser for websites — starting it in the owner slot first if another PR holds it, behind a self-refreshing "starting…" page (~1 min) |
+| `GET /p?repo=…&branch=…[&app=web]` | **per-PR link** (what the bot posts): opens that branch — Expo Go for apps, the browser for websites — starting it in the owner slot first if another PR holds it, behind a self-refreshing "starting…" page (~1 min) |
 | `GET /open` | Expo apps: 302 to `exp://100.81.171.49:8081`, so a tap on the phone opens Expo Go |
 | `GET /qr.png` | Expo apps: QR of the same link |
 | `GET /artifacts/…` | screenshots (under `~/dev/studio/.previews/artifacts/`) |

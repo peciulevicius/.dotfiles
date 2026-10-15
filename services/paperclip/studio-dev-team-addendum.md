@@ -22,7 +22,8 @@ commit to `main` again.
 3. Before handing over: the repo's checks pass (typecheck, lint, tests). Try
    the branch yourself on the preview runner:
    `POST http://studio-preview:7301/preview {"repo":"<repo>","branch":"agent/…"}`
-   (the agents' slot), poll `GET /status?slot=agent` until `running`,
+   (the agents' slot; add `"app":"web"` for `apps/web` in a monorepo), poll
+   `GET /status?slot=agent` until `running`,
    `POST /test` and read the screenshots. The agents share that one slot; if
    it's busy (`409`), wait. The owner's slot belongs to the PR bot — never use
    `"slot":"owner"`.

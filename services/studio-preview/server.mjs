@@ -6,7 +6,8 @@
 //          shared slot let an agent's own test replace a PR's preview).
 //   agent  port 8082, internal (`paperclip` network); agents try their work.
 //
-//   POST /preview {repo, branch, slot?}  check out + start (async; slot defaults to "agent")
+//   POST /preview {repo, branch, slot?, app?}  check out + start (async; slot defaults to "agent";
+//                                        app picks apps/<app> in a monorepo, default: the Expo app)
 //   POST /test    {slot?}                screenshot the running preview (async)
 //   GET  /status[?slot=owner|agent]      slot state, links, log tail, last test
 //   GET  /p?repo=…&branch=…              per-PR link: opens that branch (starts it in the owner
@@ -31,10 +32,11 @@ const API_PORT = 7301;
 const PREVIEWS = path.join(STUDIO, ".previews");
 const ARTIFACTS = path.join(PREVIEWS, "artifacts");
 const BRANCH_RE = /^[A-Za-z0-9._\/-]{1,120}$/;
+const APP_RE = /^[a-z0-9][a-z0-9_-]{0,40}$/;
 const BUSY = ["preparing", "installing", "starting"];
 
 const newSlot = (name, port, publicHost) => ({
-  name, port, publicHost, proc: null,
+  name, port, publicHost, proc: null, app: null,
   repo: null, branch: null, sha: null, kind: null, state: "idle", error: null, startedAt: null, test: null, log: [],
 });
 const slots = { owner: newSlot("owner", 8081, HOST), agent: newSlot("agent", 8082, "studio-preview") };
@@ -53,11 +55,19 @@ const view = (s) => { const { proc, ...rest } = s; return { ...rest, links: link
 // tooling at its root, so run the app inside it: the Expo app first (the
 // phone preview is the point), otherwise the first website. Single-app repos
 // run from the root as before.
-function appDir(wt) {
+function appDir(wt, app) {
   const read = (d) => { try { return JSON.parse(fs.readFileSync(path.join(d, "package.json"), "utf8")); } catch { return null; } };
   const root = read(wt) || {};
   const isMono = fs.existsSync(path.join(wt, "pnpm-workspace.yaml")) || Array.isArray(root.workspaces) || root.workspaces?.packages;
   if (!isMono) return wt;
+  if (app) {
+    // Explicit choice (e.g. "web" for apps/web): the PR comment links both.
+    for (const top of ["apps", "packages"]) {
+      const d = path.join(wt, top, app);
+      if (read(d)) return d;
+    }
+    throw new Error(`no app "${app}" under apps/ or packages/`);
+  }
   const candidates = [];
   for (const top of ["apps", "packages"]) {
     const base = path.join(wt, top);
@@ -161,9 +171,9 @@ async function waitForServer(s, ms) {
   return false;
 }
 
-async function startPreview(s, repo, branch) {
+async function startPreview(s, repo, branch, app = null) {
   await stop(s);
-  Object.assign(s, { repo, branch, sha: null, kind: null, state: "preparing", error: null, startedAt: new Date().toISOString(), test: null, log: [] });
+  Object.assign(s, { repo, branch, app, sha: null, kind: null, state: "preparing", error: null, startedAt: new Date().toISOString(), test: null, log: [] });
   const repoDir = path.join(STUDIO, repo);
   const wt = path.join(PREVIEWS, s.name, repo);
   try {
@@ -178,7 +188,7 @@ async function startPreview(s, repo, branch) {
       log(s, "frozen install failed, retrying without --frozen-lockfile");
       await run("pnpm", ["install"], { cwd: wt });
     });
-    const dir = appDir(wt);
+    const dir = appDir(wt, s.app);
     const cmd = devCommand(dir, s);
     s.kind = cmd.kind;
     s.state = "starting";
@@ -244,9 +254,9 @@ h1{font-size:22px;margin:0 0 12px}p{color:#9aa3b2;line-height:1.5}pre{white-spac
 
 // Per-PR link. The PR bot posts this, so a link never goes stale: tapping it
 // shows that branch even if another PR took the owner slot since.
-function prLink(res, repo, branch) {
+function prLink(res, repo, branch, app = null) {
   const s = slots.owner;
-  const same = s.repo === repo && s.branch === branch;
+  const same = s.repo === repo && s.branch === branch && (s.app || null) === app;
   if (same && s.state === "running") {
     res.writeHead(302, { Location: s.kind === "expo" ? links(s).phone : links(s).web });
     return res.end();
@@ -255,7 +265,7 @@ function prLink(res, repo, branch) {
     return send(res, 200, waitPage("Another preview is starting…", `<p>${esc(s.repo)} @ ${esc(s.branch)} is building. This page retries by itself.</p>`, 8), "text/html");
   if (same && s.state === "failed")
     return send(res, 200, waitPage("This preview failed to start", `<p>The agents fix it on the PR.</p><pre>${esc(s.error)}</pre>`, 0), "text/html");
-  if (!same || ["idle", "crashed", "stopped"].includes(s.state)) startPreview(s, repo, branch);
+  if (!same || ["idle", "crashed", "stopped"].includes(s.state)) startPreview(s, repo, branch, app);
   return send(res, 200, waitPage(`Starting ${repo}…`, `<p>${esc(branch)}<br>Usually about a minute. Expo Go opens by itself when it's ready.</p>
 <pre>${esc(s.log.slice(-4).join("\n"))}</pre>`), "text/html");
 }
@@ -345,9 +355,10 @@ http.createServer(async (req, res) => {
     }
     if (req.method === "GET" && url.pathname === "/p") {
       const repo = url.searchParams.get("repo"), branch = url.searchParams.get("branch");
-      if (!repos().includes(repo) || !BRANCH_RE.test(branch || "") || branch.includes(".."))
-        return send(res, 400, waitPage("Unknown preview", "<p>That repo or branch doesn't exist.</p>", 0), "text/html");
-      return prLink(res, repo, branch);
+      const app = url.searchParams.get("app") || null;
+      if (!repos().includes(repo) || !BRANCH_RE.test(branch || "") || branch.includes("..") || (app && !APP_RE.test(app)))
+        return send(res, 400, waitPage("Unknown preview", "<p>That repo, branch or app doesn't exist.</p>", 0), "text/html");
+      return prLink(res, repo, branch, app);
     }
     if (req.method === "GET" && (url.pathname === "/open" || url.pathname === "/qr.png")) {
       const s = slots.owner;
@@ -365,14 +376,15 @@ http.createServer(async (req, res) => {
       return send(res, 200, fs.readFileSync(file), type);
     }
     if (req.method === "POST" && url.pathname === "/preview") {
-      const { repo, branch, slot } = await readJson(req);
+      const { repo, branch, slot, app } = await readJson(req);
       const s = pickSlot(slot);
+      if (app && !APP_RE.test(app)) return send(res, 400, { error: "app: a folder name under apps/ (e.g. mobile, web)" });
       if (!repos().includes(repo)) return send(res, 400, { error: `repo must be one of ${repos().join(", ")}` });
       if (!BRANCH_RE.test(branch || "") || branch.includes("..")) return send(res, 400, { error: "bad branch name" });
       if (BUSY.includes(s.state)) return send(res, 409, { error: `busy: ${s.state} ${s.repo}@${s.branch}` });
       if (["preparing", "installing", "publishing"].includes(pub.state)) return send(res, 409, { error: `busy: publishing ${pub.repo}@${pub.branch} to EAS` });
-      startPreview(s, repo, branch);
-      return send(res, 202, { accepted: true, slot: s.name, poll: `/status?slot=${s.name}` });
+      startPreview(s, repo, branch, app || null);
+      return send(res, 202, { accepted: true, slot: s.name, app: app || null, poll: `/status?slot=${s.name}` });
     }
     if (req.method === "POST" && url.pathname === "/test") {
       const s = pickSlot((await readJson(req)).slot);
