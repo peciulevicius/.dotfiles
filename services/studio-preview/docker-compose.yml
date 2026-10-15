@@ -14,6 +14,11 @@ services:
     environment:
       PREVIEW_HOST: ${PREVIEW_HOST:-100.81.171.49}
       STUDIO_DIR: ${HOME}/dev/studio
+      # Expo access token (expo.dev → Account settings → Access tokens), so the
+      # dev server runs signed in as the owner. Expo Go refuses a signed-out dev
+      # server when the phone's Expo Go is signed in ("you're signed in to Expo
+      # Go as …, but not signed in to Expo CLI"). Empty = anonymous.
+      EXPO_TOKEN: ${EXPO_TOKEN:-}
       GIT_CONFIG_COUNT: "1"
       GIT_CONFIG_KEY_0: "safe.directory"
       GIT_CONFIG_VALUE_0: "*"

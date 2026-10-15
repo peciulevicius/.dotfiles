@@ -88,6 +88,10 @@ see below); until then those screens can only be checked on the web build.
 - `409 busy` — another preview is still building; poll `/status`.
 - `failed` with a pnpm error — lockfile out of date on that branch; the agent
   fixes it in its branch.
+- Expo Go says "you're signed in to Expo Go as …, but not signed in to Expo
+  CLI" — the dev server runs anonymously. Either sign out in Expo Go, or put
+  an Expo access token in `~/services/studio-preview/.env` as `EXPO_TOKEN=`
+  and `docker compose up -d` (runs previews signed in as the owner).
 - Phone says "could not connect" — Tailscale off on the phone, or the preview
   was replaced by a newer one (check `/status`).
 - Expo Go says the SDK is unsupported — Expo Go only runs the latest SDK; keep
