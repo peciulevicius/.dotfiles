@@ -18,6 +18,14 @@ Newest first-ish; dates are when the work was finished.
   redid the same preview every run; errors are now per branch, it waits one
   run after a push before opening the PR, and saves state right after each
   preview. `/open` explains when no app preview is running.
+- PR bot comments and PR bodies carry a "Posted by the Studio PR bot" line:
+  they're made with the owner's GitHub login, so they'd otherwise read as his.
+- Daily cleanup also prunes the agents' pnpm/npm caches inside Paperclip
+  (~5.7 GB of its 7 GB data dir was package caches; 1.4 GB freed at once).
+  Personal files: Alps guide + Kindle lock screens moved to
+  `/Volumes/unsorted/{Documents,Kindle}`; the Photos library stays (its DB is
+  written by macOS daemons even with Photos closed), copy in
+  `/Volumes/unsorted/Pictures`.
 - **Per-PR preview links** (`/p?repo=…&branch=…`): the PR comment and the
   Discord message link to that PR's branch, not to "whatever runs now". A tap
   starts it on demand (wait page, then Expo Go / browser), so old links never
