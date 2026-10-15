@@ -998,9 +998,15 @@ done
 ```
 
 Follow-ups left:
-- [ ] **Owner wants the library on the NAS** (2026-10-15): move it back once the
-      NAS is mounted over **NFS** inside Docker (the planned UGOS NFS step). Not
-      over SMB: SQLite (`metadata.db`) on SMB is what broke it before.
+- [ ] 👤 **Calibre library on the NAS? Decide** (2026-10-15). NFS is live now,
+      but Calibre keeps every book's metadata in one SQLite file
+      (`metadata.db`), and SQLite over a network share (SMB *or* NFS) is
+      exactly what corrupted it before. The library is only 346 MB after the
+      duplicate cleanup, and the NAS already keeps a copy (`/Volumes/books`)
+      plus the nightly R2 backup. Recommendation: keep it on the SSD. If you
+      still want the files on the NAS, the safe way is the library on the NAS
+      with Calibre and Calibre-Web pointed at a *local* copy of `metadata.db`,
+      which needs a sync job; ask before building it.
 
 - [ ] 👤 Verify OPDS still serves to KOReader afterwards, and that Calibre-Web
       opens a shelf (the old `disk I/O error` path) — server side checked
@@ -1039,6 +1045,9 @@ Run a backup with:
 No longer load-bearing — everything addresses the NAS as `DH4300PLUS-DP.local`
 (mDNS) since 2026-09-05, which absorbs IP drift. Still worth pinning.
 
+- [ ] 👤 **Give the NAS a fixed IP** (UGOS → Network → manual `192.168.1.73`)
+      now that every container mounts it by IP over NFS (the Docker VM can't
+      resolve `.local` names). Easier than the router.
 - [ ] 👤 Router (`192.168.1.1`, a **Technicolor** ISP box — not OpenWrt as noted
       earlier; admin password is on its sticker, save it in Vaultwarden) →
       static leases: NAS `192.168.1.73`, Mac mini Ethernet `192.168.1.157`.

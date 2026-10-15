@@ -26,7 +26,7 @@ services:
     ports:
       - "127.0.0.1:${ABS_PORT:-13378}:80"
     volumes:
-      - ${AUDIOBOOKS_DIR:-./data/audiobooks}:/audiobooks
+      - audiobooks:/audiobooks
       - ${PODCASTS_DIR:-./data/podcasts}:/podcasts
       - ./data/config:/config
       - ./data/metadata:/metadata
@@ -36,3 +36,14 @@ services:
 networks:
   default:
     name: audiobookshelf
+
+# NAS shares over NFS, mounted by Docker's VM directly instead of the macOS
+# SMB mounts under /Volumes (those went stale after NAS reboots). Same paths
+# inside the containers. See docs/HOME_SERVER_REFERENCE.md → NAS over NFS.
+volumes:
+  audiobooks:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: "addr=${NAS_IP:-192.168.1.73},nfsvers=3,nolock,hard,rw"
+      device: ":/volume1/audiobooks"

@@ -636,6 +636,78 @@ See `HOME_SERVER_TODO.md`.
 
 ---
 
+## NAS over NFS (2026-10-15)
+
+**What:** the containers that use the NAS (Immich, Jellyfin, Audiobookshelf,
+Sonarr/Radarr/Bazarr, Transmission, LazyLibrarian) mount its shares as
+**Docker NFS volumes**. Docker Desktop's Linux VM talks to the NAS directly.
+The macOS SMB mounts under `/Volumes/*` stay for Finder, rclone and the
+backup scripts, but no container uses them any more.
+
+**Why:** before, the path was NAS → SMB → macOS `/Volumes` → VirtioFS →
+container. After a NAS reboot, macOS remounted the share, but the containers
+kept a dead handle to the old one: empty or wrong folders, "stale bind mount"
+restarts by `nas-watchdog.sh`, and Immich/Jellyfin briefly showing nothing.
+NFS cuts out both macOS layers.
+
+**NAS side (UGOS):** Control Panel → File Service → NFS → enabled. Each of
+`immich, media, audiobooks, books, unsorted` has an NFS rule: client
+`192.168.1.0/24`, Read/Write, Squash **No mapping**, Security `sys`,
+asynchronous ✓, non-privileged ports ✓ (required for Docker on a Mac),
+mounted subfolders ✓. Exports are `/volume1/<share>`; check with
+`showmount -e 192.168.1.73`.
+
+**Docker side:** each compose file declares its volumes, for example:
+
+```yaml
+volumes:
+  media:
+    driver: local
+    driver_opts:
+      type: nfs
+      o: "addr=${NAS_IP:-192.168.1.73},nfsvers=3,nolock,hard,rw"
+      device: ":/volume1/media"
+```
+
+| Service | Volume → container path | NAS export |
+|---|---|---|
+| Immich | `immich-upload` → `/usr/src/app/upload` (thumbs stay on the SSD on top) | `/volume1/immich/upload` |
+| Jellyfin | `media-movies`, `media-tv` → `/media/movies`, `/media/tv` | `/volume1/media/{movies,tv}` |
+| Audiobookshelf, LazyLibrarian | `audiobooks` → `/audiobooks` | `/volume1/audiobooks` |
+| Sonarr, Radarr, Bazarr | `media` → `/media` | `/volume1/media` |
+| Transmission, LazyLibrarian | `downloads` → `/downloads` | `/volume1/media/downloads` |
+
+Design decisions and their reasons:
+- **NFSv3, not v4:** UGOS's v4 pseudo-root doesn't expose `/volume1/<share>`
+  (the mount fails with "no such file or directory"); v3 matches
+  `showmount`.
+- **`nolock`:** no SQLite database lives on these shares. Every app's DB is
+  in its local config dir, and Immich's Postgres is in
+  `~/services/immich/data/postgres`. So no NFS locking is needed.
+  **Never put a database (or the Calibre library's `metadata.db`) on NFS.**
+- **`hard`:** if the NAS goes away, file I/O waits instead of failing
+  half-written. Containers hang until it's back, and `nas-watchdog.sh`
+  restarts anything that exited.
+- **`UMASK=000`** on the linuxserver containers (Sonarr, Radarr, Bazarr,
+  Transmission, LazyLibrarian). The NAS's files are `rwxrwxrwx`, owned by NAS
+  uid 1001, and the containers run as uid 501, 1000 or root. Without it,
+  Bazarr (1000) couldn't write subtitles into folders Sonarr (501) created.
+- **IP, not hostname:** Docker's VM can't resolve `DH4300PLUS-DP.local`
+  (mDNS). If the NAS's IP ever changes, set `NAS_IP=` in each service's `.env`
+  and `docker compose up -d`. Better: give the NAS a fixed IP (UGOS network
+  settings or a router lease).
+
+**Recreating a volume** after changing its options: Docker keeps the old
+options until the volume is removed. `docker compose down` →
+`docker volume rm <project>_<volume>` → `docker compose up -d`. Data is on
+the NAS; removing the Docker volume never deletes files.
+
+**Still true over NFS:** inotify doesn't see files written by *other*
+clients, so the "Services with an SMB-mounted library don't reliably notice
+new files" notes below still apply.
+
+---
+
 ## Drive Layout (reference)
 
 Since the 2026-08-04 migration the **NAS is primary**. The two Samsung SSDs are
