@@ -14,6 +14,9 @@
 //   GET  /open                           owner slot: 302 to exp://… (tap on the phone)
 //   GET  /qr.png                         owner slot: QR of the exp:// link
 //   GET  /artifacts/…                    screenshots and their index.html
+//   POST /publish {repo, branch, channel} publish the branch's Expo app to EAS Update (async)
+//   GET  /publish                        last publish: state, group id, links
+//   GET  /u?p=<projectId>&g=<groupId>    302 to exp://u.expo.dev/… (opens that update in Expo Go)
 import { spawn } from "node:child_process";
 import fs from "node:fs";
 import http from "node:http";
@@ -257,6 +260,57 @@ function prLink(res, repo, branch) {
 <pre>${esc(s.log.slice(-4).join("\n"))}</pre>`), "text/html");
 }
 
+// EAS Update publishing: the bundle goes to Expo's CDN, so the owner's phone
+// opens it instantly in Expo Go (no dev server, no Mac mini in the loop). Uses
+// the Expo login stored in the expo-state volume.
+const pub = { state: "idle", repo: null, branch: null, channel: null, sha: null, error: null, group: null, links: null, startedAt: null };
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
+async function runPublish(repo, branch, channel) {
+  Object.assign(pub, { state: "preparing", repo, branch, channel, sha: null, error: null, group: null, links: null, startedAt: new Date().toISOString() });
+  const repoDir = path.join(STUDIO, repo);
+  const wt = path.join(PREVIEWS, "publish", repo);
+  try {
+    await run("git", ["-C", repoDir, "worktree", "remove", "--force", wt]).catch(() => {});
+    await run("git", ["-C", repoDir, "worktree", "prune"]);
+    await run("git", ["-C", repoDir, "worktree", "add", "--force", "--detach", wt, branch]);
+    pub.sha = (await run("git", ["-C", wt, "rev-parse", "--short", "HEAD"])).trim();
+    pub.state = "installing";
+    await run("pnpm", ["install", "--frozen-lockfile"], { cwd: wt }).catch(() => run("pnpm", ["install"], { cwd: wt }));
+    const dir = appDir(wt);
+    const cfg = JSON.parse(fs.readFileSync(path.join(dir, "app.json"), "utf8")).expo || {};
+    const projectId = cfg.extra?.eas?.projectId;
+    if (!projectId || !cfg.updates?.url) throw new Error("this app has no EAS Update set up (no extra.eas.projectId / updates.url in app.json)");
+    // Bundling for EAS needs ~1.5 GB; with a dev server running it hit the
+    // container's 2.5 GB cap and got SIGKILLed (2026-10-15). Stop the dev
+    // servers first (a link tap restarts them) and bundle for iOS only: the
+    // owner tests on an iPhone.
+    for (const sl of Object.values(slots)) if (sl.proc) { await stop(sl); sl.state = "idle"; log(sl, "stopped to free memory for an EAS publish"); }
+    pub.state = "publishing";
+    const out = await run("eas", ["update", "--branch", channel, "--environment", "preview", "--message", `${branch} @ ${pub.sha}`,
+                                  "--platform", "ios", "--non-interactive", "--json"],
+                          { cwd: dir, env: { EAS_NO_VCS: "1", CI: "1", EAS_SKIP_AUTO_FINGERPRINT: "1" } });
+    // stdout and stderr are merged and progress lines start with "[expo-cli]",
+    // so take the JSON array of update objects at the end of the output.
+    const m = out.match(/\[\s*\{[\s\S]*\}\s*\]\s*$/);
+    if (!m) throw new Error(`no JSON in eas output: ${out.slice(-400)}`);
+    const updates = JSON.parse(m[0]);
+    const group = updates[0]?.group;
+    if (!UUID.test(group || "")) throw new Error(`unexpected eas output: ${out.slice(-400)}`);
+    const owner = cfg.owner, slug = cfg.slug;
+    Object.assign(pub, {
+      state: "published", group,
+      links: {
+        phone: `http://${HOST}:${API_PORT}/u?p=${projectId}&g=${group}`,
+        expoGo: `exp://u.expo.dev/${projectId}/group/${group}`,
+        page: owner && slug ? `https://expo.dev/accounts/${owner}/projects/${slug}/updates/${group}` : null,
+      },
+    });
+  } catch (e) {
+    Object.assign(pub, { state: "failed", error: String(e.message || e).slice(-2000) });
+  }
+}
+
 function pickSlot(name) {
   const s = slots[name || "agent"];
   if (!s) throw Object.assign(new Error("slot must be owner or agent"), { status: 400 });
@@ -270,6 +324,24 @@ http.createServer(async (req, res) => {
     if (req.method === "GET" && url.pathname === "/status") {
       const name = url.searchParams.get("slot");
       return send(res, 200, name ? view(pickSlot(name)) : { owner: view(slots.owner), agent: view(slots.agent) });
+    }
+    if (req.method === "POST" && url.pathname === "/publish") {
+      const { repo, branch, channel } = await readJson(req);
+      if (!repos().includes(repo)) return send(res, 400, { error: `repo must be one of ${repos().join(", ")}` });
+      if (!BRANCH_RE.test(branch || "") || branch.includes("..")) return send(res, 400, { error: "bad branch name" });
+      if (!/^[a-z0-9][a-z0-9-]{0,60}$/.test(channel || "")) return send(res, 400, { error: "channel: lowercase letters, digits, dashes" });
+      if (["preparing", "installing", "publishing"].includes(pub.state)) return send(res, 409, { error: `busy publishing ${pub.repo}@${pub.branch}` });
+      const building = Object.values(slots).find((sl) => BUSY.includes(sl.state));
+      if (building) return send(res, 409, { error: `a preview is building (${building.repo}@${building.branch}); retry shortly` });
+      runPublish(repo, branch, channel);
+      return send(res, 202, { accepted: true, poll: "/publish" });
+    }
+    if (req.method === "GET" && url.pathname === "/publish") return send(res, 200, pub);
+    if (req.method === "GET" && url.pathname === "/u") {
+      const p = url.searchParams.get("p"), g = url.searchParams.get("g");
+      if (!UUID.test(p || "") || !UUID.test(g || "")) return send(res, 400, { error: "bad project or group id" });
+      res.writeHead(302, { Location: `exp://u.expo.dev/${p}/group/${g}` });
+      return res.end();
     }
     if (req.method === "GET" && url.pathname === "/p") {
       const repo = url.searchParams.get("repo"), branch = url.searchParams.get("branch");
@@ -298,6 +370,7 @@ http.createServer(async (req, res) => {
       if (!repos().includes(repo)) return send(res, 400, { error: `repo must be one of ${repos().join(", ")}` });
       if (!BRANCH_RE.test(branch || "") || branch.includes("..")) return send(res, 400, { error: "bad branch name" });
       if (BUSY.includes(s.state)) return send(res, 409, { error: `busy: ${s.state} ${s.repo}@${s.branch}` });
+      if (["preparing", "installing", "publishing"].includes(pub.state)) return send(res, 409, { error: `busy: publishing ${pub.repo}@${pub.branch} to EAS` });
       startPreview(s, repo, branch);
       return send(res, 202, { accepted: true, slot: s.name, poll: `/status?slot=${s.name}` });
     }

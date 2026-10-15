@@ -101,9 +101,30 @@ see below); until then those screens can only be checked on the web build.
 - Expo Go says the SDK is unsupported — Expo Go only runs the latest SDK; keep
   the app on it (`npx expo install --fix`).
 
-## Next (owner steps, when wanted)
+## EAS Update: instant links (2026-10-15)
 
-- Free Expo account + `EXPO_TOKEN` → EAS Update per PR: permanent links that
-  work without the runner and for every PR at once.
+Expo apps are also **published to EAS Update** (Expo's CDN), so the phone
+opens them instantly on any network, like a QR from `expo start` but
+permanent:
+- every PR → channel `pr-<number>`; the PR comment and Discord get the link;
+- `main` → channel `main`, republished whenever it moves ("latest build").
+
+The runner does it (`POST /publish`) with the owner's Expo login from the
+`expo-state` volume and the `eas` CLI baked into the image. Links go through
+`GET /u?p=<projectId>&g=<groupId>` → `exp://u.expo.dev/<projectId>/group/<groupId>`
+(open in Safari, not Discord's in-app browser, which won't hand `exp://` to
+Expo Go).
+
+Setup per app (done for Carbstride, project `@peciulevicius/carbstride`):
+`eas init` + `eas update:configure` in the Expo app folder, and
+`runtimeVersion: {"policy": "sdkVersion"}` so updates carry `exposdk:<SDK>`,
+the runtime Expo Go asks for. Switch to `appVersion`/fingerprint once there's
+a real development build.
+
+Memory: bundling needs ~1.5 GB. The runner stops its dev servers before
+publishing, bundles **iOS only**, and won't publish while a preview builds
+(or build while publishing). Both at once hit the 2.5 GB cap (SIGKILL).
+
+## Next (owner steps, when wanted)
 - Apple Developer account ($99/yr) → development build + TestFlight, needed
   for RevenueCat, HealthKit and real OAuth.
