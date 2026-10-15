@@ -14,6 +14,7 @@ import shutil
 import subprocess
 import sys
 import time
+import urllib.parse
 import urllib.request
 from pathlib import Path
 
@@ -95,16 +96,18 @@ def preview_and_report(repo, branch, sha, pr):
         return False
     t = done.get("test") or {}
     L = s["links"]
-    phone = (f"- **iPhone:** open {L['phoneTap']} (Tailscale on, Expo Go installed) or scan {L['qr']}\n"
-             if "phoneTap" in L else "")
+    # Per-PR link: keeps working after another PR takes the slot (it restarts this branch on demand).
+    tap = "http://100.81.171.49:7301/p?" + urllib.parse.urlencode({"repo": repo, "branch": branch})
+    phone = (f"- **iPhone:** tap {tap} (Tailscale on, Expo Go installed). Opens Expo Go; if another PR is "
+             f"running it starts this one first (~1 min)\n" if "phoneTap" in L else "")
     tested = (f"✅ {len(t.get('shots', []))} screens: {t['index']}" if t.get("state") == "passed"
               else f"❌ smoke test failed:\n```\n{(t.get('error') or 'timed out')[:1200]}\n```")
     body = (f"### 📱 Preview of `{sha[:7]}` is live\n{phone}"
-            f"- **Web:** {L['web']}\n- **Screenshots:** {tested}\n\n"
-            f"_Your preview slot shows the most recently updated PR; a newer PR replaces this one._")
+            f"- **Web:** {tap if 'phoneTap' not in L else L['web']}\n- **Screenshots:** {tested}\n\n"
+            f"_The link above always opens this PR's branch._")
     sh("gh", "pr", "comment", pr["url"], "--body", body)
     discord(f"📱 **{repo}** PR #{pr['number']}: {pr['title']}\n"
-            + (f"Tap on iPhone: {L['phoneTap']}\n" if "phoneTap" in L else "") + f"Web: {L['web']}\n" + (f"Screenshots: {t['index']}\n" if t.get("state") == "passed" else "Smoke test ❌\n")
+            + (f"Tap on iPhone (opens Expo Go): {tap}\n" if "phoneTap" in L else f"Open: {tap}\n") + (f"Screenshots: {t['index']}\n" if t.get("state") == "passed" else "Smoke test ❌\n")
             + pr["url"])
     return True
 
