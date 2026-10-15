@@ -159,6 +159,9 @@ def main():
                         continue  # let GitHub catch up; the PR opens on the next run
                     prs = json.loads(sh("gh", "pr", "list", "--head", branch, "--state", "open",
                                         "--json", "number,url,title", cwd=path) or "[]")
+                    if not prs and json.loads(sh("gh", "pr", "list", "--head", branch, "--state", "closed",
+                                                 "--json", "number", cwd=path) or "[]"):
+                        continue  # someone closed this branch's PR on purpose: never reopen it
                     if not prs:
                         title = sh("git", "log", "--format=%s", "-1", f"origin/main..{branch}", cwd=path) or branch
                         log = sh("git", "log", "--format=- %s", f"origin/main..{branch}", cwd=path)
