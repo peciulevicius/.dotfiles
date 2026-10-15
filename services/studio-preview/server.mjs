@@ -46,6 +46,29 @@ function links(s) {
 
 const view = (s) => { const { proc, ...rest } = s; return { ...rest, links: links(s) }; };
 
+// Which folder to run. A monorepo (pnpm workspace / Turborepo) has only
+// tooling at its root, so run the app inside it: the Expo app first (the
+// phone preview is the point), otherwise the first website. Single-app repos
+// run from the root as before.
+function appDir(wt) {
+  const read = (d) => { try { return JSON.parse(fs.readFileSync(path.join(d, "package.json"), "utf8")); } catch { return null; } };
+  const root = read(wt) || {};
+  const isMono = fs.existsSync(path.join(wt, "pnpm-workspace.yaml")) || Array.isArray(root.workspaces) || root.workspaces?.packages;
+  if (!isMono) return wt;
+  const candidates = [];
+  for (const top of ["apps", "packages"]) {
+    const base = path.join(wt, top);
+    if (!fs.existsSync(base)) continue;
+    for (const d of fs.readdirSync(base).sort()) {
+      const pkg = read(path.join(base, d));
+      if (pkg) candidates.push({ dir: path.join(base, d), deps: { ...pkg.dependencies, ...pkg.devDependencies }, scripts: pkg.scripts || {} });
+    }
+  }
+  const pick = candidates.find((c) => c.deps.expo) || candidates.find((c) => c.deps.next || c.scripts.dev);
+  if (!pick) throw new Error("monorepo without an Expo app or a website under apps/ — don't know what to preview");
+  return pick.dir;
+}
+
 // How to run a checkout: Expo apps via `expo start`, websites via their dev
 // script with host/port flags their framework understands.
 function devCommand(wt, s) {
@@ -120,6 +143,7 @@ async function freePort(port) {
 async function waitForServer(s, ms) {
   const end = Date.now() + ms;
   while (Date.now() < end) {
+    if (!s.proc) return false; // the dev server already exited; its output is in s.error
     try {
       if (s.kind === "expo") {
         const r = await fetch(`http://127.0.0.1:${s.port}/status`);
@@ -151,24 +175,26 @@ async function startPreview(s, repo, branch) {
       log(s, "frozen install failed, retrying without --frozen-lockfile");
       await run("pnpm", ["install"], { cwd: wt });
     });
-    const cmd = devCommand(wt, s);
+    const dir = appDir(wt);
+    const cmd = devCommand(dir, s);
     s.kind = cmd.kind;
     s.state = "starting";
-    log(s, `starting ${cmd.kind} dev server: pnpm ${cmd.args.join(" ")}`);
+    log(s, `starting ${cmd.kind} dev server in ${path.relative(wt, dir) || "."}: pnpm ${cmd.args.join(" ")}`);
     await freePort(s.port);
-    const p = spawn("pnpm", cmd.args, { cwd: wt, env: { ...process.env, ...cmd.env }, detached: true });
+    const p = spawn("pnpm", cmd.args, { cwd: dir, env: { ...process.env, ...cmd.env }, detached: true });
     s.proc = p;
     p.stdout.on("data", (d) => log(s, String(d).trim().slice(0, 300)));
     p.stderr.on("data", (d) => log(s, String(d).trim().slice(0, 300)));
     p.on("close", (code) => {
-      if (s.proc === p) Object.assign(s, { proc: null, state: "crashed", error: `dev server exited ${code}` });
+      if (s.proc === p) Object.assign(s, { proc: null, state: "crashed", error: `dev server exited ${code}\n${s.log.slice(-8).join("\n")}` });
     });
     if (!(await waitForServer(s, 240_000))) throw new Error("dev server did not come up in 4 min");
     s.state = "running";
     log(s, `running: ${links(s).web}`);
   } catch (e) {
+    const crash = s.state === "crashed" ? s.error : null;
     await stop(s);
-    Object.assign(s, { state: "failed", error: String(e.message || e).slice(0, 2000) });
+    Object.assign(s, { state: "failed", error: (crash || String(e.message || e)).slice(0, 2000) });
     log(s, `failed: ${s.error.split("\n")[0]}`);
   }
 }

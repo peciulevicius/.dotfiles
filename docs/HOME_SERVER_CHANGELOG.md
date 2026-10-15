@@ -6,6 +6,18 @@ is often what you need when something similar breaks again.
 
 Newest first-ish; dates are when the work was finished.
 
+## 2026-10-15 — studio-preview understands monorepos
+
+- Carbstride's monorepo migration (PR #9, STU-308) failed every preview with
+  "dev server exited 1": the runner started the repo root, which in a
+  Turborepo only holds tooling. It now installs at the root and runs the Expo
+  app under `apps/` (or the first website). A dev server that dies during
+  start-up now fails at once with its last output lines, instead of a generic
+  timeout after 4 minutes.
+- Expo Go needs the same account as the runner's Expo CLI session (`expo
+  whoami` in the container): the CLI was signed in as `peciulevicius` while
+  the phone was `dziugasp`.
+
 ## 2026-10-15 — NAS shares over NFS for every container
 
 - Owner enabled NFS in UGOS (5 shares, `192.168.1.0/24`, no squash,
