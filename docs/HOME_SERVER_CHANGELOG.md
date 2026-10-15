@@ -6,6 +6,16 @@ is often what you need when something similar breaks again.
 
 Newest first-ish; dates are when the work was finished.
 
+## 2026-10-15 — EAS Update: instant phone links for Studio apps
+
+- Carbstride registered on Expo (`@peciulevicius/carbstride`) with EAS
+  Update. `studio-preview` publishes PRs (channel `pr-<n>`) and `main`
+  (channel `main`) to Expo's CDN; the PR bot posts the instant link. Verified:
+  main published in ~2 min, Expo serves the iOS manifest, link redirects to
+  `exp://u.expo.dev/…`.
+- First attempt was SIGKILLed (bundling + a dev server > 2.5 GB): the runner
+  now stops dev servers before publishing and bundles iOS only.
+
 ## 2026-10-15 — Carbstride monorepo merged; game mode pauses the preview runner
 
 - STU-308 merged (merge commit `d1ba1c9`, history preserved): `apps/mobile`,

@@ -11,6 +11,9 @@ RUN apt-get update \
 # Chromium + its system libraries for the screenshot runs, in a shared path:
 # installed as root at build time, used as `node` at run time.
 ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+# eas-cli publishes PR builds to EAS Update (instant open in Expo Go).
+RUN npm install -g eas-cli@latest
+
 RUN npm install -g playwright@1.64.1 \
  && playwright install --with-deps chromium \
  && rm -rf /var/lib/apt/lists/*

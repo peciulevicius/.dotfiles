@@ -78,6 +78,30 @@ def discord(text):
 SIGNED = "\n\n<sub>🤖 Posted by the Studio PR bot (automation on Džiugas's account), not by Džiugas.</sub>"
 
 
+def publish(repo, branch, pr, channel=None):
+    """Publish the branch's Expo app to EAS Update (channel pr-<n>, or `channel`); returns links or None."""
+    channel = channel or f"pr-{pr['number']}"
+    r = {}
+    for _ in range(30):  # a preview may still be building; publishing waits for it
+        r = api("POST", "/publish", {"repo": repo, "branch": branch, "channel": channel})
+        if r.get("httpError") != 409:
+            break
+        time.sleep(20)
+    if r.get("httpError"):
+        print(f"{repo}@{branch}: publish refused: {r}")
+        return None
+    end = time.time() + 900
+    while time.time() < end:
+        p = api("GET", "/publish")
+        if p.get("branch") == branch and p.get("state") in ("published", "failed"):
+            if p["state"] == "failed":
+                print(f"{repo}@{branch}: publish failed: {(p.get('error') or '')[:300]}")
+                return None
+            return p.get("links")
+        time.sleep(10)
+    return None
+
+
 def preview_and_report(repo, branch, sha, pr):
     r = api("POST", "/preview", {"repo": repo, "branch": branch, "slot": "owner"})
     if r.get("httpError"):
@@ -103,8 +127,15 @@ def preview_and_report(repo, branch, sha, pr):
     L = s["links"]
     # Per-PR link: keeps working after another PR takes the slot (it restarts this branch on demand).
     tap = "http://100.81.171.49:7301/p?" + urllib.parse.urlencode({"repo": repo, "branch": branch})
-    phone = (f"- **iPhone:** tap {tap} (Tailscale on, Expo Go installed). Opens Expo Go; if another PR is "
-             f"running it starts this one first (~1 min)\n" if "phoneTap" in L else "")
+    instant = publish(repo, branch, pr) if "phoneTap" in L else None
+    phone = ""
+    if instant:
+        phone += (f"- **iPhone, instant:** open {instant['phone']} in Safari → \"Open in Expo Go\" "
+                  f"(served from Expo's CDN; works on any network)"
+                  + (f" · [update page]({instant['page']})" if instant.get("page") else "") + "\n")
+    if "phoneTap" in L:
+        phone += (f"- **iPhone, live from the Mac:** {tap} (Tailscale on; starts this branch first if another "
+                  f"PR is running, ~1 min)\n")
     tested = (f"✅ {len(t.get('shots', []))} screens: {t['index']}" if t.get("state") == "passed"
               else f"❌ smoke test failed:\n```\n{(t.get('error') or 'timed out')[:1200]}\n```")
     body = (f"### 📱 Preview of `{sha[:7]}` is live\n{phone}"
@@ -112,7 +143,8 @@ def preview_and_report(repo, branch, sha, pr):
             f"_The link above always opens this PR's branch._" + SIGNED)
     sh("gh", "pr", "comment", pr["url"], "--body", body)
     discord(f"📱 **{repo}** PR #{pr['number']}: {pr['title']}\n"
-            + (f"Tap on iPhone (opens Expo Go): {tap}\n" if "phoneTap" in L else f"Open: {tap}\n") + (f"Screenshots: {t['index']}\n" if t.get("state") == "passed" else "Smoke test ❌\n")
+            + (f"Open in Safari → Expo Go (instant): {instant['phone']}\n" if instant else "")
+            + (f"Live from the Mac: {tap}\n" if "phoneTap" in L else f"Open: {tap}\n") + (f"Screenshots: {t['index']}\n" if t.get("state") == "passed" else "Smoke test ❌\n")
             + pr["url"])
     return True
 
@@ -176,6 +208,18 @@ def main():
                 key = f"{repo}@{branch}"
                 if state.get(key) != sha and newest is None:
                     newest = (branch, sha, prs[0], key)
+            # Stable "latest" build: publish main to EAS Update whenever it moves,
+            # for repos whose Expo app has EAS Update set up.
+            main_sha = sh("git", "rev-parse", "origin/main", cwd=path, check=False)
+            has_eas = any('"updates"' in a.read_text() for a in list(path.glob("apps/*/app.json")) + [path / "app.json"]
+                          if a.exists())
+            if main_sha and has_eas and state.get(f"{repo}@main#published") != main_sha and newest is None:
+                links = publish(repo, "origin/main", None, channel="main")
+                if links:
+                    state[f"{repo}@main#published"] = main_sha
+                    STATE.write_text(json.dumps(state, indent=1))
+                    discord(f"📱 **{repo}** main updated (`{main_sha[:7]}`): open in Safari → Expo Go: {links['phone']}"
+                            + (f"\nUpdate page: {links['page']}" if links.get("page") else ""))
             if newest:
                 branch, sha, pr, key = newest
                 if preview_and_report(repo, branch, sha, pr):
