@@ -21,8 +21,9 @@ Newest first-ish; dates are when the work was finished.
     They were copied to `T7/from-T5-2026-10-16/` with their T5 paths and
     verified. They still need sorting into the year folders / Immich.
 - `backup-external.sh` defaults to `/Volumes/T7` now (was T5 `/Volumes/Backup`).
-- The T7 `TimeMachine` volume is not a Time Machine backup; it holds a photo
-  copy with a "delete once in Immich" note (no Time Machine destination is set).
+- The T7's second volume was called `TimeMachine` but isn't a Time Machine
+  backup (no destination is set). It holds a photo copy with a "delete once in
+  Immich" note, so it's been renamed **`Photos Copy`**.
 
 ## 2026-10-16 — Game mode quits Docker, reacts in 2 seconds
 
