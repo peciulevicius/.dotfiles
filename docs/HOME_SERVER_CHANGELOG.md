@@ -6,6 +6,18 @@ is often what you need when something similar breaks again.
 
 Newest first-ish; dates are when the work was finished.
 
+## 2026-10-16 — Game mode quits Docker, reacts in 2 seconds
+
+- The owner started Liftoff and nothing paused. Cause: a game-mode state file
+  left over from the night before, and `turn_on` returned early whenever it
+  existed, while the containers it listed had long been unpaused. Pausing also
+  frees CPU, not memory, so the Docker VM still held ~8 GB. He quit Docker by
+  hand, then `docker-watchdog` relaunched it and the lag came back.
+- Now game mode runs from launchd (`watch`, every 2 s, instead of cron every
+  minute). It **quits Docker Desktop** while a game runs and starts it 20 min
+  after the game closes. `STYLE=pause` keeps the old behaviour. docker-watchdog
+  and the heartbeat stand down while the flag exists.
+
 ## 2026-10-16 — Heartbeat stops flapping
 
 - Healthchecks.io sent the owner a "down" then "up" pair dozens of times

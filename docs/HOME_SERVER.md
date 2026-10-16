@@ -120,9 +120,10 @@ secret, never bypass the hook.
 |---|---|---|
 | `com.peciulevicius.mount-nas` | `scripts/utils/mount-nas.sh` | Mounts shares at login |
 | `com.peciulevicius.nas-watchdog` | `scripts/utils/nas-watchdog.sh` | Every 5 min: remount missing shares, then restart NAS-backed containers |
-| `com.peciulevicius.docker-watchdog` | `scripts/utils/docker-watchdog.sh` | Every 5 min: Docker Desktop down/hung |
+| `com.peciulevicius.docker-watchdog` | `scripts/utils/docker-watchdog.sh` | Every 5 min: Docker Desktop down/hung (skips during game mode) |
+| `com.peciulevicius.game-mode` | `scripts/utils/game-mode.sh watch` | Always on: quits Docker within ~2 s of a game starting, restarts it 20 min after |
 
-⚠️ **Only the docker-watchdog plist is in the repo** (`os/mac/`). The
+⚠️ **Only the docker-watchdog and game-mode plists are in the repo** (`os/mac/`). The
 mount-nas and nas-watchdog plists currently exist only in
 `~/Library/LaunchAgents/` on the Mac mini — on a rebuild, check whether they
 were added to the repo since; if not, recreate them from the script headers.

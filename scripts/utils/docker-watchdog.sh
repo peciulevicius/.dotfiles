@@ -34,6 +34,13 @@ app_running() {
     pgrep -qf "Docker.app/Contents/MacOS/com.docker.backend"
 }
 
+# Game mode quits Docker on purpose while a game runs (game-mode.sh); don't
+# relaunch it under the game. Relaunching is what made Liftoff lag again after
+# the owner stopped Docker by hand (2026-10-16).
+if [[ -f "$HOME/.config/homelab/game-mode.state" ]]; then
+    exit 0
+fi
+
 if ! engine_ok; then
     if ! app_running; then
         log "Docker not running — launching Docker Desktop"
