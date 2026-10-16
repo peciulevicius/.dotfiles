@@ -6,6 +6,24 @@ is often what you need when something similar breaks again.
 
 Newest first-ish; dates are when the work was finished.
 
+## 2026-10-16 — T5 becomes the games disk; its unique files rescued first
+
+- Owner: T5 (500 GB, older) for games, T7 (1 TB) for all backups. Before T5 can
+  be erased, everything on it was checked against T7 by path, then by file name
+  + size across all of T7:
+  - `is tevu kompo` (46 GB, 7,015 files, photos/videos from the parents'
+    computer) existed **only on T5**. It was copied to `T7/is tevu kompo/` and to
+    the NAS `unsorted` share (over NFS via a throwaway container, because this
+    session's macOS privacy settings block the SMB mounts). Both copies were
+    verified (0 differences).
+  - 1,621 more files (24 GB: Faroe Islands 2023, Saaremaa 2020, Barcelona 2024,
+    hikes, `auto muziejus`, a few Immich originals) weren't anywhere on T7.
+    They were copied to `T7/from-T5-2026-10-16/` with their T5 paths and
+    verified. They still need sorting into the year folders / Immich.
+- `backup-external.sh` defaults to `/Volumes/T7` now (was T5 `/Volumes/Backup`).
+- The T7 `TimeMachine` volume is not a Time Machine backup; it holds a photo
+  copy with a "delete once in Immich" note (no Time Machine destination is set).
+
 ## 2026-10-16 — Game mode quits Docker, reacts in 2 seconds
 
 - The owner started Liftoff and nothing paused. Cause: a game-mode state file

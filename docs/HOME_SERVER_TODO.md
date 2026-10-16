@@ -216,8 +216,9 @@ Section names in *italics* are headings below.
       old `~/backups/*` and `~/Library/Caches` (~18 GB).
 - [x] ~~Weekly cleanup~~ — `scripts/utils/disk-cleanup.sh` (cron Sun 04:30): Docker
       build cache, dangling layers, Homebrew cache. Log `~/logs/disk-cleanup.log`.
-- [ ] 👤 Decide: Steam library on an external SSD (Steam → Settings → Storage →
-      Add drive) so games never compete with the server for the internal disk.
+- [ ] 👤 Steam library → T5 (decided 2026-10-16): erase T5 as APFS "Games",
+      then Steam → Settings → Storage → add it → move Liftoff (21 GB off the
+      internal disk). Keep T5 plugged in.
 - Note: Immich "Storage space" and Jellyfin "Paths" show ~57 TiB — a Docker
   Desktop file-sharing reporting bug, not real. Real numbers: `df -h /`, UGOS, Glance.
 
@@ -860,9 +861,10 @@ Photos live on the NAS (RAID 5) plus T7 and T5 — all three in the same room.
 The R2 cloud copy (Plan B) is done and verified; see the changelog and
 `services/rclone/README.md` "Immich photo/video backup".
 
-- [ ] 👤 **Plan A:** reload T5 with the full photo/video collection and take it
-      to the parents' house as the offsite family copy (last verified 1:1
-      against the NAS on 2026-09-05 — re-run `backup-external.sh` to it first).
+- [ ] 👤 **Plan A changed 2026-10-16:** T5 became the games disk (Steam/Liftoff),
+      so it can't be the offsite copy. Offsite today is R2 only. For a physical
+      family copy at the parents' house, a new drive is needed (T7 stays the
+      local backup target).
 
 ---
 
@@ -1034,8 +1036,8 @@ date before anyone noticed. Since 2026-09-24 `backup-external.sh` stamps
 `~/logs/external-backup-<drive>.last` and the weekly audit fails past 30 days —
 first T7 run is in *📋 Open user steps*.
 
-- [ ] 👤 Decide what T5 is *for* — once it lives offsite it can never be the
-      routine local target
+- [x] ~~Decide what T5 is for~~ — games disk (2026-10-16). T7 is the only
+      external backup target; `backup-external.sh` now defaults to it.
 
 Run a backup with:
 `~/.dotfiles/scripts/backup/backup-external.sh /Volumes/T7 --dry-run` then without `--dry-run`.
