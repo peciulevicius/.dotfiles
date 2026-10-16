@@ -29,6 +29,7 @@ set -uo pipefail
 CONFIG="${HEARTBEAT_CONFIG:-$HOME/.config/homelab/heartbeat.env}"
 STATE_DIR="${STATE_DIR:-$HOME/.local/state/homelab-jobs}"
 LAST_OK="$STATE_DIR/heartbeat.last"
+STRIKES="$STATE_DIR/heartbeat.docker-strikes"
 DOCKER_TIMEOUT=20
 
 TEST=false
@@ -62,8 +63,21 @@ docker_ok() {
   wait "$pid"
 }
 
+# Two strikes: report Docker only when it is slow on two runs in a row (~10
+# min). Under heavy load (Studio agents + preview builds, the host deep in
+# swap) `docker info` sometimes takes >20s once while every container keeps
+# running, and a single slow check sent a "down" then "up" alert pair to the
+# owner's phone dozens of times on 2026-10-14..16.
 problems=()
-docker_ok || problems+=("Docker engine not responding within ${DOCKER_TIMEOUT}s (Uptime Kuma is down with it)")
+mkdir -p "$STATE_DIR"
+if docker_ok; then
+  rm -f "$STRIKES"
+else
+  strikes=$(( $(cat "$STRIKES" 2>/dev/null || echo 0) + 1 ))
+  echo "$strikes" > "$STRIKES"
+  echo "$(date '+%F %T') heartbeat: docker info slow (strike $strikes)" >&2
+  (( strikes >= 2 )) && problems+=("Docker engine not responding within ${DOCKER_TIMEOUT}s on $strikes checks in a row (Uptime Kuma is down with it)")
+fi
 
 url="$HEARTBEAT_PING_URL"
 body="host=$(hostname -s) uptime=$(uptime | sed 's/^ *//')"

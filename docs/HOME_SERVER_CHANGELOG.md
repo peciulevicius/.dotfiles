@@ -6,6 +6,20 @@ is often what you need when something similar breaks again.
 
 Newest first-ish; dates are when the work was finished.
 
+## 2026-10-16 — Heartbeat stops flapping
+
+- Healthchecks.io sent the owner a "down" then "up" pair dozens of times
+  (31 failures, 2026-10-14..16). No container was down: `heartbeat.sh` runs
+  `docker info` with a 20s timeout and sent `/fail` on a single slow answer.
+  It started with the Studio dev pipeline. Paperclip sits at its 3GB cap,
+  the preview runner builds, and the host runs ~8–10GB into swap, so the
+  Docker API sometimes stalls for a moment.
+- Fix: two strikes. `/fail` is sent only when Docker is slow on two runs in a
+  row (~10 min, a real hang); a single slow check is logged as `strike 1`.
+  Counter in `~/.local/state/homelab-jobs/heartbeat.docker-strikes`.
+- Real cause to keep in mind: the 16GB host is overcommitted when the Studio
+  agents are busy (Docker VM 7.75GB + swap). Parking Carbstride reduced the load.
+
 ## 2026-10-15 — EAS Update: instant phone links for Studio apps
 
 - Carbstride registered on Expo (`@peciulevicius/carbstride`) with EAS

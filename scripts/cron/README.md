@@ -24,7 +24,7 @@ stdin (`crontab < file` or `cat file | crontab -`) and always verify with
 | Daily 05:00 | rclone → Cloudflare R2 (runs `~/services/rclone/rclone-backup.sh`) | `~/logs/rclone-backup.log` |
 | Monthly, 1st 06:00 | R2 restore spot-check + size history (`scripts/backup/r2-verify.sh`) | `~/logs/r2-verify.log` |
 | Hourly | Kindle Scribe → Obsidian vault | `~/logs/kindle-sync.log` |
-| Every 5 min | Heartbeat to Healthchecks.io (`heartbeat.sh`) — alerts from outside when pings stop, or when Docker is unresponsive | `~/logs/heartbeat.log` |
+| Every 5 min | Heartbeat to Healthchecks.io (`heartbeat.sh`) — alerts from outside when pings stop, or when Docker is unresponsive on two checks in a row (one slow `docker info` under load is not an outage) | `~/logs/heartbeat.log` |
 | Every 5 min | Host health snapshot for Glance (`homelab-status.sh`) | `~/logs/homelab-status.log` |
 | Every 5 min | Calendar status snapshot for Glance (`calendar-status.sh`) | `~/logs/calendar-status.log` |
 | Daily 07:00 | Finance providers → Glance portfolio (`finance-status.sh`) | `~/logs/finance-status.log` |
