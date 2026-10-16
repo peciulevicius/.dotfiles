@@ -14,7 +14,12 @@
 
 set -uo pipefail
 
-TARGET="${1:-/Volumes/T7}"
+# Flags and the target can come in any order (`--dry-run` alone once became
+# the target, 2026-10-16).
+TARGET="/Volumes/T7"
+for arg in "$@"; do
+  [[ "$arg" == --* ]] || TARGET="$arg"
+done
 
 NAS_IMMICH="/Volumes/immich"
 NAS_AUDIOBOOKS="/Volumes/audiobooks"
