@@ -2,7 +2,7 @@
 # Local backup: NAS → an external drive (T7, T5, whatever is plugged in)
 #
 #   ./backup-external.sh /Volumes/T7        # explicit target
-#   ./backup-external.sh                    # defaults to /Volumes/Backup (T5)
+#   ./backup-external.sh                    # defaults to /Volumes/T7 (T5 is the games disk since 2026-10-16)
 #
 # Covers Immich photos + the Immich database, audiobooks, Calibre books, and
 # the AI memories (~/ai-memory, including the Coach team's ~/ai-memory/training/).
@@ -14,7 +14,7 @@
 
 set -uo pipefail
 
-TARGET="${1:-/Volumes/Backup}"
+TARGET="${1:-/Volumes/T7}"
 
 NAS_IMMICH="/Volumes/immich"
 NAS_AUDIOBOOKS="/Volumes/audiobooks"
