@@ -70,7 +70,9 @@ docker_ok() {
 # owner's phone dozens of times on 2026-10-14..16.
 problems=()
 mkdir -p "$STATE_DIR"
-if docker_ok; then
+if [[ -f "$HOME/.config/homelab/game-mode.state" ]]; then
+  rm -f "$STRIKES"  # game mode stops Docker on purpose; the host itself is fine
+elif docker_ok; then
   rm -f "$STRIKES"
 else
   strikes=$(( $(cat "$STRIKES" 2>/dev/null || echo 0) + 1 ))

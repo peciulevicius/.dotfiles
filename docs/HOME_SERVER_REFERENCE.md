@@ -802,21 +802,31 @@ to the parents' house — the two are complementary, not either/or.
 
 All `/Volumes/<share>` paths are NAS SMB mounts — see `docs/NAS.md`.
 
-## Game mode (2026-10-14)
+## Game mode (2026-10-14, reworked 2026-10-16)
 
-Games on the Mac mini (Liftoff first) lagged because Docker may use all 10
-cores and Paperclip's agent runs can take a third of the machine.
-`scripts/utils/game-mode.sh` runs from cron every minute:
+Games on the Mac mini (Liftoff first) lag when Docker is running: the Docker VM
+holds ~8 GB of the 16 GB and the host goes deep into swap, and Paperclip's agent
+runs can take a third of the CPU. `scripts/utils/game-mode.sh watch` runs as a
+launchd agent (`os/mac/com.peciulevicius.game-mode.plist`, KeepAlive) and checks
+every 2 s:
 
-- A game process running (`GAME_PATTERNS`, default `Liftoff|Uncrashed|VelociDrone`)
-  → `docker pause` the busy containers that are running: Paperclip, Immich
-  (server + ML), Jellyfin, Audiobookshelf, Odysseus, Uptime Kuma (so it doesn't
-  alert), the Strava/TrainingPeaks MCPs, Linkwarden, Nextcloud, Paperless.
-- No game for `RESUME_AFTER_MIN` (20) → `docker unpause` exactly those.
-- Never paused: Pi-hole/unbound, Vaultwarden, Caddy/Sablier, Glance, the Discord bridge.
-- State/flag: `~/.config/homelab/game-mode.state`. While it exists,
-  `paperclip-limit-recover.py`, `paperclip-fallback.sh` and
-  `paperclip-reports.sh` skip instead of reporting Paperclip as down.
+- A game process starts (`GAME_PATTERNS`, default `Liftoff|Uncrashed|VelociDrone`)
+  → **Docker Desktop is quit** (`docker desktop stop`). Every service is offline
+  while you play. Vaultwarden clients keep their offline vault; DNS doesn't go
+  through Pi-hole.
+- No game for `RESUME_AFTER_MIN` (20 min) → Docker Desktop starts again, and
+  containers come back on their restart policies (Sablier-managed ones stay
+  stopped until their first request, as usual).
+- `STYLE=pause` brings back the old behaviour: `docker pause` the busy list
+  (`PAUSE_LIST`) instead. That frees CPU but **not memory**, which is why it
+  wasn't enough: the owner still had to quit Docker by hand on 2026-10-16.
+- State/flag: `~/.config/homelab/game-mode.state` (`@docker-stopped` marks the
+  stop style). While it exists, `docker-watchdog.sh` doesn't relaunch Docker,
+  `heartbeat.sh` doesn't report Docker as down, and `nas-watchdog.sh`, the
+  Studio PR bot and the Paperclip crons skip.
 - By hand: `game-mode.sh on|off|status`. A Discord line in reminders marks on/off.
-  Log: `~/logs/game-mode.log`. Paused containers keep their memory (pause ≠ stop).
+  Log: `~/logs/game-mode.log`.
+- Install: `cp os/mac/com.peciulevicius.game-mode.plist ~/Library/LaunchAgents/ &&
+  launchctl bootstrap gui/$(id -u) ~/Library/LaunchAgents/com.peciulevicius.game-mode.plist`.
+  After editing the script: `launchctl kickstart -k gui/$(id -u)/com.peciulevicius.game-mode`.
 
