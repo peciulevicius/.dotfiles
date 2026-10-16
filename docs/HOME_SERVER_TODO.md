@@ -861,10 +861,10 @@ Photos live on the NAS (RAID 5) plus T7 and T5 — all three in the same room.
 The R2 cloud copy (Plan B) is done and verified; see the changelog and
 `services/rclone/README.md` "Immich photo/video backup".
 
-- [ ] 👤 **Plan A changed 2026-10-16:** T5 became the games disk (Steam/Liftoff),
-      so it can't be the offsite copy. Offsite today is R2 only. For a physical
-      family copy at the parents' house, a new drive is needed (T7 stays the
-      local backup target).
+- [ ] 👤 **Plan A (offsite family copy at the parents' house), revised
+      2026-10-16:** offsite today is R2 only. Later, either re-purpose T5 again
+      (move games off, reload it with `backup-external.sh /Volumes/<name>`) or
+      take T7 there. If T7 goes, the Mac mini needs another local backup drive.
 
 ---
 
