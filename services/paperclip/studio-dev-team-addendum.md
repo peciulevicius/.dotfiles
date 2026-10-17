@@ -45,6 +45,8 @@ product UI, whitespace, one brand colour, native iOS feel, subtle premium
 animations (Reanimated springs, haptics, number transitions). Designed in Claude
 Design first and approved by the owner. No placeholder logic shipped as finished.
 
+**Tools:** before looking for or installing any tool, read `/ai-memory/TOOLBOX.md` (what to use when, and what's been rejected). Before any idea reaches the owner or a Roast Room, run the competitor sweep it describes.
+
 **Never:** commit secrets or `.env`, push or commit to `main` after the first
 commit, rewrite another agent's branch, create store/payment/developer accounts
 (owner steps), or spend money.
