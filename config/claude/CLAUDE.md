@@ -34,6 +34,7 @@ Džiugas — full-stack TypeScript developer. Building a SaaS product (landing +
 
 ## Skills — use these
 Vetted and pinned in `~/.dotfiles/config/claude/skills/` (sources in each `SOURCE.md`).
+**External tools** (Strix, Harvey, Agent-Reach, ECC, claude-mem…: what to use when, and what was rejected): `~/ai-memory/TOOLBOX.md`. Check it before searching for or installing a tool; add new tools there with a verdict.
 - Building UI → `frontend-design`; landing pages/redesigns → also `design-taste-frontend`; "make it feel like X" → `design-systems-reference`
 - Premium/cinematic scroll-driven landing pages → `scroll-craft`; business decisions to stress-test → `roast-room` (best from `~/dev/roast-room`)
 - Building from a screenshot/mockup → `image-to-code`

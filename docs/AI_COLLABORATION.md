@@ -23,6 +23,7 @@ memory on the Mac mini.
 | `config/claude/` | Claude Code agents, skills, rules, commands, and setup | This repo; see `config/claude/README.md` |
 | `~/ai-memory` on the Mac mini (`/ai-memory` in Paperclip and Odysseus) | Private cross-project context and agent handoffs | Private local Git repo; read its `README.md` first |
 | Paperclip company skills and agent instructions | Company-specific role guidance and capabilities | Paperclip company configuration; mirrored selectively in this repo |
+| `~/ai-memory/TOOLBOX.md` | Which external tool for which job (in use / when / evaluate / rejected), shared by every agent | `~/ai-memory` |
 | Odysseus memories and skills | User-facing chat memory and portable `SKILL.md` capabilities | Odysseus data plus `~/ai-memory` |
 
 The shared `~/ai-memory` mount currently connects Paperclip agents, Odysseus,
